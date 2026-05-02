@@ -248,11 +248,45 @@
       setInputFromDate(new Date(Date.UTC(+p.year, +p.month - 1, +p.day, hour, 0)), "UTC");
       applyMode(state.intent === "reverse" ? "est-gmt" : "gmt-est");
     }));
+    initFooterControls();
     applyMode(state.mode);
     buildTable();
     buildStrip();
     tick();
     setInterval(tick, 1000);
+  }
+
+  function initFooterControls() {
+    const langSelect = qs('#language-select');
+    if (langSelect) {
+      langSelect.addEventListener('change', function () {
+        const selectedLang = this.value;
+        const currentPath = window.location.pathname;
+        const pathParts = currentPath.split('/').filter((p) => p);
+        if (pathParts.length > 0 && pathParts[0].length === 2) {
+          pathParts[0] = selectedLang;
+        } else {
+          pathParts.unshift(selectedLang);
+        }
+        const newPath = '/' + pathParts.join('/') + (pathParts.length > 0 ? '/' : '');
+        window.location.href = newPath;
+      });
+    }
+
+    const backToTopBtn = qs('#back-to-top');
+    if (backToTopBtn) {
+      window.addEventListener('scroll', function () {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.add('show');
+        } else {
+          backToTopBtn.classList.remove('show');
+        }
+      });
+
+      backToTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   init();
