@@ -78,16 +78,16 @@ const schema = [
           </a>
           <p class="brand-desc">{t.brand} - Free timezone converter for GMT and EST time zones</p>
           <div class="social-links">
-            <a href="#" aria-label="Facebook" title="Facebook">f</a>
+            <a href="#" aria-label="Facebook" title="Facebook">📘</a>
             <a href="#" aria-label="Twitter" title="Twitter">𝕏</a>
-            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
-            <a href="#" aria-label="Pinterest" title="Pinterest">P</a>
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">💼</a>
+            <a href="#" aria-label="Pinterest" title="Pinterest">📌</a>
           </div>
         </div>
 
         <!-- Links Section -->
         <div class="footer-section links-section">
-          <h3 class="footer-heading">LINKS</h3>
+          <h3 class="footer-heading">PAGES</h3>
           <ul class="footer-links">
             <li><a href={`/${lang}/about/`}>{t.footer.about}</a></li>
             <li><a href={`/${lang}/gmt-to-est/`}>{t.footer.gmtToEst}</a></li>
@@ -111,6 +111,16 @@ const schema = [
           </div>
         </div>
 
+        <!-- Language Switch Section -->
+        <div class="footer-section language-section">
+          <h3 class="footer-heading">LANGUAGE</h3>
+          <select id="language-select" class="language-select">
+            {languages.map((item) => (
+              <option value={item.code} selected={item.code === lang}>{item.name}</option>
+            ))}
+          </select>
+        </div>
+
       </div>
 
       <!-- Copyright -->
@@ -118,7 +128,46 @@ const schema = [
         <p>&copy; {new Date().getFullYear()} {t.brand}. All rights reserved.</p>
       </div>
     </footer>
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">
+      ↑
+    </button>
     <script defer src="/assets/app.js"></script>
+    <script>
+      // Language switch functionality
+      document.getElementById('language-select')?.addEventListener('change', function() {
+        const selectedLang = this.value;
+        const currentPath = window.location.pathname;
+        const pathParts = currentPath.split('/').filter(p => p);
+        if (pathParts.length > 0 && pathParts[0].length === 2) {
+          // Replace the language code
+          pathParts[0] = selectedLang;
+        } else {
+          // Add language code
+          pathParts.unshift(selectedLang);
+        }
+        const newPath = '/' + pathParts.join('/') + (pathParts.length > 0 ? '/' : '');
+        window.location.href = newPath;
+      });
+
+      // Back to top functionality
+      const backToTopBtn = document.getElementById('back-to-top');
+      if (backToTopBtn) {
+        window.addEventListener('scroll', function() {
+          if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('show');
+          } else {
+            backToTopBtn.classList.remove('show');
+          }
+        });
+
+        backToTopBtn.addEventListener('click', function() {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 
@@ -134,7 +183,7 @@ const schema = [
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1.5fr;
+    grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr;
     gap: 3rem;
     margin-bottom: 2rem;
   }
@@ -268,6 +317,34 @@ const schema = [
     color: #0ea5e9;
   }
 
+  /* Language Section */
+  .language-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .language-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #bfdbfe;
+    font-size: 0.95rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .language-select:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  .language-select option {
+    background: #0f172a;
+    color: #bfdbfe;
+  }
+
   /* Footer Bottom */
   .footer-bottom {
     max-width: 1400px;
@@ -281,6 +358,38 @@ const schema = [
     margin: 0;
     color: #6b7280;
     font-size: 0.9rem;
+  }
+
+  /* Back to Top Button */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: #0ea5e9;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+  }
+
+  .back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .back-to-top:hover {
+    background: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4);
   }
 
   /* Responsive */
@@ -316,6 +425,14 @@ const schema = [
     .footer-links,
     .contact-item {
       font-size: 0.9rem;
+    }
+
+    .back-to-top {
+      bottom: 1rem;
+      right: 1rem;
+      width: 44px;
+      height: 44px;
+      font-size: 1.25rem;
     }
   }
 </style>

@@ -12,7 +12,7 @@ const en = {
     gmtVsEst: { title: "GMT vs EST Difference", description: "Compare GMT and Eastern Time, including EST, EDT, daylight saving changes, and exact offsets." },
     guide: { title: "Time Zone Guide", description: "A practical guide to GMT, EST, EDT, abbreviations, daylight saving time, meetings, trading, and global scheduling." }
   },
-  nav: { gmtToEst: "GMT→EST", estToGmt: "EST→GMT", gmtVsEst: "GMT vs EST", guide: "Guide", language: "Language", theme: "Toggle dark mode" },
+  nav: { gmtToEst: "GMT→EST", estToGmt: "EST→GMT", gmtVsEst: "GMT vs EST", guide: "Guide", language: "Language" },
   footer: { gmtToEst: "GMT to EST calculator", estToGmt: "EST to GMT calculator", difference: "GMT vs EST difference" },
   hero: {
     eyebrow: "Instant timezone calculator",

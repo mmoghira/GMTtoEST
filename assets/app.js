@@ -196,15 +196,7 @@
     convert();
   }
 
-  function initTheme() {
-    const saved = localStorage.getItem("theme");
-    if (saved) document.documentElement.dataset.theme = saved;
-    qs("#theme")?.addEventListener("click", () => {
-      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = next;
-      localStorage.setItem("theme", next);
-    });
-  }
+  // Removed dark mode/theme switch logic
 
   function initReveal() {
     const items = qsa(".reveal");
@@ -225,7 +217,7 @@
   }
 
   function init() {
-    initTheme();
+    // Removed initTheme()
     initReveal();
     qs("#datetime")?.addEventListener("input", convert);
     qs("#formatToggle")?.addEventListener("change", (event) => {

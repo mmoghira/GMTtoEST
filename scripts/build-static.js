@@ -160,9 +160,6 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
       <a href="/${lang}/gmt-vs-est/">GMT vs EST</a>
       <a href="/${lang}/time-zone-guide/">Guide</a>
     </nav>
-    <div class="switchers">
-      <button id="theme" class="icon-button" type="button" aria-label="Toggle dark mode">◐</button>
-    </div>
   </header>
 
   <main>
