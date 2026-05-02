@@ -1,0 +1,26 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import HomePage from "theme/components/HomePage.astro";
+import { getLang, getPageMeta, getTranslation, languages, pages } from "theme/i18n/config";
+
+export function getStaticPaths() {
+  return languages.flatMap((lang) =>
+    pages.filter((page) => page.slug).map((page) => ({
+      params: { lang: lang.code, slug: page.slug },
+      props: { page }
+    }))
+  );
+}
+
+const lang = getLang(Astro.params.lang || "en");
+const { page } = Astro.props;
+const t = getTranslation(lang.code);
+const meta = getPageMeta(lang.code, page.labelKey);
+const title = meta.title;
+const description = meta.description;
+const mode = page.kind === "reverse" ? "est-gmt" : "gmt-est";
+---
+
+<BaseLayout lang={lang.code} dir={lang.dir} title={title} description={description} slug={page.slug} meta={meta} mode={mode}>
+  <HomePage title={title} description={description} kind={page.kind} t={t} />
+</BaseLayout>

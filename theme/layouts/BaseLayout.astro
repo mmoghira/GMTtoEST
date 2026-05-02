@@ -1,0 +1,321 @@
+---
+import "src/styles/global.css";
+import Header from "theme/components/Header.astro";
+import { getTranslation, languages, pageUrl, siteUrl } from "theme/i18n/config";
+
+type Props = {
+  lang: string;
+  dir: "ltr" | "rtl";
+  title: string;
+  description: string;
+  slug?: string;
+  mode?: string;
+  meta?: any;
+};
+
+const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {} } = Astro.props;
+const t = getTranslation(lang);
+const canonical = `${siteUrl}${pageUrl(lang, slug)}`;
+const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: title,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
+    url: canonical,
+    description
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: t.faqs.items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a }
+    }))
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: t.brand, item: `${siteUrl}/${lang}/` },
+      { "@type": "ListItem", position: 2, name: title, item: canonical }
+    ]
+  }
+];
+---
+
+<!doctype html>
+<html lang={lang} dir={dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | GMT to EST</title>
+    <meta name="description" content={description} />
+    {metaKeywords && <meta name="keywords" content={metaKeywords} />}
+    <link rel="canonical" href={canonical} />
+    {languages.map((item) => <link rel="alternate" hreflang={item.code} href={`${siteUrl}${pageUrl(item.code, slug)}`} />)}
+    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${pageUrl("en", slug)}`} />
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <script is:inline>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+    </script>
+  </head>
+  <body data-lang={lang} data-mode={mode}>
+    <Header lang={lang} t={t} />
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <div class="footer-container">
+        <!-- Brand Section -->
+        <div class="footer-section brand-section">
+          <a href={`/${lang}/`} class="footer-logo">
+            <span class="logo-text"><span>GMT</span><b>EST</b></span>
+          </a>
+          <p class="brand-desc">{t.brand} - Free timezone converter for GMT and EST time zones</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook" title="Facebook">f</a>
+            <a href="#" aria-label="Twitter" title="Twitter">𝕏</a>
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+            <a href="#" aria-label="Pinterest" title="Pinterest">P</a>
+          </div>
+        </div>
+
+        <!-- Links Section -->
+        <div class="footer-section links-section">
+          <h3 class="footer-heading">LINKS</h3>
+          <ul class="footer-links">
+            <li><a href={`/${lang}/about/`}>{t.footer.about}</a></li>
+            <li><a href={`/${lang}/gmt-to-est/`}>{t.footer.gmtToEst}</a></li>
+            <li><a href={`/${lang}/est-to-gmt/`}>{t.footer.estToGmt}</a></li>
+            <li><a href={`/${lang}/gmt-vs-est/`}>{t.footer.difference}</a></li>
+            <li><a href={`/${lang}/privacy-policy/`}>{t.footer.privacy}</a></li>
+            <li><a href={`/${lang}/sitemap/`}>{t.footer.sitemap}</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="footer-section contact-section">
+          <h3 class="footer-heading">CONTACT</h3>
+          <div class="contact-item">
+            <span class="contact-icon">✉</span>
+            <a href="mailto:hello@gmttoest.com">hello@gmttoest.com</a>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📞</span>
+            <a href="tel:+1234567890">Support Available</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copyright -->
+      <div class="footer-bottom">
+        <p>&copy; {new Date().getFullYear()} {t.brand}. All rights reserved.</p>
+      </div>
+    </footer>
+    <script defer src="/assets/app.js"></script>
+  </body>
+</html>
+
+<style>
+  footer {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4rem;
+    padding: 3rem 2rem 1.5rem;
+  }
+
+  .footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr;
+    gap: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Brand Section */
+  .brand-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    display: inline-flex;
+    width: fit-content;
+    text-decoration: none;
+  }
+
+  .footer-logo .logo-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .footer-logo .logo-text span {
+    color: #e5e7eb;
+  }
+
+  .footer-logo .logo-text b {
+    color: #0ea5e9;
+  }
+
+  .brand-desc {
+    color: #9ca3af;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 280px;
+  }
+
+  .social-links {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #e5e7eb;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .social-links a:hover {
+    background: #0ea5e9;
+    border-color: #0ea5e9;
+    color: white;
+  }
+
+  /* Section Headings */
+  .footer-heading {
+    margin: 0 0 1.25rem 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #e5e7eb;
+    text-transform: uppercase;
+  }
+
+  /* Links Section */
+  .links-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .footer-links a {
+    color: #bfdbfe;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+  }
+
+  .footer-links a:hover {
+    color: #0ea5e9;
+  }
+
+  /* Contact Section */
+  .contact-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: #bfdbfe;
+    font-size: 0.95rem;
+  }
+
+  .contact-icon {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    width: 1.5rem;
+    text-align: center;
+  }
+
+  .contact-item a {
+    color: #bfdbfe;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .contact-item a:hover {
+    color: #0ea5e9;
+  }
+
+  /* Footer Bottom */
+  .footer-bottom {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+  }
+
+  .footer-bottom p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .footer-container {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+
+  }
+
+  @media (max-width: 768px) {
+    footer {
+      padding: 2rem 1rem 1rem;
+      margin-top: 2rem;
+    }
+
+    .footer-container {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .brand-desc {
+      max-width: 100%;
+    }
+
+    .footer-heading {
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .footer-links,
+    .contact-item {
+      font-size: 0.9rem;
+    }
+  }
+</style>

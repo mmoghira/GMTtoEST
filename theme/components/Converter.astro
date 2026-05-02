@@ -1,0 +1,42 @@
+---
+const { intent = "converter", t } = Astro.props;
+const variant = t.converter.variants[intent] || t.converter.variants.converter;
+---
+
+<form class="converter" id="converter" data-intent={intent} data-start-mode={variant.startMode} data-labels={JSON.stringify(t.converter)}>
+  <div class="converter-head">
+    <div>
+      <span class="step">1</span>
+      <strong id="converterHeading">{variant.heading}</strong>
+    </div>
+    {variant.swap && <button type="button" id="swap" class="swap-button" aria-label={t.converter.swap}>⇄</button>}
+  </div>
+  <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={t.converter.direction}>
+    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} data-mode="gmt-est"><span>{t.converter.from}</span><b>GMT</b><small>{t.converter.toEastern}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} data-mode="est-gmt"><span>{t.converter.from}</span><b>EST / EDT</b><small>{t.converter.toGmt}</small></button>
+  </div>
+  <label class="datetime-label"><span id="inputZoneName">{variant.input}</span><input id="datetime" type="datetime-local" /></label>
+  <div class="controls">
+    <button type="button" id="now">{t.converter.now}</button>
+    <label class="toggle"><input id="formatToggle" type="checkbox" checked /> {t.converter.format}</label>
+  </div>
+  <div class="answer-card">
+    <span class="step">2</span>
+    <div class="answer-grid">
+      <div>
+        <span id="sourceZone">{variant.source}</span>
+        <strong id="sourcePreview">--</strong>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div>
+        <span id="outputZoneName">{variant.target}</span>
+        <output class="result" id="result" aria-live="polite">--</output>
+      </div>
+    </div>
+    <div class="result-actions">
+      <strong class="offset-badge" id="offsetBadge">{t.converter.dstAware}</strong>
+      <button type="button" id="copy" data-copied={t.converter.copied}>{t.converter.copy}</button>
+    </div>
+  </div>
+  <p class="difference" id="difference">{variant.note}</p>
+</form>
