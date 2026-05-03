@@ -145,6 +145,8 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   <title>${esc(title)} | GMT to EST</title>
   <meta name="description" content="${esc(desc)}">
   <link rel="canonical" href="${canonical}">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   ${hreflang(slug)}
   <link rel="alternate" hreflang="x-default" href="${site}/en/${slug ? `${slug}/` : ""}">
   <link rel="stylesheet" href="/assets/styles.css">
