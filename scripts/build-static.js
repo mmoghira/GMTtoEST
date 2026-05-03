@@ -296,6 +296,9 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
     <a href="/${lang}/est-to-gmt/">EST to GMT calculator</a>
     <a href="/${lang}/gmt-vs-est/">GMT vs EST difference</a>
   </footer>
+  <button id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">
+    ↑
+  </button>
 </body>
 </html>`;
 }
