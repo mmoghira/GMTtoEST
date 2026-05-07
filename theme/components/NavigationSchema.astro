@@ -1,0 +1,69 @@
+---
+/**
+ * NavigationSchema Component
+ * Generates structured data for site navigation elements
+ * Helps search engines understand site structure and improve navigation display
+ */
+import { siteUrl, pageUrl, languages } from "theme/i18n/config";
+
+interface Props {
+  lang: string;
+  t: any;
+}
+
+const { lang, t } = Astro.props;
+
+const navItems = [
+  { 
+    url: pageUrl(lang, ""), 
+    name: t.pages?.home || "Home", 
+    description: t.pages?.homeDesc || "Free timezone converter",
+    position: 1 
+  },
+  { 
+    url: pageUrl(lang, "gmt-to-est"), 
+    name: t.pages?.gmtToEst || "GMT to EST", 
+    description: t.pages?.gmtToEstDesc || "Convert GMT time to EST instantly",
+    position: 2 
+  },
+  { 
+    url: pageUrl(lang, "est-to-gmt"), 
+    name: t.pages?.estToGmt || "EST to GMT", 
+    description: t.pages?.estToGmtDesc || "Convert EST time to GMT instantly",
+    position: 3 
+  },
+  { 
+    url: pageUrl(lang, "gmt-vs-est"), 
+    name: t.pages?.gmtVsEst || "GMT vs EST", 
+    description: t.pages?.gmtVsEstDesc || "Understand the difference between GMT and EST",
+    position: 4 
+  },
+  { 
+    url: pageUrl(lang, "time-zone-guide"), 
+    name: t.pages?.guide || "Time Zone Guide", 
+    description: t.pages?.guideDesc || "Complete guide to timezones and conversions",
+    position: 5 
+  }
+];
+
+const navigationSchema = {
+  "@context": "https://schema.org",
+  "@type": "SiteNavigationElement",
+  name: "Primary Navigation",
+  url: `${siteUrl}/${lang}/`,
+  inLanguage: lang,
+  speakable: {
+    "@type": "SpeakableSpecification",
+    xpath: ["/html/head/title", "/html/head/meta[@name='description']/@content"]
+  },
+  hasPart: navItems.map((item) => ({
+    "@type": "SiteNavigationElement",
+    name: item.name,
+    description: item.description,
+    url: `${siteUrl}${item.url}`,
+    position: item.position
+  }))
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(navigationSchema)} />
