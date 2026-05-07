@@ -4,7 +4,7 @@ export type Lang = {
   dir: "ltr" | "rtl";
 };
 
-export const siteUrl = import.meta.env.SITE_URL || "https://gmttoest.com";
+export const siteUrl = import.meta.env.SITE_URL || "https://www.gmttoestconverter.com";
 
 export const languages: Lang[] = [
   { code: "en", name: "English", dir: "ltr" },
@@ -63,5 +63,8 @@ export function getPageMeta(code: string, labelKey = "home") {
 }
 
 export function pageUrl(lang: string, slug = "") {
+  if (lang === "en") {
+    return `/${slug ? `${slug}/` : ""}`;
+  }
   return `/${lang}/${slug ? `${slug}/` : ""}`;
 }

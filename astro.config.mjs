@@ -4,7 +4,7 @@ import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 
 export default defineConfig({
-  site: process.env.SITE_URL || "https://gmttoest.com",
+  site: process.env.SITE_URL || "https://www.gmttoestconverter.com",
   trailingSlash: "always",
   output: "static",
   adapter: vercel({
@@ -55,18 +55,4 @@ export default defineConfig({
       }
     }
   },
-  // Redirect all root traffic to /en/
-  server: {
-    middlewares: [
-      (req, res, next) => {
-        if (req.url === "/" || req.url === "") {
-          res.statusCode = 301;
-          res.setHeader("Location", "/en/");
-          res.end();
-        } else {
-          next();
-        }
-      }
-    ]
-  }
 });
