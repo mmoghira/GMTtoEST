@@ -1,0 +1,59 @@
+# Enable mod_rewrite
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Remove trailing slashes from non-directories
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)/$ /$1 [L,R=301]
+  
+  # Redirect root to /en/
+  RewriteRule ^$ /en/ [L,R=301]
+  RewriteRule ^index\.html$ /en/ [L,R=301]
+  
+  # Redirect any non-existent files to /en/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^.*$ /en/ [L,R=301]
+</IfModule>
+
+# Set cache headers for static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Default
+  ExpiresDefault "access plus 1 month"
+  
+  # HTML, PHP, CGI - no cache
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/php "access plus 0 seconds"
+  
+  # Images - cache for 1 year
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  
+  # CSS and JavaScript - cache for 1 year
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+</IfModule>
+
+# Enable GZIP compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Set proper content types
+<IfModule mod_mime.c>
+  AddType application/javascript js
+  AddType application/json json
+  AddEncoding gzip svgz
+  AddType image/svg+xml svg svgz
+</IfModule>
