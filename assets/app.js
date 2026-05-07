@@ -1,4 +1,56 @@
 (() => {
+  // Back to Top Button - Initialize first, before anything else
+  const initBackToTopButton = () => {
+    const btn = document.getElementById('back-to-top');
+    if (!btn) {
+      // Try again in 100ms if button not found
+      setTimeout(initBackToTopButton, 100);
+      return;
+    }
+
+    let ticking = false;
+    const handleScroll = () => {
+      if (window.pageYOffset > 300) {
+        btn.classList.add('show');
+      } else {
+        btn.classList.remove('show');
+      }
+      ticking = false;
+    };
+
+    // Use throttling with requestAnimationFrame
+    const throttledScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(handleScroll);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Set initial state
+    handleScroll();
+  };
+
+  // Initialize with multiple triggers to ensure it runs
+  if (document.readyState === 'complete') {
+    initBackToTopButton();
+  } else if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBackToTopButton);
+  } else {
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        initBackToTopButton();
+      }
+    });
+  }
+
+  // Also try immediately (in case button exists)
+  setTimeout(initBackToTopButton, 0);
+
   const easternZone = "America/New_York";
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => [...document.querySelectorAll(s)];
@@ -272,22 +324,8 @@
         window.location.href = newPath;
       });
     }
-
-    const backToTopBtn = qs('#back-to-top');
-    if (backToTopBtn) {
-      window.addEventListener('scroll', function () {
-        if (window.pageYOffset > 300) {
-          backToTopBtn.classList.add('show');
-        } else {
-          backToTopBtn.classList.remove('show');
-        }
-      });
-
-      backToTopBtn.addEventListener('click', function () {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    }
   }
 
   init();
+  initFooterControls();
 })();
