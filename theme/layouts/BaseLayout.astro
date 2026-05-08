@@ -28,68 +28,105 @@ const navItems = [
   { url: pageUrl(lang, "time-zone-guide"), name: t.pages?.guide || "Time Zone Guide", position: 5 }
 ];
 
+const isHome = slug === "";
+
 const schema = [
+  // ── 1. WebSite (enables Sitelinks Searchbox & site identity) ──────────────
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: title,
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Any",
-    url: canonical,
-    description,
-    navigationElement: navItems.map(item => ({
-      "@type": "SiteNavigationElement",
-      name: item.name,
-      url: `${siteUrl}${item.url}`,
-      position: item.position
-    }))
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    url: siteUrl,
+    name: "GMT to EST Converter",
+    alternateName: "GMTtoEST",
+    description: "Free, accurate GMT to EST and EST to GMT timezone converter. Accounts for daylight saving time.",
+    inLanguage: languages.map(l => l.code),
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
   },
+
+  // ── 2. Organization ────────────────────────────────────────────────────────
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
     name: "GMT to EST Converter",
     url: siteUrl,
-    logo: `${siteUrl}/assets/logo.png`,
-    description: "Free timezone converter and guide for GMT and EST time zones",
-    sameAs: [
-      "https://www.google.com/search?q=gmt+to+est+converter"
-    ],
+    logo: {
+      "@type": "ImageObject",
+      "@id": `${siteUrl}/#logo`,
+      url: `${siteUrl}/assets/logo.png`,
+      width: 512,
+      height: 512,
+      caption: "GMT to EST Converter"
+    },
+    image: { "@id": `${siteUrl}/#logo` },
+    description: "Free timezone converter and guide for GMT and Eastern Standard Time (EST/EDT).",
+    foundingDate: "2024",
     contactPoint: {
       "@type": "ContactPoint",
-      contactType: "Customer Support",
+      contactType: "customer support",
       email: "hello@gmttoest.com",
-      availableLanguage: languages.map(lang => lang.code)
+      availableLanguage: languages.map(l => l.code),
+      areaServed: "Worldwide"
     }
   },
+
+  // ── 3. WebApplication (per-page) ───────────────────────────────────────────
   {
     "@context": "https://schema.org",
-    "@type": "SiteNavigationElement",
-    name: "Primary Navigation",
-    url: siteUrl,
-    hasPartList: navItems.map(item => ({
-      "@type": "SiteNavigationElement",
-      name: item.name,
-      url: `${siteUrl}${item.url}`,
-      position: item.position
-    }))
+    "@type": "WebApplication",
+    "@id": `${canonical}#app`,
+    name: title,
+    url: canonical,
+    description,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    },
+    featureList: [
+      "GMT to EST conversion",
+      "EST to GMT conversion",
+      "Daylight Saving Time aware",
+      "Multi-language support"
+    ],
+    isPartOf: { "@id": `${siteUrl}/#website` },
+    author: { "@id": `${siteUrl}/#organization` }
   },
+
+  // ── 4. BreadcrumbList (per-page) ───────────────────────────────────────────
   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${canonical}#breadcrumb`,
+    itemListElement: isHome
+      ? [{ "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` }]
+      : [
+          { "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` },
+          { "@type": "ListItem", position: 2, name: title, item: canonical }
+        ]
+  },
+
+  // ── 5. FAQPage (homepage only) ─────────────────────────────────────────────
+  ...(isHome && t.faqs?.items?.length ? [{
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: t.faqs.items.map((item) => ({
+    "@id": `${canonical}#faq`,
+    mainEntity: t.faqs.items.map((item: any) => ({
       "@type": "Question",
       name: item.q,
       acceptedAnswer: { "@type": "Answer", text: item.a }
     }))
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: t.brand, item: `${siteUrl}${pageUrl(lang, "")}` },
-      { "@type": "ListItem", position: 2, name: title, item: canonical }
-    ]
-  }
+  }] : [])
 ];
 ---
 
