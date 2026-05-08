@@ -401,25 +401,33 @@ const navItems = [
   }
 </style>
 
-<script is:inline>
-  (function setupLanguageSwitcher() {
+<script>
+  const setupLangToggle = () => {
     const langToggle = document.getElementById('lang-toggle');
     const langDropdown = document.getElementById('lang-dropdown');
     
     if (langToggle && langDropdown) {
-      langToggle.addEventListener('click', function(e) {
+      // Remove old listeners to prevent duplicates if executed multiple times
+      const newToggle = langToggle.cloneNode(true);
+      langToggle.parentNode?.replaceChild(newToggle, langToggle);
+      
+      const updatedToggle = document.getElementById('lang-toggle');
+      
+      updatedToggle?.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isExpanded = langToggle.getAttribute('aria-expanded') === 'true';
-        langToggle.setAttribute('aria-expanded', String(!isExpanded));
+        const isExpanded = updatedToggle.getAttribute('aria-expanded') === 'true';
+        updatedToggle.setAttribute('aria-expanded', String(!isExpanded));
         langDropdown.classList.toggle('show');
       });
 
-      document.addEventListener('click', function(e) {
-        if (!langDropdown.contains(e.target) && !langToggle.contains(e.target)) {
-          langToggle.setAttribute('aria-expanded', 'false');
+      document.addEventListener('click', (e) => {
+        if (!langDropdown.contains(e.target) && !updatedToggle?.contains(e.target)) {
+          updatedToggle?.setAttribute('aria-expanded', 'false');
           langDropdown.classList.remove('show');
         }
       });
     }
-  })();
+  };
+
+  setupLangToggle();
 </script>
