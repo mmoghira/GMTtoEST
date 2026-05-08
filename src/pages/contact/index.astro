@@ -1,20 +1,26 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getPageMeta, siteUrl } from "theme/i18n/config";
+import { siteUrl } from "theme/i18n/config";
 
-const metaBase = getPageMeta("en", "contact");
-const meta = { ...metaBase, keywords: "contact gmt to est, contact GMTtoEST, support GMT to EST, feedback GMT to EST" };
+const email    = "gmttoestconverter@gmail.com";
+const title    = "Contact Us";
+const description = "Get in touch with the GMT to EST Converter team. Send us a message for feedback, bug reports, or general support.";
+const meta = {
+  title,
+  description,
+  keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact"
+};
 
-const pageUrl = `${siteUrl}/contact/`;
+const pageCanonical = `${siteUrl}/contact/`;
 
 const schema = [
   {
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    "@id": `${pageUrl}#webpage`,
-    url: pageUrl,
-    name: meta.title,
-    description: meta.description,
+    "@id": `${pageCanonical}#webpage`,
+    url: pageCanonical,
+    name: title,
+    description,
     inLanguage: "en",
     isPartOf: {
       "@type": "WebSite",
@@ -26,43 +32,264 @@ const schema = [
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
-        { "@type": "ListItem", position: 2, name: "Contact", item: pageUrl }
+        { "@type": "ListItem", position: 2, name: "Contact Us", item: pageCanonical }
       ]
     }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": `${siteUrl}/#organization`,
-    name: "GMT to EST Converter",
-    url: siteUrl,
-    logo: `${siteUrl}/assets/logo.png`,
-    contactPoint: [
-      {
-        "@type": "ContactPoint",
-        contactType: "customer support",
-        email: "hello@gmttoest.com",
-        availableLanguage: ["English"],
-        areaServed: "Worldwide"
-      }
-    ]
   }
 ];
 ---
 
-<BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug="contact" meta={meta}>
+<BaseLayout lang="en" dir="ltr" title={title} description={description} slug="contact" meta={meta}>
   <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
-  <section class="content" aria-labelledby="contact">
-    <h1 id="contact">{meta.title}</h1>
-    <p>We welcome feedback, translation help, and reports of issues. Use the contact options below.</p>
-    <h2>Email</h2>
-    <p>Email us at <a href="mailto:hello@gmttoest.com">hello@gmttoest.com</a> (replace with your preferred contact address).</p>
-    <h2>Quick message</h2>
-    <form action="mailto:hello@gmttoest.com" method="post" enctype="text/plain">
-      <label>Name<br><input type="text" name="name" required></label>
-      <label>Email<br><input type="email" name="email" required></label>
-      <label>Message<br><textarea name="message" rows="6" required></textarea></label>
-      <button type="submit">Send</button>
+
+  <section class="contact-page" aria-labelledby="contact-heading">
+
+    <div class="contact-header">
+      <h1 id="contact-heading">Contact Us</h1>
+      <p>Have a question or feedback? Fill out the form below and we'll get back to you within 1–2 business days.</p>
+      <p class="contact-email-line">
+        Or email us directly at:
+        <a href={`mailto:${email}`}>{email}</a>
+      </p>
+    </div>
+
+    <!-- Success message -->
+    <div class="contact-success" id="contact-success" hidden>
+      <span class="success-icon">✓</span>
+      <div>
+        <strong>Message sent!</strong>
+        <p>Thanks for reaching out. We'll reply within 1–2 business days.</p>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <form
+      id="contact-form"
+      class="contact-form"
+      action={`https://formsubmit.co/${email}`}
+      method="POST"
+    >
+      <!-- FormSubmit config -->
+      <input type="hidden" name="_subject"  value="New contact from gmttoestconverter.com" />
+      <input type="hidden" name="_captcha"  value="false" />
+      <input type="hidden" name="_template" value="table" />
+      <input type="hidden" name="_next"     value={`${siteUrl}/contact/?sent=1`} />
+      <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" />
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="cf-name">Full Name <span class="req">*</span></label>
+          <input id="cf-name" type="text" name="name" placeholder="John Smith" required autocomplete="name" />
+        </div>
+        <div class="form-field">
+          <label for="cf-email">Email Address <span class="req">*</span></label>
+          <input id="cf-email" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="cf-subject">Subject <span class="req">*</span></label>
+        <select id="cf-subject" name="subject" required>
+          <option value="" disabled selected>Select a subject…</option>
+          <option value="General Question">General Question</option>
+          <option value="Bug Report">Bug Report</option>
+          <option value="Feature Request">Feature Request</option>
+          <option value="Translation Help">Translation Help</option>
+          <option value="Partnership / Advertising">Partnership / Advertising</option>
+          <option value="Privacy / Data Request">Privacy / Data Request</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="cf-message">Message <span class="req">*</span></label>
+        <textarea id="cf-message" name="message" rows="6" placeholder="Tell us how we can help…" required></textarea>
+      </div>
+
+      <button type="submit" class="form-submit">
+        Send Message <span class="arrow">→</span>
+      </button>
+
+      <p class="form-note">
+        By submitting this form you agree to our <a href="/privacy-policy/">Privacy Policy</a>.
+      </p>
     </form>
+
   </section>
 </BaseLayout>
+
+<script is:inline>
+  (function () {
+    const params  = new URLSearchParams(window.location.search);
+    const success = document.getElementById('contact-success');
+    const form    = document.getElementById('contact-form');
+    if (params.get('sent') === '1' && success && form) {
+      form.hidden    = true;
+      success.hidden = false;
+    }
+  })();
+</script>
+
+<style>
+  .contact-page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* Header */
+  .contact-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .contact-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    margin: 0 0 0.75rem;
+    color: var(--text);
+  }
+  .contact-header p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    margin: 0 0 0.5rem;
+  }
+  .contact-email-line a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Success */
+  .contact-success {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: color-mix(in srgb, #22c55e 10%, var(--panel));
+    border: 1px solid #22c55e;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 2rem;
+  }
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    background: #22c55e;
+    color: #fff;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .contact-success strong {
+    display: block;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .contact-success p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  /* Form */
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .form-field label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .req { color: #ef4444; margin-left: 2px; }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.975rem;
+    padding: 11px 14px;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-field input::placeholder,
+  .form-field textarea::placeholder {
+    color: var(--muted);
+    opacity: 0.65;
+  }
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  .form-field select { cursor: pointer; }
+  .form-field textarea { resize: vertical; min-height: 150px; line-height: 1.6; }
+
+  /* Submit */
+  .form-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 28%, transparent);
+    width: fit-content;
+  }
+  .form-submit:hover {
+    background: color-mix(in srgb, var(--accent) 80%, #000);
+    transform: translateY(-1px);
+  }
+  .form-submit:active { transform: translateY(0); }
+  .arrow { transition: transform 0.2s; }
+  .form-submit:hover .arrow { transform: translateX(4px); }
+
+  /* Note */
+  .form-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .form-note a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* Responsive */
+  @media (max-width: 540px) {
+    .contact-page { padding: 2rem 1rem 4rem; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
