@@ -21,6 +21,17 @@ async function generateLogos() {
 
         console.log('✓ Generated logo.png (512x512)');
 
+        // Generate logo.webp (512x512)
+        await sharp(svgBuffer)
+            .webp({ quality: 90 })
+            .resize(512, 512, {
+                fit: 'contain',
+                background: { r: 255, g: 255, b: 255, alpha: 0 }
+            })
+            .toFile(path.join(assetsPath, 'logo.webp'));
+
+        console.log('✓ Generated logo.webp (512x512)');
+
         // Generate favicon for public folder (32x32)
         await sharp(svgBuffer)
             .png()
