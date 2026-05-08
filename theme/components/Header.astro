@@ -38,30 +38,48 @@ const navItems = [
       </ul>
     </nav>
 
-    <!-- Right Section (Theme Toggle & Language) -->
+    <!-- Right Section (Search + Theme Toggle) -->
     <div class="header-right">
-      <div class="lang-switcher">
-        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Language" aria-expanded="false">
-          {lang.toUpperCase()}
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-          <div class="lang-dropdown-header">LANGUAGE</div>
-          <div class="lang-grid">
-            {languages.map((item) => (
-              <a 
-                href={pageUrl(item.code, slug)} 
-                class={`lang-item ${item.code === lang ? 'active' : ''}`}
-                title={item.name}
-              >
-                {item.code.toUpperCase()}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
+      <!-- Search Button -->
+      <button id="search-toggle" class="search-toggle" type="button" aria-label="Search" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+      <!-- Theme Toggle -->
       <button id="theme" class="theme-toggle" type="button" aria-label={t.nav.theme}>
         ◐
       </button>
+    </div>
+  </div>
+
+  <!-- Search Overlay -->
+  <div id="search-overlay" class="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="search-overlay-inner">
+      <div class="search-box">
+        <svg class="search-icon-inline" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          id="search-input"
+          type="search"
+          class="search-input"
+          placeholder="Search pages, guides, converters…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="search-close" class="search-close" type="button" aria-label="Close search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div id="search-results" class="search-results">
+        <p class="search-hint">Type to search the site…</p>
+      </div>
     </div>
   </div>
 </header>
@@ -182,7 +200,168 @@ const navItems = [
   .header-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* Search Toggle Button */
+  .search-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-light);
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .search-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .search-toggle:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  /* Search Overlay */
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 6rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+
+  .search-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .search-overlay-inner {
+    width: 100%;
+    max-width: 680px;
+    padding: 0 1.5rem;
+    transform: translateY(-16px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .search-overlay.show .search-overlay-inner {
+    transform: translateY(0);
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(14, 165, 233, 0.1);
+  }
+
+  .search-icon-inline {
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-light);
+    font-size: 1.05rem;
+    font-family: inherit;
+    caret-color: var(--accent);
+  }
+
+  .search-input::placeholder {
+    color: #4b5563;
+  }
+
+  .search-input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .search-close {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9ca3af;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  .search-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-light);
+  }
+
+  .search-results {
+    margin-top: 0.75rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .search-hint {
+    color: #4b5563;
+    font-size: 0.9rem;
+    margin: 0;
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #bfdbfe;
+    font-size: 0.95rem;
+    transition: all 0.15s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .search-result-item:hover {
+    background: rgba(14, 165, 233, 0.08);
+    color: #e5e7eb;
+    padding-left: 0.85rem;
+  }
+
+  .search-result-icon {
+    color: var(--accent);
     flex-shrink: 0;
   }
 
@@ -212,96 +391,6 @@ const navItems = [
     background: rgba(255, 255, 255, 0.12);
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-  }
-
-  /* Language Switcher */
-  .lang-switcher {
-    position: relative;
-  }
-
-  .lang-toggle {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: var(--text-light);
-    border-radius: 8px;
-    padding: 0 1rem;
-    height: 44px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
-  }
-
-  .lang-toggle:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  .lang-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    right: 0;
-    width: 340px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    z-index: 100;
-  }
-
-  .lang-dropdown.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  .lang-dropdown-header {
-    color: var(--text-light);
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
-  }
-
-  .lang-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0.75rem;
-  }
-
-  .lang-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #9ca3af;
-    text-decoration: none;
-    border-radius: 8px;
-    height: 44px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-
-  .lang-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-light);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .lang-item.active {
-    background: rgba(14, 165, 233, 0.1);
-    border-color: var(--accent);
-    color: var(--accent);
   }
 
   /* Responsive */
@@ -379,55 +468,100 @@ const navItems = [
       gap: 0.75rem;
     }
 
-    .theme-toggle {
+    .theme-toggle,
+    .search-toggle {
       padding: 0.5rem;
       width: 40px;
       height: 40px;
     }
 
-    .lang-toggle {
-      padding: 0 0.75rem;
-      height: 40px;
-    }
-
-    .lang-dropdown {
-      width: 300px;
-      right: -40px;
-    }
-
-    .lang-grid {
-      grid-template-columns: repeat(4, 1fr);
+    .search-overlay {
+      padding-top: 4rem;
     }
   }
 </style>
 
 <script>
-  const setupLangToggle = () => {
-    const langToggle = document.getElementById('lang-toggle');
-    const langDropdown = document.getElementById('lang-dropdown');
-    
-    if (langToggle && langDropdown) {
-      // Remove old listeners to prevent duplicates if executed multiple times
-      const newToggle = langToggle.cloneNode(true);
-      langToggle.parentNode?.replaceChild(newToggle, langToggle);
-      
-      const updatedToggle = document.getElementById('lang-toggle');
-      
-      updatedToggle?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isExpanded = updatedToggle.getAttribute('aria-expanded') === 'true';
-        updatedToggle.setAttribute('aria-expanded', String(!isExpanded));
-        langDropdown.classList.toggle('show');
-      });
+  (function setupSearch() {
+    // ── Site pages index ──────────────────────────────────────────────────────
+    const PAGES = [
+      { title: 'Home – GMT to EST Converter', url: '/', desc: 'Free real-time GMT to EST / EST to GMT converter' },
+      { title: 'GMT to EST Conversion', url: '/gmt-to-est/', desc: 'Convert Greenwich Mean Time to Eastern Standard Time' },
+      { title: 'EST to GMT Conversion', url: '/est-to-gmt/', desc: 'Convert Eastern Standard Time to Greenwich Mean Time' },
+      { title: 'GMT vs EST – Difference', url: '/gmt-vs-est/', desc: 'Understand the difference between GMT and EST time zones' },
+      { title: 'Time Zone Guide', url: '/time-zone-guide/', desc: 'Complete guide to world time zones' },
+      { title: 'About Us', url: '/about-us/', desc: 'Learn about GMT to EST Converter' },
+      { title: 'Contact', url: '/contact/', desc: 'Get in touch with us' },
+      { title: 'Privacy Policy', url: '/privacy-policy/', desc: 'Our privacy policy and data usage' },
+      { title: 'Terms of Service', url: '/terms-of-service/', desc: 'Terms and conditions of use' },
+      { title: 'Sitemap', url: '/sitemap/', desc: 'All pages on this website' },
+    ];
 
-      document.addEventListener('click', (e) => {
-        if (!langDropdown.contains(e.target) && !updatedToggle?.contains(e.target)) {
-          updatedToggle?.setAttribute('aria-expanded', 'false');
-          langDropdown.classList.remove('show');
-        }
-      });
+    const overlay    = document.getElementById('search-overlay');
+    const toggleBtn  = document.getElementById('search-toggle');
+    const closeBtn   = document.getElementById('search-close');
+    const input      = document.getElementById('search-input');
+    const resultsBox = document.getElementById('search-results');
+
+    if (!overlay || !toggleBtn || !closeBtn || !input || !resultsBox) return;
+
+    function openSearch() {
+      overlay.classList.add('show');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => input.focus(), 50);
+      renderResults('');
     }
-  };
 
-  setupLangToggle();
+    function closeSearch() {
+      overlay.classList.remove('show');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      input.value = '';
+    }
+
+    function renderResults(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        resultsBox.innerHTML = '<p class="search-hint">Type to search the site…</p>';
+        return;
+      }
+      const matches = PAGES.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.desc.toLowerCase().includes(q) ||
+        p.url.toLowerCase().includes(q)
+      );
+      if (!matches.length) {
+        resultsBox.innerHTML = '<p class="search-hint">No results found.</p>';
+        return;
+      }
+      resultsBox.innerHTML = matches.map(p => `
+        <a href="${p.url}" class="search-result-item">
+          <svg class="search-result-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <div>
+            <div style="font-weight:600;color:#e5e7eb;font-size:.9rem">${p.title}</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:2px">${p.desc}</div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    toggleBtn.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+
+    // Close on backdrop click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeSearch();
+    });
+
+    // Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('show')) closeSearch();
+    });
+
+    // Live filter
+    input.addEventListener('input', () => renderResults(input.value));
+  })();
 </script>
