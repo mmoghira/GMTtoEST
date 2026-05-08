@@ -1,12 +1,57 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getPageMeta } from "theme/i18n/config";
+import { getPageMeta, siteUrl } from "theme/i18n/config";
 
 const metaBase = getPageMeta("en", "contact");
 const meta = { ...metaBase, keywords: "contact gmt to est, contact GMTtoEST, support GMT to EST, feedback GMT to EST" };
+
+const pageUrl = `${siteUrl}/contact/`;
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "@id": `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: meta.title,
+    description: meta.description,
+    inLanguage: "en",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "GMT to EST Converter"
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Contact", item: pageUrl }
+      ]
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: "GMT to EST Converter",
+    url: siteUrl,
+    logo: `${siteUrl}/assets/logo.png`,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "hello@gmttoest.com",
+        availableLanguage: ["English"],
+        areaServed: "Worldwide"
+      }
+    ]
+  }
+];
 ---
 
 <BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug="contact" meta={meta}>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
   <section class="content" aria-labelledby="contact">
     <h1 id="contact">{meta.title}</h1>
     <p>We welcome feedback, translation help, and reports of issues. Use the contact options below.</p>
