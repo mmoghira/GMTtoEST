@@ -1,51 +1,61 @@
 (() => {
-  const easternZone = "America/New_York";
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => [...document.querySelectorAll(s)];
+  
+  const converterNode = qs("#converter");
+  const sourceZone = converterNode?.dataset.sourceZone || "UTC";
+  const targetZone = converterNode?.dataset.targetZone || "America/New_York";
+
   const state = {
-    mode: qs("#converter")?.dataset.startMode || document.body.dataset.mode || "gmt-est",
-    intent: qs("#converter")?.dataset.intent || "converter",
-    labels: JSON.parse(qs("#converter")?.dataset.labels || "{}"),
+    mode: converterNode?.dataset.startMode || document.body.dataset.mode || "gmt-est",
+    intent: converterNode?.dataset.intent || "converter",
+    labels: JSON.parse(converterNode?.dataset.labels || "{}"),
     use24: true,
     lastText: ""
   };
 
   const intentLabels = state.labels.variants || {};
+  
+  // Performance optimization: Cache Intl.DateTimeFormat instances
+  const formatters = { parts: {}, format: {}, compact: {}, short: {} };
+
+  function getFormatter(group, timeZone, options) {
+    const key = timeZone + "_" + state.use24;
+    if (!formatters[group][key]) {
+      formatters[group][key] = new Intl.DateTimeFormat("en-US", { timeZone, ...options });
+    }
+    return formatters[group][key];
+  }
 
   function parts(date, timeZone) {
+    const f = getFormatter("parts", timeZone, {
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hourCycle: "h23", timeZoneName: "short"
+    });
     const map = {};
-    new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-      timeZoneName: "short"
-    }).formatToParts(date).forEach((part) => { map[part.type] = part.value; });
+    f.formatToParts(date).forEach((part) => { map[part.type] = part.value; });
     return map;
   }
 
-  function zoneName(date) {
-    return parts(date, easternZone).timeZoneName || "ET";
+  function zoneName(date, zone = targetZone) {
+    return parts(date, zone).timeZoneName || "ET";
   }
 
-  function offsetMinutes(date) {
-    const p = parts(date, easternZone);
+  function offsetMinutes(date, zone = targetZone) {
+    const p = parts(date, zone);
     const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
     return Math.round((asUTC - date.getTime()) / 60000);
   }
 
-  function localEasternToUtc(value) {
+  function localToUtc(value, zone) {
     const [d, t] = value.split("T");
     const [year, month, day] = d.split("-").map(Number);
     const [hour, minute] = t.split(":").map(Number);
     const base = Date.UTC(year, month - 1, day, hour, minute);
-    let guess = base - offsetMinutes(new Date(base)) * 60000;
+    let guess = base - offsetMinutes(new Date(base), zone) * 60000;
     for (let i = 0; i < 4; i += 1) {
-      guess = base - offsetMinutes(new Date(guess)) * 60000;
+      guess = base - offsetMinutes(new Date(guess), zone) * 60000;
     }
     return new Date(guess);
   }
@@ -53,57 +63,45 @@
   function parseInput() {
     const value = qs("#datetime").value;
     if (!value) return null;
-    if (state.mode === "gmt-est") return new Date(`${value}:00Z`);
-    return localEasternToUtc(value);
+    const currentInputZone = state.mode === "gmt-est" ? sourceZone : targetZone;
+    if (currentInputZone === "UTC") return new Date(value + ":00Z");
+    return localToUtc(value, currentInputZone);
   }
 
   function format(date, timeZone) {
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone,
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: !state.use24,
-      timeZoneName: "short"
-    }).format(date);
+    const f = getFormatter("format", timeZone, {
+      weekday: "short", year: "numeric", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: !state.use24, timeZoneName: "short"
+    });
+    return f.format(date);
   }
 
   function compact(date, timeZone) {
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone,
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: !state.use24,
-      timeZoneName: "short"
-    }).format(date);
+    const f = getFormatter("compact", timeZone, {
+      hour: "numeric", minute: "2-digit", second: "2-digit",
+      hour12: !state.use24, timeZoneName: "short"
+    });
+    return f.format(date);
   }
 
   function setInputFromDate(date, zone) {
-    const p = zone === "UTC" ? parts(date, "UTC") : parts(date, easternZone);
-    qs("#datetime").value = `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+    const p = parts(date, zone);
+    qs("#datetime").value = p.year + "-" + p.month + "-" + p.day + "T" + p.hour + ":" + p.minute;
   }
 
   function explain(date) {
-    const offset = offsetMinutes(date);
-    const hours = Math.abs(offset / 60);
-    const z = zoneName(date);
-    return `${z} is ${hours} hours behind GMT on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.`;
+    const diffHours = Math.abs((offsetMinutes(date, targetZone) - offsetMinutes(date, sourceZone)) / 60);
+    const z1 = zoneName(date, sourceZone);
+    const z2 = zoneName(date, targetZone);
+    return z2 + " is " + diffHours + " hours difference from " + z1 + " on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.";
   }
 
   function shortFormat(date, timeZone) {
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone,
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: !state.use24,
-      timeZoneName: "short"
-    }).format(date);
+    const f = getFormatter("short", timeZone, {
+      month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+      hour12: !state.use24, timeZoneName: "short"
+    });
+    return f.format(date);
   }
 
   function setText(selector, text) {
@@ -114,64 +112,90 @@
   function convert() {
     const date = parseInput();
     if (!date || Number.isNaN(date.getTime())) return;
-    const target = state.mode === "gmt-est" ? easternZone : "UTC";
-    const source = state.mode === "gmt-est" ? "UTC" : easternZone;
-    const label = state.mode === "gmt-est" ? "Eastern Time" : "GMT";
-    const easternLabel = format(date, easternZone);
-    const gmtLabel = format(date, "UTC");
+    const target = state.mode === "gmt-est" ? targetZone : sourceZone;
+    const source = state.mode === "gmt-est" ? sourceZone : targetZone;
+    
+    const easternLabel = format(date, targetZone);
+    const gmtLabel = format(date, sourceZone);
+    const diffHours = Math.abs((offsetMinutes(date, targetZone) - offsetMinutes(date, sourceZone)) / 60);
+
+    const modeLabels = intentLabels[state.intent] || intentLabels.converter || {};
+    const specificModeLabels = modeLabels[state.mode] || modeLabels["gmt-est"] || {};
+    const label = specificModeLabels.target || (state.mode === "gmt-est" ? "Target" : "Source");
+
     if (state.intent === "difference") {
-      state.lastText = `GMT: ${gmtLabel} | ${state.labels.eastern || "Eastern"}: ${easternLabel} | ${explain(date)}`;
+      state.lastText = zoneName(date, sourceZone) + ": " + gmtLabel + " | " + zoneName(date, targetZone) + ": " + easternLabel + " | " + explain(date);
     } else if (state.intent === "guide") {
-      state.lastText = `${state.labels.meetingPlanner || "Meeting planner"}: ${gmtLabel} ${state.labels.is || "is"} ${easternLabel}`;
+      state.lastText = (state.labels.meetingPlanner || "Meeting planner") + ": " + gmtLabel + " " + (state.labels.is || "is") + " " + easternLabel;
     } else {
-      state.lastText = `${label}: ${format(date, target)}`;
+      state.lastText = label + ": " + format(date, target);
     }
+    
     const result = qs("#result");
     result.textContent = state.intent === "difference"
-      ? `${Math.abs(offsetMinutes(date) / 60)} ${state.labels.hoursBehindGmt || "hours behind GMT"}`
+      ? diffHours + " " + (state.labels.hoursBehindGmt || "hours difference")
       : shortFormat(date, target);
+    
     result.classList.remove("pulse");
     result.offsetWidth;
     result.classList.add("pulse");
+    
     setText("#sourcePreview", shortFormat(date, source));
     setText("#difference", state.intent === "guide"
-      ? `${state.labels.bestForScheduling || "Best for scheduling"}: ${gmtLabel} ${state.labels.convertsTo || "converts to"} ${easternLabel}. ${explain(date)}`
+      ? (state.labels.bestForScheduling || "Best for scheduling") + ": " + gmtLabel + " " + (state.labels.convertsTo || "converts to") + " " + easternLabel + ". " + explain(date)
       : explain(date));
-    setText("#offsetBadge", `${Math.abs(offsetMinutes(date) / 60)}h difference - ${zoneName(date)}`);
+    setText("#offsetBadge", diffHours + "h difference - " + zoneName(date, targetZone));
   }
 
   function tick() {
     const now = new Date();
-    qs("#gmtClock").textContent = compact(now, "UTC");
-    qs("#estClock").textContent = compact(now, easternZone);
-    qs("#estZone").textContent = zoneName(now);
+    // Cache variables to prevent heavy DOM queries if not needed
+    const gmtClock = qs("#gmtClock");
+    const estClock = qs("#estClock");
+    const estZone = qs("#estZone");
+    
+    if (gmtClock) gmtClock.textContent = compact(now, sourceZone);
+    if (estClock) estClock.textContent = compact(now, targetZone);
+    if (estZone) estZone.textContent = zoneName(now, targetZone);
   }
 
   function buildTable() {
     const tbody = qs("#timeTable tbody");
     if (!tbody) return;
     const today = new Date();
-    const p = parts(today, "UTC");
-    tbody.innerHTML = "";
+    const p = parts(today, sourceZone);
+    // Use DocumentFragment to optimize DOM writes
+    const fragment = document.createDocumentFragment();
     for (let h = 0; h < 24; h += 1) {
-      const date = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, 0));
+      let rowDate;
+      if (sourceZone === "UTC") {
+        rowDate = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, 0));
+      } else {
+        rowDate = localToUtc(p.year + "-" + p.month + "-" + p.day + "T" + String(h).padStart(2, '0') + ":00", sourceZone);
+      }
+      const diffHours = Math.abs((offsetMinutes(rowDate, targetZone) - offsetMinutes(rowDate, sourceZone)) / 60);
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${String(h).padStart(2, "0")}:00 GMT</td><td>${format(date, easternZone)}</td><td>${Math.abs(offsetMinutes(date) / 60)} hours behind</td>`;
-      tbody.appendChild(tr);
+      tr.innerHTML = "<td>" + String(h).padStart(2, "0") + ":00 " + zoneName(rowDate, sourceZone) + "</td><td>" + format(rowDate, targetZone) + "</td><td>" + diffHours + " hours diff</td>";
+      fragment.appendChild(tr);
     }
+    tbody.innerHTML = "";
+    tbody.appendChild(fragment);
   }
 
   function buildStrip() {
     const strip = qs("#timeStrip");
     if (!strip) return;
-    strip.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    const currentZoneName = zoneName(new Date(), sourceZone);
     for (let h = 0; h < 24; h += 1) {
       const cell = document.createElement("span");
       const isOverlap = h >= 13 && h <= 18;
       cell.className = isOverlap ? "overlap" : "";
-      cell.innerHTML = `<b>${String(h).padStart(2, "0")}:00</b><small>GMT</small>`;
-      strip.appendChild(cell);
+      cell.innerHTML = "<b>" + String(h).padStart(2, "0") + ":00</b><small>" + currentZoneName + "</small>";
+      fragment.appendChild(cell);
     }
+    strip.innerHTML = "";
+    strip.appendChild(fragment);
   }
 
   function applyMode(mode) {
@@ -179,9 +203,10 @@
     if (state.intent === "difference" || state.intent === "guide") state.mode = "gmt-est";
     document.body.dataset.mode = mode;
     qsa(".mode").forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
-    const labels = intentLabels[state.intent] || intentLabels.converter;
+    
+    const labels = intentLabels[state.intent] || intentLabels.converter || {};
     if (state.intent === "converter") {
-      const modeLabels = labels[state.mode] || labels["gmt-est"];
+      const modeLabels = labels[state.mode] || labels["gmt-est"] || {};
       setText("#converterHeading", modeLabels.heading);
       setText("#inputZoneName", modeLabels.input);
       setText("#sourceZone", modeLabels.source);
@@ -192,7 +217,32 @@
       setText("#sourceZone", labels.source);
       setText("#outputZoneName", labels.target);
     }
-    setInputFromDate(new Date(), state.mode === "gmt-est" ? "UTC" : easternZone);
+    
+    // Quick hack to override hardcoded labels for dynamic pages
+    if (sourceZone !== "UTC" || targetZone !== "America/New_York") {
+      const sourceAbbr = zoneName(new Date(), sourceZone);
+      const targetAbbr = zoneName(new Date(), targetZone);
+      if (state.mode === "gmt-est") {
+        setText("#inputZoneName", sourceAbbr + " time");
+        setText("#sourceZone", sourceAbbr);
+        setText("#outputZoneName", targetAbbr);
+      } else {
+        setText("#inputZoneName", targetAbbr + " time");
+        setText("#sourceZone", targetAbbr);
+        setText("#outputZoneName", sourceAbbr);
+      }
+      qsa(".mode[data-mode='gmt-est'] b").forEach(b => b.textContent = sourceAbbr);
+      qsa(".mode[data-mode='gmt-est'] small").forEach(b => b.textContent = "to " + targetAbbr);
+      qsa(".mode[data-mode='est-gmt'] b").forEach(b => b.textContent = targetAbbr);
+      qsa(".mode[data-mode='est-gmt'] small").forEach(b => b.textContent = "to " + sourceAbbr);
+      const clockCards = qsa(".clock-card span");
+      if (clockCards.length >= 3) {
+        clockCards[1].textContent = "Current " + sourceAbbr;
+        clockCards[2].textContent = "Current " + targetAbbr;
+      }
+    }
+
+    setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);
     convert();
   }
 
@@ -226,7 +276,13 @@
 
   function init() {
     initTheme();
-    initReveal();
+    // Use requestIdleCallback or setTimeout to defer non-critical initialization
+    setTimeout(() => {
+      initReveal();
+      buildTable();
+      buildStrip();
+    }, 100);
+
     qs("#datetime")?.addEventListener("input", convert);
     qs("#formatToggle")?.addEventListener("change", (event) => {
       state.use24 = event.target.checked;
@@ -235,7 +291,7 @@
       buildTable();
     });
     qs("#now")?.addEventListener("click", () => {
-      setInputFromDate(new Date(), state.mode === "gmt-est" ? "UTC" : easternZone);
+      setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);
       convert();
     });
     qs("#swap")?.addEventListener("click", () => {
@@ -249,19 +305,31 @@
       setTimeout(() => { button.textContent = original; }, 1100);
     });
     qsa(".mode").forEach((button) => button.addEventListener("click", () => applyMode(button.dataset.mode)));
-    qsa("[data-preset]").forEach((button) => button.addEventListener("click", () => {
-      const now = new Date();
-      const hour = button.dataset.preset === "trading" ? 13 : button.dataset.preset === "event" ? 18 : 15;
-      const p = parts(now, "UTC");
-      setInputFromDate(new Date(Date.UTC(+p.year, +p.month - 1, +p.day, hour, 0)), "UTC");
-      applyMode(state.intent === "reverse" ? "est-gmt" : "gmt-est");
-    }));
+    qsa("[data-preset]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const now = new Date();
+        const hour = button.dataset.preset === "trading" ? 13 : button.dataset.preset === "event" ? 18 : 15;
+        const p = parts(now, sourceZone);
+        let rowDate;
+        if (sourceZone === "UTC") {
+          rowDate = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, hour, 0));
+        } else {
+          rowDate = localToUtc(p.year + "-" + p.month + "-" + p.day + "T" + String(hour).padStart(2, '0') + ":00", sourceZone);
+        }
+        setInputFromDate(rowDate, sourceZone);
+        applyMode(state.intent === "reverse" ? "est-gmt" : "gmt-est");
+      });
+    });
+    
     applyMode(state.mode);
-    buildTable();
-    buildStrip();
     tick();
     setInterval(tick, 1000);
   }
 
-  init();
+  // Defer init slightly to improve LCP
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
