@@ -1,0 +1,47 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts
+    .filter(post => post.id.startsWith("en/"))
+    .map(post => {
+      const slug = post.id.split('/').slice(1).join('/');
+      return {
+        params: { slug },
+        props: { post },
+      };
+    });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const meta = {
+  title: post.data.title,
+  description: post.data.description,
+};
+---
+
+<BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
+  <article class="content blog-post" aria-labelledby="post-title">
+    <header style="margin-bottom: 2rem;">
+      <h1 id="post-title">{post.data.title}</h1>
+      <div style="display: flex; gap: 1rem; color: var(--text-light); font-size: 0.9rem;">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {post.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+        </time>
+        {post.data.author && <span>By {post.data.author}</span>}
+      </div>
+    </header>
+    
+    <div class="prose" style="max-width: 800px;">
+      <Content />
+    </div>
+    
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+      <a href="/blog/">&larr; Back to Blog</a>
+    </footer>
+  </article>
+</BaseLayout>

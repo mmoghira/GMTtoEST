@@ -1,16 +1,42 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { getPageMeta, siteUrl } from "theme/i18n/config";
+import { getCollection } from "astro:content";
 
 const metaBase = getPageMeta("en", "home"); // fallback
 const meta = { title: "Blog - GMT to EST", description: "Read the latest updates and articles about GMT and EST timezone conversions." };
 
 const pageUrl = `${siteUrl}/blog/`;
+
+const allPosts = await getCollection("blog");
+const posts = allPosts
+  .filter(post => post.id.startsWith("en/"))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
 <BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug="blog" meta={meta}>
   <section class="content" aria-labelledby="blog-title">
     <h1 id="blog-title">Blog</h1>
-    <p>Articles and guides are coming soon. Please check back later!</p>
+    <p>Read the latest updates, guides, and articles about GMT and EST timezones.</p>
+    
+    <div class="blog-grid" style="display: grid; gap: 2rem; margin-top: 2rem;">
+      {posts.length === 0 ? (
+        <p>No articles published yet. Check back soon!</p>
+      ) : (
+        posts.map(post => {
+          const slug = post.id.split('/').slice(1).join('/');
+          return (
+            <article class="blog-card" style="border: 1px solid var(--line); border-radius: 8px; padding: 1.5rem;">
+              <h2><a href={`/blog/${slug}/`} style="text-decoration: none; color: var(--accent);">{post.data.title}</a></h2>
+              <time datetime={post.data.pubDate.toISOString()} style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem; display: block;">
+                {post.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </time>
+              <p>{post.data.description}</p>
+              <a href={`/blog/${slug}/`} style="font-weight: 600;">Read more &rarr;</a>
+            </article>
+          );
+        })
+      )}
+    </div>
   </section>
 </BaseLayout>

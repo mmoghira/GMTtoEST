@@ -1,0 +1,70 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+import { languages, getLang } from "theme/i18n/config";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  const paths = [];
+  
+  languages.filter(l => l.code !== "en").forEach(lang => {
+    // First find localized posts for this language
+    const langPosts = posts.filter(post => post.id.startsWith(`${lang.code}/`));
+    
+    if (langPosts.length > 0) {
+      langPosts.forEach(post => {
+        const slug = post.id.split('/').slice(1).join('/');
+        paths.push({ params: { lang: lang.code, slug }, props: { post, actualLang: lang.code } });
+      });
+    } else {
+      // Fallback to English posts
+      const enPosts = posts.filter(post => post.id.startsWith("en/"));
+      enPosts.forEach(post => {
+        const slug = post.id.split('/').slice(1).join('/');
+        paths.push({ params: { lang: lang.code, slug }, props: { post, actualLang: "en" } });
+      });
+    }
+  });
+  
+  return paths;
+}
+
+const { lang: paramLang } = Astro.params;
+const { post, actualLang } = Astro.props;
+const { Content } = await render(post);
+
+const langObj = getLang(paramLang);
+
+const meta = {
+  title: post.data.title,
+  description: post.data.description,
+};
+---
+
+<BaseLayout lang={langObj.code} dir={langObj.dir} title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
+  <article class="content blog-post" aria-labelledby="post-title">
+    {actualLang === "en" && langObj.code !== "en" && (
+      <div style="background: var(--panel); border: 1px solid var(--accent); border-radius: 6px; padding: 1rem; margin-bottom: 2rem;">
+        <p style="margin: 0; font-size: 0.9rem;"><em>Note: This article has not yet been translated and is currently available in English.</em></p>
+      </div>
+    )}
+    
+    <header style="margin-bottom: 2rem;">
+      <h1 id="post-title">{post.data.title}</h1>
+      <div style="display: flex; gap: 1rem; color: var(--text-light); font-size: 0.9rem;">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {post.data.pubDate.toLocaleDateString(langObj.code, { year: "numeric", month: "long", day: "numeric" })}
+        </time>
+        {post.data.author && <span>By {post.data.author}</span>}
+      </div>
+    </header>
+    
+    <div class="prose" style="max-width: 800px;">
+      <Content />
+    </div>
+    
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+      <a href={`/${langObj.code}/blog/`}>&larr; Back to Blog</a>
+    </footer>
+  </article>
+</BaseLayout>

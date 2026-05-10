@@ -9,5 +9,15 @@ const topics = defineCollection({
     order: z.number()
   })
 });
+const blog = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    author: z.string().optional(),
+    image: z.string().optional(),
+  })
+});
 
-export const collections = { topics };
+export const collections = { topics, blog };
