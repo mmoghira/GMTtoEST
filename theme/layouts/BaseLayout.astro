@@ -30,104 +30,102 @@ const navItems = [
 
 const isHome = slug === "";
 
-const schema = [
-  // ── 1. WebSite (enables Sitelinks Searchbox & site identity) ──────────────
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": `${siteUrl}/#website`,
-    url: siteUrl,
-    name: "GMT to EST Converter",
-    alternateName: "GMTtoEST",
-    description: "Free, accurate GMT to EST and EST to GMT timezone converter. Accounts for daylight saving time.",
-    inLanguage: languages.map(l => l.code),
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${siteUrl}/?q={search_term_string}`
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    // ── 1. WebSite (enables Sitelinks Searchbox & site identity) ──────────────
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "GMT to EST Converter",
+      alternateName: "GMTtoEST",
+      description: "Free, accurate GMT to EST and EST to GMT timezone converter. Accounts for daylight saving time.",
+      inLanguage: languages.map(l => l.code),
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${siteUrl}/?q={search_term_string}`
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+
+    // ── 2. Organization ────────────────────────────────────────────────────────
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "GMT to EST Converter",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        "@id": `${siteUrl}/#logo`,
+        url: `${siteUrl}/logo.svg`,
+        width: 512,
+        height: 512,
+        caption: "GMT to EST Converter"
       },
-      "query-input": "required name=search_term_string"
-    }
-  },
-
-  // ── 2. Organization ────────────────────────────────────────────────────────
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": `${siteUrl}/#organization`,
-    name: "GMT to EST Converter",
-    url: siteUrl,
-    logo: {
-      "@type": "ImageObject",
-      "@id": `${siteUrl}/#logo`,
-      url: `${siteUrl}/logo.svg`,
-      width: 512,
-      height: 512,
-      caption: "GMT to EST Converter"
+      image: { "@id": `${siteUrl}/#logo` },
+      description: "Free timezone converter and guide for GMT and Eastern Standard Time (EST/EDT).",
+      foundingDate: "2024",
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "gmttoestconverter@gmail.com",
+        availableLanguage: languages.map(l => l.code),
+        areaServed: "Worldwide"
+      }
     },
-    image: { "@id": `${siteUrl}/#logo` },
-    description: "Free timezone converter and guide for GMT and Eastern Standard Time (EST/EDT).",
-    foundingDate: "2024",
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "customer support",
-      email: "gmttoestconverter@gmail.com",
-      availableLanguage: languages.map(l => l.code),
-      areaServed: "Worldwide"
-    }
-  },
 
-  // ── 3. WebApplication (per-page) ───────────────────────────────────────────
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "@id": `${canonical}#app`,
-    name: title,
-    url: canonical,
-    description,
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Any",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD"
+    // ── 3. WebApplication (per-page) ───────────────────────────────────────────
+    {
+      "@type": "WebApplication",
+      "@id": `${canonical}#app`,
+      name: title,
+      url: canonical,
+      description,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD"
+      },
+      featureList: [
+        "GMT to EST conversion",
+        "EST to GMT conversion",
+        "Daylight Saving Time aware",
+        "Multi-language support"
+      ],
+      isPartOf: { "@id": `${siteUrl}/#website` },
+      author: { "@id": `${siteUrl}/#organization` }
     },
-    featureList: [
-      "GMT to EST conversion",
-      "EST to GMT conversion",
-      "Daylight Saving Time aware",
-      "Multi-language support"
-    ],
-    isPartOf: { "@id": `${siteUrl}/#website` },
-    author: { "@id": `${siteUrl}/#organization` }
-  },
 
-  // ── 4. BreadcrumbList (per-page) ───────────────────────────────────────────
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "@id": `${canonical}#breadcrumb`,
-    itemListElement: isHome
-      ? [{ "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` }]
-      : [
-          { "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` },
-          { "@type": "ListItem", position: 2, name: title, item: canonical }
-        ]
-  },
+    // ── 4. BreadcrumbList (per-page) ───────────────────────────────────────────
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonical}#breadcrumb`,
+      itemListElement: isHome
+        ? [{ "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` }]
+        : [
+            { "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` },
+            { "@type": "ListItem", position: 2, name: title, item: canonical }
+          ]
+    },
 
-  // ── 5. FAQPage (homepage only) ─────────────────────────────────────────────
-  ...(isHome && t.faqs?.items?.length ? [{
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "@id": `${canonical}#faq`,
-    mainEntity: t.faqs.items.map((item: any) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a }
-    }))
-  }] : [])
-];
+    // ── 5. FAQPage (homepage only) ─────────────────────────────────────────────
+    ...(isHome && t.faqs?.items?.length ? [{
+      "@type": "FAQPage",
+      "@id": `${canonical}#faq`,
+      mainEntity: t.faqs.items.map((item: any) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a }
+      }))
+    }] : [])
+  ]
+};
 ---
 
 <!doctype html>
