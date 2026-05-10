@@ -7,6 +7,9 @@ export default defineConfig({
   site: process.env.SITE_URL || "https://www.gmttoestconverter.com",
   trailingSlash: "always",
   output: "static",
+  build: {
+    inlineStylesheets: "always"
+  },
   adapter: vercel({
     webAnalytics: {
       enabled: true,

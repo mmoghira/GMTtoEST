@@ -137,8 +137,11 @@
       : shortFormat(date, target);
     
     result.classList.remove("pulse");
-    result.offsetWidth;
-    result.classList.add("pulse");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        result.classList.add("pulse");
+      });
+    });
     
     setText("#sourcePreview", shortFormat(date, source));
     setText("#difference", state.intent === "guide"
