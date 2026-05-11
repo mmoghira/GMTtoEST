@@ -6,6 +6,7 @@ async function generateLogos() {
     try {
         const svgPath = path.join(__dirname, '..', 'public', 'logo.svg');
         const assetsPath = path.join(__dirname, '..', 'assets');
+        const publicAssetsPath = path.join(__dirname, '..', 'public', 'assets');
 
         // Read SVG
         const svgBuffer = fs.readFileSync(svgPath);
@@ -53,6 +54,30 @@ async function generateLogos() {
             .toFile(path.join(assetsPath, 'favicon-192.png'));
 
         console.log('✓ Generated favicon-192.png (192x192)');
+
+        const illustrations = [
+            { name: 'timeflow-hero', widths: [480, 960] },
+            { name: 'clock-visual', widths: [450, 900] },
+            { name: 'world-time-map', widths: [600, 1200] },
+        ];
+
+        for (const illustration of illustrations) {
+            const source = path.join(publicAssetsPath, `${illustration.name}.svg`);
+
+            for (const width of illustration.widths) {
+                await sharp(source)
+                    .resize({ width })
+                    .avif({ quality: 58 })
+                    .toFile(path.join(publicAssetsPath, `${illustration.name}-${width}.avif`));
+
+                await sharp(source)
+                    .resize({ width })
+                    .webp({ quality: 82 })
+                    .toFile(path.join(publicAssetsPath, `${illustration.name}-${width}.webp`));
+            }
+
+            console.log(`✓ Generated responsive AVIF/WebP assets for ${illustration.name}`);
+        }
 
         console.log('\nAll logo files generated successfully!');
     } catch (error) {
