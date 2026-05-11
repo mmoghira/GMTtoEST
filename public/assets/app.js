@@ -279,12 +279,13 @@
 
   function init() {
     initTheme();
-    // Use requestIdleCallback or setTimeout to defer non-critical initialization
-    setTimeout(() => {
+    // Defer below-the-fold work so LCP can render before table/timeline DOM work.
+    const scheduleIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 1200));
+    scheduleIdle(() => {
       initReveal();
       buildTable();
       buildStrip();
-    }, 100);
+    }, { timeout: 2500 });
 
     qs("#datetime")?.addEventListener("input", convert);
     qs("#formatToggle")?.addEventListener("change", (event) => {

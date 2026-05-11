@@ -183,8 +183,11 @@
       ? `${Math.abs(offsetMinutes(date) / 60)} ${state.labels.hoursBehindGmt || "hours behind GMT"}`
       : shortFormat(date, target);
     result.classList.remove("pulse");
-    result.offsetWidth;
-    result.classList.add("pulse");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        result.classList.add("pulse");
+      });
+    });
     setText("#sourcePreview", shortFormat(date, source));
     setText("#difference", state.intent === "guide"
       ? `${state.labels.bestForScheduling || "Best for scheduling"}: ${gmtLabel} ${state.labels.convertsTo || "converts to"} ${easternLabel}. ${explain(date)}`
