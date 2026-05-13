@@ -39,6 +39,7 @@ const meta = {
   title: post.data.title,
   description: post.data.description,
 };
+const sources = post.data.sources || [];
 ---
 
 <BaseLayout lang={langObj.code} dir={langObj.dir} title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
@@ -62,9 +63,40 @@ const meta = {
     <div class="prose" style="max-width: 800px;">
       <Content />
     </div>
+
+    {sources.length > 0 && (
+      <section class="article-sources" aria-labelledby="article-sources">
+        <h2 id="article-sources">Sources</h2>
+        <ol>
+          {sources.map((source) => (
+            <li>
+              <a href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a>
+              {source.publisher && <span> - {source.publisher}</span>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
     
     <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line);">
       <a href={`/${langObj.code}/blog/`}>&larr; Back to Blog</a>
     </footer>
   </article>
 </BaseLayout>
+
+<style>
+  .article-sources {
+    max-width: 800px;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .article-sources h2 {
+    margin-top: 0;
+  }
+
+  .article-sources li {
+    margin: 0.5rem 0;
+  }
+</style>

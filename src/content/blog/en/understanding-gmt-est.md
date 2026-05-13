@@ -3,6 +3,16 @@ title: "Understanding the Difference Between GMT and EST"
 description: "A comprehensive guide on how Greenwich Mean Time and Eastern Standard Time relate to each other, especially during Daylight Saving Time."
 pubDate: 2024-05-10
 author: "GMT to EST Team"
+sources:
+  - title: "Local Time FAQs"
+    publisher: "National Institute of Standards and Technology"
+    url: "https://www.nist.gov/pml/time-and-frequency-division/local-time-faqs"
+  - title: "Daylight Saving Time Rules"
+    publisher: "National Institute of Standards and Technology"
+    url: "https://www.nist.gov/pml/time-and-frequency-division/popular-links/daylight-saving-time-dst"
+  - title: "Time zone and daylight saving time data"
+    publisher: "IANA Time Zone Database"
+    url: "https://data.iana.org/time-zones/tzdb/tz-link.html"
 ---
 
 # Understanding the Difference Between GMT and EST
