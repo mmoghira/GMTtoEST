@@ -47,6 +47,7 @@ const securityRoutes = [
     headers: {
       "content-security-policy": contentSecurityPolicy,
       "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN",
     },
     continue: true,
   },
