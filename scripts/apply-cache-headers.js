@@ -48,6 +48,7 @@ const securityRoutes = [
       "content-security-policy": contentSecurityPolicy,
       "x-content-type-options": "nosniff",
       "x-frame-options": "SAMEORIGIN",
+      "referrer-policy": "strict-origin-when-cross-origin",
     },
     continue: true,
   },
