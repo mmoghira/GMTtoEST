@@ -9,7 +9,22 @@ if (!fs.existsSync(configPath)) {
 }
 
 const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+const securityHeadersSource = "^/(.*)$";
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'self'",
+  "script-src 'self' 'unsafe-inline' https://www.clarity.ms https://*.clarity.ms https://va.vercel-scripts.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://www.clarity.ms https://*.clarity.ms",
+  "font-src 'self' data:",
+  "connect-src 'self' https://www.clarity.ms https://*.clarity.ms https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+  "form-action 'self' https://formsubmit.co",
+  "upgrade-insecure-requests",
+].join("; ");
 const managedSources = new Set([
+  securityHeadersSource,
   "^/index\\.php/?$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
@@ -23,6 +38,16 @@ const redirectRoutes = [
       Location: "/",
     },
     status: 301,
+  },
+];
+
+const securityRoutes = [
+  {
+    src: securityHeadersSource,
+    headers: {
+      "content-security-policy": contentSecurityPolicy,
+    },
+    continue: true,
   },
 ];
 
@@ -59,14 +84,21 @@ const withRedirects = [
   ...redirectRoutes,
   ...filteredRoutes.slice(redirectIndex),
 ];
-const fallbackIndex = withRedirects.findIndex((route) => route.status === 404);
-const insertIndex = fallbackIndex === -1 ? withRedirects.length : fallbackIndex;
+const filesystemIndex = withRedirects.findIndex((route) => route.handle === "filesystem");
+const securityInsertIndex = filesystemIndex === -1 ? withRedirects.length : filesystemIndex;
+const withSecurityHeaders = [
+  ...withRedirects.slice(0, securityInsertIndex),
+  ...securityRoutes,
+  ...withRedirects.slice(securityInsertIndex),
+];
+const fallbackIndex = withSecurityHeaders.findIndex((route) => route.status === 404);
+const insertIndex = fallbackIndex === -1 ? withSecurityHeaders.length : fallbackIndex;
 
 config.routes = [
-  ...withRedirects.slice(0, insertIndex),
+  ...withSecurityHeaders.slice(0, insertIndex),
   ...cacheRoutes,
-  ...withRedirects.slice(insertIndex),
+  ...withSecurityHeaders.slice(insertIndex),
 ];
 
 fs.writeFileSync(configPath, `${JSON.stringify(config, null, "\t")}\n`);
-console.log("Applied cache headers to .vercel/output/config.json");
+console.log("Applied security and cache headers to .vercel/output/config.json");
