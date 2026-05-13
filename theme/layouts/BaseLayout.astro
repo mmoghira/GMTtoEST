@@ -12,9 +12,10 @@ type Props = {
   slug?: string;
   mode?: string;
   meta?: any;
+  enableFaqSchema?: boolean;
 };
 
-const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {} } = Astro.props;
+const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false } = Astro.props;
 const t = getTranslation(lang);
 const canonical = `${siteUrl}${pageUrl(lang, slug)}`;
 const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
@@ -114,8 +115,8 @@ const schema = {
           ]
     },
 
-    // ── 5. FAQPage (homepage only) ─────────────────────────────────────────────
-    ...(isHome && t.faqs?.items?.length ? [{
+    // ── 5. FAQPage (pages with a visible FAQ section) ─────────────────────────
+    ...(enableFaqSchema && t.faqs?.items?.length ? [{
       "@type": "FAQPage",
       "@id": `${canonical}#faq`,
       mainEntity: t.faqs.items.map((item: any) => ({
