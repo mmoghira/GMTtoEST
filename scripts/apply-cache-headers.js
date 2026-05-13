@@ -46,6 +46,7 @@ const securityRoutes = [
     src: securityHeadersSource,
     headers: {
       "content-security-policy": contentSecurityPolicy,
+      "x-content-type-options": "nosniff",
     },
     continue: true,
   },
