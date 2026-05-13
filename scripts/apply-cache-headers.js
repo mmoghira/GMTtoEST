@@ -10,10 +10,21 @@ if (!fs.existsSync(configPath)) {
 
 const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 const managedSources = new Set([
+  "^/index\\.php/?$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
   "^/(.*\\.(?:html|xml|txt|json))$",
 ]);
+
+const redirectRoutes = [
+  {
+    src: "^/index\\.php/?$",
+    headers: {
+      Location: "/",
+    },
+    status: 301,
+  },
+];
 
 const cacheRoutes = [
   {
@@ -41,13 +52,20 @@ const cacheRoutes = [
 
 const routes = Array.isArray(config.routes) ? config.routes : [];
 const filteredRoutes = routes.filter((route) => !managedSources.has(route.src));
-const fallbackIndex = filteredRoutes.findIndex((route) => route.status === 404);
-const insertIndex = fallbackIndex === -1 ? filteredRoutes.length : fallbackIndex;
+const wellKnownIndex = filteredRoutes.findIndex((route) => route.src === "^/\\.well-known(?:/.*)?$");
+const redirectIndex = wellKnownIndex === -1 ? 0 : wellKnownIndex + 1;
+const withRedirects = [
+  ...filteredRoutes.slice(0, redirectIndex),
+  ...redirectRoutes,
+  ...filteredRoutes.slice(redirectIndex),
+];
+const fallbackIndex = withRedirects.findIndex((route) => route.status === 404);
+const insertIndex = fallbackIndex === -1 ? withRedirects.length : fallbackIndex;
 
 config.routes = [
-  ...filteredRoutes.slice(0, insertIndex),
+  ...withRedirects.slice(0, insertIndex),
   ...cacheRoutes,
-  ...filteredRoutes.slice(insertIndex),
+  ...withRedirects.slice(insertIndex),
 ];
 
 fs.writeFileSync(configPath, `${JSON.stringify(config, null, "\t")}\n`);
