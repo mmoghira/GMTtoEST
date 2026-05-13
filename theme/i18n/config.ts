@@ -103,7 +103,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
     const { from, to } = pageContext;
     return {
       title: `${from} to ${to} Converter`,
-      description: `Convert ${from} to ${to} instantly. Automatic daylight saving time handling, live clocks, and meeting planner.`,
+      description: `Use this ${from} to ${to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.`,
       keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`
     };
   }
