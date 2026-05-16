@@ -72,21 +72,141 @@ const faq = {
     ["Is GMT always 5 hours ahead of EST?", "GMT is 5 hours ahead of EST, but only 4 hours ahead of EDT during daylight saving time."],
     ["Does this converter handle daylight saving time?", "Yes. The calculator uses the America/New_York time zone, so it shows EST or EDT based on the selected date."],
     ["What is the best time to call from GMT to EST?", "For standard office hours, 14:00 to 17:00 GMT often overlaps with 9:00 to 12:00 Eastern Time, changing by one hour during DST."]
+  ],
+  es: [
+    ["¿Qué es GMT?", "GMT, o Hora del Meridiano de Greenwich, es el estándar de tiempo de referencia en UTC+0."],
+    ["¿Qué es EST?", "EST significa Hora Estándar del Este, UTC-5. En verano muchas zonas del Este usan EDT, que es UTC-4."],
+    ["¿GMT siempre está 5 horas adelante de EST?", "GMT está 5 horas adelante de EST, pero solo 4 horas adelante de EDT durante el horario de verano."],
+    ["¿Este convertidor maneja el horario de verano?", "Sí. El calculador usa la zona America/New_York y muestra EST o EDT según la fecha seleccionada."],
+    ["¿Cuál es la mejor hora para llamar de GMT a EST?", "Para horario de oficina estándar, de 14:00 a 17:00 GMT suele coincidir con 9:00 a 12:00 hora del Este, cambiando una hora en horario de verano."]
+  ],
+  zh: [
+    ["什么是 GMT？", "GMT 即格林威治标准时间，是 UTC+0 的时间参考标准。"],
+    ["什么是 EST？", "EST 是东部标准时间，即 UTC-5。夏季许多东部地区使用 EDT，即 UTC-4。"],
+    ["GMT 总是比 EST 快 5 小时吗？", "GMT 比 EST 快 5 小时，但在夏令时期间只比 EDT 快 4 小时。"],
+    ["此转换器能处理夏令时吗？", "可以。计算器使用 America/New_York 时区，根据所选日期显示 EST 或 EDT。"],
+    ["从 GMT 打电话到 EST 最佳时间是什么时候？", "标准办公时间内，GMT 14:00 至 17:00 通常与东部时间 9:00 至 12:00 重叠，夏令时期间偏移一小时。"]
+  ],
+  hi: [
+    ["GMT क्या है?", "GMT यानी ग्रीनविच मीन टाइम, UTC+0 का समय संदर्भ मानक है।"],
+    ["EST क्या है?", "EST यानी पूर्वी मानक समय, UTC-5 है। गर्मियों में कई पूर्वी क्षेत्र EDT (UTC-4) का उपयोग करते हैं।"],
+    ["क्या GMT हमेशा EST से 5 घंटे आगे है?", "GMT, EST से 5 घंटे आगे है, लेकिन DST के दौरान EDT से केवल 4 घंटे आगे होता है।"],
+    ["क्या यह कनवर्टर DST को संभालता है?", "हाँ। कैलकुलेटर America/New_York ज़ोन का उपयोग करता है और चुनी गई तिथि के अनुसार EST या EDT दिखाता है।"],
+    ["GMT से EST पर कॉल करने का सबसे अच्छा समय क्या है?", "मानक कार्यालय समय के लिए, GMT 14:00 से 17:00 अक्सर Eastern Time 9:00 से 12:00 से मेल खाता है।"]
+  ],
+  ar: [
+    ["ما هو GMT؟", "GMT أو توقيت غرينتش هو المعيار الزمني المرجعي عند UTC+0."],
+    ["ما هو EST؟", "EST هو التوقيت الشرقي الموحد عند UTC-5. في الصيف تستخدم مناطق كثيرة EDT عند UTC-4."],
+    ["هل GMT دائماً 5 ساعات أمام EST؟", "GMT يتقدم 5 ساعات على EST، لكن 4 ساعات فقط على EDT خلال التوقيت الصيفي."],
+    ["هل يدعم هذا المحوّل التوقيت الصيفي؟", "نعم. يستخدم الحاسبة منطقة America/New_York ويعرض EST أو EDT حسب التاريخ المحدد."],
+    ["ما أفضل وقت للاتصال من GMT إلى EST؟", "لساعات العمل الاعتيادية، يتداخل GMT 14:00–17:00 مع 9:00–12:00 بالتوقيت الشرقي، مع تغيير ساعة واحدة خلال التوقيت الصيفي."]
+  ],
+  pt: [
+    ["O que é GMT?", "GMT, ou Hora do Meridiano de Greenwich, é o padrão de tempo de referência em UTC+0."],
+    ["O que é EST?", "EST significa Hora Padrão do Leste, UTC-5. No verão, muitas regiões do Leste usam EDT, que é UTC-4."],
+    ["GMT está sempre 5 horas à frente de EST?", "GMT está 5 horas à frente de EST, mas apenas 4 horas à frente de EDT durante o horário de verão."],
+    ["Este conversor lida com o horário de verão?", "Sim. A calculadora usa o fuso America/New_York e exibe EST ou EDT conforme a data selecionada."],
+    ["Qual o melhor horário para ligar de GMT para EST?", "Para horário comercial padrão, 14h às 17h GMT geralmente coincide com 9h às 12h do Leste, mudando uma hora no horário de verão."]
+  ],
+  ru: [
+    ["Что такое GMT?", "GMT — Среднее время по Гринвичу, эталонный стандарт времени на UTC+0."],
+    ["Что такое EST?", "EST — Восточное стандартное время, UTC-5. Летом многие восточные регионы используют EDT (UTC-4)."],
+    ["Всегда ли GMT на 5 часов опережает EST?", "GMT опережает EST на 5 часов, но только на 4 часа в период летнего времени EDT."],
+    ["Учитывает ли конвертер летнее время?", "Да. Калькулятор использует зону America/New_York и показывает EST или EDT в зависимости от выбранной даты."],
+    ["Когда лучше всего звонить из GMT в EST?", "Для стандартных рабочих часов 14:00–17:00 GMT часто совпадает с 9:00–12:00 по восточному времени, с поправкой на час при летнем времени."]
+  ],
+  ja: [
+    ["GMTとは何ですか？", "GMTはグリニッジ標準時で、UTC+0の時間基準です。"],
+    ["ESTとは何ですか？", "ESTは東部標準時（UTC-5）です。夏季には多くの東部地域がEDT（UTC-4）を使用します。"],
+    ["GMTは常にESTより5時間早いですか？", "GMTはESTより5時間早いですが、夏時間のEDTとは4時間差になります。"],
+    ["このコンバーターは夏時間に対応していますか？", "はい。America/New_Yorkゾーンを使用し、選択した日付に応じてESTまたはEDTを表示します。"],
+    ["GMTからESTへ電話する最適な時間帯は？", "通常の業務時間では、GMT14:00〜17:00が東部時間9:00〜12:00に重なることが多く、夏時間中は1時間ずれます。"]
+  ],
+  de: [
+    ["Was ist GMT?", "GMT steht für Greenwich Mean Time und ist der Zeitstandard bei UTC+0."],
+    ["Was ist EST?", "EST steht für Eastern Standard Time, UTC-5. Im Sommer nutzen viele Regionen EDT (UTC-4)."],
+    ["Ist GMT immer 5 Stunden vor EST?", "GMT liegt 5 Stunden vor EST, aber nur 4 Stunden vor EDT während der Sommerzeit."],
+    ["Berücksichtigt dieser Konverter die Sommerzeit?", "Ja. Der Rechner nutzt die Zone America/New_York und zeigt EST oder EDT je nach gewähltem Datum."],
+    ["Wann ist die beste Zeit für einen Anruf von GMT nach EST?", "Für normale Bürozeiten überschneiden sich GMT 14:00–17:00 oft mit 9:00–12:00 Eastern Time, verschoben um eine Stunde in der Sommerzeit."]
+  ],
+  fr: [
+    ["Qu'est-ce que GMT ?", "GMT, l'heure du méridien de Greenwich, est le standard de temps de référence à UTC+0."],
+    ["Qu'est-ce que EST ?", "EST signifie Heure normale de l'Est, UTC-5. En été, beaucoup de régions de l'Est utilisent EDT (UTC-4)."],
+    ["GMT est-il toujours 5 heures en avance sur EST ?", "GMT est en avance de 5 heures sur EST, mais seulement de 4 heures sur EDT pendant l'heure d'été."],
+    ["Ce convertisseur gère-t-il l'heure d'été ?", "Oui. La calculatrice utilise le fuseau America/New_York et affiche EST ou EDT selon la date sélectionnée."],
+    ["Quelle est la meilleure heure pour appeler de GMT vers EST ?", "Pour les heures de bureau standards, 14h–17h GMT coïncide souvent avec 9h–12h heure de l'Est, avec un décalage d'une heure pendant l'heure d'été."]
+  ],
+  ko: [
+    ["GMT란 무엇인가요?", "GMT는 그리니치 표준시로, UTC+0의 시간 기준입니다."],
+    ["EST란 무엇인가요?", "EST는 동부 표준시(UTC-5)입니다. 여름에는 많은 동부 지역이 EDT(UTC-4)를 사용합니다."],
+    ["GMT는 항상 EST보다 5시간 빠른가요?", "GMT는 EST보다 5시간 빠르지만, 일광절약시간(EDT) 동안에는 4시간 차이가 납니다."],
+    ["이 변환기는 일광절약시간을 처리하나요?", "예. America/New_York 시간대를 사용하여 선택한 날짜에 따라 EST 또는 EDT를 표시합니다."],
+    ["GMT에서 EST로 전화하기 가장 좋은 시간은 언제인가요?", "표준 업무 시간의 경우 GMT 14:00~17:00는 동부 시간 9:00~12:00와 겹치며, 일광절약시간 동안은 1시간 차이가 납니다."]
+  ],
+  it: [
+    ["Cos'è GMT?", "GMT, o Greenwich Mean Time, è lo standard temporale di riferimento a UTC+0."],
+    ["Cos'è EST?", "EST significa Eastern Standard Time, UTC-5. In estate molte zone orientali usano EDT (UTC-4)."],
+    ["GMT è sempre 5 ore avanti rispetto a EST?", "GMT è 5 ore avanti di EST, ma solo 4 ore avanti di EDT durante l'ora legale."],
+    ["Questo convertitore gestisce l'ora legale?", "Sì. Il calcolatore usa il fuso America/New_York e mostra EST o EDT in base alla data selezionata."],
+    ["Qual è il momento migliore per chiamare da GMT a EST?", "Per gli orari d'ufficio standard, dalle 14:00 alle 17:00 GMT si sovrappone spesso alle 9:00–12:00 ora orientale, con uno spostamento di un'ora durante l'ora legale."]
+  ],
+  tr: [
+    ["GMT nedir?", "GMT, Greenwich Ortalama Saati anlamına gelir ve UTC+0 referans zaman standardıdır."],
+    ["EST nedir?", "EST, Doğu Standart Saati, UTC-5 demektir. Yazın birçok Doğu bölgesi EDT (UTC-4) kullanır."],
+    ["GMT her zaman EST'den 5 saat önde midir?", "GMT, EST'den 5 saat önde olur; ancak yaz saati uygulaması döneminde EDT'den yalnızca 4 saat öndedir."],
+    ["Bu dönüştürücü yaz saati uygulamasını destekliyor mu?", "Evet. Hesaplayıcı America/New_York dilimini kullanır ve seçilen tarihe göre EST veya EDT gösterir."],
+    ["GMT'den EST'ye en iyi arama saati nedir?", "Standart mesai saatlerinde GMT 14:00–17:00, çoğunlukla Doğu Saati 9:00–12:00 ile örtüşür; yaz saatinde bir saat kayar."]
+  ],
+  ur: [
+    ["GMT کیا ہے؟", "GMT یعنی گرین وچ مین ٹائم، UTC+0 کا حوالہ وقت معیار ہے۔"],
+    ["EST کیا ہے؟", "EST یعنی مشرقی معیاری وقت، UTC-5 ہے۔ گرمیوں میں بہت سے مشرقی علاقے EDT (UTC-4) استعمال کرتے ہیں۔"],
+    ["کیا GMT ہمیشہ EST سے 5 گھنٹے آگے ہوتا ہے؟", "GMT، EST سے 5 گھنٹے آگے ہوتا ہے، لیکن DST کے دوران EDT سے صرف 4 گھنٹے آگے ہوتا ہے۔"],
+    ["کیا یہ کنورٹر DST کو سنبھالتا ہے؟", "ہاں۔ کیلکولیٹر America/New_York زون استعمال کرتا ہے اور منتخب تاریخ کے مطابق EST یا EDT دکھاتا ہے۔"],
+    ["GMT سے EST پر کال کرنے کا بہترین وقت کیا ہے؟", "معیاری دفتری اوقات کے لیے، GMT 14:00 سے 17:00 اکثر مشرقی وقت 9:00 سے 12:00 کے ساتھ ملتا ہے۔"]
+  ],
+  bn: [
+    ["GMT কী?", "GMT মানে গ্রিনউইচ মিন টাইম, এটি UTC+0-এর রেফারেন্স সময় মান।"],
+    ["EST কী?", "EST মানে ইস্টার্ন স্ট্যান্ডার্ড টাইম, UTC-5। গ্রীষ্মে অনেক পূর্বাঞ্চলীয় এলাকা EDT (UTC-4) ব্যবহার করে।"],
+    ["GMT কি সবসময় EST-এর চেয়ে ৫ ঘন্টা এগিয়ে?", "GMT, EST-এর চেয়ে ৫ ঘন্টা এগিয়ে, কিন্তু DST চলাকালে EDT-এর চেয়ে মাত্র ৪ ঘন্টা এগিয়ে।"],
+    ["এই কনভার্টার কি DST সামলায়?", "হ্যাঁ। ক্যালকুলেটর America/New_York জোন ব্যবহার করে এবং নির্বাচিত তারিখ অনুযায়ী EST বা EDT দেখায়।"],
+    ["GMT থেকে EST-এ কল করার সেরা সময় কোনটি?", "প্রমাণ অফিস সময়ের জন্য, GMT 14:00–17:00 প্রায়ই ইস্টার্ন টাইম 9:00–12:00-এর সাথে মিলে যায়।"]
+  ],
+  vi: [
+    ["GMT là gì?", "GMT là Giờ Trung bình Greenwich, tiêu chuẩn thời gian tham chiếu tại UTC+0."],
+    ["EST là gì?", "EST là Giờ Chuẩn miền Đông, UTC-5. Mùa hè nhiều khu vực miền Đông dùng EDT (UTC-4)."],
+    ["GMT luôn sớm hơn EST 5 tiếng?", "GMT sớm hơn EST 5 tiếng, nhưng trong giờ mùa hè EDT chỉ sớm hơn 4 tiếng."],
+    ["Bộ đổi này có xử lý giờ mùa hè không?", "Có. Máy tính dùng múi giờ America/New_York và hiển thị EST hoặc EDT tùy theo ngày được chọn."],
+    ["Thời điểm tốt nhất để gọi từ GMT sang EST là khi nào?", "Với giờ làm việc tiêu chuẩn, GMT 14:00–17:00 thường trùng với 9:00–12:00 giờ miền Đông, lệch 1 giờ trong mùa hè."]
+  ],
+  th: [
+    ["GMT คืออะไร?", "GMT หรือเวลามาตรฐานกรีนิช คือเวลาอ้างอิงที่ UTC+0"],
+    ["EST คืออะไร?", "EST คือเวลามาตรฐานตะวันออก UTC-5 ในฤดูร้อนหลายพื้นที่ตะวันออกใช้ EDT (UTC-4)"],
+    ["GMT เร็วกว่า EST เสมอ 5 ชั่วโมงหรือไม่?", "GMT เร็วกว่า EST 5 ชั่วโมง แต่ในช่วงฤดูร้อน EDT เร็วกว่าเพียง 4 ชั่วโมง"],
+    ["ตัวแปลงนี้รองรับการปรับเวลาฤดูร้อนหรือไม่?", "ใช่ เครื่องคำนวณใช้โซน America/New_York และแสดง EST หรือ EDT ตามวันที่ที่เลือก"],
+    ["เวลาที่ดีที่สุดในการโทรจาก GMT ไป EST คือเมื่อไร?", "สำหรับเวลาทำงานมาตรฐาน GMT 14:00–17:00 มักทับซ้อนกับ 9:00–12:00 เวลาตะวันออก โดยเลื่อน 1 ชั่วโมงในช่วงฤดูร้อน"]
+  ],
+  id: [
+    ["Apa itu GMT?", "GMT atau Greenwich Mean Time adalah standar waktu referensi di UTC+0."],
+    ["Apa itu EST?", "EST adalah Eastern Standard Time, UTC-5. Di musim panas banyak wilayah Timur menggunakan EDT (UTC-4)."],
+    ["Apakah GMT selalu 5 jam lebih awal dari EST?", "GMT 5 jam lebih awal dari EST, tetapi hanya 4 jam lebih awal dari EDT selama waktu musim panas."],
+    ["Apakah konverter ini menangani waktu musim panas?", "Ya. Kalkulator menggunakan zona America/New_York dan menampilkan EST atau EDT sesuai tanggal yang dipilih."],
+    ["Kapan waktu terbaik untuk menelepon dari GMT ke EST?", "Untuk jam kerja standar, GMT 14:00–17:00 sering bertepatan dengan 9:00–12:00 Waktu Timur, bergeser 1 jam saat musim panas."]
+  ],
+  fa: [
+    ["GMT چیست؟", "GMT یا زمان میانگین گرینویچ، استاندارد مرجع زمانی در UTC+0 است."],
+    ["EST چیست؟", "EST زمان استاندارد شرقی، یعنی UTC-5 است. در تابستان بسیاری از مناطق شرقی از EDT (UTC-4) استفاده می‌کنند."],
+    ["آیا GMT همیشه ۵ ساعت از EST جلوتر است؟", "GMT پنج ساعت از EST جلوتر است، اما در دوره تابستان تنها ۴ ساعت از EDT جلوتر است."],
+    ["آیا این مبدل با تغییر ساعت تابستانی کار می‌کند؟", "بله. ماشین‌حساب از منطقه America/New_York استفاده می‌کند و بر اساس تاریخ انتخابی EST یا EDT را نشان می‌دهد."],
+    ["بهترین زمان برای تماس از GMT به EST چه وقت است؟", "برای ساعات اداری معمول، ساعت ۱۴ تا ۱۷ GMT اغلب با ساعت ۹ تا ۱۲ زمان شرقی همپوشانی دارد."]
+  ],
+  pl: [
+    ["Co to jest GMT?", "GMT, czyli Czas Południka Greenwich, to standardowy czas odniesienia przy UTC+0."],
+    ["Co to jest EST?", "EST oznacza Eastern Standard Time, UTC-5. Latem wiele wschodnich regionów stosuje EDT (UTC-4)."],
+    ["Czy GMT jest zawsze 5 godzin przed EST?", "GMT jest 5 godzin przed EST, ale tylko 4 godziny przed EDT w czasie letnim."],
+    ["Czy ten konwerter obsługuje czas letni?", "Tak. Kalkulator używa strefy America/New_York i pokazuje EST lub EDT w zależności od wybranej daty."],
+    ["Kiedy najlepiej dzwonić z GMT do EST?", "W standardowych godzinach biurowych GMT 14:00–17:00 często pokrywa się z 9:00–12:00 czasu wschodniego, z przesunięciem o godzinę w czasie letnim."]
   ]
 };
-
-for (const [code] of languages) {
-  if (!faq[code]) {
-    const s = ui[code] || ui.en;
-    faq[code] = [
-      [s.topics, s.lead],
-      [s.table, s.note],
-      [s.strip, `${s.clocks}. ${s.uses}.`],
-      [s.result, `${s.result}. ${s.note}`],
-      [s.presets, `${s.meeting}. ${s.event}. ${s.trading}.`]
-    ];
-  }
-}
 
 const fallbackUi = (code) => ({
   ...ui.en,

@@ -134,3 +134,11 @@ They can. The official schedule lists all 2026 NBA Finals games at 8:30 p.m. ET,
 The 2026 NBA Finals begin on **Wednesday, June 3, 2026**, and each scheduled game is listed at **8:30 p.m. ET**. For GMT viewers, that means **00:30 GMT the following day** because June games use EDT, not EST. If the series reaches Game 7, it is scheduled for Friday, June 19 in the United States, which converts to **Saturday, June 20 at 00:30 GMT**.
 
 Last updated: May 16, 2026.
+
+---
+
+## References
+
+1. [NBA Finals 2026 Schedule](https://www.nba.com/news/2026-nba-finals-schedule) — NBA.com
+2. [2026 NBA Play-in Tournament, Playoffs & Finals Schedule](https://www.nba.com/news/2026-nba-playoffs-schedule?hidenav=true) — NBA.com
+3. [Local Time FAQs](https://www.nist.gov/pml/time-and-frequency-division/local-time-faqs) — National Institute of Standards and Technology
