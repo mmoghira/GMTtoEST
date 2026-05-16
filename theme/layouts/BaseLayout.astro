@@ -19,6 +19,15 @@ const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, e
 const t = getTranslation(lang);
 const canonical = `${siteUrl}${pageUrl(lang, slug)}`;
 const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
+const rawMetaImage = meta?.image || "/favicon.png";
+const metaImage = rawMetaImage.startsWith("http") ? rawMetaImage : `${siteUrl}${rawMetaImage.startsWith("/") ? rawMetaImage : `/${rawMetaImage}`}`;
+const metaImageAlt = meta?.imageAlt || title;
+const ogType = meta?.ogType || (slug.startsWith("blog/") ? "article" : "website");
+const twitterCard = meta?.twitterCard || (meta?.image ? "summary_large_image" : "summary");
+const preloadImage = meta?.preloadImage || "/assets/timeflow-hero-960.avif";
+const preloadImageSrcset = meta?.preloadImageSrcset || "/assets/timeflow-hero-480.avif 480w, /assets/timeflow-hero-960.avif 960w";
+const preloadImageSizes = meta?.preloadImageSizes || "(max-width: 720px) 92vw, 960px";
+const preloadImageType = meta?.preloadImageType || "image/avif";
 
 // Navigation structure for schema
 const navItems = [
@@ -149,6 +158,19 @@ const schema = {
     <title>{title} | GMT to EST</title>
     <meta name="description" content={description} />
     {metaKeywords && <meta name="keywords" content={metaKeywords} />}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={`${title} | GMT to EST`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={metaImage} />
+    <meta property="og:image:alt" content={metaImageAlt} />
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={`${title} | GMT to EST`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={metaImage} />
+    <meta name="twitter:image:alt" content={metaImageAlt} />
+    {meta?.pubDate && <meta property="article:published_time" content={meta.pubDate} />}
+    {meta?.updatedDate && <meta property="article:modified_time" content={meta.updatedDate} />}
     <meta name="p:domain_verify" content="9b3f625230ead5b92611adf407a5d0ca"/>
     <meta name="google-site-verification" content="L9kjVxomGCuSzz8YZfAfd7C6_I_coIAcFZ4efsfCBF4" />
     <meta name="msvalidate.01" content="9BB978FBFAF8F85CFFB7B099B245BAA7" />
@@ -156,19 +178,18 @@ const schema = {
     <link rel="canonical" href={canonical} />
     <link
       rel="preload"
-      href="/assets/timeflow-hero-960.avif"
-      imagesrcset="/assets/timeflow-hero-480.avif 480w, /assets/timeflow-hero-960.avif 960w"
-      imagesizes="(max-width: 720px) 92vw, 960px"
+      href={preloadImage}
+      imagesrcset={preloadImageSrcset}
+      imagesizes={preloadImageSizes}
       as="image"
-      type="image/avif"
+      type={preloadImageType}
       fetchpriority="high"
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/favicon.png" sizes="192x192" />
-    <link rel="image_src" href="/logo.svg" />
-    <meta property="og:image" content="/favicon.png" />
+    <link rel="image_src" href={metaImage} />
     {languages.map((item) => <link rel="alternate" hreflang={item.code} href={`${siteUrl}${pageUrl(item.code, slug)}`} />)}
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}${pageUrl("en", slug)}`} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />

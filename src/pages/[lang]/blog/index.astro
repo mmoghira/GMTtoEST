@@ -9,7 +9,11 @@ export function getStaticPaths() {
 
 const lang = getLang(Astro.params.lang);
 const metaBase = getPageMeta(lang.code, "home");
-const meta = { title: "Blog - GMT to EST", description: "Read the latest updates and articles about GMT and EST timezone conversions." };
+const meta = {
+  title: "Blog - GMT to EST",
+  description: "Read the latest updates and articles about GMT and EST timezone conversions.",
+  keywords: "GMT to EST blog, EST to GMT guides, timezone conversion articles, daylight saving time"
+};
 
 const pageUrl = `${siteUrl}/${lang.code}/blog/`;
 
@@ -23,24 +27,37 @@ posts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 ---
 
 <BaseLayout lang={lang.code} dir={lang.dir} title={meta.title} description={meta.description} slug="blog" meta={meta}>
-  <section class="content" aria-labelledby="blog-title">
+  <section class="content blog-index" aria-labelledby="blog-title">
     <h1 id="blog-title">Blog</h1>
     <p>Read the latest updates, guides, and articles about GMT and EST timezones.</p>
     
-    <div class="blog-grid" style="display: grid; gap: 2rem; margin-top: 2rem;">
+    <div class="blog-grid">
       {posts.length === 0 ? (
         <p>No articles published yet. Check back soon!</p>
       ) : (
         posts.map(post => {
           const slug = post.id.split('/').slice(1).join('/');
+          const imageAlt = post.data.imageAlt || `${post.data.title} featured image`;
+          const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
           return (
-            <article class="blog-card" style="border: 1px solid var(--line); border-radius: 8px; padding: 1.5rem;">
-              <h2><a href={`/${lang.code}/blog/${slug}/`} style="text-decoration: none; color: var(--accent);">{post.data.title}</a></h2>
-              <time datetime={post.data.pubDate.toISOString()} style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem; display: block;">
-                {post.data.pubDate.toLocaleDateString(lang.code, { year: "numeric", month: "long", day: "numeric" })}
-              </time>
-              <p>{post.data.description}</p>
-              <a href={`/${lang.code}/blog/${slug}/`} style="font-weight: 600;">Read more &rarr;</a>
+            <article class="blog-card">
+              {post.data.image && (
+                <a class="blog-card-image" href={`/${lang.code}/blog/${slug}/`} aria-label={post.data.title}>
+                  <picture>
+                    {responsiveImageBase && <source type="image/avif" srcset={`${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w`} sizes="(max-width: 760px) 100vw, 360px" />}
+                    {responsiveImageBase && <source type="image/webp" srcset={`${responsiveImageBase}-600.webp 600w, ${responsiveImageBase}-1200.webp 1200w`} sizes="(max-width: 760px) 100vw, 360px" />}
+                    <img src={post.data.image} alt={imageAlt} width="1200" height="630" loading="lazy" decoding="async" />
+                  </picture>
+                </a>
+              )}
+              <div class="blog-card-body">
+                <h2><a href={`/${lang.code}/blog/${slug}/`}>{post.data.title}</a></h2>
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {post.data.pubDate.toLocaleDateString(lang.code, { year: "numeric", month: "long", day: "numeric" })}
+                </time>
+                <p>{post.data.description}</p>
+                <a class="read-more" href={`/${lang.code}/blog/${slug}/`}>Read more &rarr;</a>
+              </div>
             </article>
           );
         })

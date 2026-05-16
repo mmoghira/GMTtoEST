@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { getCollection, render } from "astro:content";
-import { languages, getLang } from "theme/i18n/config";
+import { languages, getLang, siteUrl } from "theme/i18n/config";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -32,17 +32,65 @@ export async function getStaticPaths() {
 const { lang: paramLang } = Astro.params;
 const { post, actualLang } = Astro.props;
 const { Content } = await render(post);
+const imageAlt = post.data.imageAlt || `${post.data.title} featured image`;
+const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
 
 const langObj = getLang(paramLang);
+const pageUrl = `${siteUrl}/${langObj.code}/blog/${Astro.params.slug}/`;
+const absoluteImage = post.data.image
+  ? post.data.image.startsWith("http")
+    ? post.data.image
+    : `${siteUrl}${post.data.image}`
+  : `${siteUrl}/favicon.png`;
 
 const meta = {
   title: post.data.title,
   description: post.data.description,
+  keywords: post.data.keywords,
+  image: post.data.image,
+  imageAlt,
+  ogType: "article",
+  twitterCard: "summary_large_image",
+  pubDate: post.data.pubDate.toISOString(),
+  updatedDate: (post.data.updatedDate || post.data.pubDate).toISOString(),
+  preloadImage: responsiveImageBase ? `${responsiveImageBase}-1200.avif` : undefined,
+  preloadImageSrcset: responsiveImageBase ? `${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w` : undefined,
+  preloadImageSizes: "(max-width: 760px) 100vw, 900px",
+  preloadImageType: responsiveImageBase ? "image/avif" : undefined,
 };
 const sources = post.data.sources || [];
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": `${pageUrl}#article`,
+  mainEntityOfPage: pageUrl,
+  headline: post.data.title,
+  description: post.data.description,
+  image: absoluteImage,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate || post.data.pubDate).toISOString(),
+  inLanguage: actualLang,
+  keywords: post.data.keywords,
+  author: {
+    "@type": "Person",
+    name: post.data.author || "Jackie Bruce",
+    url: `${siteUrl}/author/jackie-bruce/`
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "GMT to EST Converter",
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteUrl}/logo.svg`
+    }
+  },
+  citation: sources.map((source) => source.url)
+};
 ---
 
 <BaseLayout lang={langObj.code} dir={langObj.dir} title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} slot="head" />
+
   <article class="content blog-post" aria-labelledby="post-title">
     {actualLang === "en" && langObj.code !== "en" && (
       <div style="background: var(--panel); border: 1px solid var(--accent); border-radius: 6px; padding: 1rem; margin-bottom: 2rem;">
@@ -50,17 +98,27 @@ const sources = post.data.sources || [];
       </div>
     )}
     
-    <header style="margin-bottom: 2rem;">
+    <header class="post-header">
       <h1 id="post-title">{post.data.title}</h1>
-      <div style="display: flex; gap: 1rem; color: var(--text-light); font-size: 0.9rem;">
+      <div class="post-meta">
         <time datetime={post.data.pubDate.toISOString()}>
           {post.data.pubDate.toLocaleDateString(langObj.code, { year: "numeric", month: "long", day: "numeric" })}
         </time>
         {post.data.author && <span>By <a href="/author/jackie-bruce/" rel="author">{post.data.author}</a></span>}
       </div>
     </header>
+
+    {post.data.image && (
+      <figure class="post-hero">
+        <picture>
+          {responsiveImageBase && <source type="image/avif" srcset={`${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w`} sizes="(max-width: 760px) 100vw, 900px" />}
+          {responsiveImageBase && <source type="image/webp" srcset={`${responsiveImageBase}-600.webp 600w, ${responsiveImageBase}-1200.webp 1200w`} sizes="(max-width: 760px) 100vw, 900px" />}
+          <img src={post.data.image} alt={imageAlt} width="1200" height="630" loading="eager" decoding="async" fetchpriority="high" />
+        </picture>
+      </figure>
+    )}
     
-    <div class="prose" style="max-width: 800px;">
+    <div class="prose">
       <Content />
     </div>
 
