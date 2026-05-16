@@ -15,6 +15,15 @@ sources:
   - title: "Time zone and daylight saving time data"
     publisher: "IANA Time Zone Database"
     url: "https://data.iana.org/time-zones/tzdb/tz-link.html"
+faq:
+  - q: "Is EST the same as UTC−5?"
+    a: "Yes. Eastern Standard Time is defined as UTC−5. During daylight saving time, Eastern Time shifts to EDT, which is UTC−4."
+  - q: "Does the UK observe GMT?"
+    a: "The UK uses GMT only during winter. In summer, the UK switches to British Summer Time (BST), which is GMT+1."
+  - q: "When does Eastern Time switch from EST to EDT?"
+    a: "The change occurs on the second Sunday in March (clocks spring forward) and the first Sunday in November (clocks fall back), following US federal law as established by the Energy Policy Act of 2005."
+  - q: "Can I use EST year-round for conversions?"
+    a: "Not accurately. Using EST (UTC−5) during summer months will give you results that are one hour off. Always use date-aware tools that detect EDT automatically."
 ---
 
 # Understanding the Difference Between GMT and EST

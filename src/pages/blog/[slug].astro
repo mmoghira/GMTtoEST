@@ -74,6 +74,17 @@ const articleSchema = {
 
 <BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} slot="head" />
+  {post.data.faq && post.data.faq.length > 0 && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: post.data.faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a }
+      }))
+    })} slot="head" />
+  )}
 
   <article class="content blog-post" aria-labelledby="post-title">
     <header class="post-header">

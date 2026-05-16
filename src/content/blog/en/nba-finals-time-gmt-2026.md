@@ -17,6 +17,17 @@ sources:
   - title: "Local Time FAQs"
     publisher: "National Institute of Standards and Technology"
     url: "https://www.nist.gov/pml/time-and-frequency-division/local-time-faqs"
+faq:
+  - q: "What time is 2026 NBA Finals Game 1 in GMT?"
+    a: "Game 1 is scheduled for Wednesday, June 3, 2026 at 8:30 p.m. ET. Since Eastern Time is EDT in June, that converts to 00:30 GMT on Thursday, June 4."
+  - q: "Are the NBA Finals listed in EST or EDT?"
+    a: "NBA schedules usually say 'ET,' but the Finals are in June, so the correct Eastern Time offset is EDT, UTC-4. EST is UTC-5 and is used during the winter standard-time period."
+  - q: "How many hours ahead is GMT during the NBA Finals?"
+    a: "GMT is 4 hours ahead of Eastern Time during the NBA Finals because the US East Coast is on EDT."
+  - q: "What time are the NBA Finals in the UK?"
+    a: "The UK uses British Summer Time in June, so an 8:30 p.m. EDT tip-off starts at 1:30 a.m. BST the next day."
+  - q: "Do NBA Finals times ever change?"
+    a: "They can. The official schedule lists all 2026 NBA Finals games at 8:30 p.m. ET, but broadcast details can change. Check NBA.com or your local broadcaster before the game."
 ---
 
 <div class="article-takeaway">
