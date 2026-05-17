@@ -25,6 +25,7 @@ const contentSecurityPolicy = [
 ].join("; ");
 const managedSources = new Set([
   securityHeadersSource,
+  "^/$",
   "^/index\\.php/?$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
@@ -33,9 +34,16 @@ const managedSources = new Set([
 
 const redirectRoutes = [
   {
+    src: "^/$",
+    headers: {
+      Location: "/gmt-to-est-converter/",
+    },
+    status: 301,
+  },
+  {
     src: "^/index\\.php/?$",
     headers: {
-      Location: "/",
+      Location: "/gmt-to-est-converter/",
     },
     status: 301,
   },

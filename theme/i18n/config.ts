@@ -112,7 +112,8 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
 
 export function pageUrl(lang: string, slug = "") {
   if (lang === "en") {
-    return `/${slug ? `${slug}/` : ""}`;
+    if (!slug) return "/gmt-to-est-converter/";
+    return `/${slug}/`;
   }
   return `/${lang}/${slug ? `${slug}/` : ""}`;
 }

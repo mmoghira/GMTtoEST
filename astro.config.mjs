@@ -23,6 +23,7 @@ export default defineConfig({
     sitemap({
       changefreq: "weekly",
       priority: 0.8,
+      filter: (page) => page !== "https://www.gmttoestconverter.com/",
       i18n: {
         defaultLocale: "en",
         locales: {
