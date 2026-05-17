@@ -3,7 +3,7 @@ const path = require("path");
 
 const site = process.env.SITE_URL || "https://gmttoest.com";
 const languages = [
-  ["en", "English", "ltr", "GMT to EST Converter", "Convert GMT to EST or EDT instantly with live clocks, DST handling, meeting presets, a 24-hour chart, and timezone FAQs."],
+  ["en", "English", "ltr", "GMT to EST Converter", "GMT to EST Converter for instant GMT to EST or EDT conversions with live clocks, DST handling, meeting presets, a 24-hour chart, and timezone FAQs."],
   ["es", "Español", "ltr", "Convertidor GMT a EST", "Convierte GMT a EST o EDT al instante con relojes en vivo, horario de verano, tabla de 24 horas y preguntas frecuentes."],
   ["zh", "简体中文", "ltr", "GMT 到 EST 转换器", "即时将 GMT 转换为 EST 或 EDT，包含实时时钟、夏令时处理、24 小时对照表和常见问题。"],
   ["hi", "हिन्दी", "ltr", "GMT से EST कनवर्टर", "GMT को EST या EDT में तुरंत बदलें: लाइव घड़ियां, DST, 24 घंटे की तालिका और FAQs।"],
