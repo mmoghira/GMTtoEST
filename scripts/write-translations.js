@@ -6,8 +6,8 @@ const outDir = path.join(process.cwd(), "theme", "i18n", "translations");
 const en = {
   brand: "GMT to EST Converter",
   pages: {
-    home: { title: "GMT to EST Converter", description: "Convert GMT to EST or EDT instantly with live clocks, DST handling, meeting presets, a 24-hour chart, and timezone FAQs." },
-    gmtToEst: { title: "GMT to EST Converter", description: "Convert GMT to Eastern Time instantly with automatic EST and EDT daylight saving handling." },
+    home: { title: "GMT to EST Converter", description: "GMT to EST Converter for instant GMT to EST or EDT conversions with live clocks, DST handling, meeting presets, a 24-hour chart, and timezone FAQs." },
+    gmtToEst: { title: "GMT to EST Converter", description: "GMT to EST Converter with automatic EST and EDT daylight saving handling for accurate Eastern Time conversions." },
     estToGmt: { title: "EST to GMT Converter", description: "Convert Eastern Time to GMT instantly with date-aware EST and EDT handling." },
     gmtVsEst: { title: "GMT vs EST Difference", description: "Compare GMT and Eastern Time, including EST, EDT, daylight saving changes, and exact offsets." },
     guide: { title: "Time Zone Guide", description: "A practical guide to GMT, EST, EDT, abbreviations, daylight saving time, meetings, trading, and global scheduling." }
@@ -84,9 +84,9 @@ const en = {
     ]
   },
   images: {
-    heroAlt: "Animated GMT to Eastern Time conversion visual",
-    clockAlt: "GMT and Eastern Time clock comparison visual",
-    mapAlt: "Generated world map showing GMT and Eastern Time regions"
+    heroAlt: "GMT to EST featured image showing live time conversion",
+    clockAlt: "GMT to EST clock comparison visual",
+    mapAlt: "GMT to EST world map showing time regions"
   }
 };
 
@@ -189,7 +189,7 @@ const packs = {
       { q: "¿Este convertidor maneja DST automáticamente?", a: "Sí. Tiene en cuenta el horario de verano y muestra EST o EDT correctamente." },
       { q: "¿Qué ciudades usan EST?", a: "Se usa en partes de Estados Unidos y Canadá, como Nueva York, Toronto y Washington, D.C." }
     ],
-    heroAlt: "Visual animado de conversión GMT a hora del Este", clockAlt: "Visual de relojes GMT y hora del Este", mapAlt: "Mapa generado con regiones GMT y hora del Este"
+    heroAlt: "Imagen destacada de conversion GMT a EST", clockAlt: "Visual de relojes GMT a EST", mapAlt: "Mapa generado de GMT a EST"
   })
 };
 

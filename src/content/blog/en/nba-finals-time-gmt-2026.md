@@ -4,7 +4,7 @@ description: "See the official 2026 NBA Finals schedule converted from Eastern T
 pubDate: 2026-05-16
 updatedDate: 2026-05-16
 author: "Jackie Bruce"
-image: "/assets/nba-finals-gmt-tipoff-guide-1200.webp"
+image: "/assets/nba-finals-time-gmt-tipoff-guide-1200.webp"
 imageAlt: "2026 NBA Finals GMT tip-off guide showing 8:30 PM EDT converted to 00:30 GMT"
 keywords: "NBA Finals time GMT, NBA Finals EST to GMT, what time is NBA Finals in GMT, NBA Finals 2026 schedule GMT, NBA playoffs time zone conversion"
 sources:
@@ -82,9 +82,9 @@ The official schedule has the 2026 NBA Finals beginning on **Wednesday, June 3**
 
 <figure class="article-image">
   <picture>
-    <source type="image/avif" srcset="/assets/nba-finals-edt-gmt-schedule-600.avif 600w, /assets/nba-finals-edt-gmt-schedule-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
-    <source type="image/webp" srcset="/assets/nba-finals-edt-gmt-schedule-600.webp 600w, /assets/nba-finals-edt-gmt-schedule-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
-    <img src="/assets/nba-finals-edt-gmt-schedule-1200.webp" alt="2026 NBA Finals schedule converted from 8:30 PM EDT to 00:30 GMT" width="1200" height="720" loading="lazy" decoding="async">
+    <source type="image/avif" srcset="/assets/nba-finals-time-gmt-schedule-600.avif 600w, /assets/nba-finals-time-gmt-schedule-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <source type="image/webp" srcset="/assets/nba-finals-time-gmt-schedule-600.webp 600w, /assets/nba-finals-time-gmt-schedule-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <img src="/assets/nba-finals-time-gmt-schedule-1200.webp" alt="2026 NBA Finals schedule converted from 8:30 PM EDT to 00:30 GMT" width="1200" height="720" loading="lazy" decoding="async">
   </picture>
   <figcaption>2026 NBA Finals schedule converted from Eastern Time to GMT.</figcaption>
 </figure>

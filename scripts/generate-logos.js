@@ -20,7 +20,7 @@ async function generateLogos() {
             })
             .toFile(path.join(assetsPath, 'logo.png'));
 
-        console.log('✓ Generated logo.png (512x512)');
+        console.log('Generated logo.png (512x512)');
 
         // Generate logo.webp (512x512)
         await sharp(svgBuffer)
@@ -31,7 +31,7 @@ async function generateLogos() {
             })
             .toFile(path.join(assetsPath, 'logo.webp'));
 
-        console.log('✓ Generated logo.webp (512x512)');
+        console.log('Generated logo.webp (512x512)');
 
         // Generate favicon for public folder (32x32)
         await sharp(svgBuffer)
@@ -42,7 +42,7 @@ async function generateLogos() {
             })
             .toFile(path.join(__dirname, '..', 'public', 'favicon.png'));
 
-        console.log('✓ Generated favicon.png (32x32)');
+        console.log('Generated favicon.png (32x32)');
 
         // Also generate a larger favicon for better quality
         await sharp(svgBuffer)
@@ -53,30 +53,52 @@ async function generateLogos() {
             })
             .toFile(path.join(assetsPath, 'favicon-192.png'));
 
-        console.log('✓ Generated favicon-192.png (192x192)');
+        console.log('Generated favicon-192.png (192x192)');
 
         const illustrations = [
-            { name: 'timeflow-hero', widths: [480, 960] },
-            { name: 'clock-visual', widths: [450, 900] },
-            { name: 'world-time-map', widths: [600, 1200] },
+            {
+                sourceName: 'timeflow-hero',
+                outputNames: ['timeflow-hero', 'gmt-to-est-timeflow-hero', 'gmt-to-est-converter-featured-image'],
+                widths: [480, 960]
+            },
+            {
+                sourceName: 'clock-visual',
+                outputNames: ['clock-visual', 'gmt-to-est-clock-visual', 'gmt-to-est-converter-clock-visual'],
+                widths: [450, 900]
+            },
+            {
+                sourceName: 'world-time-map',
+                outputNames: ['world-time-map', 'gmt-to-est-world-time-map', 'gmt-to-est-converter-world-time-map'],
+                widths: [600, 1200]
+            },
         ];
 
         for (const illustration of illustrations) {
-            const source = path.join(publicAssetsPath, `${illustration.name}.svg`);
+            const source = path.join(publicAssetsPath, `${illustration.sourceName}.svg`);
+            const rootSource = path.join(assetsPath, `${illustration.sourceName}.svg`);
 
-            for (const width of illustration.widths) {
-                await sharp(source)
-                    .resize({ width })
-                    .avif({ quality: 58 })
-                    .toFile(path.join(publicAssetsPath, `${illustration.name}-${width}.avif`));
+            for (const outputName of illustration.outputNames) {
+                if (outputName !== illustration.sourceName) {
+                    fs.copyFileSync(source, path.join(publicAssetsPath, `${outputName}.svg`));
+                    if (fs.existsSync(rootSource)) {
+                        fs.copyFileSync(rootSource, path.join(assetsPath, `${outputName}.svg`));
+                    }
+                }
 
-                await sharp(source)
-                    .resize({ width })
-                    .webp({ quality: 82 })
-                    .toFile(path.join(publicAssetsPath, `${illustration.name}-${width}.webp`));
+                for (const width of illustration.widths) {
+                    await sharp(source)
+                        .resize({ width })
+                        .avif({ quality: 58 })
+                        .toFile(path.join(publicAssetsPath, `${outputName}-${width}.avif`));
+
+                    await sharp(source)
+                        .resize({ width })
+                        .webp({ quality: 82 })
+                        .toFile(path.join(publicAssetsPath, `${outputName}-${width}.webp`));
+                }
             }
 
-            console.log(`✓ Generated responsive AVIF/WebP assets for ${illustration.name}`);
+            console.log(`Generated responsive AVIF/WebP assets for ${illustration.outputNames.join(', ')}`);
         }
 
         console.log('\nAll logo files generated successfully!');

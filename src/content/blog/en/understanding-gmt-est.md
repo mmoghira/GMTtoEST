@@ -4,7 +4,7 @@ description: "A comprehensive guide on how Greenwich Mean Time and Eastern Stand
 pubDate: 2024-05-10
 updatedDate: 2026-05-16
 author: "Jackie Bruce"
-image: "/assets/world-time-map-1200.webp"
+image: "/assets/gmt-to-est-world-time-map-1200.webp"
 imageAlt: "GMT to EST difference featured image showing world time regions"
 keywords: "GMT to EST, GMT vs EST difference, GMT EST conversion, eastern standard time, greenwich mean time, daylight saving time EDT, UTC-5 EST, GMT offset"
 sources:

@@ -2,12 +2,17 @@
 import Converter from "theme/components/Converter.astro";
 import VisualLab from "theme/components/VisualLab.astro";
 import { pageUrl } from "theme/i18n/config";
-import { ensureKeywordInAlt } from "theme/utils/seo";
+import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
-const { title, description, kind, t, context, lang = "en" } = Astro.props;
+const { title, description, kind, t, context, lang = "en", primaryKeyword } = Astro.props;
 const lead = kind === "difference" ? t.hero.differenceLead : kind === "guide" ? t.hero.guideLead : description;
-const clocksTitle = kind === "converter" && lang === "en" ? "GMT to EST Converter Live Clocks" : t.clocks.title;
-const heroAlt = ensureKeywordInAlt(t.images.heroAlt, title, `${title} featured image`);
+const seoKeyword = kind === "converter" && lang === "en" ? "GMT to EST Converter" : title;
+const clocksTitle = `${seoKeyword} Live Clocks`;
+const keyword = getPrimaryKeyword(primaryKeyword || seoKeyword, seoKeyword);
+const heroAlt = ensureKeywordInAlt(t.images.heroAlt, keyword, `${keyword} featured image`);
+const clockAlt = ensureKeywordInAlt(t.images.clockAlt, keyword, `${keyword} clock comparison image`);
+const mapAlt = ensureKeywordInAlt(t.images.mapAlt, keyword, `${keyword} world time map image`);
+const keywordIntro = `${seoKeyword} gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.`;
 
 const gmtList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","EST","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 const estList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","GMT","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
@@ -30,7 +35,9 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
   <Converter intent={kind} t={t} context={context} />
 </section>
 
-<VisualLab t={t} />
+<p class="seo-keyword-intro">{keywordIntro}</p>
+
+<VisualLab t={t} keywordHeading={seoKeyword} />
 
 <section class="clock-grid" aria-labelledby="live-clocks">
   <h2 id="live-clocks">{clocksTitle}</h2>
@@ -40,7 +47,7 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
 
 <section class="band">
   <div>
-    <h2>{t.presets.title}</h2>
+    <h2>{seoKeyword} Quick Presets</h2>
     <div class="preset-row">
       <button type="button" data-preset="meeting">{t.presets.meeting}</button>
       <button type="button" data-preset="event">{t.presets.event}</button>
@@ -48,17 +55,17 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
     </div>
   </div>
   <picture>
-    <source type="image/avif" srcset="/assets/clock-visual-450.avif 450w, /assets/clock-visual-900.avif 900w" sizes="(max-width: 720px) 92vw, 900px" />
-    <source type="image/webp" srcset="/assets/clock-visual-450.webp 450w, /assets/clock-visual-900.webp 900w" sizes="(max-width: 720px) 92vw, 900px" />
-    <img loading="lazy" decoding="async" width="900" height="380" src="/assets/clock-visual.svg" alt={t.images.clockAlt} />
+    <source type="image/avif" srcset="/assets/gmt-to-est-converter-clock-visual-450.avif 450w, /assets/gmt-to-est-converter-clock-visual-900.avif 900w" sizes="(max-width: 720px) 92vw, 900px" />
+    <source type="image/webp" srcset="/assets/gmt-to-est-converter-clock-visual-450.webp 450w, /assets/gmt-to-est-converter-clock-visual-900.webp 900w" sizes="(max-width: 720px) 92vw, 900px" />
+    <img loading="lazy" decoding="async" width="900" height="380" src="/assets/gmt-to-est-converter-clock-visual.svg" alt={clockAlt} />
   </picture>
 </section>
 
 <section class="other-tools" aria-labelledby="other-tools">
-  <h2 id="other-tools">More Time Zone Conversions</h2>
+  <h2 id="other-tools">{seoKeyword} More Time Zone Conversions</h2>
   <div class="tools-grid">
     <div class="tools-list">
-      <h3>Convert GMT to other time zones</h3>
+      <h3>{seoKeyword} GMT To Other Time Zones</h3>
       <div class="tools-link-groups">
         {chunk(gmtList).map(group => (
           <ul>
@@ -68,7 +75,7 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
       </div>
     </div>
     <div class="tools-list">
-      <h3>Convert EST to other time zones</h3>
+      <h3>{seoKeyword} EST To Other Time Zones</h3>
       <div class="tools-link-groups">
         {chunk(estList).map(group => (
           <ul>
@@ -81,24 +88,24 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
 </section>
 
 <section aria-labelledby="chart">
-  <h2 id="chart">{t.chart.title}</h2>
+  <h2 id="chart">{seoKeyword} Chart</h2>
   <div class="table-wrap"><table id="timeTable"><thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead><tbody></tbody></table></div>
 </section>
 
 <section aria-labelledby="strip">
-  <h2 id="strip">{t.strip.title}</h2>
+  <h2 id="strip">{seoKeyword} Workday Overlap</h2>
   <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
 </section>
 
 <section class="use-cases" aria-labelledby="uses">
-  <h2 id="uses">{t.useCases.title}</h2>
+  <h2 id="uses">{seoKeyword} Use Cases</h2>
   {t.useCases.items.map((item) => (
     <article><h3>{item.title}</h3><p>{item.text}</p></article>
   ))}
 </section>
 
 <section class="content" aria-labelledby="topics">
-  <h2 id="topics">{t.topics.title}</h2>
+  <h2 id="topics">{seoKeyword} Time Zone Authority</h2>
   {t.topics.items.map((topic) => (
     <article>
       <h3>{topic.title}</h3>
@@ -108,14 +115,14 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
 </section>
 
 <section class="faq" aria-labelledby="faq">
-  <h2 id="faq">{t.faqs.title}</h2>
+  <h2 id="faq">{seoKeyword} FAQs</h2>
   {t.faqs.items.map((item) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
 </section>
 
 <figure class="map">
   <picture>
-    <source type="image/avif" srcset="/assets/world-time-map-600.avif 600w, /assets/world-time-map-1200.avif 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
-    <source type="image/webp" srcset="/assets/world-time-map-600.webp 600w, /assets/world-time-map-1200.webp 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
-    <img loading="lazy" decoding="async" width="1200" height="520" src="/assets/world-time-map.svg" alt={t.images.mapAlt} />
+    <source type="image/avif" srcset="/assets/gmt-to-est-converter-world-time-map-600.avif 600w, /assets/gmt-to-est-converter-world-time-map-1200.avif 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
+    <source type="image/webp" srcset="/assets/gmt-to-est-converter-world-time-map-600.webp 600w, /assets/gmt-to-est-converter-world-time-map-1200.webp 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
+    <img loading="lazy" decoding="async" width="1200" height="520" src="/assets/gmt-to-est-converter-world-time-map.svg" alt={mapAlt} />
   </picture>
 </figure>

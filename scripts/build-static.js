@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 const site = process.env.SITE_URL || "https://gmttoest.com";
+const primaryKeyword = "GMT to EST Converter";
+const primaryLandingSlug = "gmt-to-est-converter";
 const languages = [
   ["en", "English", "ltr", "GMT to EST Converter", "GMT to EST Converter for instant GMT to EST or EDT conversions with live clocks, DST handling, meeting presets, a 24-hour chart, and timezone FAQs."],
   ["es", "Español", "ltr", "Convertidor GMT a EST", "Convierte GMT a EST o EDT al instante con relojes en vivo, horario de verano, tabla de 24 horas y preguntas frecuentes."],
@@ -39,7 +41,7 @@ const ui = {
     input: "Date and time", from: "From", to: "To", convertNow: "Use current time", copy: "Copy", copied: "Copied", format: "24h format",
     clocks: "Live clocks", gmt: "Current GMT", est: "Current Eastern Time", result: "Converted time", note: "Eastern Time is usually 5 hours behind GMT in standard time and 4 hours behind during daylight saving time.",
     presets: "Quick presets", meeting: "Meeting time", event: "Live event", trading: "Trading hours", table: "GMT to EST chart", strip: "Workday overlap",
-    uses: "Built for real use", faq: "GMT to EST FAQs", topics: "Time zone authority", visualAlt: "Generated world map showing GMT and Eastern Time regions"
+    uses: "Built for real use", faq: "GMT to EST FAQs", topics: "Time zone authority", visualAlt: "GMT to EST world map showing time regions"
   }
 };
 
@@ -219,8 +221,19 @@ function esc(value) {
   return String(value).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
 
+function pagePath(lang, slug) {
+  if (lang === "en" && !slug) {
+    return `/${primaryLandingSlug}/`;
+  }
+  return `/${lang}/${slug ? `${slug}/` : ""}`;
+}
+
+function pageUrl(lang, slug) {
+  return `${site}${pagePath(lang, slug)}`;
+}
+
 function hreflang(slug) {
-  return languages.map(([code]) => `<link rel="alternate" hreflang="${code}" href="${site}/${code}/${slug ? `${slug}/` : ""}">`).join("\n");
+  return languages.map(([code]) => `<link rel="alternate" hreflang="${code}" href="${pageUrl(code, slug)}">`).join("\n");
 }
 
 function schema(lang, slug, strings, title, desc) {
@@ -236,7 +249,7 @@ function schema(lang, slug, strings, title, desc) {
       name: title,
       applicationCategory: "UtilitiesApplication",
       operatingSystem: "Any",
-      url: `${site}/${lang}/${slug ? `${slug}/` : ""}`,
+      url: pageUrl(lang, slug),
       description: desc
     },
     { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: questions },
@@ -244,8 +257,8 @@ function schema(lang, slug, strings, title, desc) {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: strings.h1, item: `${site}/${lang}/` },
-        { "@type": "ListItem", position: 2, name: title, item: `${site}/${lang}/${slug ? `${slug}/` : ""}` }
+        { "@type": "ListItem", position: 1, name: strings.h1, item: pageUrl(lang, "") },
+        { "@type": "ListItem", position: 2, name: title, item: pageUrl(lang, slug) }
       ]
     }
   ]);
@@ -254,9 +267,11 @@ function schema(lang, slug, strings, title, desc) {
 function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   const strings = ui[lang] || fallbackUi(lang);
   const title = lang === "en" ? baseTitle : languages.find((l) => l[0] === lang)[3];
-  const canonical = `${site}/${lang}/${slug ? `${slug}/` : ""}`;
+  const canonical = pageUrl(lang, slug);
   const mode = kind === "reverse" ? "est-gmt" : "gmt-est";
   const pageLead = kind === "difference" ? strings.note : kind === "guide" ? strings.lead : desc;
+  const brandPath = pagePath(lang, "");
+  const mapAlt = lang === "en" ? `${primaryKeyword} world map showing time regions` : `${strings.visualAlt} - GMT to EST`;
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
 <head>
@@ -268,14 +283,14 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   ${hreflang(slug)}
-  <link rel="alternate" hreflang="x-default" href="${site}/en/${slug ? `${slug}/` : ""}">
+  <link rel="alternate" hreflang="x-default" href="${pageUrl("en", slug)}">
   <link rel="stylesheet" href="/assets/styles.css">
   <script type="application/ld+json">${schema(lang, slug, strings, title, desc)}</script>
   <script defer src="/assets/app.js"></script>
 </head>
 <body data-lang="${lang}" data-mode="${mode}">
   <header class="topbar">
-    <a class="brand" href="/${lang}/" aria-label="${esc(strings.h1)}"><span>GMT</span><b>EST</b></a>
+    <a class="brand" href="${brandPath}" aria-label="${esc(strings.h1)}"><span>GMT</span><b>EST</b></a>
     <nav aria-label="Primary">
       <a href="/${lang}/gmt-to-est/">GMT→EST</a>
       <a href="/${lang}/est-to-gmt/">EST→GMT</a>
@@ -291,7 +306,7 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
         <h1>${esc(title)}</h1>
         <p>${esc(pageLead)}</p>
         <figure class="hero-visual reveal">
-          <img width="960" height="420" src="/assets/timeflow-hero.svg" alt="Animated GMT to Eastern Time conversion visual">
+          <img width="960" height="420" src="/assets/gmt-to-est-converter-featured-image.svg" alt="${primaryKeyword} featured image showing conversion flow">
         </figure>
       </div>
       <form class="converter" id="converter">
@@ -333,10 +348,12 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
       </form>
     </section>
 
+    <p class="seo-keyword-intro">GMT to EST Converter gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.</p>
+
     <section class="visual-lab" aria-labelledby="visual-lab">
       <div>
         <p class="eyebrow">Visual planner</p>
-        <h2 id="visual-lab">Explore the time shift</h2>
+        <h2 id="visual-lab">GMT to EST Converter explore the time shift</h2>
       </div>
       <article class="motion-card reveal">
         <div class="orbit-visual" aria-hidden="true">
@@ -344,56 +361,56 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
           <span class="orbit-dot dot-a"></span>
           <span class="orbit-dot dot-b"></span>
         </div>
-        <h3>Day and night rhythm</h3>
+        <h3>GMT to EST Converter day and night rhythm</h3>
         <p>See why GMT business hours land later in the Eastern day.</p>
       </article>
       <article class="motion-card reveal">
         <div class="wave-visual" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-        <h3>DST-aware offset</h3>
+        <h3>GMT to EST Converter DST-aware offset</h3>
         <p>The offset changes between 5 hours and 4 hours when Eastern Time uses daylight saving.</p>
       </article>
       <article class="motion-card reveal">
         <div class="blocks-visual" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<span style="--i:${i}"></span>`).join("")}</div>
-        <h3>Meeting overlap</h3>
+        <h3>GMT to EST Converter meeting overlap</h3>
         <p>Scan useful windows before you send a calendar invite.</p>
       </article>
     </section>
 
     <section class="clock-grid" aria-labelledby="live-clocks">
-      <h2 id="live-clocks">${esc(strings.clocks)}</h2>
+      <h2 id="live-clocks">GMT to EST Converter live clocks</h2>
       <div class="clock-card"><span>${esc(strings.gmt)}</span><strong id="gmtClock">--:--</strong></div>
       <div class="clock-card"><span>${esc(strings.est)}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
     <section class="band">
       <div>
-        <h2>${esc(strings.presets)}</h2>
+        <h2>GMT to EST Converter quick presets</h2>
         <div class="preset-row">
           <button type="button" data-preset="meeting">${esc(strings.meeting)}</button>
           <button type="button" data-preset="event">${esc(strings.event)}</button>
           <button type="button" data-preset="trading">${esc(strings.trading)}</button>
         </div>
       </div>
-      <img loading="lazy" width="900" height="380" src="/assets/clock-visual.svg" alt="GMT and Eastern Time clock comparison visual">
+      <img loading="lazy" width="900" height="380" src="/assets/gmt-to-est-converter-clock-visual.svg" alt="${primaryKeyword} clock comparison visual">
     </section>
 
     <section aria-labelledby="chart">
-      <h2 id="chart">${esc(strings.table)}</h2>
+      <h2 id="chart">GMT to EST Converter chart</h2>
       <div class="table-wrap"><table id="timeTable"><thead><tr><th>GMT</th><th>Eastern</th><th>Offset</th></tr></thead><tbody></tbody></table></div>
     </section>
 
     <section aria-labelledby="strip">
-      <h2 id="strip">${esc(strings.strip)}</h2>
+      <h2 id="strip">GMT to EST Converter workday overlap</h2>
       <div class="time-strip" id="timeStrip" aria-label="GMT and Eastern Time overlap timeline"></div>
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">${esc(strings.uses)}</h2>
+      <h2 id="uses">GMT to EST Converter built for real use</h2>
       ${["Forex traders", "Remote workers", "Gamers", "Students", "International businesses"].map((name) => `<article><h3>${name}</h3><p>Use precise GMT to Eastern Time conversion for schedules where one missed hour changes the outcome.</p></article>`).join("")}
     </section>
 
     <section class="content" aria-labelledby="topics">
-      <h2 id="topics">${esc(strings.topics)}</h2>
+      <h2 id="topics">GMT to EST Converter time zone authority</h2>
       <article id="what-is-gmt"><h3>What is GMT?</h3><p>GMT is the zero-offset reference used for global coordination. It is the baseline for GMT to EST calculators, charts, current GMT time, and event planning.</p></article>
       <article id="what-is-est"><h3>What is EST?</h3><p>EST is Eastern Standard Time at UTC-5. When daylight saving time applies in New York, the zone becomes EDT at UTC-4.</p></article>
       <article id="dst"><h3>GMT to EST daylight saving time</h3><p>The safest conversion checks the date. This website labels the result as EST or EDT and explains whether the offset is four or five hours.</p></article>
@@ -403,12 +420,12 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
     </section>
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">${esc(strings.faq)}</h2>
+      <h2 id="faq">GMT to EST Converter FAQs</h2>
       ${(faq[lang] || faq.en).map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}
     </section>
 
     <figure class="map">
-      <img loading="lazy" width="1200" height="520" src="/assets/world-time-map.svg" alt="${esc(strings.visualAlt)}">
+      <img loading="lazy" width="1200" height="520" src="/assets/gmt-to-est-converter-world-time-map.svg" alt="${esc(mapAlt)}">
     </figure>
   </main>
 
@@ -436,11 +453,14 @@ for (const [lang, name, dir, title, desc] of languages) {
   }
 }
 
-write(path.join(process.cwd(), "index.html"), `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GMT to EST Converter</title><link rel="canonical" href="${site}/en/"><meta http-equiv="refresh" content="0; url=/en/"></head><body><a href="/en/">GMT to EST Converter</a></body></html>`);
+const [enLang, enName, enDir, enTitle, enDesc] = languages.find(([code]) => code === "en");
+write(path.join(process.cwd(), primaryLandingSlug, "index.html"), html(enLang, enName, enDir, "", "converter", enTitle, enDesc));
+
+write(path.join(process.cwd(), "index.html"), `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GMT to EST Converter</title><link rel="canonical" href="${site}/${primaryLandingSlug}/"><meta http-equiv="refresh" content="0; url=/${primaryLandingSlug}/"></head><body><a href="/${primaryLandingSlug}/">GMT to EST Converter</a></body></html>`);
 
 const urls = [];
 for (const [lang] of languages) {
-  for (const [slug] of pages) urls.push(`${site}/${lang}/${slug ? `${slug}/` : ""}`);
+  for (const [slug] of pages) urls.push(pageUrl(lang, slug));
 }
 write(path.join(process.cwd(), "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${u}</loc></url>`).join("")}</urlset>`);
 
