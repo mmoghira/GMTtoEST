@@ -4,6 +4,8 @@ description: "A comprehensive guide on how Greenwich Mean Time and Eastern Stand
 pubDate: 2024-05-10
 updatedDate: 2026-05-16
 author: "Jackie Bruce"
+image: "/assets/world-time-map-1200.webp"
+imageAlt: "GMT to EST difference featured image showing world time regions"
 keywords: "GMT to EST, GMT vs EST difference, GMT EST conversion, eastern standard time, greenwich mean time, daylight saving time EDT, UTC-5 EST, GMT offset"
 sources:
   - title: "Local Time FAQs"
@@ -103,4 +105,3 @@ Not accurately. Using EST (UTC−5) during summer months will give you results t
 1. [Local Time FAQs](https://www.nist.gov/pml/time-and-frequency-division/local-time-faqs) — National Institute of Standards and Technology
 2. [Daylight Saving Time Rules](https://www.nist.gov/pml/time-and-frequency-division/popular-links/daylight-saving-time-dst) — National Institute of Standards and Technology
 3. [Time zone and daylight saving time data](https://data.iana.org/time-zones/tzdb/tz-link.html) — IANA Time Zone Database
-

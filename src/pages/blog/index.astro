@@ -2,6 +2,7 @@
 import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { getPageMeta, siteUrl } from "theme/i18n/config";
 import { getCollection } from "astro:content";
+import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
 const metaBase = getPageMeta("en", "home"); // fallback
 const meta = {
@@ -29,7 +30,8 @@ const posts = allPosts
       ) : (
         posts.map(post => {
           const slug = post.id.split('/').slice(1).join('/');
-          const imageAlt = post.data.imageAlt || `${post.data.title} featured image`;
+          const primaryKeyword = getPrimaryKeyword(post.data.keywords, post.data.title);
+          const imageAlt = ensureKeywordInAlt(post.data.imageAlt, primaryKeyword, `${primaryKeyword} featured image`);
           const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
           return (
             <article class="blog-card">
