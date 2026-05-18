@@ -25,29 +25,11 @@ const contentSecurityPolicy = [
 ].join("; ");
 const managedSources = new Set([
   securityHeadersSource,
-  "^/$",
   "^/index\\.php/?$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
   "^/(.*\\.(?:html|xml|txt|json))$",
 ]);
-
-const redirectRoutes = [
-  {
-    src: "^/$",
-    headers: {
-      Location: "/gmt-to-est-converter/",
-    },
-    status: 301,
-  },
-  {
-    src: "^/index\\.php/?$",
-    headers: {
-      Location: "/gmt-to-est-converter/",
-    },
-    status: 301,
-  },
-];
 
 const securityRoutes = [
   {
@@ -88,19 +70,12 @@ const cacheRoutes = [
 
 const routes = Array.isArray(config.routes) ? config.routes : [];
 const filteredRoutes = routes.filter((route) => !managedSources.has(route.src));
-const wellKnownIndex = filteredRoutes.findIndex((route) => route.src === "^/\\.well-known(?:/.*)?$");
-const redirectIndex = wellKnownIndex === -1 ? 0 : wellKnownIndex + 1;
-const withRedirects = [
-  ...filteredRoutes.slice(0, redirectIndex),
-  ...redirectRoutes,
-  ...filteredRoutes.slice(redirectIndex),
-];
-const filesystemIndex = withRedirects.findIndex((route) => route.handle === "filesystem");
-const securityInsertIndex = filesystemIndex === -1 ? withRedirects.length : filesystemIndex;
+const filesystemIndex = filteredRoutes.findIndex((route) => route.handle === "filesystem");
+const securityInsertIndex = filesystemIndex === -1 ? filteredRoutes.length : filesystemIndex;
 const withSecurityHeaders = [
-  ...withRedirects.slice(0, securityInsertIndex),
+  ...filteredRoutes.slice(0, securityInsertIndex),
   ...securityRoutes,
-  ...withRedirects.slice(securityInsertIndex),
+  ...filteredRoutes.slice(securityInsertIndex),
 ];
 const fallbackIndex = withSecurityHeaders.findIndex((route) => route.status === 404);
 const insertIndex = fallbackIndex === -1 ? withSecurityHeaders.length : fallbackIndex;
