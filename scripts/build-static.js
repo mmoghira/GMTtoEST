@@ -348,7 +348,7 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
       </form>
     </section>
 
-    <p class="seo-keyword-intro">GMT to EST Converter gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.</p>
+    <p class="seo-keyword-intro"><strong>GMT to EST Converter</strong> gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.</p>
 
     <section class="visual-lab" aria-labelledby="visual-lab">
       <div>
