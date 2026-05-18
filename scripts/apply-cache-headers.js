@@ -8,7 +8,7 @@ const rootRedirectRoute = {
   headers: {
     Location: "/gmt-to-est-converter/",
   },
-  status: 308,
+  status: 301,
 };
 
 if (!fs.existsSync(configPath)) {
