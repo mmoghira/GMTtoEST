@@ -4,7 +4,7 @@ import VisualLab from "theme/components/VisualLab.astro";
 import { pageUrl } from "theme/i18n/config";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
-const { title, description, kind, t, context, lang = "en", primaryKeyword } = Astro.props;
+const { title, description, kind, t, context, lang = "en", primaryKeyword, meta = {} } = Astro.props;
 const lead = kind === "difference" ? t.hero.differenceLead : kind === "guide" ? t.hero.guideLead : description;
 const seoKeyword = kind === "converter" && lang === "en" ? "GMT to EST Converter" : title;
 const clocksTitle = `${seoKeyword} Live Clocks`;
@@ -13,6 +13,31 @@ const heroAlt = ensureKeywordInAlt(t.images.heroAlt, keyword, `${keyword} featur
 const clockAlt = ensureKeywordInAlt(t.images.clockAlt, keyword, `${keyword} clock comparison image`);
 const mapAlt = ensureKeywordInAlt(t.images.mapAlt, keyword, `${keyword} world time map image`);
 const keywordIntroRest = "gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.";
+const showArticleMeta = kind === "converter" && lang === "en" && !!meta?.pubDate;
+const formatHomeDate = (value?: string) => {
+  if (!value) return "";
+  const datePart = value.slice(0, 10);
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${datePart}T00:00:00Z`));
+};
+const publishedDateLabel = formatHomeDate(meta?.pubDate);
+const updatedDateLabel = formatHomeDate(meta?.updatedDate || meta?.pubDate);
+const tocItems = [
+  { href: "#converter", label: "GMT to EST Converter" },
+  { href: "#visual-lab", label: t.visual.title },
+  { href: "#live-clocks", label: t.clocks.title },
+  { href: "#quick-presets", label: t.presets.title },
+  { href: "#other-tools", label: "More time zone conversions" },
+  { href: "#chart", label: t.chart.title },
+  { href: "#strip", label: t.strip.title },
+  { href: "#uses", label: t.useCases.title },
+  { href: "#topics", label: t.topics.title },
+  { href: "#faq", label: t.faqs.title },
+];
 
 const gmtList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","EST","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 const estList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","GMT","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
@@ -37,6 +62,30 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
   <Converter intent={kind} t={t} context={context} />
 </section>
 
+{showArticleMeta && (
+  <section class="home-meta" aria-label="Publication details">
+    <p class="post-meta home-meta__line">
+      <span>Published</span>
+      <time datetime={meta.pubDate} itemprop="datePublished">{publishedDateLabel}</time>
+      <span aria-hidden="true">|</span>
+      <span>Last updated</span>
+      <time datetime={meta.updatedDate || meta.pubDate} itemprop="dateModified">{updatedDateLabel}</time>
+    </p>
+  </section>
+)}
+
+{showArticleMeta && (
+  <nav class="table-of-contents" aria-labelledby="table-of-contents">
+    <p class="toc-kicker">Navigation aid</p>
+    <h2 id="table-of-contents">Table of Contents</h2>
+    <ol>
+      {tocItems.map((item) => (
+        <li><a href={item.href}>{item.label}</a></li>
+      ))}
+    </ol>
+  </nav>
+)}
+
 <VisualLab t={t} keywordHeading={seoKeyword} />
 
 <section class="clock-grid" aria-labelledby="live-clocks">
@@ -45,7 +94,7 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
   <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
 </section>
 
-<section class="band">
+<section class="band" id="quick-presets">
   <div>
     <h2>{seoKeyword} Quick Presets</h2>
     <div class="preset-row">

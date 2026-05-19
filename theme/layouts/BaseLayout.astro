@@ -13,16 +13,27 @@ type Props = {
   mode?: string;
   meta?: any;
   enableFaqSchema?: boolean;
+  enableArticleSchema?: boolean;
+  canonicalPath?: string;
+  homePath?: string;
 };
 
-const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false } = Astro.props;
+const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false, enableArticleSchema = false, canonicalPath, homePath } = Astro.props;
 const t = getTranslation(lang);
-const canonical = `${siteUrl}${pageUrl(lang, slug)}`;
+const canonical = canonicalPath
+  ? (canonicalPath.startsWith("http") ? canonicalPath : `${siteUrl}${canonicalPath}`)
+  : `${siteUrl}${pageUrl(lang, slug)}`;
+const homePathResolved = homePath || pageUrl(lang, "");
+const homeUrl = homePathResolved.startsWith("http") ? homePathResolved : `${siteUrl}${homePathResolved}`;
 const seoTitle = meta?.seoTitle || title;
 const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
 const rawMetaImage = meta?.image || "/favicon.png";
 const metaImage = rawMetaImage.startsWith("http") ? rawMetaImage : `${siteUrl}${rawMetaImage.startsWith("/") ? rawMetaImage : `/${rawMetaImage}`}`;
 const metaImageAlt = meta?.imageAlt || title;
+const articleDatePublished = meta?.pubDate;
+const articleDateModified = meta?.updatedDate || meta?.pubDate;
+const articleImageSource = meta?.articleImage || meta?.image || meta?.preloadImage || "/assets/gmt-to-est-converter-featured-image-960.avif";
+const articleImage = articleImageSource.startsWith("http") ? articleImageSource : `${siteUrl}${articleImageSource.startsWith("/") ? articleImageSource : `/${articleImageSource}`}`;
 const ogType = meta?.ogType || (slug.startsWith("blog/") ? "article" : "website");
 const twitterCard = meta?.twitterCard || (meta?.image ? "summary_large_image" : "summary");
 const preloadImage = meta?.preloadImage || "/assets/gmt-to-est-converter-featured-image-960.avif";
@@ -32,7 +43,7 @@ const preloadImageType = meta?.preloadImageType || "image/avif";
 
 // Navigation structure for schema
 const navItems = [
-  { url: pageUrl(lang, ""), name: t.pages?.home || "Home", position: 1 },
+  { url: homePathResolved, name: t.pages?.home || "Home", position: 1 },
   { url: pageUrl(lang, "gmt-to-est"), name: t.pages?.gmtToEst || "GMT to EST", position: 2 },
   { url: pageUrl(lang, "est-to-gmt"), name: t.pages?.estToGmt || "EST to GMT", position: 3 },
   { url: pageUrl(lang, "gmt-vs-est"), name: t.pages?.gmtVsEst || "GMT vs EST", position: 4 },
@@ -54,6 +65,58 @@ const footerLinks = [
 
 const isHome = slug === "";
 const isEnglishHome = lang === "en" && isHome;
+const articleSchemas = enableArticleSchema && articleDatePublished ? [
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${canonical}#article`,
+    mainEntityOfPage: canonical,
+    headline: seoTitle,
+    description,
+    image: articleImage,
+    datePublished: articleDatePublished,
+    dateModified: articleDateModified,
+    inLanguage: lang,
+    keywords: metaKeywords,
+    author: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.svg`
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${canonical}#blogposting`,
+    mainEntityOfPage: canonical,
+    headline: seoTitle,
+    description,
+    image: articleImage,
+    datePublished: articleDatePublished,
+    dateModified: articleDateModified,
+    inLanguage: lang,
+    keywords: metaKeywords,
+    author: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.svg`
+      }
+    }
+  }
+] : [];
 
 const schema = {
   "@context": "https://schema.org",
@@ -132,12 +195,14 @@ const schema = {
       "@type": "BreadcrumbList",
       "@id": `${canonical}#breadcrumb`,
       itemListElement: isHome
-        ? [{ "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` }]
+        ? [{ "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: homeUrl }]
         : [
-            { "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: `${siteUrl}${pageUrl(lang, "")}` },
+            { "@type": "ListItem", position: 1, name: t.brand || "GMT to EST Converter", item: homeUrl },
             { "@type": "ListItem", position: 2, name: title, item: canonical }
           ]
     },
+
+    ...articleSchemas,
 
     // ── 5. FAQPage (pages with a visible FAQ section) ─────────────────────────
     ...(enableFaqSchema && t.faqs?.items?.length ? [{
@@ -172,8 +237,8 @@ const schema = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={metaImage} />
     <meta name="twitter:image:alt" content={metaImageAlt} />
-    {meta?.pubDate && <meta property="article:published_time" content={meta.pubDate} />}
-    {meta?.updatedDate && <meta property="article:modified_time" content={meta.updatedDate} />}
+    {articleDatePublished && <meta property="article:published_time" content={articleDatePublished} />}
+    {articleDateModified && <meta property="article:modified_time" content={articleDateModified} />}
     <meta name="p:domain_verify" content="9b3f625230ead5b92611adf407a5d0ca"/>
     <meta name="google-site-verification" content="L9kjVxomGCuSzz8YZfAfd7C6_I_coIAcFZ4efsfCBF4" />
     <meta name="msvalidate.01" content="9BB978FBFAF8F85CFFB7B099B245BAA7" />
@@ -193,10 +258,13 @@ const schema = {
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/favicon.png" sizes="192x192" />
     <link rel="image_src" href={metaImage} />
-    {languages.map((item) => <link rel="alternate" hreflang={item.code} href={`${siteUrl}${pageUrl(item.code, slug)}`} />)}
-    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${pageUrl("en", slug)}`} />
+    {languages.map((item) => {
+      const href = item.code === lang ? homeUrl : `${siteUrl}${pageUrl(item.code, slug)}`;
+      return <link rel="alternate" hreflang={item.code} href={href} />;
+    })}
+    <link rel="alternate" hreflang="x-default" href={homeUrl} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
-    <NavigationSchema lang={lang} t={t} />
+    <NavigationSchema lang={lang} t={t} homePath={homePathResolved} />
     <script is:inline>
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme) document.documentElement.dataset.theme = savedTheme;
@@ -242,7 +310,7 @@ const schema = {
       <div class="footer-container">
         <!-- Brand Section -->
         <div class="footer-section brand-section">
-          <a href={pageUrl(lang, "")} class="footer-logo">
+          <a href={homePathResolved} class="footer-logo">
             <img src="/logo.svg" alt="GMT to EST logo" class="footer-logo-icon" width="56" height="56" loading="lazy" decoding="async" />
             <span class="site-name">GMT to EST Converter</span>
           </a>
