@@ -28,8 +28,6 @@ faq:
     a: "Not accurately. Using EST (UTC−5) during summer months will give you results that are one hour off. Always use date-aware tools that detect EDT automatically."
 ---
 
-# Understanding the Difference Between GMT and EST
-
 Time zones can be confusing, especially when coordinating meetings or events across the Atlantic. Two of the most commonly referenced time zones are **Greenwich Mean Time (GMT)** and **Eastern Standard Time (EST)**. This guide explains what each zone means, how they differ, and how to convert accurately — including during Daylight Saving Time.
 
 ## What is GMT?
