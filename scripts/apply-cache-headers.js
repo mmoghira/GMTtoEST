@@ -2,14 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const configPath = path.join(process.cwd(), ".vercel", "output", "config.json");
-const rootRedirectSource = "^/$";
-const rootRedirectRoute = {
-  src: rootRedirectSource,
-  headers: {
-    Location: "/gmt-to-est-converter/",
-  },
-  status: 301,
-};
 
 if (!fs.existsSync(configPath)) {
   console.log("No Vercel output config found; skipping cache header patch.");
@@ -32,9 +24,7 @@ const contentSecurityPolicy = [
   "upgrade-insecure-requests",
 ].join("; ");
 const managedSources = new Set([
-  rootRedirectSource,
   securityHeadersSource,
-  "^/index\\.php/?$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
   "^/(.*\\.(?:html|xml|txt|json))$",
@@ -79,19 +69,12 @@ const cacheRoutes = [
 
 const routes = Array.isArray(config.routes) ? config.routes : [];
 const filteredRoutes = routes.filter((route) => !managedSources.has(route.src));
-const wellKnownIndex = filteredRoutes.findIndex((route) => route.src === "^/\\.well-known(?:/.*)?$");
-const redirectInsertIndex = wellKnownIndex === -1 ? 0 : wellKnownIndex + 1;
-const withRedirect = [
-  ...filteredRoutes.slice(0, redirectInsertIndex),
-  rootRedirectRoute,
-  ...filteredRoutes.slice(redirectInsertIndex),
-];
-const filesystemIndex = withRedirect.findIndex((route) => route.handle === "filesystem");
-const securityInsertIndex = filesystemIndex === -1 ? withRedirect.length : filesystemIndex;
+const filesystemIndex = filteredRoutes.findIndex((route) => route.handle === "filesystem");
+const securityInsertIndex = filesystemIndex === -1 ? filteredRoutes.length : filesystemIndex;
 const withSecurityHeaders = [
-  ...withRedirect.slice(0, securityInsertIndex),
+  ...filteredRoutes.slice(0, securityInsertIndex),
   ...securityRoutes,
-  ...withRedirect.slice(securityInsertIndex),
+  ...filteredRoutes.slice(securityInsertIndex),
 ];
 const fallbackIndex = withSecurityHeaders.findIndex((route) => route.status === 404);
 const insertIndex = fallbackIndex === -1 ? withSecurityHeaders.length : fallbackIndex;

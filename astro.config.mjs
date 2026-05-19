@@ -26,7 +26,7 @@ export default defineConfig({
     sitemap({
       changefreq: "weekly",
       priority: 0.8,
-      filter: (page) => page !== `${siteUrl}/`,
+      filter: (page) => page !== `${siteUrl}/gmt-to-est-converter/`,
       i18n: {
         defaultLocale: "en",
         locales: {

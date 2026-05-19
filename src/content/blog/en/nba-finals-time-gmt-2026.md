@@ -110,7 +110,7 @@ If you are following the whole postseason, not just the Finals, use this quick E
 | 8:30 p.m. EDT | 00:30 GMT next day | Standard 2026 Finals slot |
 | 9:00 p.m. EDT | 01:00 GMT next day | Late national window |
 
-For date-aware conversions, use the [GMT to EST Converter](/gmt-to-est-converter/) or the [EST to GMT Converter](/est-to-gmt/) instead of memorizing offsets.
+For date-aware conversions, use the [GMT to EST Converter](/) or the [EST to GMT Converter](/est-to-gmt/) instead of memorizing offsets.
 
 ## How to Watch From GMT and Nearby Timezones
 

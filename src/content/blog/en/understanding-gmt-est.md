@@ -69,7 +69,7 @@ Many people searching for "GMT to EST" conversions forget this seasonal shift. A
 | 18:00 | 13:00 | 14:00 |
 | 21:00 | 16:00 | 17:00 |
 
-For date-aware conversions, use our [GMT to EST Converter](/gmt-to-est-converter/) which automatically applies the correct offset based on the selected date.
+For date-aware conversions, use our [GMT to EST Converter](/) which automatically applies the correct offset based on the selected date.
 
 ## Quick Conversion Rules
 
