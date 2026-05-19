@@ -25,6 +25,11 @@ const canonical = canonicalPath
   : `${siteUrl}${pageUrl(lang, slug)}`;
 const homePathResolved = homePath || pageUrl(lang, "");
 const homeUrl = homePathResolved.startsWith("http") ? homePathResolved : `${siteUrl}${homePathResolved}`;
+const hreflangAlternates = languages.map((item) => ({
+  code: item.code,
+  href: `${siteUrl}${pageUrl(item.code, slug)}`
+}));
+const xDefaultHref = `${siteUrl}${pageUrl("en", slug)}`;
 const seoTitle = meta?.seoTitle || title;
 const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
 const rawMetaImage = meta?.image || "/favicon.png";
@@ -258,11 +263,10 @@ const schema = {
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/favicon.png" sizes="192x192" />
     <link rel="image_src" href={metaImage} />
-    {languages.map((item) => {
-      const href = item.code === lang ? homeUrl : `${siteUrl}${pageUrl(item.code, slug)}`;
-      return <link rel="alternate" hreflang={item.code} href={href} />;
-    })}
-    <link rel="alternate" hreflang="x-default" href={homeUrl} />
+    {hreflangAlternates.map((item) => (
+      <link rel="alternate" hreflang={item.code} href={item.href} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     <NavigationSchema lang={lang} t={t} homePath={homePathResolved} />
     <script is:inline>

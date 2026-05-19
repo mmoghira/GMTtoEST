@@ -3,8 +3,11 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 
+const rawSiteUrl = process.env.SITE_URL || "https://gmttoestconverter.com";
+const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
+
 export default defineConfig({
-  site: process.env.SITE_URL || "https://www.gmttoestconverter.com",
+  site: siteUrl,
   trailingSlash: "always",
   output: "static",
   build: {
@@ -23,7 +26,7 @@ export default defineConfig({
     sitemap({
       changefreq: "weekly",
       priority: 0.8,
-      filter: (page) => page !== "https://www.gmttoestconverter.com/",
+      filter: (page) => page !== `${siteUrl}/`,
       i18n: {
         defaultLocale: "en",
         locales: {

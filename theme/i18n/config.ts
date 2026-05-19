@@ -4,7 +4,8 @@ export type Lang = {
   dir: "ltr" | "rtl";
 };
 
-export const siteUrl = import.meta.env.SITE_URL || "https://www.gmttoestconverter.com";
+const rawSiteUrl = import.meta.env.SITE_URL || "https://gmttoestconverter.com";
+export const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
 
 export const languages: Lang[] = [
   { code: "en", name: "English", dir: "ltr" },
