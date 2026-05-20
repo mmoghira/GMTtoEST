@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const site = process.env.SITE_URL || "https://gmttoest.com";
+const rawSite = process.env.SITE_URL || "https://gmttoestconverter.com";
+const site = rawSite.replace(/\/+$/, "").replace("://www.", "://");
 const primaryKeyword = "GMT to EST Converter";
 const primaryLandingSlug = "gmt-to-est-converter";
 const languages = [
@@ -223,7 +224,7 @@ function esc(value) {
 
 function pagePath(lang, slug) {
   if (lang === "en" && !slug) {
-    return `/${primaryLandingSlug}/`;
+    return "/";
   }
   return `/${lang}/${slug ? `${slug}/` : ""}`;
 }
@@ -456,7 +457,7 @@ for (const [lang, name, dir, title, desc] of languages) {
 const [enLang, enName, enDir, enTitle, enDesc] = languages.find(([code]) => code === "en");
 write(path.join(process.cwd(), primaryLandingSlug, "index.html"), html(enLang, enName, enDir, "", "converter", enTitle, enDesc));
 
-write(path.join(process.cwd(), "index.html"), `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GMT to EST Converter</title><link rel="canonical" href="${site}/${primaryLandingSlug}/"><meta http-equiv="refresh" content="0; url=/${primaryLandingSlug}/"></head><body><a href="/${primaryLandingSlug}/">GMT to EST Converter</a></body></html>`);
+write(path.join(process.cwd(), "index.html"), html(enLang, enName, enDir, "", "converter", enTitle, enDesc));
 
 const urls = [];
 for (const [lang] of languages) {
