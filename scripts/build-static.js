@@ -276,6 +276,15 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZY6RBZFSY3');
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(title)} | GMT to EST</title>
