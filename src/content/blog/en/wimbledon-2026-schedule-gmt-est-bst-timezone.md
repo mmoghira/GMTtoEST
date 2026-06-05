@@ -4,6 +4,8 @@ description: "Wimbledon 2026 runs June 29 – July 12 at the All England Club. G
 pubDate: 2026-06-05
 updatedDate: 2026-06-05
 author: "Jackie Bruce"
+image: "/assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp"
+imageAlt: "Wimbledon 2026 full schedule in GMT and EST timezone guide showing Centre Court start times worldwide"
 keywords: "Wimbledon 2026 GMT time, Wimbledon 2026 start time EST, what time does Wimbledon start GMT, Wimbledon 2026 schedule timezone, Wimbledon BST to GMT conversion"
 sources:
   - title: "The Championships, Wimbledon 2026 – Official Site"
@@ -41,6 +43,15 @@ faq:
   <p>Wimbledon 2026 runs June 29 – July 12 at the All England Club. Centre Court starts at 1:30 PM BST (12:30 PM GMT / 8:30 AM EDT) daily. The Women's Final is July 11 and the Men's Final is July 12 — both at 2:00 PM BST (1:00 PM GMT / 9:00 AM EDT). BST is GMT+1 in summer: always subtract 1 hour to get the correct GMT time.</p>
 </div>
 
+<figure class="article-image">
+  <picture>
+    <source type="image/avif" srcset="/assets/wimbledon-2026-gmt-est-schedule-hero-600.avif 600w, /assets/wimbledon-2026-gmt-est-schedule-hero-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <source type="image/webp" srcset="/assets/wimbledon-2026-gmt-est-schedule-hero-600.webp 600w, /assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <img src="/assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp" alt="Wimbledon 2026 full schedule in GMT and EST — timezone guide showing Centre Court start times worldwide from BST" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+  </picture>
+  <figcaption>Wimbledon 2026 (June 29 – July 12): Centre Court begins at 12:30 PM GMT / 8:30 AM EDT daily. Finals at 1:00 PM GMT / 9:00 AM EDT.</figcaption>
+</figure>
+
 The most prestigious tennis tournament on earth is just **24 days away**. The 2026 Wimbledon Championships — the 139th edition — runs from **Monday, June 29 to Sunday, July 12, 2026** at the All England Lawn Tennis and Croquet Club in London. Jannik Sinner defends his men's title and Iga Świątek looks to go back-to-back on grass after her stunning 2025 victory.
 
 If you're watching from New York, Karachi, Lagos, Sydney, or anywhere outside the UK, this guide converts every session of the two-week fortnight from BST to GMT, EST, and all major timezones — so you can plan each day's viewing without any guesswork.
@@ -57,6 +68,15 @@ Wimbledon play begins daily at the following times. Matches on outside courts be
 
 > **Note:** During Wimbledon (late June to mid-July), London is on **BST (British Summer Time, GMT+1)**. GMT and BST are **not the same** during summer. To convert BST to GMT, subtract 1 hour. This is the single most common timezone mistake Wimbledon viewers make.
 
+<figure class="article-image">
+  <picture>
+    <source type="image/avif" srcset="/assets/wimbledon-2026-centre-court-schedule-600.avif 600w, /assets/wimbledon-2026-centre-court-schedule-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <source type="image/webp" srcset="/assets/wimbledon-2026-centre-court-schedule-600.webp 600w, /assets/wimbledon-2026-centre-court-schedule-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <img src="/assets/wimbledon-2026-centre-court-schedule-1200.webp" alt="Wimbledon 2026 Centre Court daily schedule showing start times in BST, GMT, EDT, PKT and IST for all courts" width="1200" height="675" loading="lazy" decoding="async">
+  </picture>
+  <figcaption>Wimbledon 2026 Centre Court daily schedule: Outside Courts 10:00 AM GMT, No. 1 Court 12:00 PM GMT, Centre Court 12:30 PM GMT, Finals 1:00 PM GMT.</figcaption>
+</figure>
+
 ## BST vs GMT — The Wimbledon Timezone Trap
 
 This is crucial and often misunderstood. Wimbledon publishes all match times in **BST (British Summer Time)**, which is **UTC+1** during summer. But GMT is **UTC+0** — meaning BST is one hour ahead of GMT.
@@ -72,6 +92,15 @@ So when Wimbledon announces Centre Court starts at **1:30 PM BST**, the correct 
 - **BST to AEST (Australia East):** add 9 hours
 
 Every Wimbledon time you see officially announced — use our [GMT to EST Converter](/gmt-to-est-converter/) to instantly get your local equivalent.
+
+<figure class="article-image">
+  <picture>
+    <source type="image/avif" srcset="/assets/wimbledon-bst-gmt-timezone-trap-600.avif 600w, /assets/wimbledon-bst-gmt-timezone-trap-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <source type="image/webp" srcset="/assets/wimbledon-bst-gmt-timezone-trap-600.webp 600w, /assets/wimbledon-bst-gmt-timezone-trap-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <img src="/assets/wimbledon-bst-gmt-timezone-trap-1200.webp" alt="Wimbledon BST vs GMT timezone trap infographic showing 1:30 PM BST equals 12:30 PM GMT — subtract 1 hour for correct Wimbledon match time in GMT" width="1200" height="675" loading="lazy" decoding="async">
+  </picture>
+  <figcaption>The Wimbledon timezone trap: BST (British Summer Time) is UTC+1, not UTC+0. Centre Court's 1:30 PM BST = 12:30 PM GMT. Always subtract 1 hour when converting Wimbledon times from BST to GMT.</figcaption>
+</figure>
 
 ## Wimbledon 2026 Full Tournament Schedule — Round by Round
 
@@ -126,6 +155,15 @@ The two most-watched days of Wimbledon each year are the Women's Final (Saturday
 ### Men's Final — Sunday, July 12, 2026
 
 All times are identical to the Women's Final table above, shifted one day to **Sunday, July 12, 2026**.
+
+<figure class="article-image">
+  <picture>
+    <source type="image/avif" srcset="/assets/wimbledon-2026-finals-global-timezone-600.avif 600w, /assets/wimbledon-2026-finals-global-timezone-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <source type="image/webp" srcset="/assets/wimbledon-2026-finals-global-timezone-600.webp 600w, /assets/wimbledon-2026-finals-global-timezone-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
+    <img src="/assets/wimbledon-2026-finals-global-timezone-1200.webp" alt="Wimbledon 2026 Finals worldwide timezone breakdown: Women's Final July 11 and Men's Final July 12 at 2:00 PM BST — 1:00 PM GMT, 9:00 AM EDT, 6:00 PM PKT, 6:30 PM IST, 11:00 PM AEST" width="1200" height="675" loading="lazy" decoding="async">
+  </picture>
+  <figcaption>Wimbledon 2026 Finals global timezone guide: Women's Final (July 11) and Men's Final (July 12) at 2:00 PM BST = 1:00 PM GMT = 9:00 AM EDT = 6:00 PM PKT = 6:30 PM IST = 11:00 PM AEST.</figcaption>
+</figure>
 
 ## Who Is Defending at Wimbledon 2026?
 
