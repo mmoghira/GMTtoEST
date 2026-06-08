@@ -287,6 +287,7 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-domain-verification" content="g0KrOt0z2BSpOIO5">
   <title>${esc(title)} | GMT to EST</title>
   <meta name="description" content="${esc(desc)}">
   <link rel="canonical" href="${canonical}">
