@@ -48,7 +48,7 @@ The **ICC Women's T20 World Cup 2026** runs in England from **June 12 to July 5,
 
 As of this June 10, 2026 update, the opener is on **Friday, June 12, 2026**. That is two days after publication, not June 11. This guide uses the ICC's published fixtures and converts every match from BST to GMT, plus the main viewing zones for the United States, Pakistan, India, Australia, Europe and Africa.
 
-For any fixture not shown in your city, use the [GMT to EST Converter](/gmt-to-est-converter/) or the [time zone guide](/time-zone-guide/) and enter the match date. Date-aware conversion matters because the UK is on BST and the US East Coast is on EDT during the tournament.
+For any fixture not shown in your city, use the [GMT to EST Converter](/) or the [time zone guide](/time-zone-guide/) and enter the match date. Date-aware conversion matters because the UK is on BST and the US East Coast is on EDT during the tournament.
 
 ## Opening Match Time Worldwide: England v Sri Lanka
 
@@ -284,6 +284,6 @@ The final is at **Lord's Cricket Ground in London** on **Sunday, July 5, 2026**.
 
 The Women's T20 World Cup 2026 starts on **Friday, June 12** and finishes with the Lord's final on **Sunday, July 5**. The safest habit is to convert the official BST fixture time by date, then set your reminder in your own timezone.
 
-For quick conversions, use the [GMT to EST Converter](/gmt-to-est-converter/) or the [EST to GMT Converter](/est-to-gmt/) and double-check any knockout fixture close to match day.
+For quick conversions, use the [GMT to EST Converter](/) or the [EST to GMT Converter](/est-to-gmt/) and double-check any knockout fixture close to match day.
 
 *Published: June 10, 2026. Fixture schedule and broadcast information are based on ICC publications and may change. Verify match times at icc-cricket.com before kickoff.*

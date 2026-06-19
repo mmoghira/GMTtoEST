@@ -53,7 +53,7 @@ If you are searching for **2028 Olympics GMT time**, **LA 2028 Olympics time zon
 
 This updated guide uses LA28's competition schedule version current as of **June 9, 2026**. It also corrects two common early-draft mistakes: the Opening Ceremony is listed by LA28 at **5:00 PM PT**, not 8:00 PM PT, and Super Saturday is **Saturday, July 29, 2028**, not July 28.
 
-For any individual event, you can also use the [GMT to EST Converter](/gmt-to-est-converter/) or the [time zone guide](/time-zone-guide/) and enter the event date. Date-aware conversion matters because Los Angeles, London and the US East Coast all use daylight saving time in July.
+For any individual event, you can also use the [GMT to EST Converter](/) or the [time zone guide](/time-zone-guide/) and enter the event date. Date-aware conversion matters because Los Angeles, London and the US East Coast all use daylight saving time in July.
 
 ## LA 2028 Key Dates and Times in GMT
 
@@ -278,7 +278,7 @@ Use this table whenever LA28 publishes an event time in Pacific Time.
 
 **Expect schedule updates.** LA28 states that the schedule is subject to change until the end of the Games, and football kickoff times are still to be announced. Recheck exact event times close to July 2028.
 
-**Use date-aware tools.** For one-off events, use the [GMT to EST Converter](/gmt-to-est-converter/) or [EST to GMT Converter](/est-to-gmt/) with the actual event date rather than a generic offset chart.
+**Use date-aware tools.** For one-off events, use the [GMT to EST Converter](/) or [EST to GMT Converter](/est-to-gmt/) with the actual event date rather than a generic offset chart.
 
 ## Frequently Asked Questions
 

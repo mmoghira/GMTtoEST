@@ -5,6 +5,31 @@ import vercel from "@astrojs/vercel";
 
 const rawSiteUrl = process.env.SITE_URL || "https://gmttoestconverter.com";
 const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
+const enableMultilingualPages = process.env.PUBLIC_ENABLE_MULTILINGUAL === "true";
+const sitemapLocales = enableMultilingualPages
+  ? {
+      en: "en",
+      es: "es",
+      zh: "zh",
+      hi: "hi",
+      ar: "ar",
+      pt: "pt",
+      ru: "ru",
+      ja: "ja",
+      de: "de",
+      fr: "fr",
+      ko: "ko",
+      it: "it",
+      tr: "tr",
+      ur: "ur",
+      bn: "bn",
+      vi: "vi",
+      th: "th",
+      id: "id",
+      fa: "fa",
+      pl: "pl",
+    }
+  : { en: "en" };
 
 export default defineConfig({
   site: siteUrl,
@@ -29,28 +54,7 @@ export default defineConfig({
       filter: (page) => page !== `${siteUrl}/gmt-to-est-converter/`,
       i18n: {
         defaultLocale: "en",
-        locales: {
-          en: "en",
-          es: "es",
-          zh: "zh",
-          hi: "hi",
-          ar: "ar",
-          pt: "pt",
-          ru: "ru",
-          ja: "ja",
-          de: "de",
-          fr: "fr",
-          ko: "ko",
-          it: "it",
-          tr: "tr",
-          ur: "ur",
-          bn: "bn",
-          vi: "vi",
-          th: "th",
-          id: "id",
-          fa: "fa",
-          pl: "pl",
-        },
+        locales: sitemapLocales,
       },
     }),
   ],

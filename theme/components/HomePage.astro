@@ -1,7 +1,7 @@
 ---
 import Converter from "theme/components/Converter.astro";
 import VisualLab from "theme/components/VisualLab.astro";
-import { pageUrl } from "theme/i18n/config";
+import { dynamicConvertersEnabled, pageUrl } from "theme/i18n/config";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
 const { title, description, kind, t, context, lang = "en", primaryKeyword, meta = {} } = Astro.props;
@@ -26,12 +26,18 @@ const formatHomeDate = (value?: string) => {
 };
 const publishedDateLabel = formatHomeDate(meta?.pubDate);
 const updatedDateLabel = formatHomeDate(meta?.updatedDate || meta?.pubDate);
+const showEditorialSections = kind === "converter" && lang === "en";
 const tocItems = [
   { href: "#converter", label: "GMT to EST Converter" },
   { href: "#visual-lab", label: t.visual.title },
+  ...(showEditorialSections ? [
+    { href: "#how-it-works", label: "How the conversion works" },
+    { href: "#conversion-examples", label: "Conversion examples" },
+    { href: "#source-notes", label: "Sources and maintenance" },
+  ] : []),
   { href: "#live-clocks", label: t.clocks.title },
   { href: "#quick-presets", label: t.presets.title },
-  { href: "#other-tools", label: "More time zone conversions" },
+  { href: "#other-tools", label: dynamicConvertersEnabled ? "More time zone conversions" : "Related resources" },
   { href: "#chart", label: t.chart.title },
   { href: "#strip", label: t.strip.title },
   { href: "#uses", label: t.useCases.title },
@@ -42,6 +48,12 @@ const tocItems = [
 const gmtList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","EST","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 const estList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","GMT","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
+const relatedResources = [
+  { href: pageUrl(lang || "en", "est-to-gmt"), title: "EST to GMT Converter", text: "Convert Eastern Time back to GMT with the same date-aware offset handling." },
+  { href: pageUrl(lang || "en", "gmt-vs-est"), title: "GMT vs EST Difference", text: "See when the offset is five hours, when it is four hours, and why EDT matters." },
+  { href: pageUrl(lang || "en", "time-zone-guide"), title: "Time Zone Guide", text: "Review GMT, UTC offsets, abbreviations, daylight saving time, and meeting planning basics." },
+  { href: pageUrl(lang || "en", "blog"), title: "Timezone Articles", text: "Read longer event schedules and practical conversion guides with listed references." },
+];
 ---
 
 <section class="hero-banner">
@@ -94,6 +106,72 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
 
 <VisualLab t={t} keywordHeading={seoKeyword} />
 
+{showEditorialSections && (
+  <section class="method-section" id="how-it-works" aria-labelledby="how-it-works-title">
+    <div class="method-intro">
+      <p class="eyebrow">Conversion method</p>
+      <h2 id="how-it-works-title">How this GMT to EST conversion works</h2>
+      <p>
+        The converter treats GMT as UTC+0 and Eastern Time as the IANA zone
+        <code>America/New_York</code>. That distinction matters because Eastern Time is EST
+        at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.
+      </p>
+    </div>
+    <div class="method-grid">
+      <article class="method-card">
+        <h3>Date-aware offset</h3>
+        <p>The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time.</p>
+      </article>
+      <article class="method-card">
+        <h3>Named zone rules</h3>
+        <p>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</p>
+      </article>
+      <article class="method-card">
+        <h3>Human-readable result</h3>
+        <p>The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it.</p>
+      </article>
+    </div>
+  </section>
+)}
+
+{showEditorialSections && (
+  <section class="examples-section" id="conversion-examples" aria-labelledby="conversion-examples-title">
+    <h2 id="conversion-examples-title">GMT to Eastern Time examples</h2>
+    <p>
+      These examples show why a date-aware converter is safer than subtracting five hours every time.
+      Use the input above for the exact date and time you need.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>GMT time</th><th>Eastern result</th><th>Why it changes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>January 15, 12:00 GMT</td><td>7:00 AM EST</td><td>Eastern Time is on standard time, UTC-5.</td></tr>
+          <tr><td>July 15, 12:00 GMT</td><td>8:00 AM EDT</td><td>Eastern Time is on daylight time, UTC-4.</td></tr>
+          <tr><td>November transition dates</td><td>Check the exact date</td><td>The local offset changes near the daylight saving transition.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}
+
+{showEditorialSections && (
+  <section class="source-notes" id="source-notes" aria-labelledby="source-notes-title">
+    <h2 id="source-notes-title">Sources and maintenance</h2>
+    <p>
+      This site is maintained as a practical scheduling utility. Time zone rules can change by law,
+      so critical travel, legal, medical, broadcast, or financial schedules should still be checked
+      against the official organizer or local authority.
+    </p>
+    <ul>
+      <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">IANA Time Zone Database</a> for named time zone rule data.</li>
+      <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">NIST Time and Frequency Division</a> for official timekeeping context.</li>
+      <li><a href="/disclaimer/">Accuracy disclaimer</a> for limitations and recommended verification steps.</li>
+    </ul>
+  </section>
+)}
+
 <section class="clock-grid" aria-labelledby="live-clocks">
   <h2 id="live-clocks">{clocksTitle}</h2>
   <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
@@ -117,29 +195,45 @@ const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(ite
 </section>
 
 <section class="other-tools" aria-labelledby="other-tools">
-  <h2 id="other-tools">{seoKeyword} More Time Zone Conversions</h2>
-  <div class="tools-grid">
-    <div class="tools-list">
-      <h3>{seoKeyword} GMT To Other Time Zones</h3>
-      <div class="tools-link-groups">
-        {chunk(gmtList).map(group => (
-          <ul>
-            {group.map(tz => <li><a href={pageUrl(lang || "en", `gmt-to-${tz.toLowerCase()}`)}>GMT to {tz}</a></li>)}
-          </ul>
+  {dynamicConvertersEnabled ? (
+    <>
+      <h2 id="other-tools">{seoKeyword} More Time Zone Conversions</h2>
+      <div class="tools-grid">
+        <div class="tools-list">
+          <h3>{seoKeyword} GMT To Other Time Zones</h3>
+          <div class="tools-link-groups">
+            {chunk(gmtList).map(group => (
+              <ul>
+                {group.map(tz => <li><a href={pageUrl(lang || "en", `gmt-to-${tz.toLowerCase()}`)}>GMT to {tz}</a></li>)}
+              </ul>
+            ))}
+          </div>
+        </div>
+        <div class="tools-list">
+          <h3>{seoKeyword} EST To Other Time Zones</h3>
+          <div class="tools-link-groups">
+            {chunk(estList).map(group => (
+              <ul>
+                {group.map(tz => <li><a href={pageUrl(lang || "en", `${tz.toLowerCase()}-to-est`)}>{tz} to EST</a></li>)}
+              </ul>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  ) : (
+    <>
+      <h2 id="other-tools">{seoKeyword} Related Resources</h2>
+      <div class="related-grid">
+        {relatedResources.map((item) => (
+          <article class="related-card">
+            <h3><a href={item.href}>{item.title}</a></h3>
+            <p>{item.text}</p>
+          </article>
         ))}
       </div>
-    </div>
-    <div class="tools-list">
-      <h3>{seoKeyword} EST To Other Time Zones</h3>
-      <div class="tools-link-groups">
-        {chunk(estList).map(group => (
-          <ul>
-            {group.map(tz => <li><a href={pageUrl(lang || "en", `${tz.toLowerCase()}-to-est`)}>{tz} to EST</a></li>)}
-          </ul>
-        ))}
-      </div>
-    </div>
-  </div>
+    </>
+  )}
 </section>
 
 <section aria-labelledby="chart">

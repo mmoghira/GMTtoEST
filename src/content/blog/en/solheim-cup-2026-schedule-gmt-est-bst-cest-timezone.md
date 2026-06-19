@@ -54,7 +54,7 @@ The **Solheim Cup 2026 schedule in GMT** is one of the trickier golf calendars t
 
 As of this June 18, 2026 update, the event week and match-day format are confirmed, but the exact match-session tee times are still listed as "to follow" by Bernardus Golf. This guide gives you the confirmed dates, the format by day, and ready-to-use CEST to GMT, BST, EDT, PKT, IST and AEST conversion tables so you can set accurate reminders when the final tee times are released.
 
-For any time not listed here, use the [GMT to EST Converter](/gmt-to-est-converter/) or the [time zone guide](/time-zone-guide/) and enter the exact September 2026 date. Date-aware conversion matters because the Netherlands is on CEST, the UK is on BST, and the US East Coast is on EDT during the Solheim Cup.
+For any time not listed here, use the [GMT to EST Converter](/) or the [time zone guide](/time-zone-guide/) and enter the exact September 2026 date. Date-aware conversion matters because the Netherlands is on CEST, the UK is on BST, and the US East Coast is on EDT during the Solheim Cup.
 
 ## Confirmed Solheim Cup 2026 Week Schedule
 
@@ -253,6 +253,6 @@ Team Europe is captained by **Anna Nordqvist**. Team USA is captained by **Angel
 
 The 2026 Solheim Cup is not live yet. It is scheduled for **September 7-13, 2026**, with match play from **September 11-13** at Bernardus Golf. Bookmark this page for the confirmed GMT, BST and EDT session table once exact CEST tee times are released.
 
-For quick conversions, use the [GMT to EST Converter](/gmt-to-est-converter/) or the [EST to GMT Converter](/est-to-gmt/) with the exact Solheim Cup date and local CEST session time.
+For quick conversions, use the [GMT to EST Converter](/) or the [EST to GMT Converter](/est-to-gmt/) with the exact Solheim Cup date and local CEST session time.
 
 *Published: June 18, 2026. Schedule status is based on official Solheim Cup, Bernardus Golf and LPGA publications. Exact match-session times remain subject to official confirmation.*

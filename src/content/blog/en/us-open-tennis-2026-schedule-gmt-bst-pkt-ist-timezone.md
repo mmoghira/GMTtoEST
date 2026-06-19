@@ -100,7 +100,7 @@ For this tournament, use the EDT conversion:
 
 Example: **7:00 PM EDT is 11:00 PM GMT**, not midnight GMT. The UK is different because London is on BST in September, so the same session is midnight BST.
 
-For a date-aware conversion, use the [GMT to EST Converter](/gmt-to-est-converter/) and choose the actual match date. If you want the bigger daylight saving explanation, see the [GMT vs EST guide](/gmt-vs-est/).
+For a date-aware conversion, use the [GMT to EST Converter](/) and choose the actual match date. If you want the bigger daylight saving explanation, see the [GMT vs EST guide](/gmt-vs-est/).
 
 ## Tournament Quick Facts
 
@@ -312,6 +312,6 @@ The main draw starts **Sunday, August 30, 2026** and finishes with the men's sin
 
 For international fans, the US Open is a tournament of two clocks: comfortable day sessions and dramatic late-night sessions. If you are in GMT or BST, the first week is easy to follow in the afternoon and evening, while Arthur Ashe night sessions require a late finish. If you are in PKT or IST, the day session is the one to build around.
 
-Bookmark this page as your **US Open 2026 GMT time** reference, and use the [GMT to EST Converter](/gmt-to-est-converter/) for any player-specific match once the official order of play is published.
+Bookmark this page as your **US Open 2026 GMT time** reference, and use the [GMT to EST Converter](/) for any player-specific match once the official order of play is published.
 
 *Published: June 16, 2026. Schedule details are based on US Open and ticketing information available on June 16, 2026. Session times, gate times and match assignments are subject to change; verify final times at USOpen.org close to the event.*

@@ -91,7 +91,7 @@ So when Wimbledon announces Centre Court starts at **1:30 PM BST**, the correct 
 - **BST to IST (India):** add 4.5 hours
 - **BST to AEST (Australia East):** add 9 hours
 
-Every Wimbledon time you see officially announced — use our [GMT to EST Converter](/gmt-to-est-converter/) to instantly get your local equivalent.
+Every Wimbledon time you see officially announced — use our [GMT to EST Converter](/) to instantly get your local equivalent.
 
 <figure class="article-image">
   <picture>
@@ -215,7 +215,7 @@ Broadcast rights for Wimbledon are split globally. Here are the main channels ca
 
 **The early rounds have surprising depth.** First and second rounds often produce dramatic upsets and five-set epics. Outside courts from 11:00 AM BST (10:00 AM GMT) feature some of the most competitive tennis of the fortnight.
 
-**Use the converter for live schedule updates.** Since the Order of Play is only confirmed the evening before, bookmark this page and use the [GMT to EST Converter](/gmt-to-est-converter/) whenever a new day's schedule is announced — you will always have the correct time in your timezone within seconds.
+**Use the converter for live schedule updates.** Since the Order of Play is only confirmed the evening before, bookmark this page and use the [GMT to EST Converter](/) whenever a new day's schedule is announced — you will always have the correct time in your timezone within seconds.
 
 ## Complete Global Timezone Reference — Centre Court Daily
 
@@ -261,10 +261,10 @@ No. During summer, London is on BST (GMT+1). BST is one hour ahead of GMT. Alway
 
 This article will be updated throughout the Championships with confirmed daily Order of Play, notable results, and any schedule changes due to weather or other disruptions.
 
-For any Wimbledon time conversion — in any timezone worldwide — use the free [GMT to EST Converter](/gmt-to-est-converter/) on this site. Enter any BST match time and get your instant local equivalent, with BST's summer offset handled automatically.
+For any Wimbledon time conversion — in any timezone worldwide — use the free [GMT to EST Converter](/) on this site. Enter any BST match time and get your instant local equivalent, with BST's summer offset handled automatically.
 
 **Wimbledon 2026 starts in 24 days.** Mark June 29 in your calendar.
 
 ---
 
-*Published: June 5, 2026. Schedule based on official Wimbledon 2026 provisional schedule. All times subject to change — verify at wimbledon.com. Use the [GMT to EST Converter](/gmt-to-est-converter/) to calculate any match time in your timezone.*
+*Published: June 5, 2026. Schedule based on official Wimbledon 2026 provisional schedule. All times subject to change — verify at wimbledon.com. Use the [GMT to EST Converter](/) to calculate any match time in your timezone.*

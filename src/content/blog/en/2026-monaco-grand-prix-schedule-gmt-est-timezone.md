@@ -193,6 +193,6 @@ Qualifying starts at **2:00 PM GMT** on Saturday, June 6, 2026.
 
 The Monaco race weekend starts with FP1 on **Friday, June 5, 2026**. Race start is **Sunday, June 7 at 13:00 GMT**.
 
-Use the [GMT to EST Converter](/gmt-to-est-converter/) to convert any F1 session time to your city instantly.
+Use the [GMT to EST Converter](/) to convert any F1 session time to your city instantly.
 
 *Published: May 23, 2026. Last updated: June 5, 2026. Schedule based on Formula1.com and subject to change.*

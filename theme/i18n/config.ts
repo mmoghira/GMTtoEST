@@ -6,8 +6,10 @@ export type Lang = {
 
 const rawSiteUrl = import.meta.env.SITE_URL || "https://gmttoestconverter.com";
 export const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
+export const multilingualPagesEnabled = import.meta.env.PUBLIC_ENABLE_MULTILINGUAL === "true";
+export const dynamicConvertersEnabled = import.meta.env.PUBLIC_ENABLE_DYNAMIC_CONVERTERS === "true";
 
-export const languages: Lang[] = [
+export const allLanguages: Lang[] = [
   { code: "en", name: "English", dir: "ltr" },
   { code: "es", name: "Español", dir: "ltr" },
   { code: "zh", name: "简体中文", dir: "ltr" },
@@ -29,6 +31,8 @@ export const languages: Lang[] = [
   { code: "fa", name: "فارسی", dir: "rtl" },
   { code: "pl", name: "Polski", dir: "ltr" }
 ];
+
+export const languages: Lang[] = multilingualPagesEnabled ? allLanguages : allLanguages.slice(0, 1);
 
 export const tzMap: Record<string, string> = {
   PST: 'America/Los_Angeles', PDT: 'America/Los_Angeles',
@@ -64,14 +68,13 @@ export const tzMap: Record<string, string> = {
 const gmtList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 const estList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
 
-const extraPages = [
+const extraPages = dynamicConvertersEnabled ? [
   ...gmtList.map(z => ({ slug: `gmt-to-${z.toLowerCase()}`, kind: "dynamic", labelKey: "dynamic", context: { from: "GMT", to: z, fromZone: "UTC", toZone: tzMap[z] } })),
   ...estList.map(z => ({ slug: `${z.toLowerCase()}-to-est`, kind: "dynamic", labelKey: "dynamic", context: { from: z, to: "EST", fromZone: tzMap[z], toZone: "America/New_York" } }))
-];
+] : [];
 
 export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
-  { slug: "gmt-to-est", kind: "converter", labelKey: "gmtToEst" },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
