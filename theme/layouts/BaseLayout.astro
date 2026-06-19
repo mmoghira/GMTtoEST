@@ -16,9 +16,11 @@ type Props = {
   enableArticleSchema?: boolean;
   canonicalPath?: string;
   homePath?: string;
+  allowAds?: boolean;
+  robots?: string;
 };
 
-const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false, enableArticleSchema = false, canonicalPath, homePath } = Astro.props;
+const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false, enableArticleSchema = false, canonicalPath, homePath, allowAds, robots } = Astro.props;
 const t = getTranslation(lang);
 
 function ensureTrailingSlash(pathname: string) {
@@ -90,6 +92,8 @@ const footerLinks = [
 const isHome = slug === "";
 const isEnglishHome = lang === "en" && isHome;
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
+const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+const shouldLoadAds = allowAds ?? (isUtilityPage || slug.startsWith("blog/"));
 const articleSchemas = enableArticleSchema && articleDatePublished ? [
   {
     "@context": "https://schema.org",
@@ -247,13 +251,13 @@ const schema = {
 
       gtag('config', 'G-ZY6RBZFSY3');
     </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532" crossorigin="anonymous"></script>
+    {shouldLoadAds && <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532" crossorigin="anonymous"></script>}
     <meta name="google-adsense-account" content="ca-pub-3364858473460532" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{seoTitle} | GMT to EST</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <meta name="robots" content={robotsContent} />
     {metaKeywords && <meta name="keywords" content={metaKeywords} />}
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={`${seoTitle} | GMT to EST`} />

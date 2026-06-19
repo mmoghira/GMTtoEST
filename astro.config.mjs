@@ -6,6 +6,11 @@ import vercel from "@astrojs/vercel";
 const rawSiteUrl = process.env.SITE_URL || "https://gmttoestconverter.com";
 const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
 const enableMultilingualPages = process.env.PUBLIC_ENABLE_MULTILINGUAL === "true";
+const sitemapExcludedPaths = new Set([
+  "/gmt-to-est/",
+  "/gmt-to-est-converter/",
+  "/sitemap/",
+]);
 const sitemapLocales = enableMultilingualPages
   ? {
       en: "en",
@@ -51,7 +56,7 @@ export default defineConfig({
     sitemap({
       changefreq: "weekly",
       priority: 0.8,
-      filter: (page) => page !== `${siteUrl}/gmt-to-est-converter/`,
+      filter: (page) => !sitemapExcludedPaths.has(new URL(page).pathname),
       i18n: {
         defaultLocale: "en",
         locales: sitemapLocales,
