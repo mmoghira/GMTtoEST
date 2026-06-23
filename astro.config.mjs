@@ -69,11 +69,20 @@ export default defineConfig({
         }
         
         // Exclude dynamic timezone converter pages that redirect to the homepage
-        // e.g. /gmt-to-pst/, /pst-to-est/, and their localized counterparts
-        const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
-        const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
+        // but keep cdt-to-est because it is now a core indexable page.
+        if (cleanPath !== "/cdt-to-est/") {
+          const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
+          const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
+          
+          if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
+            return false;
+          }
+        }
         
-        if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
+        // Exclude any localized pages (e.g., /es/, /zh/) because vercel.json
+        // permanently redirects all non-English traffic to the English version.
+        const langMatch = pathname.match(/^\/([a-z]{2})\//);
+        if (langMatch && langMatch[1] !== "en") {
           return false;
         }
         
