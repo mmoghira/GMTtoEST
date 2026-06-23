@@ -70,7 +70,7 @@ export default defineConfig({
         
         // Exclude dynamic timezone converter pages that redirect to the homepage
         // but keep cdt-to-est because it is now a core indexable page.
-        if (cleanPath !== "/cdt-to-est/") {
+        if (cleanPath !== "/cdt-to-est/" && cleanPath !== "/cst-to-est/") {
           const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
           const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
           

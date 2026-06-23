@@ -76,6 +76,7 @@ const extraPages = dynamicConvertersEnabled ? [
 export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
   { slug: "cdt-to-est", kind: "converter", labelKey: "cdtToEst" },
+  { slug: "cst-to-est", kind: "converter", labelKey: "cstToEst" },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
