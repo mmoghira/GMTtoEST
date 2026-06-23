@@ -56,7 +56,29 @@ export default defineConfig({
     sitemap({
       changefreq: "weekly",
       priority: 0.8,
-      filter: (page) => !sitemapExcludedPaths.has(new URL(page).pathname),
+      filter: (page) => {
+        const url = new URL(page);
+        const pathname = url.pathname;
+        
+        // Strip localized language prefix (e.g. /es/, /zh/) to perform clean path matches
+        const cleanPath = pathname.replace(/^\/[a-z]{2}\//, "/");
+        
+        // Exclude paths explicitly configured in exclusions list
+        if (sitemapExcludedPaths.has(cleanPath)) {
+          return false;
+        }
+        
+        // Exclude dynamic timezone converter pages that redirect to the homepage
+        // e.g. /gmt-to-pst/, /pst-to-est/, and their localized counterparts
+        const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
+        const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
+        
+        if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
+          return false;
+        }
+        
+        return true;
+      },
       i18n: {
         defaultLocale: "en",
         locales: sitemapLocales,

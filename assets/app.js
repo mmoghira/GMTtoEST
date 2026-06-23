@@ -1,56 +1,4 @@
 (() => {
-  // Back to Top Button - Initialize first, before anything else
-  const initBackToTopButton = () => {
-    const btn = document.getElementById('back-to-top');
-    if (!btn) {
-      // Try again in 100ms if button not found
-      setTimeout(initBackToTopButton, 100);
-      return;
-    }
-
-    let ticking = false;
-    const handleScroll = () => {
-      if (window.pageYOffset > 300) {
-        btn.classList.add('show');
-      } else {
-        btn.classList.remove('show');
-      }
-      ticking = false;
-    };
-
-    // Use throttling with requestAnimationFrame
-    const throttledScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(handleScroll);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', throttledScroll, { passive: true });
-    btn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // Set initial state
-    handleScroll();
-  };
-
-  // Initialize with multiple triggers to ensure it runs
-  if (document.readyState === 'complete') {
-    initBackToTopButton();
-  } else if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initBackToTopButton);
-  } else {
-    document.addEventListener('readystatechange', () => {
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        initBackToTopButton();
-      }
-    });
-  }
-
-  // Also try immediately (in case button exists)
-  setTimeout(initBackToTopButton, 0);
-
   const easternZone = "America/New_York";
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => [...document.querySelectorAll(s)];
@@ -207,13 +155,21 @@
     if (!tbody) return;
     const today = new Date();
     const p = parts(today, "UTC");
-    tbody.innerHTML = "";
+    const frag = document.createDocumentFragment();
     for (let h = 0; h < 24; h += 1) {
       const date = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, 0));
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${String(h).padStart(2, "0")}:00 GMT</td><td>${format(date, easternZone)}</td><td>${Math.abs(offsetMinutes(date) / 60)} hours behind</td>`;
-      tbody.appendChild(tr);
+      const td1 = document.createElement("td");
+      td1.textContent = `${String(h).padStart(2, "0")}:00 GMT`;
+      const td2 = document.createElement("td");
+      td2.textContent = format(date, easternZone);
+      const td3 = document.createElement("td");
+      td3.textContent = `${Math.abs(offsetMinutes(date) / 60)} hours behind`;
+      tr.append(td1, td2, td3);
+      frag.appendChild(tr);
     }
+    tbody.innerHTML = "";
+    tbody.appendChild(frag);
   }
 
   function buildStrip() {
@@ -274,6 +230,17 @@
   function init() {
     // Removed initTheme()
     initReveal();
+    const backBtn = qs('#back-to-top');
+    if (backBtn) {
+      window.addEventListener('scroll', () => {
+        requestAnimationFrame(() => {
+          backBtn.classList.toggle('show', window.scrollY > 300);
+        });
+      }, { passive: true });
+      backBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
     qs("#datetime")?.addEventListener("input", convert);
     qs("#formatToggle")?.addEventListener("change", (event) => {
       state.use24 = event.target.checked;
@@ -308,7 +275,15 @@
     buildTable();
     buildStrip();
     tick();
-    setInterval(tick, 1000);
+    let tickInterval = setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        clearInterval(tickInterval);
+      } else {
+        tick();
+        tickInterval = setInterval(tick, 1000);
+      }
+    });
   }
 
   function initFooterControls() {
@@ -330,5 +305,4 @@
   }
 
   init();
-  initFooterControls();
 })();

@@ -287,9 +287,15 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
   </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7fafc">
   <meta name="apple-domain-verification" content="g0KrOt0z2BSpOIO5">
   <title>${esc(title)} | GMT to EST</title>
   <meta name="description" content="${esc(desc)}">
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
+  <link rel="preload" as="image" href="/assets/gmt-to-est-converter-featured-image.svg">
   <link rel="canonical" href="${canonical}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -316,8 +322,8 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
         <p class="eyebrow">${esc(strings.eyebrow)}</p>
         <h1>${esc(title)}</h1>
         <p>${esc(pageLead)}</p>
-        <figure class="hero-visual reveal">
-          <img width="960" height="420" src="/assets/gmt-to-est-converter-featured-image.svg" alt="${primaryKeyword} featured image showing conversion flow">
+        <figure class="hero-visual">
+          <img width="960" height="420" fetchpriority="high" decoding="async" src="/assets/gmt-to-est-converter-featured-image.svg" alt="${primaryKeyword} featured image showing conversion flow">
         </figure>
       </div>
       <form class="converter" id="converter">
@@ -402,7 +408,7 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
           <button type="button" data-preset="trading">${esc(strings.trading)}</button>
         </div>
       </div>
-      <img loading="lazy" width="900" height="380" src="/assets/gmt-to-est-converter-clock-visual.svg" alt="${primaryKeyword} clock comparison visual">
+      <img loading="lazy" decoding="async" width="900" height="380" src="/assets/gmt-to-est-converter-clock-visual.svg" alt="${primaryKeyword} clock comparison visual">
     </section>
 
     <section aria-labelledby="chart">
@@ -436,7 +442,7 @@ function html(lang, langName, dir, slug, kind, baseTitle, desc) {
     </section>
 
     <figure class="map">
-      <img loading="lazy" width="1200" height="520" src="/assets/gmt-to-est-converter-world-time-map.svg" alt="${esc(mapAlt)}">
+      <img loading="lazy" decoding="async" width="1200" height="520" src="/assets/gmt-to-est-converter-world-time-map.svg" alt="${esc(mapAlt)}">
     </figure>
   </main>
 
