@@ -33,6 +33,14 @@ const hourlyRows = [
   ["6 PM", "9 PM"], ["7 PM", "10 PM"], ["8 PM", "11 PM"], ["9 PM", "12 AM next day"], ["10 PM", "1 AM next day"], ["11 PM", "2 AM next day"]
 ];
 
+const additionalConversions = [
+  { id: "ten-am-pdt", question: "What is 10 AM PDT in EST?", answer: "10 AM PDT = 1 PM EDT.", impact: "It is a reliable early-afternoon Eastern slot for a design review or customer presentation after the West Coast team has settled into the day." },
+  { id: "twelve-pm-pdt", question: "What is 12 PM PDT in EST?", answer: "12 PM PDT = 3 PM EDT.", impact: "A Pacific lunch-hour meeting becomes a mid-afternoon Eastern meeting, leaving time for an East Coast follow-up before close of business." },
+  { id: "three-pm-pdt", question: "What is 3 PM PDT in EST?", answer: "3 PM PDT = 6 PM EDT.", impact: "This lands after a typical Eastern workday, so reserve it for an urgent handoff, a webinar, or an audience that expects an evening slot." },
+  { id: "six-pm-pdt", question: "What is 6 PM PDT in EST?", answer: "6 PM PDT = 9 PM EDT.", impact: "It works for a nationwide launch or live community event, but it is too late for most recurring East Coast team meetings." },
+  { id: "nine-pm-pdt", question: "What is 9 PM PDT in EST?", answer: "9 PM PDT = 12 AM EDT the next day.", impact: "Always label the Eastern date as well as the time here, because a West Coast evening event has already crossed midnight for New York and Boston." }
+];
+
 const howToSteps = [
   { name: "Start with Pacific daylight time", text: "Enter the California, Seattle, or other Pacific Time appointment in the PDT input above." },
   { name: "Move the meeting three hours later", text: "Add three hours to reach the matching Eastern Time during the daylight-saving season." },
@@ -41,7 +49,9 @@ const howToSteps = [
 
 const faqItems = [
   { q: "Is PDT the same as EST?", a: "No. PDT is Pacific Daylight Time and is used on the West Coast during daylight saving time. EST is Eastern Standard Time and is used in winter. For a summer meeting, compare PDT with EDT: Eastern Time is three hours ahead." },
-  { q: "How many hours is PDT behind EST?", a: "For practical Pacific-to-Eastern scheduling during daylight saving time, Pacific Time is three hours behind Eastern Time because PDT is UTC-7 and EDT is UTC-4. Strict EST is UTC-5, so a date-aware tool should label the active Eastern abbreviation." },
+  { q: "How many hours behind is PDT from EST?", a: "For practical Pacific-to-Eastern scheduling during daylight saving time, Pacific Time is three hours behind Eastern Time because PDT is UTC-7 and EDT is UTC-4. Strict EST is UTC-5, so a date-aware tool should label the active Eastern abbreviation." },
+  { q: "What is the best meeting time between PDT and EST?", a: "For a recurring coast-to-coast business meeting, 9 AM PDT to 2 PM PDT is usually best. That is 12 PM EDT to 5 PM EDT, giving Pacific teams a productive morning and Eastern teams a usable afternoon." },
+  { q: "Why is Eastern Time 3 hours ahead of Pacific Time?", a: "During daylight saving time, Pacific locations use PDT at UTC-7 while Eastern locations use EDT at UTC-4. The three-hour difference reflects those active regional offsets and stays consistent while both zones observe daylight saving time." },
   { q: "What is 5 PM PDT in EST?", a: "5 PM PDT equals 8 PM Eastern Time, observed as EDT during the Pacific daylight-saving season." },
   { q: "What is 8 PM PDT in EST?", a: "8 PM PDT equals 11 PM Eastern Time, observed as EDT during the Pacific daylight-saving season." },
   { q: "What is 1 PM PDT in EST?", a: "1 PM PDT equals 4 PM Eastern Time, observed as EDT during the Pacific daylight-saving season." },
@@ -73,14 +83,6 @@ const schema = {
       "featureList": ["PDT input and Eastern Time output", "Live Pacific and Eastern clocks", "DST-aware date conversion", "24-hour PDT to Eastern Time chart", "Pacific-to-Eastern meeting planner"]
     },
     {
-      "@type": "BreadcrumbList",
-      "@id": `${pageUrl}#breadcrumb`,
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
-        { "@type": "ListItem", "position": 2, "name": "PDT to EST", "item": pageUrl }
-      ]
-    },
-    {
       "@type": "HowTo",
       "@id": `${pageUrl}#howto`,
       "name": "How to Convert PDT to Eastern Time",
@@ -100,7 +102,7 @@ const schema = {
 };
 ---
 
-<BaseLayout lang={lang.code} dir={lang.dir} title={meta.title} description={meta.description} slug="pdt-to-est" meta={meta}>
+<BaseLayout lang={lang.code} dir={lang.dir} title={meta.title} description={meta.description} slug="pdt-to-est" meta={meta} breadcrumbHomeLabel="Home" breadcrumbLabel="PDT to EST">
   <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
 
   <section class="hero-banner">
@@ -190,6 +192,7 @@ const schema = {
     <article><h2 id="seven-pm-pdt">What is 7 PM PDT in EST?</h2><p><strong>7 PM PDT = 10 PM EDT.</strong> Use it for evening webinars or audience events, not a standard coast-to-coast work session.</p></article>
     <article><h2 id="eight-am-pdt">What is 8 AM PDT in EST?</h2><p><strong>8 AM PDT = 11 AM EDT.</strong> This is one of the easiest morning options for a Seattle or Silicon Valley team meeting Eastern colleagues before lunch.</p></article>
     <article><h2 id="hours-behind">How Many Hours is PDT Behind EST?</h2><p><strong>Pacific Time is 3 hours behind Eastern Time</strong> while daylight saving time is active in both regions: PDT is UTC-7 and EDT is UTC-4.</p></article>
+    {additionalConversions.map((item) => <article><h2 id={item.id}>{item.question}</h2><p><strong>{item.answer}</strong> {item.impact}</p></article>)}
   </section>
 
   <section class="examples-section" aria-labelledby="pdt-vs-est-title">
@@ -270,7 +273,6 @@ const schema = {
       <article class="related-card"><h3><a href="/mst-to-est/">MST to EST converter</a></h3><p>Check the Mountain-to-Eastern difference before a cross-region call.</p></article>
       <article class="related-card"><h3><a href="/ast-to-est/">AST to EST converter</a></h3><p>Coordinate Atlantic and Eastern time for faster eastward handoffs.</p></article>
       <article class="related-card"><h3><a href="/">GMT to EST Converter</a></h3><p>Use the main tool for GMT-to-Eastern schedules and international planning.</p></article>
-      <article class="related-card"><h3><a href="/pdt-vs-est/">PDT vs EST guide</a></h3><p>Explore the Pacific and Eastern abbreviations in more detail when the comparison guide is published.</p></article>
     </div>
   </section>
 </BaseLayout>
