@@ -3,6 +3,9 @@ const { intent = "converter", t, context } = Astro.props;
 const variant = t.converter.variants[intent] || t.converter.variants.converter;
 const sourceZone = context ? context.fromZone : "UTC";
 const targetZone = context ? context.toZone : "America/New_York";
+const sourceLabel = context?.from || "GMT";
+const targetLabel = context?.to === "EST" ? "EST / EDT" : context?.to || "EST / EDT";
+const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `${context.to} time` : t.converter.toEastern;
 ---
 
 <form class="converter" id="converter" data-intent={intent} data-start-mode={variant.startMode} data-labels={JSON.stringify(t.converter)} data-source-zone={sourceZone} data-target-zone={targetZone}>
@@ -14,10 +17,10 @@ const targetZone = context ? context.toZone : "America/New_York";
     {variant.swap && <button type="button" id="swap" class="swap-button" aria-label={t.converter.swap}>⇄</button>}
   </div>
   <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={t.converter.direction}>
-    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} data-mode="gmt-est"><span>{t.converter.from}</span><b>GMT</b><small>{t.converter.toEastern}</small></button>
-    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} data-mode="est-gmt"><span>{t.converter.from}</span><b>EST / EDT</b><small>{t.converter.toGmt}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} data-mode="gmt-est"><span>{t.converter.from}</span><b>{sourceLabel}</b><small>to {targetTimeLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} data-mode="est-gmt"><span>{t.converter.from}</span><b>{targetLabel}</b><small>to {sourceLabel}</small></button>
   </div>
-  <label class="datetime-label"><span id="inputZoneName">{variant.input}</span><input id="datetime" type="datetime-local" /></label>
+  <label class="datetime-label"><span id="inputZoneName">{context ? `${sourceLabel} time` : variant.input}</span><input id="datetime" type="datetime-local" /></label>
   <div class="controls">
     <button type="button" id="now">{t.converter.now}</button>
     <label class="toggle"><input id="formatToggle" type="checkbox" checked /> {t.converter.format}</label>
@@ -26,12 +29,12 @@ const targetZone = context ? context.toZone : "America/New_York";
     <span class="step">2</span>
     <div class="answer-grid">
       <div>
-        <span id="sourceZone">{variant.source}</span>
+        <span id="sourceZone">{sourceLabel}</span>
         <strong id="sourcePreview">--</strong>
       </div>
       <div class="arrow" aria-hidden="true">→</div>
       <div>
-        <span id="outputZoneName">{variant.target}</span>
+        <span id="outputZoneName">{targetTimeLabel}</span>
         <output class="result" id="result" aria-live="polite">--</output>
       </div>
     </div>

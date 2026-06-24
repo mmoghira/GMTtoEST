@@ -77,6 +77,8 @@ export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
   { slug: "cdt-to-est", kind: "converter", labelKey: "cdtToEst" },
   { slug: "cst-to-est", kind: "converter", labelKey: "cstToEst" },
+  { slug: "mst-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "MST", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },
+  { slug: "ast-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "AST", to: "EST", fromZone: "America/Halifax", toZone: "America/New_York" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
