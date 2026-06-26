@@ -75,12 +75,12 @@ const extraPages = dynamicConvertersEnabled ? [
 
 export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
-  { slug: "cdt-to-est", kind: "converter", labelKey: "cdtToEst" },
-  { slug: "cst-to-est", kind: "converter", labelKey: "cstToEst" },
-  { slug: "kst-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "KST", to: "EST", fromZone: "Asia/Seoul", toZone: "America/New_York" } },
-  { slug: "pdt-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "PDT", to: "EST", fromZone: "America/Los_Angeles", toZone: "America/New_York" } },
-  { slug: "mst-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "MST", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },
-  { slug: "ast-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "AST", to: "EST", fromZone: "America/Halifax", toZone: "America/New_York" } },
+  { slug: "cdt-to-est", kind: "dynamic", labelKey: "cdtToEst", context: { from: "CDT", to: "EST", fromZone: "America/Chicago", toZone: "America/New_York" } },
+  { slug: "cst-to-est", kind: "dynamic", labelKey: "cstToEst", context: { from: "CST", to: "EST", fromZone: "America/Chicago", toZone: "America/New_York" } },
+  { slug: "kst-to-est", kind: "dynamic", labelKey: "kstToEst", context: { from: "KST", to: "EST", fromZone: "Asia/Seoul", toZone: "America/New_York" } },
+  { slug: "pdt-to-est", kind: "dynamic", labelKey: "pdtToEst", context: { from: "PDT", to: "EST", fromZone: "America/Los_Angeles", toZone: "America/New_York" } },
+  { slug: "mst-to-est", kind: "dynamic", labelKey: "mstToEst", context: { from: "MST", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },
+  { slug: "ast-to-est", kind: "dynamic", labelKey: "astToEst", context: { from: "AST", to: "EST", fromZone: "America/Halifax", toZone: "America/New_York" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
@@ -107,16 +107,59 @@ export function getTranslation(code: string): any {
   return deepMerge(english, selected);
 }
 
+function replaceTemplates(text: string, replacements: Record<string, string>): string {
+  if (!text) return "";
+  let result = text;
+  for (const [key, value] of Object.entries(replacements)) {
+    result = result.replace(new RegExp(`{${key}}`, "g"), value);
+  }
+  return result;
+}
+
 export function getPageMeta(code: string, labelKey = "home", pageContext?: any) {
   const t = getTranslation(code);
-  if (labelKey === "dynamic" && pageContext) {
-    const { from, to } = pageContext;
+  const specificDynamicKeys = ["cdtToEst", "cstToEst", "kstToEst", "pdtToEst", "mstToEst", "astToEst"];
+  const isSpecificDynamic = specificDynamicKeys.includes(labelKey);
+
+  if ((labelKey === "dynamic" || isSpecificDynamic) && pageContext) {
+    const { from, to, fromZone, toZone } = pageContext;
+    const replacements = { from, to, fromZone: fromZone || "UTC", toZone: toZone || "UTC" };
+    
+    const baseMeta = t.pages[labelKey] || t.pages.dynamic || {};
+    const rawTitle = baseMeta.title || "{from} to {to} Converter";
+    const rawDescription = baseMeta.description || "Use this {from} to {to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.";
+    
+    const title = replaceTemplates(rawTitle, replacements);
+    const description = replaceTemplates(rawDescription, replacements);
+
+    const faqsSource = isSpecificDynamic ? (t[`faqs_${labelKey}`]?.items || []) : (t.faqs_dynamic || []);
+    const useCasesSource = isSpecificDynamic ? (t[`useCases_${labelKey}`]?.items || []) : (t.useCases_dynamic || []);
+    const topicsSource = isSpecificDynamic ? (t[`topics_${labelKey}`]?.items || []) : (t.topics_dynamic || []);
+
+    const faqs = faqsSource.map((faq: any) => ({
+      q: replaceTemplates(faq.q, replacements),
+      a: replaceTemplates(faq.a, replacements)
+    }));
+    
+    const useCases = useCasesSource.map((uc: any) => ({
+      title: replaceTemplates(uc.title, replacements),
+      text: replaceTemplates(uc.text, replacements)
+    }));
+    
+    const topics = topicsSource.map((topic: any) => ({
+      title: replaceTemplates(topic.title, replacements),
+      text: replaceTemplates(topic.text, replacements)
+    }));
+
     return {
-      title: `${from} to ${to} Converter`,
-      description: `Use this ${from} to ${to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.`,
+      title,
+      description,
       keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`,
-      image: "/images/og/default.png",
-      imageAlt: `${from} to ${to} Converter - timezone conversion tool`
+      image: baseMeta.image || "/images/og/default.png",
+      imageAlt: baseMeta.imageAlt || `${from} to ${to} Converter - timezone conversion tool`,
+      faqs,
+      useCases,
+      topics
     };
   }
   if (labelKey === "authorJackie") {
@@ -127,7 +170,42 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
       imageAlt: "Jackie Bruce Author Profile - GMT to EST Converter"
     };
   }
-  return t.pages[labelKey] || t.pages.home;
+
+  const baseMeta = t.pages[labelKey] || t.pages.home;
+  
+  // Resolve page-specific arrays
+  let faqs = [];
+  let useCases = [];
+  let topics = [];
+
+  if (labelKey === "home" || labelKey === "gmtToEst") {
+    faqs = t.faqs_home?.items || [];
+    useCases = t.useCases_home?.items || [];
+    topics = t.topics_home?.items || [];
+  } else if (labelKey === "gmtVsEst" || labelKey === "difference") {
+    faqs = t.faqs_difference?.items || [];
+    useCases = t.useCases_difference?.items || [];
+    topics = t.topics_difference?.items || [];
+  } else if (labelKey === "estToGmt" || labelKey === "reverse") {
+    faqs = t.faqs_reverse?.items || [];
+    useCases = t.useCases_reverse?.items || [];
+    topics = t.topics_reverse?.items || [];
+  } else if (labelKey === "guide") {
+    faqs = t.faqs_guide?.items || [];
+    useCases = t.useCases_guide?.items || [];
+    topics = t.topics_guide?.items || [];
+  } else {
+    faqs = t[`faqs_${labelKey}`]?.items || t.faqs_dynamic || t.faqs?.items || [];
+    useCases = t[`useCases_${labelKey}`]?.items || t.useCases_dynamic || t.useCases?.items || [];
+    topics = t[`topics_${labelKey}`]?.items || t.topics_dynamic || t.topics?.items || [];
+  }
+
+  return {
+    ...baseMeta,
+    faqs,
+    useCases,
+    topics
+  };
 }
 
 function uppercaseZone(value: string) {

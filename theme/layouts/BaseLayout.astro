@@ -120,9 +120,134 @@ const converterFooterLinks = [...currentConverterLinks, ...generatedConverterLin
 
 const isHome = slug === "";
 const isEnglishHome = lang === "en" && isHome;
+const isComparison = slug === "gmt-vs-est";
+const isReverse = slug === "est-to-gmt";
+const isGuide = slug === "time-zone-guide";
+const isDynamic = slug.endsWith("-to-est") || slug.startsWith("gmt-to-");
+
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
 const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 const shouldLoadAds = allowAds ?? (isUtilityPage || slug.startsWith("blog/"));
+
+// 1. SoftwareApplication & WebApplication for Homepage
+const homepageAppSchema = isHome ? [
+  {
+    "@type": "SoftwareApplication",
+    "@id": `${canonical}#softwareapp`,
+    name: seoTitle,
+    url: canonical,
+    description: description,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Any",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    }
+  },
+  {
+    "@type": "WebApplication",
+    "@id": `${canonical}#webapp`,
+    name: seoTitle,
+    url: canonical,
+    description: description,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    },
+    featureList: [
+      "Real-time clock comparison",
+      "Interactive slider workday overlap",
+      "DST transition auto-calculation"
+    ]
+  }
+] : [];
+
+// 2. TechArticle schema for Comparison
+const comparisonSchema = isComparison ? [
+  {
+    "@type": "TechArticle",
+    "@id": `${canonical}#techarticle`,
+    mainEntityOfPage: canonical,
+    headline: seoTitle,
+    description: description,
+    image: metaImage,
+    inLanguage: lang,
+    author: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.svg`
+      }
+    },
+    articleBody: "Detailed timezone comparison between Greenwich Mean Time and Eastern Standard Time. Analyzing standard hours, seasonal shifts, and common scheduling pitfalls."
+  }
+] : [];
+
+// 3. Article schema for Guide
+const guideSchema = isGuide ? [
+  {
+    "@type": "Article",
+    "@id": `${canonical}#article`,
+    mainEntityOfPage: canonical,
+    headline: seoTitle,
+    description: description,
+    image: metaImage,
+    inLanguage: lang,
+    author: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: t.brand || "GMT to EST Converter",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.svg`
+      }
+    },
+    articleBody: "An educational hub regarding Coordinated Universal Time (UTC), Greenwich Mean Time (GMT), and Eastern Standard Time (EST). Explores DST history and offsets."
+  }
+] : [];
+
+// 4. HowTo schema for Reverse
+const reverseSchema = isReverse ? [
+  {
+    "@type": "HowTo",
+    "@id": `${canonical}#howto`,
+    name: seoTitle,
+    description: description,
+    step: [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "Check Eastern Time status",
+        text: "Determine if Eastern Time is in Standard Time (EST, UTC-5) or Daylight Saving Time (EDT, UTC-4)."
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "Apply offset calculation",
+        text: "Add 5 hours to the EST clock time, or add 4 hours to the EDT clock time to calculate GMT."
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "Confirm standard result",
+        text: "Verify the calculated GMT output matches the 24-hour UTC timeline."
+      }
+    ]
+  }
+] : [];
+
 const articleSchemas = enableArticleSchema && articleDatePublished ? [
   {
     "@context": "https://schema.org",
@@ -216,31 +341,7 @@ const schema = {
       }
     },
 
-    // ── 3. WebApplication (actual utility pages) ───────────────────────────────
-    ...(isUtilityPage ? [{
-      "@type": "WebApplication",
-      "@id": `${canonical}#app`,
-      name: seoTitle,
-      url: canonical,
-      description,
-      applicationCategory: "UtilitiesApplication",
-      operatingSystem: "Any",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD"
-      },
-      featureList: [
-        "GMT to EST conversion",
-        "EST to GMT conversion",
-        "Daylight Saving Time aware",
-        ...(languages.length > 1 ? ["Multi-language support"] : ["Sourced timezone guides"])
-      ],
-      isPartOf: { "@id": `${siteUrl}/#website` },
-      author: { "@id": `${siteUrl}/#organization` }
-    }] : []),
-
-    // ── 4. BreadcrumbList (per-page) ───────────────────────────────────────────
+    // ── 3. BreadcrumbList (per-page) ───────────────────────────────────────────
     {
       "@type": "BreadcrumbList",
       "@id": `${canonical}#breadcrumb`,
@@ -252,13 +353,17 @@ const schema = {
           ]
     },
 
+    ...homepageAppSchema,
+    ...comparisonSchema,
+    ...guideSchema,
+    ...reverseSchema,
     ...articleSchemas,
 
     // ── 5. FAQPage (pages with a visible FAQ section) ─────────────────────────
-    ...(enableFaqSchema && t.faqs?.items?.length ? [{
+    ...(enableFaqSchema && (meta?.faqs?.length || t.faqs?.items?.length) ? [{
       "@type": "FAQPage",
       "@id": `${canonical}#faq`,
-      mainEntity: t.faqs.items.map((item: any) => ({
+      mainEntity: (meta?.faqs || t.faqs?.items || []).map((item: any) => ({
         "@type": "Question",
         name: item.q,
         acceptedAnswer: { "@type": "Answer", text: item.a }

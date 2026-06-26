@@ -1,6 +1,24 @@
 ---
 const { intent = "converter", t, context } = Astro.props;
 const variant = t.converter.variants[intent] || t.converter.variants.converter;
+
+function replaceTemplates(text: string, replacements: Record<string, string>): string {
+  if (!text) return "";
+  let result = text;
+  for (const [key, value] of Object.entries(replacements)) {
+    result = result.replace(new RegExp(`{${key}}`, "g"), value);
+  }
+  return result;
+}
+
+const from = context?.from || "GMT";
+const to = context?.to || "EST";
+const replacements = { from, to };
+
+const heading = replaceTemplates(variant.heading, replacements);
+const input = replaceTemplates(variant.input, replacements);
+const note = replaceTemplates(variant.note, replacements);
+
 const sourceZone = context ? context.fromZone : "UTC";
 const targetZone = context ? context.toZone : "America/New_York";
 const sourceLabel = context?.from || "GMT";
@@ -12,7 +30,7 @@ const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `
   <div class="converter-head">
     <div>
       <span class="step">1</span>
-      <strong id="converterHeading">{variant.heading}</strong>
+      <strong id="converterHeading">{heading}</strong>
     </div>
     {variant.swap && <button type="button" id="swap" class="swap-button" aria-label={t.converter.swap}>⇄</button>}
   </div>
@@ -20,7 +38,7 @@ const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `
     <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} data-mode="gmt-est"><span>{t.converter.from}</span><b>{sourceLabel}</b><small>to {targetTimeLabel}</small></button>
     <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} data-mode="est-gmt"><span>{t.converter.from}</span><b>{targetLabel}</b><small>to {sourceLabel}</small></button>
   </div>
-  <label class="datetime-label"><span id="inputZoneName">{context ? `${sourceLabel} time` : variant.input}</span><input id="datetime" type="datetime-local" /></label>
+  <label class="datetime-label"><span id="inputZoneName">{context ? `${sourceLabel} time` : input}</span><input id="datetime" type="datetime-local" /></label>
   <div class="controls">
     <button type="button" id="now">{t.converter.now}</button>
     <label class="toggle"><input id="formatToggle" type="checkbox" checked /> {t.converter.format}</label>
@@ -43,5 +61,5 @@ const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `
       <button type="button" id="copy" data-copied={t.converter.copied}>{t.converter.copy}</button>
     </div>
   </div>
-  <p class="difference" id="difference">{variant.note}</p>
+  <p class="difference" id="difference">{note}</p>
 </form>

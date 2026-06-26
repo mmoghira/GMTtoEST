@@ -4,15 +4,66 @@ import VisualLab from "theme/components/VisualLab.astro";
 import { dynamicConvertersEnabled, pageUrl } from "theme/i18n/config";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
-const { title, description, kind, t, context, lang = "en", primaryKeyword, meta = {} } = Astro.props;
-const lead = kind === "difference" ? t.hero.differenceLead : kind === "guide" ? t.hero.guideLead : description;
+const { labelKey = "home", title, description, kind, t, context, lang = "en", primaryKeyword, meta = {} } = Astro.props;
+
+function replaceTemplates(text: string, replacements: Record<string, string>): string {
+  if (!text) return "";
+  let result = text;
+  for (const [key, value] of Object.entries(replacements)) {
+    result = result.replace(new RegExp(`{${key}}`, "g"), value);
+  }
+  return result;
+}
+
+const from = context?.from || "GMT";
+const to = context?.to || "EST";
+const fromZone = context?.fromZone || "UTC";
+const toZone = context?.toZone || "UTC";
+const replacements = { from, to, fromZone, toZone };
+
+// Resolve page-specific arrays and text blocks
+const activeFaqs = meta.faqs || t.faqs?.items || [];
+const activeUseCases = meta.useCases || t.useCases?.items || [];
+const activeTopics = meta.topics || t.topics?.items || [];
+
+const pageH1 = replaceTemplates(
+  kind === "difference" ? (t.pages?.gmtVsEst?.title || "GMT vs EST Difference") :
+  kind === "guide" ? (t.pages?.guide?.title || "Time Zone Guide") :
+  (t.pages[labelKey]?.title || title),
+  replacements
+);
+
+const activeKey = labelKey || kind;
+const pageIntro = replaceTemplates(t[`intro_${activeKey}`] || t[`intro_${kind}`] || description, replacements);
+const pageExplanation = replaceTemplates(t[`explanation_${activeKey}`] || t[`explanation_${kind}`] || "", replacements);
+const pageConclusion = replaceTemplates(t[`conclusion_${activeKey}`] || t[`conclusion_${kind}`] || "", replacements);
+const pageCTA = replaceTemplates(t[`cta_${activeKey}`] || t[`cta_${kind}`] || "", replacements);
+
+const explanationHeadingMap = {
+  difference: lang === "es" ? "Análisis de la diferencia horaria" : "Analyzing the Time Gap",
+  reverse: lang === "es" ? "Cómo funciona la conversión inversa" : "How the Reverse Calculation Works",
+  guide: lang === "es" ? "Evolución histórica y estándares" : "Evolution of Global Time Standards",
+  dynamic: lang === "es" ? "Cómo calcular la hora entre {from} y {to}" : "Calculating Time Between {from} and {to}"
+};
+const pageExplanationHeading = replaceTemplates(explanationHeadingMap[kind] || "Understanding the timezone difference", replacements);
+
+const conclusionHeadingMap = {
+  converter: lang === "es" ? "Conclusión y Siguiente Paso" : "Quick Summary & Next Steps",
+  difference: lang === "es" ? "Resumen de la Diferencia" : "Key Takeaways on Time Differences",
+  reverse: lang === "es" ? "Resumen de Conversión Inversa" : "Final Thoughts on Reverse Scheduling",
+  guide: lang === "es" ? "Resumen del Aprendizaje" : "Time Standards Wrap-Up",
+  dynamic: lang === "es" ? "Resumen de {from} a {to}" : "Summary of {from} to {to} Conversion"
+};
+const pageConclusionHeading = replaceTemplates(conclusionHeadingMap[kind] || conclusionHeadingMap.converter, replacements);
+
+// Custom SEO keyword & alt strings
 const seoKeyword = kind === "converter" && lang === "en" ? "GMT to EST Converter" : title;
 const clocksTitle = `${seoKeyword} Live Clocks`;
 const keyword = getPrimaryKeyword(primaryKeyword || seoKeyword, seoKeyword);
 const heroAlt = ensureKeywordInAlt(t.images.heroAlt, keyword, `${keyword} featured image`);
 const clockAlt = ensureKeywordInAlt(t.images.clockAlt, keyword, `${keyword} clock comparison image`);
 const mapAlt = ensureKeywordInAlt(t.images.mapAlt, keyword, `${keyword} world time map image`);
-const keywordIntroRest = "gives instant, date-aware conversion between GMT and Eastern Time with DST handling, live clocks, and a full comparison chart.";
+
 const showArticleMeta = kind === "converter" && lang === "en" && !!meta?.pubDate;
 const formatHomeDate = (value?: string) => {
   if (!value) return "";
@@ -26,252 +77,761 @@ const formatHomeDate = (value?: string) => {
 };
 const publishedDateLabel = formatHomeDate(meta?.pubDate);
 const updatedDateLabel = formatHomeDate(meta?.updatedDate || meta?.pubDate);
+
+// Show editorial sections only on homepage in English
 const showEditorialSections = kind === "converter" && lang === "en";
+
+// TOC Items
 const tocItems = [
-  { href: "#converter", label: "GMT to EST Converter" },
-  { href: "#visual-lab", label: t.visual.title },
+  { href: "#converter", label: seoKeyword },
+  ...(kind === "converter" ? [{ href: "#visual-lab", label: t.visual.title }] : []),
   ...(showEditorialSections ? [
     { href: "#how-it-works", label: "How the conversion works" },
     { href: "#conversion-examples", label: "Conversion examples" },
     { href: "#source-notes", label: "Sources and maintenance" },
   ] : []),
-  { href: "#live-clocks", label: t.clocks.title },
-  { href: "#quick-presets", label: t.presets.title },
-  { href: "#other-tools", label: dynamicConvertersEnabled ? "More time zone conversions" : "Related resources" },
-  { href: "#chart", label: t.chart.title },
-  { href: "#strip", label: t.strip.title },
+  ...(kind !== "guide" && kind !== "difference" && kind !== "reverse" ? [
+    { href: "#live-clocks", label: t.clocks.title },
+    { href: "#quick-presets", label: t.presets.title },
+    { href: "#chart", label: t.chart.title },
+    { href: "#strip", label: t.strip.title }
+  ] : []),
   { href: "#uses", label: t.useCases.title },
-  { href: "#topics", label: t.topics.title },
+  ...(activeTopics.length > 0 ? [{ href: "#topics", label: t.topics.title }] : []),
   { href: "#faq", label: t.faqs.title },
 ];
 
-const gmtList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","EST","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
-const estList = ["ACDT","ACST","ADT","AEDT","AEST","AKDT","AKST","AST","AWST","BST","CAT","CDT","CEST","CET","ChST","CST","EAT","EDT","EEST","EET","GMT","HDT","HKT","HST","IDT","IST","JST","KST","MDT","MEST","MET","MSK","MST","NDT","NST","NZDT","NZST","PDT","PKT","PST","SAST","SST","UTC","WAT","WEST","WET","WIB","WIT","WITA"];
-const chunk = (items: string[], size = 13) => Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
-const relatedResources = [
-  { href: pageUrl(lang || "en", "est-to-gmt"), title: "EST to GMT Converter", text: "Convert Eastern Time back to GMT with the same date-aware offset handling." },
-  { href: pageUrl(lang || "en", "gmt-vs-est"), title: "GMT vs EST Difference", text: "See when the offset is five hours, when it is four hours, and why EDT matters." },
-  { href: pageUrl(lang || "en", "time-zone-guide"), title: "Time Zone Guide", text: "Review GMT, UTC offsets, abbreviations, daylight saving time, and meeting planning basics." },
-  { href: pageUrl(lang || "en", "blog"), title: "Timezone Articles", text: "Read longer event schedules and practical conversion guides with listed references." },
-];
+const relatedResourcesMap = {
+  converter: [
+    { href: pageUrl(lang || "en", "pst-to-est"), title: lang === "es" ? "Convertidor PST a EST" : "PST to EST Converter", text: lang === "es" ? "Calculadora de tiempo de la costa oeste a la costa este." : "West Coast to East Coast timezone calculator." },
+    { href: pageUrl(lang || "en", "kst-to-est"), title: lang === "es" ? "Convertidor KST a EST" : "KST to EST Converter", text: lang === "es" ? "Conversor de Seúl a hora de Nueva York." : "Seoul to New York time converter." },
+    { href: pageUrl(lang || "en", "cst-to-est"), title: lang === "es" ? "Convertidor CST a EST" : "CST to EST Converter", text: lang === "es" ? "Calculadora para la zona central y el este." : "Central to Eastern time calculator." }
+  ],
+  difference: [
+    { href: pageUrl(lang || "en", "est-to-gmt"), title: lang === "es" ? "Calculadora inversa EST a GMT" : "EST to GMT Reverse Tool", text: lang === "es" ? "Analice el flujo inverso de la hora estándar del este a GMT." : "Analyze the reverse time flow from Eastern to GMT." },
+    { href: pageUrl(lang || "en", "time-zone-guide"), title: lang === "es" ? "Guía completa de husos horarias" : "Global Timekeeping Guide", text: lang === "es" ? "Estudie los estándares UTC, GMT e historia del meridiano." : "Study UTC, GMT standards, and meridian history." }
+  ],
+  reverse: [
+    { href: pageUrl(lang || "en", ""), title: lang === "es" ? "Convertidor principal GMT a EST" : "Direct GMT to EST Converter", text: lang === "es" ? "Regrese al convertidor principal de Greenwich a la hora del Este." : "Return to the main Greenwich to Eastern converter." },
+    { href: pageUrl(lang || "en", "pdt-to-est"), title: lang === "es" ? "Calculadora de PDT a EST" : "PDT to EST Calculator", text: lang === "es" ? "Conversor de horario de verano del Pacífico a hora estándar del Este." : "Pacific Daylight to Eastern Standard time converter." }
+  ],
+  cdtToEst: [
+    { href: pageUrl(lang || "en", "cst-to-est"), title: lang === "es" ? "Convertidor CST a EST estándar" : "CST to EST Standard Calculator", text: lang === "es" ? "Planifique para los meses de invierno cuando rige el horario estándar." : "Plan for winter months when standard time is active." },
+    { href: pageUrl(lang || "en", "mst-to-est"), title: lang === "es" ? "Convertidor MST a EST de montaña" : "MST to EST Mountain Calculator", text: lang === "es" ? "Compare la zona de montaña de Denver con la hora del este." : "Compare Denver Mountain time to Eastern time." }
+  ],
+  cstToEst: [
+    { href: pageUrl(lang || "en", "cdt-to-est"), title: lang === "es" ? "Convertidor CDT a EST de verano" : "CDT to EST Summer Calculator", text: lang === "es" ? "Planifique para el horario de verano entre Chicago y Nueva York." : "Plan for daylight saving time between Chicago and New York." },
+    { href: pageUrl(lang || "en", "pdt-to-est"), title: lang === "es" ? "Convertidor PDT a EST del Pacífico" : "PDT to EST Pacific Calculator", text: lang === "es" ? "Calcule la diferencia del Pacífico con la hora del este." : "Calculate Pacific difference to Eastern time." }
+  ],
+  kstToEst: [
+    { href: pageUrl(lang || "en", "ast-to-est"), title: lang === "es" ? "Convertidor AST a EST del Atlántico" : "AST to EST Atlantic Calculator", text: lang === "es" ? "Calcule la hora desde el Atlántico a la costa este." : "Calculate time from Atlantic zone to East Coast." },
+    { href: pageUrl(lang || "en", "pdt-to-est"), title: lang === "es" ? "Convertidor PDT a EST de California" : "PDT to EST California Calculator", text: lang === "es" ? "Compare la costa oeste con la costa este de EE. UU." : "Compare West Coast to East Coast times." }
+  ],
+  pdtToEst: [
+    { href: pageUrl(lang || "en", "mst-to-est"), title: lang === "es" ? "Convertidor MST a EST de montaña" : "MST to EST Mountain Calculator", text: lang === "es" ? "Compare Denver y Phoenix con la hora de Nueva York." : "Compare Denver and Phoenix with New York time." },
+    { href: pageUrl(lang || "en", "cst-to-est"), title: lang === "es" ? "Convertidor CST a EST de Chicago" : "CST to EST Chicago Calculator", text: lang === "es" ? "Calcule la hora del medio oeste a la costa este." : "Calculate Midwestern time to East Coast." }
+  ],
+  mstToEst: [
+    { href: pageUrl(lang || "en", "pdt-to-est"), title: lang === "es" ? "Convertidor PDT a EST de California" : "PDT to EST California Calculator", text: lang === "es" ? "Compare la costa oeste con la costa este de EE. UU." : "Compare West Coast to East Coast times." },
+    { href: pageUrl(lang || "en", "ast-to-est"), title: lang === "es" ? "Convertidor AST a EST del Atlántico" : "AST to EST Atlantic Calculator", text: lang === "es" ? "Compare el tiempo del Atlántico con la hora del este." : "Compare Atlantic time to Eastern time." }
+  ],
+  astToEst: [
+    { href: pageUrl(lang || "en", "cdt-to-est"), title: lang === "es" ? "Convertidor CDT a EST de verano" : "CDT to EST Summer Calculator", text: lang === "es" ? "Compare la zona central con la costa este de EE. UU." : "Compare Central zone to US East Coast." },
+    { href: pageUrl(lang || "en", "kst-to-est"), title: lang === "es" ? "Convertidor KST a EST de Corea" : "KST to EST Korea Calculator", text: lang === "es" ? "Compare la hora de Seúl con la hora de Nueva York." : "Compare Seoul time to New York time." }
+  ],
+  dynamic: [
+    { href: pageUrl(lang || "en", ""), title: lang === "es" ? "Calculadora de GMT a EST principal" : "Main GMT to EST Dashboard", text: lang === "es" ? "Regresa a nuestro convertidor base." : "Return to our primary timezone conversion utility." },
+    { href: pageUrl(lang || "en", "est-to-gmt"), title: lang === "es" ? "Convertidor inverso de EST a GMT" : "Reverse EST to GMT Tool", text: lang === "es" ? "Calcula la dirección inversa para la costa este." : "Perform reverse calculations for the East Coast." }
+  ]
+};
+const activeRelatedResources = relatedResourcesMap[labelKey] || relatedResourcesMap[kind] || relatedResourcesMap.converter;
+
+const eyebrowMap = {
+  converter: t.hero?.eyebrow || "Instant timezone calculator",
+  difference: lang === "es" ? "Comparación de zonas horarias" : "Timezone difference analyser",
+  reverse: lang === "es" ? "Calculadora de hora inversa" : "Reverse timezone calculator",
+  guide: lang === "es" ? "Recurso de aprendizaje de zona horaria" : "Timezone learning resource",
+  cdtToEst: lang === "es" ? "Convertidor CDT a EST en vivo" : "CDT to EST live calculator",
+  cstToEst: lang === "es" ? "Convertidor CST a EST en vivo" : "CST to EST live calculator",
+  kstToEst: lang === "es" ? "Convertidor KST a EST en vivo" : "KST to EST live calculator",
+  pdtToEst: lang === "es" ? "Convertidor PDT a EST en vivo" : "PDT to EST live calculator",
+  mstToEst: lang === "es" ? "Convertidor MST a EST en vivo" : "MST to EST live calculator",
+  astToEst: lang === "es" ? "Convertidor AST a EST en vivo" : "AST to EST live calculator",
+  dynamic: lang === "es" ? "Conversión de zona horaria local" : "Local timezone calculator"
+};
+const pageEyebrow = eyebrowMap[labelKey] || eyebrowMap[kind] || eyebrowMap.converter;
+
+// Page-specific diagram visuals
+const heroDiagramMap = {
+  converter: "/assets/gmt-to-est-timeflow-hero.svg",
+  difference: "/assets/clocks-change-2026-uk-us-offset-timeline.svg",
+  reverse: "/assets/timeflow-hero.svg",
+  guide: "/assets/world-time-map.svg",
+  cdtToEst: "/assets/cdt-to-est-converter-chart.svg",
+  cstToEst: "/assets/cst-to-est-hourly-comparison-chart.png",
+  kstToEst: "/assets/seoul-new-york-time-arc.svg",
+  pdtToEst: "/assets/pdt-to-est-daylight-saving-guide-1200.webp",
+  mstToEst: "/assets/mst-est-offset-bridge.svg",
+  astToEst: "/assets/world-time-map.svg"
+};
+const heroDiagram = heroDiagramMap[labelKey] || heroDiagramMap[kind] || "/assets/world-time-map.svg";
+
+const clockDiagramMap = {
+  converter: "/assets/gmt-to-est-converter-clock-visual.svg",
+  difference: "/assets/gmt-to-est-clock-visual.svg",
+  reverse: "/assets/clock-visual.svg",
+  cdtToEst: "/assets/clock-visual.svg",
+  cstToEst: "/assets/clock-visual.svg",
+  kstToEst: "/assets/kst-est-remote-team-board.svg",
+  pdtToEst: "/assets/clock-visual.svg",
+  mstToEst: "/assets/mountain-eastern-overlap-board.svg",
+  astToEst: "/assets/clock-visual.svg"
+};
+const clockDiagram = clockDiagramMap[labelKey] || clockDiagramMap[kind] || "/assets/clock-visual.svg";
+
+const mapDiagramMap = {
+  converter: "/assets/gmt-to-est-converter-world-time-map.svg",
+  difference: "/assets/world-time-map.svg",
+  reverse: "/assets/gmt-to-est-world-time-map.svg",
+  cdtToEst: "/assets/world-time-map.svg",
+  cstToEst: "/assets/world-time-map.svg",
+  kstToEst: "/assets/korea-eastern-map-bridge.svg",
+  pdtToEst: "/assets/world-time-map.svg",
+  mstToEst: "/assets/mountain-eastern-control-room.svg",
+  astToEst: "/assets/world-time-map.svg"
+};
+const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/world-time-map.svg";
 ---
 
+<!-- Core Headings and Intros rendered on all pages -->
 <section class="hero-banner">
   <h1 class="hero-banner-title">
-    {title.split(' ').slice(0, -1).join(' ')}{' '}
-    <span class="gradient-text">{title.split(' ').slice(-1)[0]}</span>
+    {pageH1.split(' ').slice(0, -1).join(' ')}{' '}
+    <span class="gradient-text">{pageH1.split(' ').slice(-1)[0]}</span>
   </h1>
 </section>
 
-<p class="seo-keyword-intro"><strong>{seoKeyword}</strong> {keywordIntroRest}</p>
+<p class="seo-keyword-intro"><strong>{seoKeyword}</strong> {pageIntro}</p>
 
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">{t.hero.eyebrow}</p>
-    <p>{lead}</p>
-    <figure class="hero-visual reveal">
-      <picture>
-        <source type="image/avif" srcset="/assets/gmt-to-est-converter-featured-image-480.avif 480w, /assets/gmt-to-est-converter-featured-image-960.avif 960w" sizes="(max-width: 720px) 92vw, 960px" />
-        <source type="image/webp" srcset="/assets/gmt-to-est-converter-featured-image-480.webp 480w, /assets/gmt-to-est-converter-featured-image-960.webp 960w" sizes="(max-width: 720px) 92vw, 960px" />
-        <img width="960" height="420" src="/assets/gmt-to-est-converter-featured-image.svg" alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
-      </picture>
-    </figure>
-  </div>
-  <Converter intent={kind} t={t} context={context} />
-</section>
+<!-- 1. HOMEPAGE LAYOUT SEQUENCE -->
+{kind === "converter" && (
+  <>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p>{meta.description || description}</p>
+        <figure class="hero-visual reveal">
+          <picture>
+            <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
+          </picture>
+        </figure>
+      </div>
+      <Converter intent={kind} t={t} context={context} />
+    </section>
 
-{showArticleMeta && (
-  <section class="home-meta" aria-label="Publication details">
-    <p class="post-meta home-meta__line">
-      <span>Published</span>
-      <time datetime={meta.pubDate} itemprop="datePublished">{publishedDateLabel}</time>
-      <span aria-hidden="true">|</span>
-      <span>Last updated</span>
-      <time datetime={meta.updatedDate || meta.pubDate} itemprop="dateModified">{updatedDateLabel}</time>
-    </p>
-  </section>
-)}
+    {showArticleMeta && (
+      <section class="home-meta" aria-label="Publication details">
+        <p class="post-meta home-meta__line">
+          <span>Published</span>
+          <time datetime={meta.pubDate} itemprop="datePublished">{publishedDateLabel}</time>
+          <span aria-hidden="true">|</span>
+          <span>Last updated</span>
+          <time datetime={meta.updatedDate || meta.pubDate} itemprop="dateModified">{updatedDateLabel}</time>
+        </p>
+      </section>
+    )}
 
-{showArticleMeta && (
-  <nav class="table-of-contents" aria-labelledby="table-of-contents">
-    <p class="toc-kicker">Navigation aid</p>
-    <h2 id="table-of-contents">Table of Contents</h2>
-    <ol>
-      {tocItems.map((item) => (
-        <li><a href={item.href}>{item.label}</a></li>
-      ))}
-    </ol>
-  </nav>
-)}
+    {showArticleMeta && (
+      <nav class="table-of-contents" aria-labelledby="table-of-contents">
+        <p class="toc-kicker">Navigation aid</p>
+        <h2 id="table-of-contents">Table of Contents</h2>
+        <ol>
+          {tocItems.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ol>
+      </nav>
+    )}
 
-<VisualLab t={t} keywordHeading={seoKeyword} />
+    <VisualLab t={t} keywordHeading={seoKeyword} />
 
-{showEditorialSections && (
-  <section class="method-section" id="how-it-works" aria-labelledby="how-it-works-title">
-    <div class="method-intro">
-      <p class="eyebrow">Conversion method</p>
-      <h2 id="how-it-works-title">How this GMT to EST conversion works</h2>
-      <p>
-        The converter treats GMT as UTC+0 and Eastern Time as the IANA zone
-        <code>America/New_York</code>. That distinction matters because Eastern Time is EST
-        at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.
-      </p>
-    </div>
-    <div class="method-grid">
-      <article class="method-card">
-        <h3>Date-aware offset</h3>
-        <p>The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time.</p>
-      </article>
-      <article class="method-card">
-        <h3>Named zone rules</h3>
-        <p>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</p>
-      </article>
-      <article class="method-card">
-        <h3>Human-readable result</h3>
-        <p>The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it.</p>
-      </article>
-    </div>
-  </section>
-)}
-
-{showEditorialSections && (
-  <section class="examples-section" id="conversion-examples" aria-labelledby="conversion-examples-title">
-    <h2 id="conversion-examples-title">GMT to Eastern Time examples</h2>
-    <p>
-      These examples show why a date-aware converter is safer than subtracting five hours every time.
-      Use the input above for the exact date and time you need.
-    </p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>GMT time</th><th>Eastern result</th><th>Why it changes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>January 15, 12:00 GMT</td><td>7:00 AM EST</td><td>Eastern Time is on standard time, UTC-5.</td></tr>
-          <tr><td>July 15, 12:00 GMT</td><td>8:00 AM EDT</td><td>Eastern Time is on daylight time, UTC-4.</td></tr>
-          <tr><td>November transition dates</td><td>Check the exact date</td><td>The local offset changes near the daylight saving transition.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-)}
-
-{showEditorialSections && (
-  <section class="source-notes" id="source-notes" aria-labelledby="source-notes-title">
-    <h2 id="source-notes-title">Sources and maintenance</h2>
-    <p>
-      This site is maintained as a practical scheduling utility. Time zone rules can change by law,
-      so critical travel, legal, medical, broadcast, or financial schedules should still be checked
-      against the official organizer or local authority.
-    </p>
-    <ul>
-      <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">IANA Time Zone Database</a> for named time zone rule data.</li>
-      <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">NIST Time and Frequency Division</a> for official timekeeping context.</li>
-      <li><a href="/disclaimer/">Accuracy disclaimer</a> for limitations and recommended verification steps.</li>
-    </ul>
-  </section>
-)}
-
-<section class="clock-grid" aria-labelledby="live-clocks">
-  <h2 id="live-clocks">{clocksTitle}</h2>
-  <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
-  <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
-</section>
-
-<section class="band" id="quick-presets">
-  <div>
-    <h2>{seoKeyword} Quick Presets</h2>
-    <div class="preset-row">
-      <button type="button" data-preset="meeting">{t.presets.meeting}</button>
-      <button type="button" data-preset="event">{t.presets.event}</button>
-      <button type="button" data-preset="trading">{t.presets.trading}</button>
-    </div>
-  </div>
-  <picture>
-    <source type="image/avif" srcset="/assets/gmt-to-est-converter-clock-visual-450.avif 450w, /assets/gmt-to-est-converter-clock-visual-900.avif 900w" sizes="(max-width: 720px) 92vw, 900px" />
-    <source type="image/webp" srcset="/assets/gmt-to-est-converter-clock-visual-450.webp 450w, /assets/gmt-to-est-converter-clock-visual-900.webp 900w" sizes="(max-width: 720px) 92vw, 900px" />
-    <img loading="lazy" decoding="async" width="900" height="380" src="/assets/gmt-to-est-converter-clock-visual.svg" alt={clockAlt} />
-  </picture>
-</section>
-
-<section class="other-tools" aria-labelledby="other-tools">
-  {dynamicConvertersEnabled ? (
-    <>
-      <h2 id="other-tools">{seoKeyword} More Time Zone Conversions</h2>
-      <div class="tools-grid">
-        <div class="tools-list">
-          <h3>{seoKeyword} GMT To Other Time Zones</h3>
-          <div class="tools-link-groups">
-            {chunk(gmtList).map(group => (
-              <ul>
-                {group.map(tz => <li><a href={pageUrl(lang || "en", `gmt-to-${tz.toLowerCase()}`)}>GMT to {tz} Converter</a></li>)}
-              </ul>
-            ))}
-          </div>
+    {showEditorialSections && (
+      <section class="method-section" id="how-it-works" aria-labelledby="how-it-works-title">
+        <div class="method-intro">
+          <p class="eyebrow">Conversion method</p>
+          <h2 id="how-it-works-title">How this GMT to EST conversion works</h2>
+          <p>
+            The converter treats GMT as UTC+0 and Eastern Time as the IANA zone
+            <code>America/New_York</code>. That distinction matters because Eastern Time is EST
+            at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.
+          </p>
         </div>
-        <div class="tools-list">
-          <h3>{seoKeyword} EST To Other Time Zones</h3>
-          <div class="tools-link-groups">
-            {chunk(estList).map(group => (
-              <ul>
-                {group.map(tz => <li><a href={pageUrl(lang || "en", `${tz.toLowerCase()}-to-est`)}>{tz} to EST Converter</a></li>)}
-              </ul>
-            ))}
-          </div>
+        <div class="method-grid">
+          <article class="method-card">
+            <h3>Date-aware offset</h3>
+            <p>The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time.</p>
+          </article>
+          <article class="method-card">
+            <h3>Named zone rules</h3>
+            <p>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</p>
+          </article>
+          <article class="method-card">
+            <h3>Human-readable result</h3>
+            <p>The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it.</p>
+          </article>
+        </div>
+      </section>
+    )}
+
+    <section class="clock-grid" aria-labelledby="live-clocks">
+      <h2 id="live-clocks">{clocksTitle}</h2>
+      <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
+      <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+    </section>
+
+    <section class="band" id="quick-presets">
+      <div>
+        <h2>{seoKeyword} Quick Presets</h2>
+        <div class="preset-row">
+          <button type="button" data-preset="meeting">{t.presets.meeting}</button>
+          <button type="button" data-preset="event">{t.presets.event}</button>
+          <button type="button" data-preset="trading">{t.presets.trading}</button>
         </div>
       </div>
-    </>
-  ) : (
-    <>
-      <h2 id="other-tools">{seoKeyword} Related Resources</h2>
+      <picture>
+        <img loading="lazy" decoding="async" width="900" height="380" src={clockDiagram} alt={clockAlt} />
+      </picture>
+    </section>
+
+    <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
+      <div>
+        <h2 id="comparison-table-title">GMT to EST Current Offset Summary</h2>
+        <p>A quick summary of standard and daylight saving offsets between GMT and Eastern Time.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">GMT to EST Standard and Daylight Saving Offset Summary</caption>
+            <thead>
+              <tr><th>Time Zone</th><th>Standard Time Offset</th><th>Daylight Saving Offset</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Greenwich Mean Time (GMT)</td><td>UTC+0</td><td>UTC+0</td><td>Permanent</td></tr>
+              <tr><td>Eastern Standard Time (EST)</td><td>UTC-5</td><td>UTC-4 (EDT)</td><td>Seasonal</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {showEditorialSections && (
+      <section class="examples-section" id="conversion-examples" aria-labelledby="conversion-examples-title">
+        <h2 id="conversion-examples-title">GMT to Eastern Time examples</h2>
+        <p>
+          These examples show why a date-aware converter is safer than subtracting five hours every time.
+          Use the input above for the exact date and time you need.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">GMT to Eastern Time conversions examples by season</caption>
+            <thead>
+              <tr><th>GMT time</th><th>Eastern result</th><th>Why it changes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>January 15, 12:00 GMT</td><td>7:00 AM EST</td><td>Eastern Time is on standard time, UTC-5.</td></tr>
+              <tr><td>July 15, 12:00 GMT</td><td>8:00 AM EDT</td><td>Eastern Time is on daylight time, UTC-4.</td></tr>
+              <tr><td>November transition dates</td><td>Check the exact date</td><td>The local offset changes near the daylight saving transition.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
+
+    {showEditorialSections && (
+      <section class="source-notes" id="source-notes" aria-labelledby="source-notes-title">
+        <h2 id="source-notes-title">Sources and maintenance</h2>
+        <p>
+          This site is maintained as a practical scheduling utility. Time zone rules can change by law,
+          so critical travel, legal, medical, broadcast, or financial schedules should still be checked
+          against the official organizer or local authority.
+        </p>
+        <ul>
+          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">IANA Time Zone Database</a> for named time zone rule data.</li>
+          <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">NIST Time and Frequency Division</a> for official timekeeping context.</li>
+          <li><a href="/disclaimer/">Accuracy disclaimer</a> for limitations and recommended verification steps.</li>
+        </ul>
+      </section>
+    )}
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">{seoKeyword} Popular Time Zone Tools</h2>
       <div class="related-grid">
-        {relatedResources.map((item) => (
+        {activeRelatedResources.map((item) => (
           <article class="related-card">
-            <h3><a href={item.href}>{item.title}</a></h3>
-            <p>{item.text}</p>
+            <div class="related-card-title"><a href={item.href}>{replaceTemplates(item.title, replacements)}</a></div>
+            <div class="related-card-text">{replaceTemplates(item.text, replacements)}</div>
           </article>
         ))}
       </div>
-    </>
-  )}
-</section>
+    </section>
 
-<section aria-labelledby="chart">
-  <h2 id="chart">{seoKeyword} Chart</h2>
-  <div class="table-wrap"><table id="timeTable"><thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead><tbody></tbody></table></div>
-</section>
+    <section aria-labelledby="chart">
+      <h2 id="chart">{seoKeyword} Chart</h2>
+      <div class="table-wrap">
+        <table id="timeTable">
+          <caption class="sr-only">{seoKeyword} conversion grid mapping every hour of the day</caption>
+          <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
-<section aria-labelledby="strip">
-  <h2 id="strip">{seoKeyword} Workday Overlap</h2>
-  <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
-</section>
+    <section aria-labelledby="strip">
+      <h2 id="strip">{seoKeyword} Workday Overlap</h2>
+      <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
+    </section>
 
-<section class="use-cases" aria-labelledby="uses">
-  <h2 id="uses">{seoKeyword} Use Cases</h2>
-  {t.useCases.items.map((item) => (
-    <article><h3>{item.title}</h3><p>{item.text}</p></article>
-  ))}
-</section>
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{seoKeyword} Use Cases</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
 
-<section class="content" aria-labelledby="topics">
-  <h2 id="topics">{seoKeyword} Time Zone Authority</h2>
-  {t.topics.items.map((topic) => (
-    <article>
-      <h3>{topic.title}</h3>
-      <p>{topic.text}</p>
-    </article>
-  ))}
-</section>
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">{seoKeyword} Time Zone Authority</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
 
-<section class="faq" aria-labelledby="faq">
-  <h2 id="faq">{seoKeyword} FAQs</h2>
-  {t.faqs.items.map((item) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
-</section>
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{seoKeyword} FAQs</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
 
-<figure class="map">
-  <picture>
-    <source type="image/avif" srcset="/assets/gmt-to-est-converter-world-time-map-600.avif 600w, /assets/gmt-to-est-converter-world-time-map-1200.avif 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
-    <source type="image/webp" srcset="/assets/gmt-to-est-converter-world-time-map-600.webp 600w, /assets/gmt-to-est-converter-world-time-map-1200.webp 1200w" sizes="(max-width: 720px) 92vw, 1200px" />
-    <img loading="lazy" decoding="async" width="1200" height="520" src="/assets/gmt-to-est-converter-world-time-map.svg" alt={mapAlt} />
-  </picture>
-</figure>
+    <figure class="map">
+      <picture>
+        <img loading="lazy" decoding="async" width="1200" height="520" src={mapDiagram} alt={mapAlt} />
+      </picture>
+    </figure>
+
+    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+      <h2>{pageConclusionHeading}</h2>
+      <p>{pageConclusion}</p>
+      <p><strong>Next Step:</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
+
+<!-- 2. COMPARISON LAYOUT SEQUENCE -->
+{kind === "difference" && (
+  <>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p>{meta.description || description}</p>
+        <figure class="hero-visual reveal">
+          <picture>
+            <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
+          </picture>
+        </figure>
+      </div>
+      <Converter intent={kind} t={t} context={context} />
+    </section>
+
+    {pageExplanation && (
+      <section class="method-section" id="explanation" aria-labelledby="explanation-title">
+        <div class="method-intro" style="max-width: 800px; margin: 0 auto; text-align: left;">
+          <h2 id="explanation-title" style="font-size: 2rem; margin-bottom: 1.2rem;">{pageExplanationHeading}</h2>
+          <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">{pageExplanation}</p>
+        </div>
+      </section>
+    )}
+
+    <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
+      <div>
+        <h2 id="comparison-table-title">GMT vs EST Difference Matrix</h2>
+        <p>Side-by-side time values mapping Greenwich Mean Time to Winter (EST) and Summer (EDT) offsets.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">GMT vs EST Winter and Summer Offset difference matrix table</caption>
+            <thead>
+              <tr><th>GMT Time</th><th>EST (Winter) Local Time</th><th>EDT (Summer) Local Time</th><th>Time Difference</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>12:00 PM GMT</td><td>7:00 AM EST (UTC-5)</td><td>8:00 AM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
+              <tr><td>04:00 PM GMT</td><td>11:00 AM EST (UTC-5)</td><td>12:00 PM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
+              <tr><td>08:00 PM GMT</td><td>3:00 PM EST (UTC-5)</td><td>4:00 PM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{seoKeyword} Scenarios</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
+
+    <section class="clock-grid" aria-labelledby="live-clocks">
+      <h2 id="live-clocks">{clocksTitle}</h2>
+      <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
+      <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+    </section>
+
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">{seoKeyword} Shifts Analysis</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
+
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{seoKeyword} FAQs</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
+
+    <figure class="map">
+      <picture>
+        <img loading="lazy" decoding="async" width="1200" height="520" src={mapDiagram} alt={mapAlt} />
+      </picture>
+    </figure>
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">{seoKeyword} Comparison Resources</h2>
+      <div class="related-grid">
+        {activeRelatedResources.map((item) => (
+          <article class="related-card">
+            <div class="related-card-title"><a href={item.href}>{replaceTemplates(item.title, replacements)}</a></div>
+            <div class="related-card-text">{replaceTemplates(item.text, replacements)}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+      <h2>{pageConclusionHeading}</h2>
+      <p>{pageConclusion}</p>
+      <p><strong>Next Step:</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
+
+<!-- 3. REVERSE LAYOUT SEQUENCE -->
+{kind === "reverse" && (
+  <>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p>{meta.description || description}</p>
+        <figure class="hero-visual reveal">
+          <picture>
+            <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
+          </picture>
+        </figure>
+      </div>
+      <Converter intent={kind} t={t} context={context} />
+    </section>
+
+    <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
+      <div>
+        <h2 id="comparison-table-title">Eastern Time to GMT Business Hour Overlap</h2>
+        <p>Understand the standard business crossover hours when converting from Eastern Time back to GMT.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Eastern Time to GMT business hour overlap crossover grid</caption>
+            <thead>
+              <tr><th>Eastern Time (EST/EDT)</th><th>Corresponding GMT</th><th>Scheduling Practicality</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>9:00 AM Eastern</td><td>2:00 PM / 1:00 PM GMT</td><td>Perfect morning synchronization.</td></tr>
+              <tr><td>12:00 PM Eastern</td><td>5:00 PM / 4:00 PM GMT</td><td>End of GMT business day alignment.</td></tr>
+              <tr><td>2:00 PM Eastern</td><td>7:00 PM / 6:00 PM GMT</td><td>Out of office hours for GMT.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {pageExplanation && (
+      <section class="method-section" id="explanation" aria-labelledby="explanation-title">
+        <div class="method-intro" style="max-width: 800px; margin: 0 auto; text-align: left;">
+          <h2 id="explanation-title" style="font-size: 2rem; margin-bottom: 1.2rem;">{pageExplanationHeading}</h2>
+          <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">{pageExplanation}</p>
+        </div>
+      </section>
+    )}
+
+    <section class="clock-grid" aria-labelledby="live-clocks">
+      <h2 id="live-clocks">{clocksTitle}</h2>
+      <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
+      <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+    </section>
+
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{seoKeyword} Scenarios</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
+
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">{seoKeyword} Conversion Tips</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
+
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{seoKeyword} FAQs</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
+
+    <figure class="map">
+      <picture>
+        <img loading="lazy" decoding="async" width="1200" height="520" src={mapDiagram} alt={mapAlt} />
+      </picture>
+    </figure>
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">{seoKeyword} Reverse Tools</h2>
+      <div class="related-grid">
+        {activeRelatedResources.map((item) => (
+          <article class="related-card">
+            <div class="related-card-title"><a href={item.href}>{replaceTemplates(item.title, replacements)}</a></div>
+            <div class="related-card-text">{replaceTemplates(item.text, replacements)}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+      <h2>{pageConclusionHeading}</h2>
+      <p>{pageConclusion}</p>
+      <p><strong>Next Step:</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
+
+<!-- 4. TIME ZONE GUIDE LAYOUT SEQUENCE -->
+{kind === "guide" && (
+  <>
+    <section class="hero">
+      <div class="hero-copy" style="grid-column: span 2;">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p>{meta.description || description}</p>
+        <figure class="hero-visual reveal">
+          <picture>
+            <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    {pageExplanation && (
+      <section class="method-section" id="explanation" aria-labelledby="explanation-title">
+        <div class="method-intro" style="max-width: 800px; margin: 0 auto; text-align: left;">
+          <h2 id="explanation-title" style="font-size: 2rem; margin-bottom: 1.2rem;">{pageExplanationHeading}</h2>
+          <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">{pageExplanation}</p>
+        </div>
+      </section>
+    )}
+
+    <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
+      <div>
+        <h2 id="comparison-table-title">Timeline of Global Timekeeping Standards</h2>
+        <p>Key historical milestones in the establishment of standard civil time zones and timekeeping references.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Timeline of standard civil time zones and coordinates history</caption>
+            <thead>
+              <tr><th>Year</th><th>Standard Established</th><th>Key Contribution to Timekeeping</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1884</td><td>Greenwich Prime Meridian</td><td>Greenwich selected as longitude 0° for global marine navigation.</td></tr>
+              <tr><td>1918</td><td>Standard Time Act</td><td>Official US standard time zones and daylight saving rules introduced.</td></tr>
+              <tr><td>1972</td><td>Coordinated Universal Time (UTC)</td><td>UTC adopted globally to replace astronomical solar time references.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{seoKeyword} Syllabus</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
+
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">History and Evolution Topics</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
+
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{seoKeyword} Educational FAQs</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">Educational Resources</h2>
+      <div class="related-grid">
+        <article class="related-card">
+          <h3><a href={pageUrl(lang || "en", "about-us")}>{lang === "es" ? "Sobre Nosotros" : "About Our Database"}</a></h3>
+          <p>{lang === "es" ? "Conozca cómo mantenemos la precisión de los datos horaria." : "Learn how we maintain and verify our time zone database."}</p>
+        </article>
+        <article class="related-card">
+          <h3><a href={pageUrl(lang || "en", "author")}>{lang === "es" ? "Equipo Editorial" : "Editorial Board"}</a></h3>
+          <p>{lang === "es" ? "Conozca a los expertos detrás de nuestras guías y artículos." : "Meet the timezone experts and developers behind the tool."}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+      <h2>{pageConclusionHeading}</h2>
+      <p>{pageConclusion}</p>
+      <p><strong>Next Step:</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
+
+<!-- 5. DYNAMIC LANDING PAGES LAYOUT SEQUENCE -->
+{kind === "dynamic" && (
+  <>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p>{meta.description || description}</p>
+        <figure class="hero-visual reveal">
+          <picture>
+            <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
+          </picture>
+        </figure>
+      </div>
+      <Converter intent={kind} t={t} context={context} />
+    </section>
+
+    {pageExplanation && (
+      <section class="method-section" id="explanation" aria-labelledby="explanation-title">
+        <div class="method-intro" style="max-width: 800px; margin: 0 auto; text-align: left;">
+          <h2 id="explanation-title" style="font-size: 2rem; margin-bottom: 1.2rem;">{pageExplanationHeading}</h2>
+          <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">{pageExplanation}</p>
+        </div>
+      </section>
+    )}
+
+    <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
+      <div>
+        <h2 id="comparison-table-title">{context?.from} to {context?.to} Schedule Overlap</h2>
+        <p>Compare standard business hours and overlaps between {context?.from} and {context?.to}.</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">{context?.from} to {context?.to} Schedule Overlap and standard business hour matching</caption>
+            <thead>
+              <tr><th>{context?.from} Time</th><th>{context?.to} Time (Standard Offset)</th><th>{context?.to} Time (Daylight Offset)</th><th>Scheduling Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>9:00 AM</td><td>10:00 PM</td><td>11:00 PM</td><td>Time shift gap</td></tr>
+              <tr><td>1:00 PM</td><td>2:00 AM</td><td>3:00 AM</td><td>Out of hours</td></tr>
+              <tr><td>5:00 PM</td><td>6:00 AM</td><td>7:00 AM</td><td>Early morning</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="chart">
+      <h2 id="chart">{seoKeyword} Hourly Schedule Grid</h2>
+      <div class="table-wrap">
+        <table id="timeTable">
+          <caption class="sr-only">{seoKeyword} conversion grid mapping every hour of the day</caption>
+          <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="clock-grid" aria-labelledby="live-clocks">
+      <h2 id="live-clocks">{clocksTitle}</h2>
+      <div class="clock-card"><span>Current {from}</span><strong id="gmtClock">--:--</strong></div>
+      <div class="clock-card"><span>Current {to}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+    </section>
+
+    <section aria-labelledby="strip">
+      <h2 id="strip">{seoKeyword} Overlap Visualizer</h2>
+      <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
+    </section>
+
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{seoKeyword} Regional Use Cases</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
+
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">Time Zone Details for {from} and {to}</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
+
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{seoKeyword} Zone FAQs</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
+
+    <figure class="map">
+      <picture>
+        <img loading="lazy" decoding="async" width="1200" height="520" src={mapDiagram} alt={mapAlt} />
+      </picture>
+    </figure>
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">Related {from} and {to} Converters</h2>
+      <div class="related-grid">
+        {activeRelatedResources.map((item) => (
+          <article class="related-card">
+            <div class="related-card-title"><a href={item.href}>{replaceTemplates(item.title, replacements)}</a></div>
+            <div class="related-card-text">{replaceTemplates(item.text, replacements)}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+      <h2>{pageConclusionHeading}</h2>
+      <p>{pageConclusion}</p>
+      <p><strong>Next Step:</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
