@@ -23,3 +23,12 @@
 - `[x]` Load DMCABadgeHelper script once site-wide with `defer`
 - `[x]` Apply security/accessibility improvements (HTTPS, `noopener noreferrer`, `width`/`height` attributes, `alt` text)
 - `[x]` Build & verify sitemaps and HTML pages
+
+## 3. Contact Information Inconsistency Tasks
+- `[x]` Replace fake phone number placeholders (none found)
+- `[x]` Audit all files for telephone links and formats
+- `[x]` Standardize telephone display format to `+92 336 3465776`
+- `[x]` Ensure correct link format `tel:+923363465776`
+- `[x]` Add accessibility features (`aria-label`)
+- `[x]` Update legacy static HTML pages (`en/about/index.html` and `en/contact/index.html`)
+- `[x]` Build & verify sitemaps and HTML pages
