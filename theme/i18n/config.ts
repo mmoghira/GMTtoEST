@@ -118,6 +118,26 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
   return t.pages[labelKey] || t.pages.home;
 }
 
+function uppercaseZone(value: string) {
+  return value.toUpperCase();
+}
+
+export function getConverterDisplayName(page: any) {
+  if (!page || !["converter", "reverse", "difference", "dynamic"].includes(page.kind)) return undefined;
+  if (!page.slug) return "GMT to EST Converter";
+  if (page.slug === "est-to-gmt") return "EST to GMT Converter";
+  if (page.slug === "gmt-vs-est") return "GMT vs EST Difference";
+  if (page.context?.from && page.context?.to) return `${page.context.from} to ${page.context.to} Converter`;
+
+  const toEstMatch = page.slug.match(/^([a-z0-9]+)-to-est$/i);
+  if (toEstMatch) return `${uppercaseZone(toEstMatch[1])} to EST Converter`;
+
+  const gmtToMatch = page.slug.match(/^gmt-to-([a-z0-9]+)$/i);
+  if (gmtToMatch) return `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;
+
+  return undefined;
+}
+
 export function pageUrl(lang: string, slug = "") {
   if (lang === "en") {
     if (!slug) return "/";

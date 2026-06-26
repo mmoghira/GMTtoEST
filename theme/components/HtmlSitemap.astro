@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { getPageMeta, languages, pageUrl, pages } from "theme/i18n/config";
+import { getConverterDisplayName, getPageMeta, languages, pageUrl, pages } from "theme/i18n/config";
 
 type SitemapItem = {
   slug: string;
@@ -13,14 +13,14 @@ const corePages: SitemapItem[] = pages
   .filter((page) => page.kind !== "dynamic")
   .map((page) => {
     const meta = getPageMeta("en", page.labelKey, page.context);
-    return { slug: page.slug, label: meta.title };
+    return { slug: page.slug, label: getConverterDisplayName(page) || meta.title };
   });
 
 const dynamicPages: SitemapItem[] = pages
   .filter((page) => page.kind === "dynamic")
   .map((page) => ({
     slug: page.slug,
-    label: `${page.context.from} to ${page.context.to} Converter`,
+    label: getConverterDisplayName(page) || `${page.context.from} to ${page.context.to} Converter`,
   }));
 
 // Since all dynamic timezone converter pages (gmt-to-* and *-to-est) are currently

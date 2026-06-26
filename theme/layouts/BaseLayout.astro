@@ -2,7 +2,7 @@
 import "src/styles/global.css";
 import Header from "theme/components/Header.astro";
 import NavigationSchema from "theme/components/NavigationSchema.astro";
-import { getTranslation, languages, pageUrl, pages, siteUrl } from "theme/i18n/config";
+import { getConverterDisplayName, getTranslation, languages, pageUrl, pages, siteUrl } from "theme/i18n/config";
 
 type Props = {
   lang: string;
@@ -72,8 +72,8 @@ const preloadImageType = meta?.preloadImageType || "image/avif";
 // Navigation structure for schema
 const navItems = [
   { url: homePathResolved, name: t.pages?.gmtToEst?.title || "GMT to EST Converter", position: 1 },
-  { url: pageUrl(lang, "est-to-gmt"), name: t.pages?.estToGmt?.title || "EST to GMT", position: 2 },
-  { url: pageUrl(lang, "gmt-vs-est"), name: t.pages?.gmtVsEst?.title || "GMT vs EST", position: 3 },
+  { url: pageUrl(lang, "est-to-gmt"), name: t.pages?.estToGmt?.title || "EST to GMT Converter", position: 2 },
+  { url: pageUrl(lang, "gmt-vs-est"), name: t.pages?.gmtVsEst?.title || "GMT vs EST Difference", position: 3 },
   { url: pageUrl(lang, "time-zone-guide"), name: t.pages?.guide?.title || "Time Zone Guide", position: 4 }
 ];
 
@@ -91,31 +91,13 @@ const currentConverterLinks = [
   { href: pageUrl(lang, ""), label: "GMT to EST Converter" },
   { href: pageUrl(lang, "est-to-gmt"), label: "EST to GMT Converter" },
   { href: pageUrl(lang, "gmt-vs-est"), label: "GMT vs EST Difference" },
-  { href: pageUrl(lang, "cdt-to-est"), label: "CDT to EST" },
-  { href: pageUrl(lang, "cst-to-est"), label: "CST to EST" },
-  { href: pageUrl(lang, "pdt-to-est"), label: "PDT to EST" },
-  { href: pageUrl(lang, "mst-to-est"), label: "MST to EST" },
-  { href: pageUrl(lang, "ast-to-est"), label: "AST to EST" },
-  { href: pageUrl(lang, "kst-to-est"), label: "KST to EST" }
+  { href: pageUrl(lang, "cdt-to-est"), label: "CDT to EST Converter" },
+  { href: pageUrl(lang, "cst-to-est"), label: "CST to EST Converter" },
+  { href: pageUrl(lang, "pdt-to-est"), label: "PDT to EST Converter" },
+  { href: pageUrl(lang, "mst-to-est"), label: "MST to EST Converter" },
+  { href: pageUrl(lang, "ast-to-est"), label: "AST to EST Converter" },
+  { href: pageUrl(lang, "kst-to-est"), label: "KST to EST Converter" }
 ];
-
-function titleFromSlug(value: string) {
-  return value
-    .split("-")
-    .map((part) => {
-      if (part === "to" || part === "vs") return part;
-      return part.length <= 4 ? part.toUpperCase() : `${part.charAt(0).toUpperCase()}${part.slice(1)}`;
-    })
-    .join(" ");
-}
-
-function converterLabel(page: any) {
-  if (!page.slug) return "GMT to EST Converter";
-  if (page.slug === "est-to-gmt") return "EST to GMT Converter";
-  if (page.slug === "gmt-vs-est") return "GMT vs EST Difference";
-  if (page.context?.from && page.context?.to) return `${page.context.from} to ${page.context.to}`;
-  return titleFromSlug(page.slug);
-}
 
 const generatedConverterLinks = pages
   .filter((page: any) => {
@@ -124,7 +106,7 @@ const generatedConverterLinks = pages
   })
   .map((page: any) => ({
     href: pageUrl(lang, page.slug),
-    label: converterLabel(page)
+    label: getConverterDisplayName(page) || page.slug
   }));
 
 const converterFooterLinks = [...currentConverterLinks, ...generatedConverterLinks].filter((item, index, items) =>
