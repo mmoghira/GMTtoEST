@@ -2,7 +2,7 @@
 import "src/styles/global.css";
 import Header from "theme/components/Header.astro";
 import NavigationSchema from "theme/components/NavigationSchema.astro";
-import { getTranslation, languages, pageUrl, siteUrl } from "theme/i18n/config";
+import { getTranslation, languages, pageUrl, pages, siteUrl } from "theme/i18n/config";
 
 type Props = {
   lang: string;
@@ -77,18 +77,59 @@ const navItems = [
   { url: pageUrl(lang, "time-zone-guide"), name: t.pages?.guide?.title || "Time Zone Guide", position: 4 }
 ];
 
-const footerLinks = [
+const companyFooterLinks = [
   { href: pageUrl(lang, "about-us"), label: t.footer.about },
+  { href: pageUrl(lang, "contact-us"), label: t.footer.contact },
   { href: pageUrl(lang, "author"), label: t.footer.author || "Author" },
-  { href: pageUrl(lang, ""), label: t.footer.gmtToEst },
-  { href: pageUrl(lang, "est-to-gmt"), label: t.footer.estToGmt },
-  { href: pageUrl(lang, "gmt-vs-est"), label: t.footer.difference },
   { href: pageUrl(lang, "privacy-policy"), label: t.footer.privacy },
   { href: pageUrl(lang, "terms-of-service"), label: t.footer.terms || "Terms of Service" },
-  { href: pageUrl(lang, "contact-us"), label: t.footer.contact },
   { href: pageUrl(lang, "disclaimer"), label: t.footer.disclaimer || "Disclaimer" },
   { href: pageUrl(lang, "sitemap"), label: t.footer.sitemap }
 ];
+
+const currentConverterLinks = [
+  { href: pageUrl(lang, ""), label: "GMT to EST Converter" },
+  { href: pageUrl(lang, "est-to-gmt"), label: "EST to GMT Converter" },
+  { href: pageUrl(lang, "gmt-vs-est"), label: "GMT vs EST Difference" },
+  { href: pageUrl(lang, "cdt-to-est"), label: "CDT to EST" },
+  { href: pageUrl(lang, "cst-to-est"), label: "CST to EST" },
+  { href: pageUrl(lang, "pdt-to-est"), label: "PDT to EST" },
+  { href: pageUrl(lang, "mst-to-est"), label: "MST to EST" },
+  { href: pageUrl(lang, "ast-to-est"), label: "AST to EST" },
+  { href: pageUrl(lang, "kst-to-est"), label: "KST to EST" }
+];
+
+function titleFromSlug(value: string) {
+  return value
+    .split("-")
+    .map((part) => {
+      if (part === "to" || part === "vs") return part;
+      return part.length <= 4 ? part.toUpperCase() : `${part.charAt(0).toUpperCase()}${part.slice(1)}`;
+    })
+    .join(" ");
+}
+
+function converterLabel(page: any) {
+  if (!page.slug) return "GMT to EST Converter";
+  if (page.slug === "est-to-gmt") return "EST to GMT Converter";
+  if (page.slug === "gmt-vs-est") return "GMT vs EST Difference";
+  if (page.context?.from && page.context?.to) return `${page.context.from} to ${page.context.to}`;
+  return titleFromSlug(page.slug);
+}
+
+const generatedConverterLinks = pages
+  .filter((page: any) => {
+    if (!["converter", "reverse", "difference", "dynamic"].includes(page.kind)) return false;
+    return !page.slug || page.slug === "est-to-gmt" || page.slug === "gmt-vs-est" || page.slug.endsWith("-to-est") || page.slug.startsWith("gmt-to-");
+  })
+  .map((page: any) => ({
+    href: pageUrl(lang, page.slug),
+    label: converterLabel(page)
+  }));
+
+const converterFooterLinks = [...currentConverterLinks, ...generatedConverterLinks].filter((item, index, items) =>
+  items.findIndex((candidate) => candidate.href === item.href) === index
+);
 
 const isHome = slug === "";
 const isEnglishHome = lang === "en" && isHome;
@@ -366,15 +407,25 @@ const schema = {
           </div>
         </div>
 
-        <!-- Links Section -->
-        <div class="footer-section links-section">
-          <h3 class="footer-heading">PAGES</h3>
+        <!-- Company Section -->
+        <nav class="footer-section links-section" aria-labelledby="footer-company-heading">
+          <h3 id="footer-company-heading" class="footer-heading">COMPANY</h3>
           <ul class="footer-links">
-            {footerLinks.map((item) => (
+            {companyFooterLinks.map((item) => (
               <li><a href={item.href}>{item.label}</a></li>
             ))}
           </ul>
-        </div>
+        </nav>
+
+        <!-- Converters Section -->
+        <nav class="footer-section links-section" aria-labelledby="footer-converters-heading">
+          <h3 id="footer-converters-heading" class="footer-heading">CONVERTERS</h3>
+          <ul class="footer-links">
+            {converterFooterLinks.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </nav>
 
         <!-- Contact Section -->
         <div class="footer-section contact-section">
@@ -468,7 +519,7 @@ const schema = {
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr;
+    grid-template-columns: 1.8fr 1fr 1.25fr 1.15fr 1.15fr;
     gap: 3rem;
     margin-bottom: 2rem;
   }
@@ -556,6 +607,9 @@ const schema = {
   .links-section {
     display: flex;
     flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0;
   }
 
   .footer-links {
