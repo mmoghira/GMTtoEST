@@ -112,7 +112,9 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
     return {
       title: `${from} to ${to} Converter`,
       description: `Use this ${from} to ${to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.`,
-      keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`
+      keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`,
+      image: "/images/og/default.png",
+      imageAlt: `${from} to ${to} Converter - timezone conversion tool`
     };
   }
   return t.pages[labelKey] || t.pages.home;

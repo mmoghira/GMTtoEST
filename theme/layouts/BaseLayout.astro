@@ -54,16 +54,21 @@ const hreflangAlternates = [
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = meta?.seoTitle || title;
 const metaKeywords = meta && meta.keywords ? meta.keywords : t.seoKeywords;
-const rawMetaImage = meta?.image || "/favicon.png";
+const rawMetaImage = meta?.image || "/images/og/default.png";
 const metaImage = rawMetaImage.startsWith("http") ? rawMetaImage : `${siteUrl}${rawMetaImage.startsWith("/") ? rawMetaImage : `/${rawMetaImage}`}`;
 const metaImageAlt = meta?.imageAlt || title;
+const imageExtension = rawMetaImage.split('.').pop()?.toLowerCase();
+const ogImageType = imageExtension === 'webp' ? 'image/webp' :
+                    imageExtension === 'avif' ? 'image/avif' :
+                    imageExtension === 'jpg' || imageExtension === 'jpeg' ? 'image/jpeg' :
+                    imageExtension === 'svg' ? 'image/svg+xml' : 'image/png';
 const articleDatePublished = meta?.pubDate;
 const articleDateModified = meta?.updatedDate || meta?.pubDate;
 const articleImageSource = meta?.articleImage || meta?.image || meta?.preloadImage || "/assets/gmt-to-est-converter-featured-image-960.avif";
 const articleImage = articleImageSource.startsWith("http") ? articleImageSource : `${siteUrl}${articleImageSource.startsWith("/") ? articleImageSource : `/${articleImageSource}`}`;
 const ogType = meta?.ogType || (slug.startsWith("blog/") ? "article" : "website");
 const showArticleMetaTags = ogType === "article" && !!articleDatePublished;
-const twitterCard = meta?.twitterCard || (meta?.image ? "summary_large_image" : "summary");
+const twitterCard = meta?.twitterCard || "summary_large_image";
 const preloadImage = meta?.preloadImage || "/assets/gmt-to-est-converter-featured-image-960.avif";
 const preloadImageSrcset = meta?.preloadImageSrcset || "/assets/gmt-to-est-converter-featured-image-480.avif 480w, /assets/gmt-to-est-converter-featured-image-960.avif 960w";
 const preloadImageSizes = meta?.preloadImageSizes || "(max-width: 720px) 92vw, 960px";
@@ -289,6 +294,9 @@ const schema = {
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={metaImage} />
     <meta property="og:image:alt" content={metaImageAlt} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content={ogImageType} />
     <meta property="og:site_name" content="GMT to EST Converter" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content={twitterCard} />
@@ -324,6 +332,7 @@ const schema = {
     <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     <NavigationSchema lang={lang} t={t} homePath={homePathResolved} />
+    <script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js" defer></script>
     <script is:inline>
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme) document.documentElement.dataset.theme = savedTheme;
@@ -453,6 +462,20 @@ const schema = {
       <div class="footer-bottom">
         <div class="footer-bottom-inner">
           <p>&copy; {new Date().getFullYear()} {t.brand}. All rights reserved.</p>
+          <a href="https://www.dmca.com/Protection/Status.aspx?ID=01cb090d-0a05-4b4c-b0d2-949abb6ea9c5"
+             title="DMCA.com Protection Status"
+             class="dmca-badge"
+             target="_blank"
+             rel="noopener noreferrer">
+            <img
+                src="https://images.dmca.com/Badges/dmca_protected_sml_120aj.png?ID=01cb090d-0a05-4b4c-b0d2-949abb6ea9c5"
+                alt="DMCA.com Protection Status"
+                width="121"
+                height="24"
+                loading="lazy"
+                decoding="async"
+            />
+          </a>
         </div>
       </div>
     </footer>
