@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getLang, languages, siteUrl } from "theme/i18n/config";
+import { getLang, getPageMeta, languages, siteUrl } from "theme/i18n/config";
 
 export function getStaticPaths() {
   return languages.filter((l) => l.code !== "en").map((l) => ({ params: { lang: l.code } }));
@@ -8,15 +8,14 @@ export function getStaticPaths() {
 
 const lang = getLang(Astro.params.lang);
 const email    = "gmttoestconverter@gmail.com";
-const title    = "Contact Us";
-const description = "Get in touch with the GMT to EST Converter team. Send us a message for feedback, bug reports, or general support.";
+const metaBase = getPageMeta(lang.code, "contact");
 const meta = {
-  title,
-  description,
+  ...metaBase,
   keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact",
-  image: "/images/og/default.png",
-  imageAlt: "Contact Us - GMT to EST Converter"
+  robots: lang.code !== "en" ? "noindex,follow" : undefined
 };
+const title = meta.title;
+const description = meta.description;
 
 const pageCanonical = `${siteUrl}/${lang.code}/contact-us/`;
 

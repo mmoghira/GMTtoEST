@@ -5,7 +5,7 @@ import vercel from "@astrojs/vercel";
 
 const rawSiteUrl = process.env.SITE_URL || "https://gmttoestconverter.com";
 const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
-const enableMultilingualPages = process.env.PUBLIC_ENABLE_MULTILINGUAL === "true";
+const enableMultilingualPages = true;
 const sitemapExcludedPaths = new Set([
   "/gmt-to-est/",
   "/gmt-to-est-converter/",
@@ -77,13 +77,6 @@ export default defineConfig({
           if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
             return false;
           }
-        }
-        
-        // Exclude any localized pages (e.g., /es/, /zh/) because vercel.json
-        // permanently redirects all non-English traffic to the English version.
-        const langMatch = pathname.match(/^\/([a-z]{2})\//);
-        if (langMatch && langMatch[1] !== "en") {
-          return false;
         }
         
         return true;

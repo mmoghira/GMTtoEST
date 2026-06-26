@@ -6,7 +6,7 @@ export type Lang = {
 
 const rawSiteUrl = import.meta.env.SITE_URL || "https://gmttoestconverter.com";
 export const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
-export const multilingualPagesEnabled = import.meta.env.PUBLIC_ENABLE_MULTILINGUAL === "true";
+export const multilingualPagesEnabled = true;
 export const dynamicConvertersEnabled = import.meta.env.PUBLIC_ENABLE_DYNAMIC_CONVERTERS === "true";
 
 export const allLanguages: Lang[] = [
@@ -77,6 +77,8 @@ export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
   { slug: "cdt-to-est", kind: "converter", labelKey: "cdtToEst" },
   { slug: "cst-to-est", kind: "converter", labelKey: "cstToEst" },
+  { slug: "kst-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "KST", to: "EST", fromZone: "Asia/Seoul", toZone: "America/New_York" } },
+  { slug: "pdt-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "PDT", to: "EST", fromZone: "America/Los_Angeles", toZone: "America/New_York" } },
   { slug: "mst-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "MST", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },
   { slug: "ast-to-est", kind: "dynamic", labelKey: "dynamic", context: { from: "AST", to: "EST", fromZone: "America/Halifax", toZone: "America/New_York" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
@@ -115,6 +117,14 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
       keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`,
       image: "/images/og/default.png",
       imageAlt: `${from} to ${to} Converter - timezone conversion tool`
+    };
+  }
+  if (labelKey === "authorJackie") {
+    return t.pages.authorJackie || {
+      title: "Jackie Bruce",
+      description: "Author profile for Jackie Bruce, a timezone content specialist covering GMT, EST, EDT, daylight saving time, and global scheduling.",
+      image: "/images/og/default.png",
+      imageAlt: "Jackie Bruce Author Profile - GMT to EST Converter"
     };
   }
   return t.pages[labelKey] || t.pages.home;

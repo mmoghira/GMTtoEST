@@ -1,21 +1,20 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getLang, languages, siteUrl } from "theme/i18n/config";
+import { getLang, getPageMeta, languages, siteUrl } from "theme/i18n/config";
 
 export function getStaticPaths() {
   return languages.filter((l) => l.code !== "en").map((l) => ({ params: { lang: l.code } }));
 }
 
 const lang = getLang(Astro.params.lang);
-const title = "Terms of Service";
-const description = "Read the Terms of Service for GMT to EST Converter. Learn about acceptable use, intellectual property, disclaimers, and limitations of liability.";
+const metaBase = getPageMeta(lang.code, "terms");
 const meta = {
-  title,
-  description,
+  ...metaBase,
   keywords: "terms of service, terms and conditions, GMT to EST terms, user agreement, acceptable use policy",
-  image: "/images/og/default.png",
-  imageAlt: "Terms of Service - GMT to EST Converter"
+  robots: lang.code !== "en" ? "noindex,follow" : undefined
 };
+const title = meta.title;
+const description = meta.description;
 
 const pageUrl = `${siteUrl}/${lang.code}/terms-of-service/`;
 const lastUpdated = "May 8, 2025";

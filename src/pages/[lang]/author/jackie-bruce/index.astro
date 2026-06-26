@@ -1,22 +1,21 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getLang, languages, siteUrl } from "theme/i18n/config";
+import { getLang, getPageMeta, languages, siteUrl } from "theme/i18n/config";
 
 export function getStaticPaths() {
   return languages.filter((l) => l.code !== "en").map((l) => ({ params: { lang: l.code } }));
 }
 
 const lang = getLang(Astro.params.lang);
-const title = "Jackie Bruce";
-const description = "Author profile for Jackie Bruce, a timezone content specialist covering GMT, EST, EDT, daylight saving time, and global scheduling.";
-const pageUrl = `${siteUrl}/${lang.code}/author/jackie-bruce/`;
+const metaBase = getPageMeta(lang.code, "authorJackie");
 const meta = {
-  title,
-  description,
+  ...metaBase,
   keywords: "Jackie Bruce, GMT to EST author, timezone expert, EST EDT daylight saving, GMT converter",
-  image: "/images/og/default.png",
-  imageAlt: "Jackie Bruce Author Profile - GMT to EST Converter"
+  robots: lang.code !== "en" ? "noindex,follow" : undefined
 };
+const title = meta.title;
+const description = meta.description;
+const pageUrl = `${siteUrl}/${lang.code}/author/jackie-bruce/`;
 
 const schema = {
   "@context": "https://schema.org",
