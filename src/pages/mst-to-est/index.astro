@@ -1,0 +1,1376 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { getLang, siteUrl } from "theme/i18n/config";
+
+const lang = getLang("en");
+const pageUrl = `${siteUrl}/mst-to-est/`;
+
+const meta = {
+  title: "MST to EST Converter",
+  seoTitle: "MST to EST Converter",
+  description: "Convert MST to EST with a live DST-aware converter, current clocks, offsets, 24-hour table, and meeting planner for Mountain/Eastern time.",
+  keywords: "MST to EST, Mountain Standard Time to Eastern Standard Time, Convert MST to EST, MST EST Converter, MST Time, EST Time, Current MST Time, Current EST Time, Time Difference MST EST, Mountain Time to Eastern Time, MST to Eastern, MST vs EST, Live MST to EST Converter",
+  image: "/assets/timezone-converter-illustration.svg",
+  imageAlt: "MST to EST converter interface with Mountain Time and Eastern Time panels",
+  preloadImage: "/assets/timezone-converter-illustration.svg",
+  preloadImageSrcset: "/assets/timezone-converter-illustration.svg 1200w",
+  preloadImageSizes: "(max-width: 860px) 92vw, 560px",
+  preloadImageType: "image/svg+xml",
+  twitterCard: "summary_large_image",
+  ogType: "website"
+};
+
+const quickRows = [
+  ["6:00 AM", "8:00 AM"],
+  ["7:00 AM", "9:00 AM"],
+  ["8:00 AM", "10:00 AM"],
+  ["9:00 AM", "11:00 AM"],
+  ["10:00 AM", "12:00 PM"],
+  ["11:00 AM", "1:00 PM"],
+  ["12:00 PM", "2:00 PM"],
+  ["1:00 PM", "3:00 PM"],
+  ["2:00 PM", "4:00 PM"],
+  ["3:00 PM", "5:00 PM"],
+  ["4:00 PM", "6:00 PM"],
+  ["5:00 PM", "7:00 PM"]
+];
+
+const timelineRows = [
+  ["00:00", "02:00"],
+  ["03:00", "05:00"],
+  ["06:00", "08:00"],
+  ["09:00", "11:00"],
+  ["12:00", "14:00"],
+  ["15:00", "17:00"],
+  ["18:00", "20:00"],
+  ["21:00", "23:00"]
+];
+
+function hourLabel(hour: number) {
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const display = hour % 12 || 12;
+  return `${display}:00 ${suffix}`;
+}
+
+const hourlyRows = Array.from({ length: 24 }, (_, hour) => {
+  const easternHour = (hour + 2) % 24;
+  const nextDay = hour >= 22;
+  return {
+    hour,
+    mountain: hourLabel(hour),
+    eastern: `${hourLabel(easternHour)}${nextDay ? " next day" : ""}`
+  };
+});
+
+const howToSteps = [
+  {
+    name: "Choose the date first",
+    text: "Pick the calendar date for the meeting, event, deployment, trip, or broadcast. The selected date controls whether the converter labels the Mountain side as MST or MDT and the Eastern side as EST or EDT."
+  },
+  {
+    name: "Enter the Mountain Time value",
+    text: "Use the 12-hour fields with AM or PM, or switch to the 24-hour input. For a standard MST to EST conversion, Eastern Time is two hours later."
+  },
+  {
+    name: "Confirm the Eastern result",
+    text: "Read the converted time, abbreviation, UTC offset, and daylight-saving status before adding it to a calendar invite, release plan, or travel itinerary."
+  }
+];
+
+const faqItems = [
+  {
+    q: "What is MST to EST?",
+    a: "MST to EST means converting a time from Mountain Standard Time to Eastern Standard Time. In strict standard-time terms, MST is UTC-7 and EST is UTC-5, so EST is two hours ahead. In everyday scheduling, people often type MST to EST when they really mean Mountain Time to Eastern Time. This converter handles the practical version by checking the selected date and showing MST or MDT, then EST or EDT, as appropriate."
+  },
+  {
+    q: "How many hours is MST behind EST?",
+    a: "MST is two hours behind EST. If it is 9:00 AM MST, it is 11:00 AM EST. The same practical two-hour gap usually applies when both regions move into daylight saving time because Mountain Time becomes MDT at UTC-6 and Eastern Time becomes EDT at UTC-4. The abbreviations change, but the regional difference stays two hours for most North American schedules."
+  },
+  {
+    q: "Is Mountain Standard Time always UTC-7?",
+    a: "Yes, the abbreviation MST means UTC-7. The catch is that many Mountain Time locations do not stay on MST all year. Denver, Salt Lake City, Boise, and Calgary move to MDT during daylight saving time. Arizona is the major U.S. exception because most of the state stays on MST year-round. That is why date-aware conversion is safer than adding hours by memory."
+  },
+  {
+    q: "Is Eastern Standard Time always UTC-5?",
+    a: "The abbreviation EST means UTC-5, but many Eastern Time locations switch to EDT, which is UTC-4, during daylight saving time. New York, Miami, Atlanta, Toronto, and Washington, DC usually use EST in winter and EDT from spring to fall. A good MST to EST converter should display the active abbreviation instead of forcing a winter label onto a summer date."
+  },
+  {
+    q: "What is 9 AM MST in EST?",
+    a: "9 AM MST is 11 AM EST. This is one of the cleanest business-hour conversions because it lands late enough for Mountain teams and before lunch for many Eastern teams. If the selected date falls during daylight saving time in Denver and New York, the live converter may label the result as 9 AM MDT to 11 AM EDT, while keeping the same two-hour regional difference."
+  },
+  {
+    q: "What is 12 PM MST in EST?",
+    a: "12 PM MST is 2 PM EST. Noon in Mountain Standard Time becomes early afternoon in Eastern Standard Time, which is useful for client reviews, interviews, webinars, and cross-country team calls. Around daylight-saving months, the active labels may be MDT and EDT. The important scheduling rule remains the same: Eastern Time is two hours ahead of Mountain Time."
+  },
+  {
+    q: "What is 5 PM MST in EST?",
+    a: "5 PM MST is 7 PM EST. That conversion is often too late for routine Eastern business calls, but it can work for public webinars, gaming sessions, streaming events, support handoffs, or travel arrivals. When the Mountain location observes daylight saving time, a summer date may show 5 PM MDT to 7 PM EDT. Always include the date when the event matters."
+  },
+  {
+    q: "Does MST to EST change during daylight saving time?",
+    a: "The strict abbreviations do not change: MST stays UTC-7 and EST stays UTC-5. Real cities do change. A Denver-to-New-York schedule becomes MDT to EDT during daylight saving time, and the regional difference remains two hours. The confusing cases happen when one participant uses an abbreviation casually or when Arizona is involved, because most of Arizona stays on MST throughout the year."
+  },
+  {
+    q: "What is the best meeting time between MST and EST?",
+    a: "The best recurring overlap is usually 9 AM to 12 PM Mountain Time, which is 11 AM to 2 PM Eastern Time. That window avoids very early starts in the Mountain zone and keeps the Eastern side away from the end of the day. For workshops, 10 AM MST to 12 PM MST often feels even better because it gives both sides time to prepare."
+  },
+  {
+    q: "Should I write MST or Mountain Time on a calendar invite?",
+    a: "Use Mountain Time if you are talking about a region and let the calendar application store the actual IANA time zone, such as America/Denver. Use MST only when you specifically mean UTC-7. This distinction matters for daylight-saving dates and for Arizona. A phrase like Mountain Time is clearer for coworkers, while MST is clearer for fixed-offset logs and technical documentation."
+  },
+  {
+    q: "How does Arizona affect MST to EST conversion?",
+    a: "Most of Arizona stays on MST all year, so Phoenix is UTC-7 in both January and July. Denver, meanwhile, moves from MST to MDT in daylight-saving months. Phoenix to New York can be two hours apart in winter and three hours apart in summer because New York moves to EDT. If Arizona is part of your schedule, choose the exact city or IANA zone instead of relying on a generic abbreviation."
+  },
+  {
+    q: "Can I use this converter for flights and travel?",
+    a: "Yes. Use the departure city time zone for the input, set the correct travel date, and copy the Eastern result for arrival coordination, rides, hotel check-ins, or family updates. Time-zone mistakes are common when an itinerary crosses midnight or when the trip happens near a daylight-saving transition. The converter shows the date, abbreviation, and offset to make those details visible before you share plans."
+  },
+  {
+    q: "Why do server logs prefer UTC instead of MST or EST?",
+    a: "UTC avoids daylight-saving ambiguity and makes systems easier to compare across regions. Still, teams often need to translate UTC logs into local working hours for incident reviews. For Mountain and Eastern teams, convert the local meeting or deployment window with this page, then store the final operational timestamp in UTC. That keeps humans aligned and keeps technical records consistent."
+  },
+  {
+    q: "Is EST two hours ahead of MST for stock market times?",
+    a: "For the common U.S. market schedule, Eastern Time is two hours ahead of Mountain Time. A 9:30 AM New York market open is 7:30 AM in Denver during the same seasonal period. Because markets publish official times in Eastern Time, traders in Mountain Time should convert from EST or EDT using the date of the session, especially around March and November transitions."
+  },
+  {
+    q: "Can I copy the converted MST to EST result?",
+    a: "Yes. After choosing a date and time, use the copy button in the converter to copy a readable result with the source time, Eastern result, UTC offsets, and daylight-saving labels. The 24-hour table also includes row copy buttons for quick reference. Copy-ready wording helps when you are pasting into Slack, email, release notes, ticket comments, or a calendar description."
+  }
+];
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: "MST to EST Converter",
+      description: meta.description,
+      inLanguage: "en",
+      isPartOf: { "@id": `${siteUrl}/#website` },
+      publisher: { "@id": `${siteUrl}/#organization` },
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/assets/timezone-converter-illustration.svg`,
+        caption: meta.imageAlt
+      },
+      mainEntity: { "@id": `${pageUrl}#software` }
+    },
+    {
+      "@type": ["SoftwareApplication", "WebApplication"],
+      "@id": `${pageUrl}#software`,
+      name: "MST to EST Converter",
+      url: pageUrl,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      description: "A live, date-aware Mountain Time to Eastern Time converter with current clocks, UTC offsets, DST status, copy-ready results, a timeline, and a 24-hour table.",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "MST to EST and EST to MST conversion",
+        "Date-aware MST, MDT, EST, and EDT labels",
+        "Current Mountain and Eastern live clocks",
+        "UTC offset and DST status",
+        "24-hour conversion table",
+        "Meeting planner overlap guide",
+        "Copy-ready output"
+      ],
+      author: { "@id": `${siteUrl}/#organization` }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/` },
+        { "@type": "ListItem", position: 2, name: "MST to EST", item: pageUrl }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      name: "How to convert MST to EST",
+      description: "Convert Mountain Time to Eastern Time by choosing the date, entering the Mountain Time value, and confirming the date-aware Eastern result.",
+      step: howToSteps.map((step, index) => ({
+        "@type": "HowToStep",
+        position: index + 1,
+        name: step.name,
+        text: step.text
+      }))
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a }
+      }))
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang.code}
+  dir={lang.dir}
+  title={meta.title}
+  description={meta.description}
+  slug="mst-to-est"
+  meta={meta}
+  canonicalPath="/mst-to-est/"
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="MST to EST"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
+
+  <section class="hero-banner mst-hero-banner">
+    <div class="mst-hero-inner">
+      <p class="eyebrow">Live Mountain to Eastern time calculator</p>
+      <h1 class="hero-banner-title">MST to EST <span class="gradient-text">Converter</span></h1>
+      <p>Convert Mountain Standard Time to Eastern Time with live clocks, date-aware DST labels, UTC offsets, a visual timeline, and copy-ready results for meetings, travel, launches, markets, and technical work.</p>
+      <div class="mst-hero-badges" aria-label="Page highlights">
+        <span>DST-aware</span>
+        <span>12 and 24-hour input</span>
+        <span>Reverse conversion</span>
+      </div>
+    </div>
+  </section>
+
+  <nav class="mst-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">MST to EST</span>
+  </nav>
+
+  <section class="mst-above-fold" aria-labelledby="mst-intro">
+    <div class="mst-intro-panel">
+      <p class="eyebrow">Mountain Time to Eastern Time</p>
+      <h2 id="mst-intro">Eastern Time is usually 2 hours ahead of Mountain Time.</h2>
+      <p><strong>MST to EST</strong> is a simple conversion on paper: add two hours. The real world adds one detail that matters: many cities switch between standard time and daylight time. This page checks the date you choose, then displays MST or MDT and EST or EDT instead of guessing.</p>
+      <figure class="mst-figure reveal">
+        <img
+          src="/assets/timezone-converter-illustration.svg"
+          width="1200"
+          height="800"
+          alt="MST to EST converter interface with date picker and live output"
+          title="MST to EST converter interface"
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption>Use one converter for quick answers, live clocks, and date-sensitive scheduling.</figcaption>
+      </figure>
+    </div>
+
+    <form class="converter mst-converter" id="mst-tool" aria-label="MST to EST converter">
+      <div class="converter-head">
+        <div>
+          <span class="step">1</span>
+          <strong id="mst-tool-heading">Convert MST to EST</strong>
+        </div>
+        <button type="button" id="mst-swap" class="swap-button" aria-label="Swap conversion direction" title="Swap direction">Swap</button>
+      </div>
+
+      <div class="mst-direction" role="tablist" aria-label="Conversion direction">
+        <button type="button" class="active" data-direction="mountain-to-eastern" aria-pressed="true">
+          <span>From</span>
+          <b>MST / MDT</b>
+          <small>to EST / EDT</small>
+        </button>
+        <button type="button" data-direction="eastern-to-mountain" aria-pressed="false">
+          <span>From</span>
+          <b>EST / EDT</b>
+          <small>to MST / MDT</small>
+        </button>
+      </div>
+
+      <div class="mst-format" role="radiogroup" aria-label="Time format">
+        <button type="button" class="active" data-format="24" aria-pressed="true">24-hour</button>
+        <button type="button" data-format="12" aria-pressed="false">12-hour</button>
+      </div>
+
+      <div class="mst-input-grid">
+        <label>
+          <span>Date</span>
+          <input id="mst-date" type="date" required />
+        </label>
+
+        <label id="mst-time-24-wrap">
+          <span>24-hour time</span>
+          <input id="mst-time-24" type="time" step="60" required />
+        </label>
+
+        <div class="mst-time-12" id="mst-time-12-wrap" hidden>
+          <label>
+            <span>Hour</span>
+            <input id="mst-hour-12" type="number" min="1" max="12" inputmode="numeric" value="9" />
+          </label>
+          <label>
+            <span>Minute</span>
+            <input id="mst-minute-12" type="number" min="0" max="59" inputmode="numeric" value="00" />
+          </label>
+          <label>
+            <span>AM PM</span>
+            <select id="mst-period">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="mst-tool-actions">
+        <button type="button" id="mst-now">Use Current Time</button>
+        <button type="submit" id="mst-convert" class="mst-convert-button">Convert</button>
+      </div>
+
+      <div class="answer-card mst-answer">
+        <span class="step">2</span>
+        <div class="answer-grid">
+          <div>
+            <span id="mst-source-label">MST / MDT</span>
+            <strong id="mst-source-preview">--</strong>
+          </div>
+          <div class="arrow" aria-hidden="true">to</div>
+          <div>
+            <span id="mst-target-label">EST / EDT</span>
+            <output class="result" id="mst-result" aria-live="polite">--</output>
+          </div>
+        </div>
+        <div class="mst-result-meta">
+          <span id="mst-offset-badge">UTC offsets appear here</span>
+          <span id="mst-dst-badge">DST status appears here</span>
+        </div>
+        <button type="button" id="mst-copy" class="mst-copy-result">Copy Result</button>
+      </div>
+      <p class="difference" id="mst-explanation">Choose a date and time to see the exact Mountain and Eastern labels.</p>
+    </form>
+  </section>
+
+  <div class="mst-page-grid">
+    <aside class="mst-toc" aria-labelledby="toc-title">
+      <p class="toc-kicker">On this page</p>
+      <h2 id="toc-title">MST to EST guide</h2>
+      <ol>
+        <li><a href="#live-clocks">Live clocks</a></li>
+        <li><a href="#time-difference">Time difference</a></li>
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#conversion-table">24-hour table</a></li>
+        <li><a href="#meeting-planner">Meeting planner</a></li>
+        <li><a href="#guide">Practical guide</a></li>
+        <li><a href="#faq">FAQs</a></li>
+      </ol>
+    </aside>
+
+    <div class="mst-main">
+      <section class="examples-section mst-quick-table" aria-labelledby="quick-table-title">
+        <h2 id="quick-table-title">Quick MST to EST conversions</h2>
+        <p>For standard time, add two hours. These common workday slots are useful when you need an immediate answer before using the live converter.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Mountain Time</th><th>Eastern Time</th></tr>
+            </thead>
+            <tbody>
+              {quickRows.map(([mountain, eastern]) => (
+                <tr><td>{mountain} MST</td><td>{eastern} EST</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="examples-section" id="live-clocks" aria-labelledby="live-clock-title">
+        <h2 id="live-clock-title">Live MST and EST clocks</h2>
+        <p>The clocks below update every second and show the current date, local abbreviation, UTC offset, and daylight-saving status for Mountain and Eastern Time.</p>
+        <div class="mst-live-grid">
+          <article class="clock-card" aria-label="Current Mountain Time clock">
+            <span>Current Mountain Time</span>
+            <strong id="mst-live-time">--:--:--</strong>
+            <dl>
+              <div><dt>Date</dt><dd id="mst-live-date">--</dd></div>
+              <div><dt>Abbreviation</dt><dd id="mst-live-abbr">--</dd></div>
+              <div><dt>UTC Offset</dt><dd id="mst-live-offset">--</dd></div>
+              <div><dt>DST Status</dt><dd id="mst-live-dst">--</dd></div>
+            </dl>
+          </article>
+          <article class="clock-card" aria-label="Current Eastern Time clock">
+            <span>Current Eastern Time</span>
+            <strong id="est-live-time">--:--:--</strong>
+            <dl>
+              <div><dt>Date</dt><dd id="est-live-date">--</dd></div>
+              <div><dt>Abbreviation</dt><dd id="est-live-abbr">--</dd></div>
+              <div><dt>UTC Offset</dt><dd id="est-live-offset">--</dd></div>
+              <div><dt>DST Status</dt><dd id="est-live-dst">--</dd></div>
+            </dl>
+          </article>
+        </div>
+        <figure class="mst-wide-figure reveal">
+          <img
+            src="/assets/live-mst-est-clock.svg"
+            width="1200"
+            height="720"
+            alt="Live Mountain and Eastern clock panels with seconds and UTC offsets"
+            title="Live MST and EST clock panels"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>Seconds, offsets, and abbreviations matter when a deadline is close to a time-zone boundary.</figcaption>
+        </figure>
+      </section>
+
+      <section class="examples-section" id="time-difference" aria-labelledby="difference-title">
+        <h2 id="difference-title">MST vs EST time difference</h2>
+        <p><strong>MST = UTC-7.</strong> <strong>EST = UTC-5.</strong> That makes Eastern Standard Time <strong>+2 hours</strong> ahead of Mountain Standard Time. During daylight saving time, many Mountain locations use MDT at UTC-6 and many Eastern locations use EDT at UTC-4, so the practical regional gap usually remains two hours.</p>
+        <div class="mst-offset-grid">
+          <article><span>MST</span><strong>UTC-7</strong><p>Standard Mountain offset.</p></article>
+          <article><span>EST</span><strong>UTC-5</strong><p>Standard Eastern offset.</p></article>
+          <article><span>Difference</span><strong>+2 Hours</strong><p>Eastern is later than Mountain.</p></article>
+        </div>
+        <figure class="mst-wide-figure reveal">
+          <img
+            src="/assets/mst-est-time-difference.svg"
+            width="1200"
+            height="720"
+            alt="MST UTC minus 7 and EST UTC minus 5 with a two hour difference"
+            title="MST to EST time difference"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>Use the standard offsets for simple math, then use the converter for date-aware labels.</figcaption>
+        </figure>
+      </section>
+
+      <section class="examples-section" id="timeline" aria-labelledby="timeline-title">
+        <h2 id="timeline-title">Visual MST to EST timeline</h2>
+        <p>This horizontal timeline shows the two-hour shift across the day. It is especially helpful for events that move toward midnight on the Eastern side.</p>
+        <div class="mst-timeline" aria-label="MST to EST visual timeline">
+          {timelineRows.map(([mountain, eastern]) => (
+            <div>
+              <span>{mountain}</span>
+              <strong>{eastern}</strong>
+              <small>MST to EST</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="examples-section" id="conversion-table" aria-labelledby="table-title">
+        <h2 id="table-title">Complete 24-hour MST to EST table</h2>
+        <p>Use this full-day table for copy-friendly planning. Rows after 10 PM Mountain Time land on the next calendar day in Eastern Time.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Mountain Standard Time</th><th>Eastern Standard Time</th><th>Copy</th></tr>
+            </thead>
+            <tbody>
+              {hourlyRows.map((row) => (
+                <tr>
+                  <td>{row.mountain} MST</td>
+                  <td>{row.eastern} EST</td>
+                  <td><button type="button" class="mst-copy-row" data-copy-text={`${row.mountain} MST is ${row.eastern} EST`}>Copy</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="examples-section" id="meeting-planner" aria-labelledby="meeting-title">
+        <h2 id="meeting-title">MST to EST meeting planner</h2>
+        <p>The best overlap for routine business meetings is usually late morning Mountain Time through early afternoon Eastern Time. It gives Mountain participants enough start-up time and keeps Eastern participants away from the end-of-day rush.</p>
+        <div class="mst-planner-grid">
+          <article class="morning"><span>Morning</span><strong>7-8 AM MST</strong><p>Works for urgent Eastern updates, but it can feel early in Denver, Salt Lake City, and Calgary.</p></article>
+          <article class="business"><span>Business</span><strong>9 AM-12 PM MST</strong><p>Best shared window: 11 AM-2 PM EST. Use this for recurring team meetings and client calls.</p></article>
+          <article class="evening"><span>Evening</span><strong>3-6 PM MST</strong><p>Good for events, launches, and webinars. It lands at 5-8 PM EST, so avoid routine internal calls.</p></article>
+          <article class="late"><span>Late Night</span><strong>8 PM+ MST</strong><p>Useful for gaming, broadcasts, or maintenance windows, but it becomes late evening or next day in EST.</p></article>
+        </div>
+        <figure class="mst-wide-figure reveal">
+          <img
+            src="/assets/mst-est-meeting-planner.svg"
+            width="1200"
+            height="720"
+            alt="Meeting planner showing ideal overlap between Mountain Time and Eastern Time"
+            title="MST to EST meeting planner"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>For recurring meetings, favor 9 AM to noon Mountain Time whenever the Eastern team is involved.</figcaption>
+        </figure>
+      </section>
+
+      <section class="method-section" aria-labelledby="how-to-title">
+        <div class="method-intro">
+          <h2 id="how-to-title">How to convert MST to EST</h2>
+          <p>The simple formula is <code>Eastern Time = Mountain Time + 2 hours</code>. The smarter habit is to choose the date first, because daylight-saving labels can change even when the two-hour regional difference does not.</p>
+        </div>
+        <div class="method-grid">
+          {howToSteps.map((step, index) => (
+            <article class="method-card">
+              <span class="step">{index + 1}</span>
+              <h3>{step.name}</h3>
+              <p>{step.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content mst-guide" id="guide" aria-labelledby="guide-title">
+        <h2 id="guide-title">A practical MST to EST guide</h2>
+        <article>
+          <h3>What is MST?</h3>
+          <p>Mountain Standard Time is the standard-time offset used by many locations in the Mountain Time region during winter. Its fixed offset is UTC-7. Cities such as Denver and Salt Lake City use MST in the standard-time season, then move to MDT when daylight saving time begins. Phoenix is different because most of Arizona remains on MST year-round. That one exception is the reason serious scheduling should use a city or IANA time zone, not only an abbreviation.</p>
+        </article>
+        <article>
+          <h3>What is EST?</h3>
+          <p>Eastern Standard Time is the standard-time offset for major Eastern Time locations in winter. Its fixed offset is UTC-5. New York, Toronto, Atlanta, Miami, Boston, and Washington, DC usually switch to EDT during daylight saving time. If someone writes EST in July, they may still mean local Eastern Time, but the technically correct label is often EDT. The converter keeps the useful search term while showing the active abbreviation beside the result.</p>
+        </article>
+        <article>
+          <h3>Business meetings and remote work</h3>
+          <p>For remote teams, MST to EST planning is less about arithmetic and more about protecting useful work hours. A 7 AM Mountain call may be a comfortable 9 AM Eastern check-in, but it can punish the Mountain team if repeated every week. A 10 AM Mountain working session lands at noon Eastern and usually performs better. When stakeholders are split between Denver and New York, send calendar invites in local time-zone format and include the converted result in the agenda.</p>
+        </article>
+        <article>
+          <h3>Travel, events, and gaming</h3>
+          <p>Travel plans often cross a date boundary in subtle ways. A late Mountain departure, concert stream, esports match, or gaming session may arrive in Eastern Time close to midnight. A two-hour difference sounds small until hotel check-ins, pickup times, or live event reminders land on the wrong date. Use the date picker before sharing plans, then copy the result into messages so everyone sees the same local time and abbreviation.</p>
+        </article>
+        <article>
+          <h3>Forex, stocks, and market schedules</h3>
+          <p>Financial schedules often publish in Eastern Time, especially U.S. stock market opens, earnings calls, Federal Reserve events, and economic releases. Mountain Time traders should convert the official Eastern time back to their local working day. A 9:30 AM Eastern market open is 7:30 AM Mountain during the same seasonal period. Around March and November, check the exact session date because daylight-saving assumptions can distort alerts and pre-market routines.</p>
+        </article>
+        <article>
+          <h3>Developers, cloud deployments, and server logs</h3>
+          <p>Engineering teams should store operational timestamps in UTC, but humans still plan in local time. A cloud deployment window at 9 PM MST is 11 PM EST, which may be a reasonable maintenance period for Eastern users but a late night for the team watching alerts. Server logs, cron jobs, incident timelines, and support handoffs should name the source zone clearly. Convert once for people, then record the final operational time in UTC.</p>
+        </article>
+        <article>
+          <h3>Common mistakes</h3>
+          <p>The most common mistake is using MST as a casual name for every Mountain Time date. That can be wrong during daylight saving months. The second mistake is forgetting Arizona, where Phoenix often does not match Denver in summer. The third mistake is ignoring the date when a meeting crosses midnight. Short messages like "5 PM MST" are fast, but "5 PM Mountain Time on June 26, 2026" is much safer.</p>
+        </article>
+        <article>
+          <h3>Best practices</h3>
+          <p>Use a city-based time zone in calendar software, add the converted Eastern time to important messages, and include the date whenever the meeting is not today. For recurring business calls, choose 9 AM to noon Mountain Time. For public events, publish both Mountain and Eastern labels. For technical work, keep UTC as the system record and use this MST EST converter to make the human-facing schedule easy to read.</p>
+        </article>
+      </section>
+
+      <section class="examples-section" aria-labelledby="examples-title">
+        <h2 id="examples-title">Real-world MST to EST examples</h2>
+        <div class="mst-example-list">
+          <article><h3>Denver to New York</h3><p>A 10 AM Denver project review reaches New York at noon. That slot is excellent for customer calls because the Mountain team has had a morning ramp and the Eastern team has not yet lost the afternoon.</p></article>
+          <article><h3>Phoenix to Miami</h3><p>Phoenix stays on MST most of the year, while Miami switches between EST and EDT. In summer, Phoenix to Miami can be a three-hour gap. If Arizona is involved, use the exact date and city.</p></article>
+          <article><h3>Salt Lake City to Atlanta</h3><p>A 4 PM Mountain release review is 6 PM Eastern. It can work for a one-off launch, but it is late for a recurring cross-functional meeting with Eastern stakeholders.</p></article>
+          <article><h3>Calgary to Toronto</h3><p>A Canadian team call at 9 AM Mountain in Calgary reaches Toronto at 11 AM Eastern. It is a strong overlap for energy, finance, support, and remote product teams.</p></article>
+        </div>
+      </section>
+
+      <section class="examples-section" aria-labelledby="related-title">
+        <h2 id="related-title">Try more timezone converters</h2>
+        <p>When your schedule touches more than Mountain and Eastern Time, compare related tools and guides. Start with the main <a href="/">GMT to EST converter</a>, check nearby U.S. zones like <a href="/cst-to-est/">CST to EST</a> and <a href="/pdt-to-est/">PDT to EST</a>, or reverse the direction with <a href="/est-to-gmt/">EST to GMT</a>. For broader terminology, the <a href="/time-zone-guide/">time zone guide</a> explains abbreviations and daylight-saving rules.</p>
+      </section>
+
+      <section class="faq" id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">MST to EST FAQs</h2>
+        {faqItems.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </section>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function setupMstToEstConverter() {
+      const tool = document.getElementById("mst-tool");
+      if (!tool) return;
+
+      const mountainZone = "America/Denver";
+      const easternZone = "America/New_York";
+      const state = {
+        direction: "mountain-to-eastern",
+        format: "24",
+        lastText: ""
+      };
+
+      const nodes = {
+        heading: document.getElementById("mst-tool-heading"),
+        date: document.getElementById("mst-date"),
+        time24: document.getElementById("mst-time-24"),
+        time24Wrap: document.getElementById("mst-time-24-wrap"),
+        time12Wrap: document.getElementById("mst-time-12-wrap"),
+        hour12: document.getElementById("mst-hour-12"),
+        minute12: document.getElementById("mst-minute-12"),
+        period: document.getElementById("mst-period"),
+        sourceLabel: document.getElementById("mst-source-label"),
+        targetLabel: document.getElementById("mst-target-label"),
+        sourcePreview: document.getElementById("mst-source-preview"),
+        result: document.getElementById("mst-result"),
+        offsetBadge: document.getElementById("mst-offset-badge"),
+        dstBadge: document.getElementById("mst-dst-badge"),
+        explanation: document.getElementById("mst-explanation"),
+        copy: document.getElementById("mst-copy")
+      };
+
+      const formatterCache = new Map();
+
+      function formatter(key, timeZone, options) {
+        const cacheKey = key + "|" + timeZone + "|" + JSON.stringify(options);
+        if (!formatterCache.has(cacheKey)) {
+          formatterCache.set(cacheKey, new Intl.DateTimeFormat("en-US", { timeZone, ...options }));
+        }
+        return formatterCache.get(cacheKey);
+      }
+
+      function parts(date, timeZone) {
+        const map = {};
+        formatter("parts", timeZone, {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23",
+          timeZoneName: "short"
+        }).formatToParts(date).forEach((part) => {
+          map[part.type] = part.value;
+        });
+        return map;
+      }
+
+      function offsetMinutes(date, timeZone) {
+        const p = parts(date, timeZone);
+        const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+        return Math.round((asUtc - date.getTime()) / 60000);
+      }
+
+      function standardOffsetMinutes(date, timeZone) {
+        const year = date.getUTCFullYear();
+        const jan = offsetMinutes(new Date(Date.UTC(year, 0, 1, 12)), timeZone);
+        const jul = offsetMinutes(new Date(Date.UTC(year, 6, 1, 12)), timeZone);
+        return Math.min(jan, jul);
+      }
+
+      function isDst(date, timeZone) {
+        return offsetMinutes(date, timeZone) !== standardOffsetMinutes(date, timeZone);
+      }
+
+      function zoneName(date, timeZone) {
+        return parts(date, timeZone).timeZoneName || "";
+      }
+
+      function formatOffset(minutes) {
+        const sign = minutes >= 0 ? "+" : "-";
+        const absolute = Math.abs(minutes);
+        const hours = Math.floor(absolute / 60);
+        const mins = absolute % 60;
+        return "UTC" + sign + hours + (mins ? ":" + String(mins).padStart(2, "0") : "");
+      }
+
+      function localToUtc(dateValue, hour, minute, timeZone) {
+        const bits = dateValue.split("-").map(Number);
+        const base = Date.UTC(bits[0], bits[1] - 1, bits[2], hour, minute, 0);
+        let guess = base - offsetMinutes(new Date(base), timeZone) * 60000;
+        for (let i = 0; i < 4; i += 1) {
+          guess = base - offsetMinutes(new Date(guess), timeZone) * 60000;
+        }
+        return new Date(guess);
+      }
+
+      function sourceTarget() {
+        const mountainToEastern = state.direction === "mountain-to-eastern";
+        return {
+          sourceZone: mountainToEastern ? mountainZone : easternZone,
+          targetZone: mountainToEastern ? easternZone : mountainZone,
+          sourceName: mountainToEastern ? "Mountain Time" : "Eastern Time",
+          targetName: mountainToEastern ? "Eastern Time" : "Mountain Time"
+        };
+      }
+
+      function formatFull(date, timeZone) {
+        return formatter("full", timeZone, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: state.format === "12",
+          timeZoneName: "short"
+        }).format(date);
+      }
+
+      function formatClock(date, timeZone) {
+        return formatter("clock", timeZone, {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          timeZoneName: "short"
+        }).format(date);
+      }
+
+      function formatDate(date, timeZone) {
+        return formatter("date", timeZone, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }).format(date);
+      }
+
+      function readInput() {
+        const dateValue = nodes.date.value;
+        if (!dateValue) return null;
+        if (state.format === "12") {
+          let hour = Math.max(1, Math.min(12, Number(nodes.hour12.value) || 12));
+          const minute = Math.max(0, Math.min(59, Number(nodes.minute12.value) || 0));
+          if (nodes.period.value === "PM" && hour !== 12) hour += 12;
+          if (nodes.period.value === "AM" && hour === 12) hour = 0;
+          return { dateValue, hour, minute };
+        }
+        const value = nodes.time24.value || "09:00";
+        const timeParts = value.split(":").map(Number);
+        return { dateValue, hour: timeParts[0] || 0, minute: timeParts[1] || 0 };
+      }
+
+      function sync12From24() {
+        const value = nodes.time24.value || "09:00";
+        const timeParts = value.split(":").map(Number);
+        const hour24 = timeParts[0] || 0;
+        const minute = timeParts[1] || 0;
+        nodes.period.value = hour24 >= 12 ? "PM" : "AM";
+        nodes.hour12.value = String(hour24 % 12 || 12);
+        nodes.minute12.value = String(minute).padStart(2, "0");
+      }
+
+      function sync24From12() {
+        const input = readInput();
+        if (!input) return;
+        nodes.time24.value = String(input.hour).padStart(2, "0") + ":" + String(input.minute).padStart(2, "0");
+      }
+
+      function setInputFromDate(date, timeZone) {
+        const p = parts(date, timeZone);
+        nodes.date.value = p.year + "-" + p.month + "-" + p.day;
+        nodes.time24.value = p.hour + ":" + p.minute;
+        sync12From24();
+      }
+
+      function updateDirectionLabels(date) {
+        const zones = sourceTarget();
+        const sourceAbbr = zoneName(date, zones.sourceZone);
+        const targetAbbr = zoneName(date, zones.targetZone);
+        nodes.heading.textContent = state.direction === "mountain-to-eastern" ? "Convert MST to EST" : "Convert EST to MST";
+        nodes.sourceLabel.textContent = sourceAbbr + " - " + zones.sourceName;
+        nodes.targetLabel.textContent = targetAbbr + " - " + zones.targetName;
+      }
+
+      function convert() {
+        const input = readInput();
+        if (!input) return;
+        const zones = sourceTarget();
+        const date = localToUtc(input.dateValue, input.hour, input.minute, zones.sourceZone);
+        if (Number.isNaN(date.getTime())) return;
+
+        updateDirectionLabels(date);
+
+        const sourceOffset = offsetMinutes(date, zones.sourceZone);
+        const targetOffset = offsetMinutes(date, zones.targetZone);
+        const diffHours = (targetOffset - sourceOffset) / 60;
+        const sourceAbbr = zoneName(date, zones.sourceZone);
+        const targetAbbr = zoneName(date, zones.targetZone);
+        const sourceText = formatFull(date, zones.sourceZone);
+        const targetText = formatFull(date, zones.targetZone);
+        const sourceDst = isDst(date, zones.sourceZone);
+        const targetDst = isDst(date, zones.targetZone);
+        const directionWord = diffHours >= 0 ? "ahead of" : "behind";
+        const absDiff = Math.abs(diffHours);
+
+        nodes.sourcePreview.textContent = sourceText;
+        nodes.result.textContent = targetText;
+        nodes.offsetBadge.textContent = sourceAbbr + " " + formatOffset(sourceOffset) + " to " + targetAbbr + " " + formatOffset(targetOffset);
+        nodes.dstBadge.textContent = (sourceDst ? sourceAbbr + " observes DST" : sourceAbbr + " is standard time") + "; " + (targetDst ? targetAbbr + " observes DST" : targetAbbr + " is standard time");
+        nodes.explanation.textContent = zones.targetName + " is " + absDiff + " hours " + directionWord + " " + zones.sourceName + " on this date.";
+        state.lastText = sourceText + " converts to " + targetText + ". " + nodes.offsetBadge.textContent + ". " + nodes.dstBadge.textContent + ".";
+      }
+
+      function updateFormat(format) {
+        if (state.format === "24" && format === "12") sync12From24();
+        if (state.format === "12" && format === "24") sync24From12();
+        state.format = format;
+        nodes.time24Wrap.hidden = format !== "24";
+        nodes.time12Wrap.hidden = format !== "12";
+        document.querySelectorAll("[data-format]").forEach((button) => {
+          const active = button.dataset.format === format;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        convert();
+      }
+
+      function updateDirection(direction) {
+        state.direction = direction;
+        document.querySelectorAll("[data-direction]").forEach((button) => {
+          const active = button.dataset.direction === direction;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        setInputFromDate(new Date(), sourceTarget().sourceZone);
+        convert();
+      }
+
+      function updateLiveClocks() {
+        const now = new Date();
+        [
+          ["mst", mountainZone],
+          ["est", easternZone]
+        ].forEach(([prefix, zone]) => {
+          const offset = offsetMinutes(now, zone);
+          const dst = isDst(now, zone);
+          const abbr = zoneName(now, zone);
+          const timeNode = document.getElementById(prefix + "-live-time");
+          const dateNode = document.getElementById(prefix + "-live-date");
+          const abbrNode = document.getElementById(prefix + "-live-abbr");
+          const offsetNode = document.getElementById(prefix + "-live-offset");
+          const dstNode = document.getElementById(prefix + "-live-dst");
+          if (timeNode) timeNode.textContent = formatClock(now, zone);
+          if (dateNode) dateNode.textContent = formatDate(now, zone);
+          if (abbrNode) abbrNode.textContent = abbr;
+          if (offsetNode) offsetNode.textContent = formatOffset(offset);
+          if (dstNode) dstNode.textContent = dst ? "Daylight saving active" : "Standard time";
+        });
+      }
+
+      async function copyText(text, button) {
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const fallback = document.createElement("textarea");
+          fallback.value = text;
+          fallback.setAttribute("readonly", "");
+          fallback.style.position = "fixed";
+          fallback.style.left = "-9999px";
+          document.body.appendChild(fallback);
+          fallback.select();
+          document.execCommand("copy");
+          fallback.remove();
+        }
+        if (button) {
+          const original = button.textContent;
+          button.textContent = "Copied";
+          setTimeout(() => {
+            button.textContent = original;
+          }, 1100);
+        }
+      }
+
+      tool.addEventListener("submit", (event) => {
+        event.preventDefault();
+        convert();
+      });
+
+      document.getElementById("mst-now")?.addEventListener("click", () => {
+        setInputFromDate(new Date(), sourceTarget().sourceZone);
+        convert();
+      });
+
+      document.getElementById("mst-swap")?.addEventListener("click", () => {
+        updateDirection(state.direction === "mountain-to-eastern" ? "eastern-to-mountain" : "mountain-to-eastern");
+      });
+
+      nodes.copy?.addEventListener("click", () => copyText(state.lastText, nodes.copy));
+
+      [nodes.date, nodes.time24, nodes.hour12, nodes.minute12, nodes.period].forEach((node) => {
+        node?.addEventListener("input", convert);
+        node?.addEventListener("change", convert);
+      });
+
+      document.querySelectorAll("[data-format]").forEach((button) => {
+        button.addEventListener("click", () => updateFormat(button.dataset.format));
+      });
+
+      document.querySelectorAll("[data-direction]").forEach((button) => {
+        button.addEventListener("click", () => updateDirection(button.dataset.direction));
+      });
+
+      document.querySelectorAll(".mst-copy-row").forEach((button) => {
+        button.addEventListener("click", () => copyText(button.dataset.copyText, button));
+      });
+
+      setInputFromDate(new Date(), mountainZone);
+      updateLiveClocks();
+      convert();
+      setInterval(updateLiveClocks, 1000);
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .mst-hero-banner {
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  :global(body) {
+    overflow-x: hidden;
+  }
+
+  .mst-hero-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    gap: 18px;
+  }
+
+  .mst-hero-inner p:not(.eyebrow) {
+    max-width: 72ch;
+    margin: 0 auto;
+    color: #d7eef8;
+    font-size: clamp(1.02rem, 2vw, 1.28rem);
+  }
+
+  .mst-hero-badges,
+  .mst-trust-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 0;
+    margin: 4px 0 0;
+    list-style: none;
+  }
+
+  .mst-hero-badges span,
+  .mst-trust-list li {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border: 1px solid rgba(143, 215, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(4, 16, 24, 0.42);
+    color: #f4fbff;
+    font-size: .9rem;
+    font-weight: 800;
+  }
+
+  .mst-breadcrumb {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: min(1180px, calc(100% - 32px));
+    margin: 18px auto -12px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+
+  .mst-breadcrumb a,
+  .mst-guide a,
+  .examples-section a {
+    color: var(--accent);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .mst-above-fold {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 470px);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+    padding-top: 42px;
+  }
+
+  .mst-intro-panel {
+    display: grid;
+    gap: 14px;
+  }
+
+  .mst-intro-panel h2 {
+    margin: 0;
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+  }
+
+  .mst-intro-panel p {
+    max-width: 70ch;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.8vw, 1.12rem);
+  }
+
+  .mst-figure,
+  .mst-wide-figure {
+    overflow: hidden;
+    margin: 14px 0 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .08);
+  }
+
+  .mst-figure figcaption,
+  .mst-wide-figure figcaption {
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+
+  .mst-converter {
+    position: sticky;
+    top: 92px;
+  }
+
+  .mst-converter .swap-button {
+    width: auto;
+    min-width: 68px;
+    padding: 0 12px;
+    font-size: .95rem;
+  }
+
+  .mst-direction,
+  .mst-format {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .mst-direction {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mst-format {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mst-direction button,
+  .mst-format button,
+  .mst-tool-actions button,
+  .mst-copy-row,
+  .mst-copy-result {
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .mst-direction button {
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    padding: 10px 12px;
+    text-align: start;
+  }
+
+  .mst-direction span,
+  .mst-direction small {
+    color: var(--muted);
+    font-size: .75rem;
+  }
+
+  .mst-direction button.active,
+  .mst-format button.active,
+  .mst-copy-result {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .mst-direction button.active span,
+  .mst-direction button.active small {
+    color: rgba(255, 255, 255, .82);
+  }
+
+  .mst-input-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .mst-input-grid label,
+  .mst-time-12 label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .mst-input-grid input,
+  .mst-input-grid select {
+    width: 100%;
+    min-height: 54px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .mst-time-12 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mst-tool-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .mst-convert-button {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+    border-color: transparent !important;
+    color: #062334 !important;
+    font-size: 1.08rem;
+    font-weight: 900;
+  }
+
+  .mst-answer {
+    margin-top: 12px;
+  }
+
+  .mst-result-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mst-result-meta span {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--accent-2);
+    font-size: .88rem;
+    font-weight: 800;
+  }
+
+  .mst-copy-result {
+    width: 100%;
+    margin-top: 2px;
+    font-weight: 900;
+  }
+
+  .mst-page-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 34px;
+    align-items: start;
+  }
+
+  .mst-toc {
+    position: sticky;
+    top: 92px;
+    margin-top: 44px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .mst-toc h2 {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+  }
+
+  .mst-toc ol {
+    display: grid;
+    gap: 9px;
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .mst-toc a {
+    color: var(--text);
+    font-weight: 800;
+  }
+
+  .mst-main {
+    min-width: 0;
+  }
+
+  .mst-live-grid,
+  .mst-offset-grid,
+  .mst-planner-grid,
+  .mst-example-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .mst-live-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mst-live-grid dl {
+    display: grid;
+    gap: 8px;
+    margin: 8px 0 0;
+  }
+
+  .mst-live-grid dl div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .mst-live-grid dt {
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 800;
+  }
+
+  .mst-live-grid dd {
+    margin: 0;
+    color: var(--accent-2);
+    font-weight: 900;
+  }
+
+  .mst-offset-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mst-offset-grid article,
+  .mst-planner-grid article,
+  .mst-example-list article {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .mst-offset-grid span,
+  .mst-planner-grid span {
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .mst-offset-grid strong,
+  .mst-planner-grid strong {
+    display: block;
+    margin: 8px 0;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+  }
+
+  .mst-timeline {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(120px, 1fr));
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .mst-timeline div {
+    min-height: 116px;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 7px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .mst-timeline span {
+    color: #fbbf24;
+    font-weight: 900;
+  }
+
+  .mst-timeline strong {
+    color: #ffffff;
+    font-size: 1.35rem;
+  }
+
+  .mst-timeline small {
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .mst-copy-row {
+    min-height: 36px;
+    padding: 6px 12px;
+    color: var(--accent-2);
+    font-weight: 900;
+  }
+
+  .mst-planner-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mst-planner-grid article {
+    border-top-width: 5px;
+  }
+
+  .mst-planner-grid .morning {
+    border-top-color: #fbbf24;
+  }
+
+  .mst-planner-grid .business {
+    border-top-color: #2dd4bf;
+  }
+
+  .mst-planner-grid .evening {
+    border-top-color: #8fd7ff;
+  }
+
+  .mst-planner-grid .late {
+    border-top-color: #f472b6;
+  }
+
+  .mst-guide article h3,
+  .mst-example-list h3 {
+    margin-top: 0;
+  }
+
+  .mst-guide article p,
+  .mst-example-list p {
+    color: var(--muted);
+  }
+
+  .mst-example-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 980px) {
+    .mst-above-fold,
+    .mst-page-grid,
+    .mst-live-grid,
+    .mst-offset-grid,
+    .mst-planner-grid,
+    .mst-example-list {
+      grid-template-columns: 1fr;
+    }
+
+    .mst-converter,
+    .mst-toc {
+      position: static;
+    }
+
+    .mst-toc {
+      margin-top: 18px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mst-direction,
+    .mst-format,
+    .mst-tool-actions,
+    .mst-time-12 {
+      grid-template-columns: 1fr;
+    }
+
+    .mst-live-grid dl div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .mst-hero-badges {
+      justify-content: start;
+    }
+  }
+</style>
