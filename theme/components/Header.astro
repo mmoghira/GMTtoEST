@@ -3,13 +3,15 @@ const { lang, t, slug = "" } = Astro.props;
 import { pageUrl, languages } from "theme/i18n/config";
 
 const navItems = [
-  { href: pageUrl(lang, ""), label: t.nav.gmtToEst, position: 2 },
-  { href: pageUrl(lang, "est-to-gmt"), label: t.nav.estToGmt, position: 3 },
-  { href: pageUrl(lang, "gmt-vs-est"), label: t.nav.gmtVsEst, position: 4 },
-  { href: pageUrl(lang, "time-zone-guide"), label: t.nav.guide, position: 5 },
-  { href: pageUrl(lang, "blog"), label: t.nav.blog || "Blog", position: 6 },
-  { href: pageUrl(lang, "author"), label: t.nav.author || "Author", position: 7 },
+  { href: pageUrl(lang, ""), label: t.nav.gmtToEst, position: 2, key: "" },
+  { href: pageUrl(lang, "est-to-gmt"), label: t.nav.estToGmt, position: 3, key: "est-to-gmt" },
+  { href: pageUrl(lang, "gmt-vs-est"), label: t.nav.gmtVsEst, position: 4, key: "gmt-vs-est" },
+  { href: pageUrl(lang, "time-zone-guide"), label: t.nav.guide, position: 5, key: "time-zone-guide" },
+  { href: pageUrl(lang, "blog"), label: t.nav.blog || "Blog", position: 6, key: "blog" },
+  { href: pageUrl(lang, "author"), label: t.nav.author || "Author", position: 7, key: "author" },
 ];
+
+const isCurrentItem = (key: string) => key === "" ? slug === "" : slug === key || slug.startsWith(`${key}/`);
 ---
 
 <header class="header" role="banner">
@@ -29,7 +31,8 @@ const navItems = [
           <li class="nav-item" data-position={item.position}>
             <a 
               href={item.href} 
-              class="nav-link"
+              class:list={["nav-link", isCurrentItem(item.key) && "nav-active"]}
+              aria-current={isCurrentItem(item.key) ? "page" : undefined}
               itemprop="url"
               data-nav-item={item.position}
             >
@@ -165,6 +168,11 @@ const navItems = [
     color: #ffffff;
   }
 
+  .nav-link.nav-active {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
   .nav-link::after {
     content: "";
     position: absolute;
@@ -178,6 +186,11 @@ const navItems = [
 
   .nav-link:hover::after {
     width: 100%;
+  }
+
+  .nav-link.nav-active::after {
+    width: 100%;
+    background: var(--accent);
   }
 
   /* Search Overlay */

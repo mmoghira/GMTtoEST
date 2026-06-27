@@ -124,45 +124,28 @@ const isComparison = slug === "gmt-vs-est";
 const isReverse = slug === "est-to-gmt";
 const isGuide = slug === "time-zone-guide";
 const isDynamic = slug.endsWith("-to-est") || slug.startsWith("gmt-to-");
+const isConverterPage = isHome || isComparison || isReverse || isDynamic;
+const breadcrumbCurrentLabel = breadcrumbLabel || title;
 
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
 const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 const shouldLoadAds = allowAds ?? (isUtilityPage || slug.startsWith("blog/"));
 
-// 1. SoftwareApplication & WebApplication for Homepage
-const homepageAppSchema = isHome ? [
+// WebApplication schema for the homepage and every converter page.
+const converterAppSchema = isConverterPage ? [
   {
-    "@type": "SoftwareApplication",
-    "@id": `${canonical}#softwareapp`,
-    name: seoTitle,
+    "@type": "WebApplication",
+    "@id": `${canonical}#webapp`,
+    name: getConverterDisplayName(pages.find((page: any) => page.slug === slug)) || seoTitle,
     url: canonical,
-    description: description,
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Any",
+    description: "Free GMT to EST converter with DST-aware time conversion, live clocks, and a 24-hour chart.",
+    applicationCategory: "UtilityApplication",
+    operatingSystem: "All",
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD"
     }
-  },
-  {
-    "@type": "WebApplication",
-    "@id": `${canonical}#webapp`,
-    name: seoTitle,
-    url: canonical,
-    description: description,
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Any",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD"
-    },
-    featureList: [
-      "Real-time clock comparison",
-      "Interactive slider workday overlap",
-      "DST transition auto-calculation"
-    ]
   }
 ] : [];
 
@@ -335,7 +318,7 @@ const schema = {
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer support",
-        email: "gmttoestconverter@gmail.com",
+        email: "contact@gmttoestconverter.com",
         availableLanguage: languages.map(l => l.code),
         areaServed: "Worldwide"
       }
@@ -353,7 +336,7 @@ const schema = {
           ]
     },
 
-    ...homepageAppSchema,
+    ...converterAppSchema,
     ...comparisonSchema,
     ...guideSchema,
     ...reverseSchema,
@@ -478,6 +461,14 @@ const schema = {
     <Header lang={lang} t={t} slug={slug} />
 
     <main>
+      {!isHome && (
+        <nav aria-label="Breadcrumb" class="breadcrumb">
+          <ol>
+            <li><a href={homePathResolved}>{breadcrumbHomeLabel || "Home"}</a></li>
+            <li aria-current="page">{breadcrumbCurrentLabel}</li>
+          </ol>
+        </nav>
+      )}
       <slot />
     </main>
     <footer>
@@ -529,16 +520,12 @@ const schema = {
         <div class="footer-section contact-section">
           <h3 class="footer-heading">CONTACT</h3>
           <div class="contact-item">
-            <span class="contact-icon">✉</span>
-            <a href="mailto:gmttoestconverter@gmail.com">gmttoestconverter@gmail.com</a>
+            <span class="contact-icon" aria-hidden="true">&#9993;</span>
+            <a href="mailto:contact@gmttoestconverter.com">contact@gmttoestconverter.com</a>
           </div>
           <div class="contact-item">
-            <span class="contact-icon">📞</span>
+            <span class="contact-icon" aria-hidden="true">&#9742;</span>
             <a href={pageUrl(lang, "contact-us")}>Contact form</a>
-          </div>
-          <div class="contact-item">
-            <span class="contact-icon">&#9742;</span>
-            <a href="tel:+923363465776" aria-label="Call us at +92 336 3465776">+92 336 3465776</a>
           </div>
         </div>
 

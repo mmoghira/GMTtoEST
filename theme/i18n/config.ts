@@ -179,9 +179,9 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
   let topics = [];
 
   if (labelKey === "home" || labelKey === "gmtToEst") {
-    faqs = t.faqs_home?.items || [];
-    useCases = t.useCases_home?.items || [];
-    topics = t.topics_home?.items || [];
+    faqs = t.faqs_home?.items || t.faqs?.items || [];
+    useCases = t.useCases_home?.items || t.useCases?.items || [];
+    topics = t.topics_home?.items || t.topics?.items || [];
   } else if (labelKey === "gmtVsEst" || labelKey === "difference") {
     faqs = t.faqs_difference?.items || [];
     useCases = t.useCases_difference?.items || [];

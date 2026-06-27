@@ -11,7 +11,8 @@
     intent: converterNode?.dataset.intent || "converter",
     labels: JSON.parse(converterNode?.dataset.labels || "{}"),
     use24: true,
-    lastText: ""
+    lastText: "",
+    followNow: true
   };
 
   const intentLabels = state.labels.variants || {};
@@ -131,7 +132,7 @@
       state.lastText = label + ": " + format(date, target);
     }
     
-    const result = qs("#result");
+    const result = qs("#conversion-output");
     result.textContent = state.intent === "difference"
       ? diffHours + " " + (state.labels.hoursBehindGmt || "hours difference")
       : shortFormat(date, target);
@@ -287,7 +288,10 @@
       buildStrip();
     }, { timeout: 2500 });
 
-    qs("#datetime")?.addEventListener("input", convert);
+    qs("#datetime")?.addEventListener("input", () => {
+      state.followNow = false;
+      convert();
+    });
     qs("#formatToggle")?.addEventListener("change", (event) => {
       state.use24 = event.target.checked;
       convert();
@@ -295,22 +299,33 @@
       buildTable();
     });
     qs("#now")?.addEventListener("click", () => {
+      state.followNow = true;
       setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);
       convert();
     });
     qs("#swap")?.addEventListener("click", () => {
       applyMode(state.mode === "gmt-est" ? "est-gmt" : "gmt-est");
     });
-    qs("#copy")?.addEventListener("click", async () => {
-      await navigator.clipboard?.writeText(state.lastText);
-      const button = qs("#copy");
+    qs("#copy-result")?.addEventListener("click", async () => {
+      const button = qs("#copy-result");
       const original = button.textContent;
-      button.textContent = button.dataset.copied || "Copied";
-      setTimeout(() => { button.textContent = original; }, 1100);
+      try {
+        await navigator.clipboard.writeText(state.lastText);
+        button.textContent = button.dataset.copied || "Copied!";
+        button.setAttribute("aria-label", "Copied to clipboard");
+        setTimeout(() => {
+          button.textContent = original;
+          button.setAttribute("aria-label", "Copy conversion result to clipboard");
+        }, 2000);
+      } catch {
+        button.textContent = "Copy failed";
+        setTimeout(() => { button.textContent = original; }, 2000);
+      }
     });
     qsa(".mode").forEach((button) => button.addEventListener("click", () => applyMode(button.dataset.mode)));
     qsa("[data-preset]").forEach((button) => {
       button.addEventListener("click", () => {
+        state.followNow = false;
         const now = new Date();
         const hour = button.dataset.preset === "trading" ? 13 : button.dataset.preset === "event" ? 18 : 15;
         const p = parts(now, sourceZone);
@@ -328,6 +343,11 @@
     applyMode(state.mode);
     tick();
     setInterval(tick, 1000);
+    setInterval(() => {
+      if (!state.followNow) return;
+      setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);
+      convert();
+    }, 60000);
   }
 
   // Defer init slightly to improve LCP

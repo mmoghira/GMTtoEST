@@ -47,7 +47,7 @@ faq:
   <picture>
     <source type="image/avif" srcset="/assets/wimbledon-2026-gmt-est-schedule-hero-600.avif 600w, /assets/wimbledon-2026-gmt-est-schedule-hero-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
     <source type="image/webp" srcset="/assets/wimbledon-2026-gmt-est-schedule-hero-600.webp 600w, /assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
-    <img src="/assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp" alt="Wimbledon 2026 full schedule in GMT and EST — timezone guide showing Centre Court start times worldwide from BST" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+    <img src="/assets/wimbledon-2026-gmt-est-schedule-hero-1200.webp" alt="Wimbledon 2026 full schedule in GMT and EST — timezone guide showing Centre Court start times worldwide from BST" width="1200" height="675" loading="lazy" decoding="async">
   </picture>
   <figcaption>Wimbledon 2026 (June 29 – July 12): Centre Court begins at 12:30 PM GMT / 8:30 AM EDT daily. Finals at 1:00 PM GMT / 9:00 AM EDT.</figcaption>
 </figure>

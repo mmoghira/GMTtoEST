@@ -41,7 +41,7 @@ faq:
   <picture>
     <source type="image/avif" srcset="/assets/monaco-gp-2026-gmt-est-schedule-hero-600.avif 600w, /assets/monaco-gp-2026-gmt-est-schedule-hero-1200.avif 1200w" sizes="(max-width: 760px) 100vw, 800px">
     <source type="image/webp" srcset="/assets/monaco-gp-2026-gmt-est-schedule-hero-600.webp 600w, /assets/monaco-gp-2026-gmt-est-schedule-hero-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 800px">
-    <img src="/assets/monaco-gp-2026-gmt-est-schedule-hero-1200.webp" alt="2026 Monaco Grand Prix GMT and EST schedule guide — race starts 15:00 CEST, 13:00 GMT, 9:00 AM EDT on Sunday June 7 at Circuit de Monaco" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high">
+    <img src="/assets/monaco-gp-2026-gmt-est-schedule-hero-1200.webp" alt="2026 Monaco Grand Prix GMT and EST schedule guide — race starts 15:00 CEST, 13:00 GMT, 9:00 AM EDT on Sunday June 7 at Circuit de Monaco" width="1200" height="675" loading="lazy" decoding="async">
   </picture>
   <figcaption>2026 Monaco Grand Prix (June 5–7): Race starts at 15:00 CEST / 13:00 GMT / 9:00 AM EDT / 2:00 PM BST on Sunday, June 7, 2026.</figcaption>
 </figure>

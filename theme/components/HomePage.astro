@@ -201,6 +201,24 @@ const mapDiagramMap = {
   astToEst: "/assets/world-time-map.svg"
 };
 const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/world-time-map.svg";
+
+function formatChartHour(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${String(displayHour).padStart(2, "0")}:00 ${period}`;
+}
+
+function easternChartValue(gmtHour: number, offset: number, label: string) {
+  const easternHour = gmtHour + offset;
+  return `${formatChartHour(easternHour)} ${label}${easternHour < 0 ? " (prev day)" : ""}`;
+}
+
+const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
+  gmt: `${String(hour).padStart(2, "0")}:00 GMT`,
+  eastern: `${easternChartValue(hour, -5, "EST")} / ${easternChartValue(hour, -4, "EDT")}`,
+  offset: "UTC−5 / UTC−4",
+}));
 ---
 
 <!-- Core Headings and Intros rendered on all pages -->
@@ -376,12 +394,21 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
     <section aria-labelledby="chart">
       <h2 id="chart">{seoKeyword} Chart</h2>
       <div class="table-wrap">
-        <table id="timeTable">
+        <table id="gmt-est-chart" aria-label="GMT to EST conversion chart">
           <caption class="sr-only">{seoKeyword} conversion grid mapping every hour of the day</caption>
           <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
-          <tbody></tbody>
+          <tbody>
+            {gmtEstChartRows.map((row) => (
+              <tr>
+                <td>{row.gmt}</td>
+                <td>{row.eastern}</td>
+                <td>{row.offset}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
+      <p class="chart-note">During daylight saving time (mid-March to early November), Eastern Time uses EDT (UTC−4). Outside this period, EST (UTC−5) applies.</p>
     </section>
 
     <section aria-labelledby="strip">
@@ -433,7 +460,11 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">{pageEyebrow}</p>
-        <p>{meta.description || description}</p>
+        <p>
+          Greenwich Mean Time (GMT) is a fixed reference at UTC+0. Eastern Time is a
+          seasonal civil time zone: it uses Eastern Standard Time (EST, UTC−5) in
+          winter and Eastern Daylight Time (EDT, UTC−4) during daylight saving time.
+        </p>
         <figure class="hero-visual reveal">
           <picture>
             <img width="960" height="420" src={heroDiagram} alt={heroAlt} fetchpriority="high" loading="eager" decoding="async" />
@@ -443,40 +474,48 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
       <Converter intent={kind} t={t} context={context} />
     </section>
 
-    {pageExplanation && (
-      <section class="method-section" id="explanation" aria-labelledby="explanation-title">
-        <div class="method-intro" style="max-width: 800px; margin: 0 auto; text-align: left;">
-          <h2 id="explanation-title" style="font-size: 2rem; margin-bottom: 1.2rem;">{pageExplanationHeading}</h2>
-          <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">{pageExplanation}</p>
-        </div>
-      </section>
-    )}
+    <section class="method-section" id="historical-context" aria-labelledby="historical-context-title">
+      <div class="method-intro">
+        <h2 id="historical-context-title">Historical Context</h2>
+        <p>
+          GMT developed from observations at the Royal Observatory in Greenwich,
+          founded in 1675. At the 1884 International Meridian Conference, delegates
+          selected the Greenwich meridian as the world’s prime meridian. In North
+          America, railroads introduced standardized regional time in 1883, and the
+          U.S. Standard Time Act of 1918 formally recognized the Eastern time zone
+          and established national daylight saving rules.
+        </p>
+      </div>
+    </section>
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">GMT vs EST Difference Matrix</h2>
-        <p>Side-by-side time values mapping Greenwich Mean Time to Winter (EST) and Summer (EDT) offsets.</p>
+        <h2 id="comparison-table-title">Offset Comparison Table</h2>
+        <p>GMT stays fixed while the Eastern offset changes when daylight saving time begins and ends.</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">GMT vs EST Winter and Summer Offset difference matrix table</caption>
+            <caption class="sr-only">GMT and Eastern Time offset comparison by season and transition</caption>
             <thead>
-              <tr><th>GMT Time</th><th>EST (Winter) Local Time</th><th>EDT (Summer) Local Time</th><th>Time Difference</th></tr>
+              <tr><th>Period</th><th>Eastern Label</th><th>UTC Offset</th><th>Hours Behind GMT</th></tr>
             </thead>
             <tbody>
-              <tr><td>12:00 PM GMT</td><td>7:00 AM EST (UTC-5)</td><td>8:00 AM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
-              <tr><td>04:00 PM GMT</td><td>11:00 AM EST (UTC-5)</td><td>12:00 PM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
-              <tr><td>08:00 PM GMT</td><td>3:00 PM EST (UTC-5)</td><td>4:00 PM EDT (UTC-4)</td><td>5 hours (winter) / 4 hours (summer)</td></tr>
+              <tr><td>Early Nov – Mid Mar (Winter)</td><td>EST</td><td>UTC−5</td><td>5 hours</td></tr>
+              <tr><td>Mid Mar – Early Nov (Summer)</td><td>EDT</td><td>UTC−4</td><td>4 hours</td></tr>
+              <tr><td>DST Transition (Spring)</td><td>EST → EDT</td><td>Clocks spring forward 1 hour</td><td>Changes from 5 to 4</td></tr>
+              <tr><td>DST Transition (Fall)</td><td>EDT → EST</td><td>Clocks fall back 1 hour</td><td>Changes from 4 to 5</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{seoKeyword} Scenarios</h2>
-      {activeUseCases.map((item: any) => (
-        <article><h3>{item.title}</h3><p>{item.text}</p></article>
-      ))}
+    <section class="content" id="dst-dates-2026" aria-labelledby="dst-dates-2026-title">
+      <h2 id="dst-dates-2026-title">2026 DST Dates</h2>
+      <ul>
+        <li><strong>Sunday, March 8, 2026, at 2:00 AM local time:</strong> clocks move forward to 3:00 AM and Eastern Time changes from EST (UTC−5) to EDT (UTC−4).</li>
+        <li><strong>Sunday, November 1, 2026, at 2:00 AM local time:</strong> clocks move back to 1:00 AM and Eastern Time changes from EDT (UTC−4) to EST (UTC−5).</li>
+      </ul>
+      <p>These dates apply in U.S. locations that observe Eastern Time and daylight saving time.</p>
     </section>
 
     <section class="clock-grid" aria-labelledby="live-clocks">
@@ -485,31 +524,13 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
       <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
-    {activeTopics && activeTopics.length > 0 && (
-      <section class="content" aria-labelledby="topics">
-        <h2 id="topics">{seoKeyword} Shifts Analysis</h2>
-        {activeTopics.map((topic: any) => (
-          <article>
-            <h3>{topic.title}</h3>
-            <p>{topic.text}</p>
-          </article>
-        ))}
-      </section>
-    )}
-
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{seoKeyword} FAQs</h2>
+      <h2 id="faq">GMT vs EST FAQs</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
-    <figure class="map">
-      <picture>
-        <img loading="lazy" decoding="async" width="1200" height="520" src={mapDiagram} alt={mapAlt} />
-      </picture>
-    </figure>
-
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">{seoKeyword} Comparison Resources</h2>
+      <h2 id="other-tools">GMT and Eastern Time Resources</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -518,12 +539,6 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
           </article>
         ))}
       </div>
-    </section>
-
-    <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading}</h2>
-      <p>{pageConclusion}</p>
-      <p><strong>Next Step:</strong> {pageCTA}</p>
     </section>
   </>
 )}
