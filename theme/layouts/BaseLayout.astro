@@ -359,16 +359,18 @@ const schema = {
 <!doctype html>
 <html lang={lang} dir={dir}>
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3"></script>
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.clarity.ms" />
+    <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Google tag (gtag.js) stub -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-ZY6RBZFSY3');
     </script>
-    {shouldLoadAds && <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532" crossorigin="anonymous"></script>}
     <meta name="google-adsense-account" content="ca-pub-3364858473460532" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -420,7 +422,6 @@ const schema = {
     <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     <NavigationSchema lang={lang} t={t} homePath={homePathResolved} />
-    <script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js" defer></script>
     <script is:inline>
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme) document.documentElement.dataset.theme = savedTheme;
@@ -607,6 +608,77 @@ const schema = {
       })();
     </script>
     <script defer src="/assets/app.js"></script>
+
+    <!-- Deferred third-party scripts (GA4 and AdSense) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3" is:inline></script>
+    {shouldLoadAds && <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532" crossorigin="anonymous" is:inline></script>}
+
+    <!-- DMCA Badge script loaded on idle to eliminate rendering block -->
+    <script is:inline>
+      (function(w, d) {
+        function loadDMCA() {
+          var s = d.createElement("script");
+          s.src = "https://images.dmca.com/Badges/DMCABadgeHelper.min.js";
+          s.defer = true;
+          d.head.appendChild(s);
+        }
+        if (w.requestIdleCallback) {
+          w.requestIdleCallback(loadDMCA, { timeout: 4000 });
+        } else {
+          w.setTimeout(loadDMCA, 2000);
+        }
+      })(window, document);
+    </script>
+
+    <!-- Core Web Vitals Real User Monitoring (RUM) -->
+    <script is:inline>
+      (function(w) {
+        if (!('PerformanceObserver' in w)) return;
+        var vitals = { TTFB: 0, LCP: 0, CLS: 0, INP: 0 };
+        
+        // TTFB measurement
+        if (performance.getEntriesByType) {
+          var nav = performance.getEntriesByType('navigation')[0];
+          if (nav) vitals.TTFB = Math.round(nav.responseStart);
+        }
+        
+        // LCP measurement
+        var lcpObs = new PerformanceObserver(function(list) {
+          var entries = list.getEntries();
+          var lastEntry = entries[entries.length - 1];
+          vitals.LCP = Math.round(lastEntry.startTime);
+        });
+        lcpObs.observe({ type: 'largest-contentful-paint', buffered: true });
+
+        // CLS measurement
+        var clsObs = new PerformanceObserver(function(list) {
+          list.getEntries().forEach(function(entry) {
+            if (!entry.hadRecentInput) vitals.CLS += entry.value;
+          });
+        });
+        clsObs.observe({ type: 'layout-shift', buffered: true });
+
+        // INP measurement
+        var inpObs = new PerformanceObserver(function(list) {
+          list.getEntries().forEach(function(entry) {
+            if (entry.duration > vitals.INP) vitals.INP = Math.round(entry.duration);
+          });
+        });
+        inpObs.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+
+        // Reporting
+        function report() {
+          console.log('[Core Web Vitals RUM]', {
+            ttfb: vitals.TTFB + 'ms',
+            lcp: vitals.LCP + 'ms',
+            cls: parseFloat(vitals.CLS.toFixed(4)),
+            inp: vitals.INP + 'ms'
+          });
+        }
+        w.addEventListener('load', function() { setTimeout(report, 3000); });
+        w.addEventListener('pagehide', report);
+      })(window);
+    </script>
   </body>
 </html>
 

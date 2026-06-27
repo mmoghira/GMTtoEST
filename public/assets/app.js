@@ -151,16 +151,19 @@
     setText("#offsetBadge", diffHours + "h difference - " + zoneName(date, targetZone));
   }
 
+  let clocksCache = null;
   function tick() {
     const now = new Date();
-    // Cache variables to prevent heavy DOM queries if not needed
-    const gmtClock = qs("#gmtClock");
-    const estClock = qs("#estClock");
-    const estZone = qs("#estZone");
-    
-    if (gmtClock) gmtClock.textContent = compact(now, sourceZone);
-    if (estClock) estClock.textContent = compact(now, targetZone);
-    if (estZone) estZone.textContent = zoneName(now, targetZone);
+    if (!clocksCache) {
+      clocksCache = {
+        gmt: qs("#gmtClock"),
+        est: qs("#estClock"),
+        zone: qs("#estZone")
+      };
+    }
+    if (clocksCache.gmt) clocksCache.gmt.textContent = compact(now, sourceZone);
+    if (clocksCache.est) clocksCache.est.textContent = compact(now, targetZone);
+    if (clocksCache.zone) clocksCache.zone.textContent = zoneName(now, targetZone);
   }
 
   function buildTable() {
