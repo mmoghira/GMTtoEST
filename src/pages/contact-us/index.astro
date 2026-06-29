@@ -2,11 +2,12 @@
 import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { siteUrl } from "theme/i18n/config";
 
-const email    = "contact@gmttoestconverter.com";
+const email    = "gmttoest@gmail.com";
 const title    = "Contact Us";
-const description = "Get in touch with the GMT to EST Converter team. Send us a message for feedback, bug reports, or general support.";
+const description = "Contact GMT to EST Converter for support, feedback, bug reports, and timezone tool requests. Our team replies within 24–48 business hours whenever possible.";
 const meta = {
   title,
+  seoTitle: "Contact GMT to EST Converter — Support & Help",
   description,
   keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact",
   image: "/images/og/default.png",
@@ -14,6 +15,37 @@ const meta = {
 };
 
 const pageCanonical = `${siteUrl}/contact-us/`;
+
+const faqs = [
+  {
+    question: "How long does it take to receive a reply?",
+    answer: "We usually reply within 24–48 business hours. Messages are reviewed in the order received, although reports about broken tools or incorrect conversions may be prioritized."
+  },
+  {
+    question: "Can I report incorrect timezone information?",
+    answer: "Yes. Include the converter or article URL, the date and time you entered, the result you received, and what you expected to see. These details help us investigate daylight saving and offset issues accurately."
+  },
+  {
+    question: "Can I request a new time zone converter?",
+    answer: "Yes. Tell us which two time zones or cities you need to compare and how you plan to use the tool. We review requests when planning new converters and scheduling resources."
+  },
+  {
+    question: "Do you accept business or partnership enquiries?",
+    answer: "We consider relevant business, editorial, and partnership proposals. Please explain your organization, the proposed collaboration, and how it would help our users."
+  },
+  {
+    question: "Can I report a technical problem or broken link?",
+    answer: "Absolutely. Send the affected page URL, your device and browser, and a short description of what happened. A screenshot is useful when the issue is visual, but it is not required."
+  },
+  {
+    question: "Can I suggest an improvement?",
+    answer: "Yes. Suggestions about accessibility, wording, features, mobile usability, and new educational topics are welcome. Practical feedback from visitors helps guide our updates."
+  },
+  {
+    question: "How is my contact information used?",
+    answer: "Information submitted through the form is used to review and respond to your message. We do not sell contact details. Please read our Privacy Policy for more information."
+  }
+];
 
 const schema = [
   {
@@ -37,6 +69,19 @@ const schema = [
         { "@type": "ListItem", position: 2, name: "Contact Us", item: pageCanonical }
       ]
     }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${pageCanonical}#faq`,
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer
+      }
+    }))
   }
 ];
 ---
@@ -46,77 +91,192 @@ const schema = [
 
   <section class="contact-page" aria-labelledby="contact-heading">
 
-    <div class="contact-header">
+    <header class="contact-header">
       <h1 id="contact-heading">Contact Us</h1>
-      <p>Have a question or feedback? Fill out the form below and we'll get back to you within 1–2 business days.</p>
-      <p class="contact-email-line">
-        Or email us directly at:
-        <a href={`mailto:${email}`}>{email}</a>
-      </p>
-    </div>
+      <p class="contact-lead">GMT to EST Converter provides free, date-aware time zone tools and practical guidance for people who need to coordinate across different parts of the world. Remote teams, students, travelers, event organizers, developers, and international businesses use our website to check times and avoid scheduling mistakes.</p>
+      <p>Contact us if you need help using a converter, notice information that may be incorrect, find a broken link, or have an idea that could make the website more useful. Clear reports from visitors help us investigate problems, maintain accurate time zone information, and decide which tools and guides to improve next.</p>
+      <p>We read genuine support and feedback messages carefully. While we cannot provide emergency or mission-critical scheduling advice, we will do our best to answer questions about the website and point you toward the most relevant available resource.</p>
+      <address class="contact-email-line">
+        Prefer email? Write to
+        <a href={`mailto:${email}`}>{email}</a>.
+      </address>
+    </header>
 
     <!-- Success message -->
-    <div class="contact-success" id="contact-success" hidden>
-      <span class="success-icon">✓</span>
+    <div class="contact-success" id="contact-success" role="status" aria-live="polite" hidden>
+      <span class="success-icon" aria-hidden="true">✓</span>
       <div>
-        <strong>Message sent!</strong>
-        <p>Thanks for reaching out. We'll reply within 1–2 business days.</p>
+        <strong>Your message has been received.</strong>
+        <p>Thank you for contacting GMT to EST Converter. Our team will review your message and normally respond within 24–48 business hours.</p>
       </div>
     </div>
 
-    <!-- Contact Form -->
-    <form
-      id="contact-form"
-      class="contact-form"
-      action={`https://formsubmit.co/${email}`}
-      method="POST"
-    >
-      <!-- FormSubmit config -->
-      <input type="hidden" name="_subject"  value="New contact from gmttoestconverter.com" />
-      <input type="hidden" name="_captcha"  value="false" />
-      <input type="hidden" name="_template" value="table" />
-      <input type="hidden" name="_next"     value={`${siteUrl}/contact-us/?sent=1`} />
-      <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" />
+    <section class="contact-form-section" aria-labelledby="send-message-heading">
+      <h2 id="send-message-heading">Send Us a Message</h2>
+      <p id="form-intro">Provide enough detail for us to understand your request. If you are reporting a conversion or technical issue, include the affected page URL, the date and time entered, and the result you saw.</p>
+      <p class="required-note" id="required-note"><span aria-hidden="true">*</span> indicates a required field.</p>
 
-      <div class="form-row">
-        <div class="form-field">
-          <label for="cf-name">Full Name <span class="req">*</span></label>
-          <input id="cf-name" type="text" name="name" placeholder="John Smith" required autocomplete="name" />
+      <!-- Contact Form -->
+      <form
+        id="contact-form"
+        class="contact-form"
+        action={`https://formsubmit.co/${email}`}
+        method="POST"
+        aria-describedby="form-intro required-note"
+      >
+        <!-- FormSubmit config -->
+        <input type="hidden" name="_subject"  value="New contact from gmttoestconverter.com" />
+        <input type="hidden" name="_captcha"  value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next"     value={`${siteUrl}/contact-us/?sent=1`} />
+        <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="cf-name">Full name <span class="req" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+            <p class="field-help" id="cf-name-help">Enter the name you would like us to use in our reply.</p>
+            <input id="cf-name" type="text" name="name" placeholder="For example, Alex Smith" required autocomplete="name" aria-describedby="cf-name-help" />
+          </div>
+          <div class="form-field">
+            <label for="cf-email">Email address <span class="req" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+            <p class="field-help" id="cf-email-help">We will use this address only to respond to your message.</p>
+            <input id="cf-email" type="email" name="email" placeholder="alex@example.com" required autocomplete="email" inputmode="email" aria-describedby="cf-email-help" />
+          </div>
         </div>
+
         <div class="form-field">
-          <label for="cf-email">Email Address <span class="req">*</span></label>
-          <input id="cf-email" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+          <label for="cf-subject">What can we help with? <span class="req" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+          <p class="field-help" id="cf-subject-help">Choose the option that most closely matches your message.</p>
+          <select id="cf-subject" name="subject" required aria-describedby="cf-subject-help">
+            <option value="" disabled selected>Select a topic…</option>
+            <option value="General Question">General question</option>
+            <option value="Incorrect Conversion">Incorrect time conversion</option>
+            <option value="Technical Problem / Broken Link">Technical problem or broken link</option>
+            <option value="Feature Request">New converter or feature request</option>
+            <option value="Translation Help">Translation help</option>
+            <option value="Partnership / Advertising">Business or partnership enquiry</option>
+            <option value="Copyright Request">Copyright request</option>
+            <option value="Privacy / Data Request">Privacy or data request</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
+
+        <div class="form-field">
+          <label for="cf-message">How can we help? <span class="req" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+          <p class="field-help" id="cf-message-help">Do not include passwords, payment details, or other sensitive personal information.</p>
+          <textarea id="cf-message" name="message" rows="7" placeholder="Describe your question, feedback, or issue. Include the page URL and relevant date or time details when applicable." required aria-describedby="cf-message-help"></textarea>
+        </div>
+
+        <button type="submit" class="form-submit">
+          Send Message <span class="arrow" aria-hidden="true">→</span>
+        </button>
+
+        <p class="form-note">
+          By submitting this form, you acknowledge our <a href="/privacy-policy/">Privacy Policy</a>. Form submissions are handled only so we can review and respond to your request.
+        </p>
+      </form>
+    </section>
+
+    <section aria-labelledby="why-contact-heading">
+      <h2 id="why-contact-heading">Why Contact Us?</h2>
+      <p>Choose the topic that best describes your message. Specific details help us send it to the right review queue and reduce unnecessary follow-up.</p>
+      <div class="reason-grid">
+        <article>
+          <h3>Technical Support</h3>
+          <p>Ask for help if a converter, chart, menu, language page, or other site feature is not working as expected on your device.</p>
+        </article>
+        <article>
+          <h3>Incorrect Time Conversion</h3>
+          <p>Report a result that appears wrong. Include the source and destination zones, selected date, entered time, and displayed result.</p>
+        </article>
+        <article>
+          <h3>Broken Links</h3>
+          <p>Tell us about links that lead to an error, redirect unexpectedly, or no longer point to the resource described.</p>
+        </article>
+        <article>
+          <h3>New Time Zone Tools</h3>
+          <p>Suggest a converter for a time zone or city pair that is not currently available on the website.</p>
+        </article>
+        <article>
+          <h3>Feature Requests</h3>
+          <p>Share ideas for accessibility, scheduling, reference tables, mobile usability, or clearer conversion results.</p>
+        </article>
+        <article>
+          <h3>Business Enquiries</h3>
+          <p>Contact us about legitimate service, media, advertising, or commercial questions relevant to the website.</p>
+        </article>
+        <article>
+          <h3>Partnership Requests</h3>
+          <p>Describe a proposed editorial or product collaboration and explain how it would provide value to our visitors.</p>
+        </article>
+        <article>
+          <h3>Copyright Requests</h3>
+          <p>Identify the material, its exact URL, your relationship to the work, and the action you are requesting.</p>
+        </article>
+        <article>
+          <h3>General Feedback</h3>
+          <p>Let us know what is useful, what is confusing, and where the site could serve your scheduling needs better.</p>
+        </article>
       </div>
+    </section>
 
-      <div class="form-field">
-        <label for="cf-subject">Subject <span class="req">*</span></label>
-        <select id="cf-subject" name="subject" required>
-          <option value="" disabled selected>Select a subject…</option>
-          <option value="General Question">General Question</option>
-          <option value="Bug Report">Bug Report</option>
-          <option value="Feature Request">Feature Request</option>
-          <option value="Translation Help">Translation Help</option>
-          <option value="Partnership / Advertising">Partnership / Advertising</option>
-          <option value="Privacy / Data Request">Privacy / Data Request</option>
-          <option value="Other">Other</option>
-        </select>
+    <section class="policy-grid" aria-label="Contact and information policies">
+      <article aria-labelledby="response-policy-heading">
+        <h2 id="response-policy-heading">Our Response Policy</h2>
+        <p>We normally respond within <strong>24–48 business hours</strong>. Messages are reviewed in the order received, but reports involving a broken converter, inaccessible feature, or potentially incorrect time result may receive priority because they can affect other visitors.</p>
+        <p>Response times may be longer on weekends, public holidays, or during periods of unusually high message volume. Repeated submissions about the same request do not move it forward in the queue. Automated promotions, irrelevant solicitations, abusive content, and spam may be filtered or left unanswered.</p>
+      </article>
+
+      <article aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Privacy Commitment</h2>
+        <p>We use the information you submit to understand and reply to your message. Contact details are not sold, and they are not shared unnecessarily. Please send only the information needed to explain your request and avoid including passwords, financial details, identification numbers, or confidential records.</p>
+        <p>For more information about contact submissions, analytics, cookies, and advertising disclosures, review the GMT to EST Converter <a href="/privacy-policy/">Privacy Policy</a>.</p>
+      </article>
+    </section>
+
+    <section aria-labelledby="accuracy-heading">
+      <h2 id="accuracy-heading">Our Commitment to Accuracy</h2>
+      <p>Time zone information changes when governments revise UTC offsets, daylight saving rules, or transition dates. We review our tools and educational pages regularly, monitor relevant daylight saving updates, and use date-aware time zone data where appropriate. Even with those safeguards, an outdated explanation, data issue, or unclear label can occasionally require correction.</p>
+      <p>We welcome well-documented accuracy reports. Tell us which page you used, the exact date and time involved, and why the result appears incorrect. A link to an official government notice or recognized timekeeping source is especially helpful. For flights, legal deadlines, medical procedures, financial transactions, or other mission-critical decisions, always confirm the time with the responsible official organization; our <a href="/disclaimer/">accuracy disclaimer</a> explains these limits in more detail.</p>
+    </section>
+
+    <aside class="trust-panel" aria-labelledby="trust-heading">
+      <h2 id="trust-heading">Why Users Trust GMT to EST Converter</h2>
+      <ul>
+        <li><strong>Accurate, date-aware tools:</strong> our converters account for standard and daylight time where supported.</li>
+        <li><strong>Regular reviews:</strong> we revisit tools and guides as time zone rules and user needs evolve.</li>
+        <li><strong>Free access:</strong> visitors can use the core conversion resources without creating an account.</li>
+        <li><strong>User-led improvements:</strong> correction reports and practical feedback help shape future updates.</li>
+      </ul>
+    </aside>
+
+    <nav class="resource-section" aria-labelledby="resources-heading">
+      <h2 id="resources-heading">Helpful Resources</h2>
+      <p>You may find the answer you need in one of these existing resources:</p>
+      <ul class="resource-grid">
+        <li><a href="/">GMT to EST Converter</a><span>Convert GMT to Eastern Time with date-aware EST and EDT handling.</span></li>
+        <li><a href="/about-us/">About GMT to EST Converter</a><span>Learn about our mission, standards, and approach to useful content.</span></li>
+        <li><a href="/author/">Author and editorial information</a><span>See who prepares and reviews the website’s time zone guidance.</span></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a><span>Understand how the site handles contact data, analytics, and cookies.</span></li>
+        <li><a href="/disclaimer/">Accuracy Disclaimer</a><span>Review the limits of our information and when official verification is needed.</span></li>
+        <li><a href="/terms-of-service/">Terms of Service</a><span>Read the terms that apply when using the website and its tools.</span></li>
+        <li><a href="/gmt-vs-est/">GMT vs EST guide</a><span>Understand the standard offset and how EDT changes the seasonal difference.</span></li>
+        <li><a href="/time-zone-guide/">Time Zone Guide</a><span>Explore daylight saving time, abbreviations, and global scheduling basics.</span></li>
+        <li><a href="/blog/">Time zone articles</a><span>Browse event schedules, clock-change coverage, and practical planning guides.</span></li>
+      </ul>
+    </nav>
+
+    <section class="contact-faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+      <div class="faq-list">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
       </div>
-
-      <div class="form-field">
-        <label for="cf-message">Message <span class="req">*</span></label>
-        <textarea id="cf-message" name="message" rows="6" placeholder="Tell us how we can help…" required></textarea>
-      </div>
-
-      <button type="submit" class="form-submit">
-        Send Message <span class="arrow">→</span>
-      </button>
-
-      <p class="form-note">
-        By submitting this form you agree to our <a href="/privacy-policy/">Privacy Policy</a>.
-      </p>
-    </form>
-
+    </section>
   </section>
 </BaseLayout>
 
@@ -134,9 +294,39 @@ const schema = [
 
 <style>
   .contact-page {
-    max-width: 680px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 3rem 1.5rem 5rem;
+  }
+
+  .contact-page > section,
+  .contact-page > nav,
+  .contact-page > aside {
+    padding: 2.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .contact-page h2 {
+    margin: 0 0 1rem;
+    color: var(--text);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.2;
+  }
+
+  .contact-page h3 {
+    color: var(--text);
+  }
+
+  .contact-page section > p,
+  .contact-page nav > p,
+  .contact-page article > p {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .contact-page a {
+    color: var(--accent);
+    text-underline-offset: 3px;
   }
 
   /* Header */
@@ -155,13 +345,21 @@ const schema = [
     color: var(--muted);
     font-size: 1rem;
     line-height: 1.65;
-    margin: 0 0 0.5rem;
+    margin: 0 0 1rem;
+  }
+  .contact-header .contact-lead {
+    color: var(--text);
+    font-size: 1.08rem;
   }
   .contact-email-line a {
     color: var(--accent);
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+  .contact-email-line {
+    color: var(--muted);
+    font-style: normal;
   }
 
   /* Success */
@@ -200,10 +398,26 @@ const schema = [
   }
 
   /* Form */
+  .contact-form-section {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-top: 0 !important;
+  }
+  .contact-form-section > p {
+    margin: 0 0 0.75rem;
+  }
+  .required-note {
+    font-size: 0.875rem;
+  }
+  .required-note span {
+    color: #ef4444;
+    font-weight: 700;
+  }
   .contact-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin-top: 1.5rem;
   }
   .form-row {
     display: grid;
@@ -221,6 +435,23 @@ const schema = [
     color: var(--text);
   }
   .req { color: #ef4444; margin-left: 2px; }
+  .field-help {
+    margin: -2px 0 2px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 
   .form-field input,
   .form-field select,
@@ -276,6 +507,12 @@ const schema = [
   .form-submit:active { transform: translateY(0); }
   .arrow { transition: transform 0.2s; }
   .form-submit:hover .arrow { transform: translateX(4px); }
+  .form-submit:focus-visible,
+  .contact-page a:focus-visible,
+  .contact-faq summary:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    outline-offset: 3px;
+  }
 
   /* Note */
   .form-note {
@@ -290,10 +527,131 @@ const schema = [
     text-underline-offset: 2px;
   }
 
+  /* Contact reasons */
+  .reason-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 1.5rem;
+  }
+  .reason-grid article {
+    padding: 1.25rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .reason-grid h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .reason-grid p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  /* Policies and trust */
+  .policy-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+  }
+  .policy-grid article {
+    min-width: 0;
+  }
+  .policy-grid p,
+  .trust-panel li {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .trust-panel {
+    margin: 2.75rem 0 0;
+    padding: 1.5rem !important;
+    background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)) !important;
+    border-radius: 10px;
+  }
+  .trust-panel ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 2rem;
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+  .trust-panel strong {
+    color: var(--text);
+  }
+
+  /* Resource navigation */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .resource-grid li {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+    padding: 1.1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .resource-grid a {
+    font-weight: 750;
+  }
+  .resource-grid span {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+
+  /* FAQs */
+  .contact-faq {
+    border-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .faq-list {
+    display: grid;
+    gap: 10px;
+  }
+  .contact-faq details {
+    padding: 1rem 1.15rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .contact-faq summary {
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .contact-faq details p {
+    margin: 0.8rem 0 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
   /* Responsive */
+  @media (max-width: 800px) {
+    .reason-grid,
+    .resource-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 540px) {
     .contact-page { padding: 2rem 1rem 4rem; }
-    .form-row { grid-template-columns: 1fr; }
+    .form-row,
+    .reason-grid,
+    .policy-grid,
+    .trust-panel ul,
+    .resource-grid {
+      grid-template-columns: 1fr;
+    }
     .form-submit { width: 100%; justify-content: center; }
   }
 </style>
