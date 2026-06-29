@@ -35,6 +35,7 @@ const estConverters = dynamicPages.filter((page) =>
 
 const sitePages: SitemapItem[] = [
   { slug: "about-us", label: "About Us" },
+  { slug: "editorial-policy", label: "Editorial Policy" },
   { slug: "author", label: "Author" },
   { slug: "contact-us", label: "Contact Us" },
   { slug: "privacy-policy", label: "Privacy Policy" },
@@ -60,7 +61,15 @@ const groups = [
   { title: "Blog posts", items: blogPosts },
 ].filter((group) => group.items.length);
 
-const totalUrls = languages.length * groups.reduce((sum, group) => sum + group.items.length, 0);
+const englishOnlySlugs = new Set(["editorial-policy"]);
+const totalUrls = languages.reduce(
+  (total, language) =>
+    total + groups.reduce(
+      (sum, group) => sum + group.items.filter((item) => !englishOnlySlugs.has(item.slug) || language.code === "en").length,
+      0
+    ),
+  0
+);
 ---
 
 <div class="html-sitemap">
@@ -84,7 +93,9 @@ const totalUrls = languages.length * groups.reduce((sum, group) => sum + group.i
         <section class="sitemap-group" aria-labelledby={`sitemap-${language.code}-${group.title.toLowerCase().replaceAll(" ", "-")}`}>
           <h3 id={`sitemap-${language.code}-${group.title.toLowerCase().replaceAll(" ", "-")}`}>{group.title}</h3>
           <ul>
-            {group.items.map((item) => (
+            {group.items
+              .filter((item) => !englishOnlySlugs.has(item.slug) || language.code === "en")
+              .map((item) => (
               <li>
                 <a href={pageUrl(language.code, item.slug)} hreflang={language.code}>
                   {item.label}

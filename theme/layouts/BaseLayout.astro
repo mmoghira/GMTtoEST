@@ -20,9 +20,10 @@ type Props = {
   robots?: string;
   breadcrumbHomeLabel?: string;
   breadcrumbLabel?: string;
+  hreflangCodes?: string[];
 };
 
-const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false, enableArticleSchema = false, canonicalPath, homePath, allowAds, robots, breadcrumbHomeLabel, breadcrumbLabel } = Astro.props;
+const { lang, dir, title, description, slug = "", mode = "gmt-est", meta = {}, enableFaqSchema = false, enableArticleSchema = false, canonicalPath, homePath, allowAds, robots, breadcrumbHomeLabel, breadcrumbLabel, hreflangCodes } = Astro.props;
 const t = getTranslation(lang);
 
 function ensureTrailingSlash(pathname: string) {
@@ -42,9 +43,12 @@ const canonicalPathResolved = canonicalPath || pageUrl(lang, slug);
 const canonical = toAbsoluteUrl(canonicalPathResolved);
 const homePathResolved = homePath || pageUrl(lang, "");
 const homeUrl = toAbsoluteUrl(homePathResolved);
+const alternateLanguages = hreflangCodes
+  ? languages.filter((item) => hreflangCodes.includes(item.code))
+  : languages;
 const hreflangAlternates = [
   { code: lang, href: canonical },
-  ...languages
+  ...alternateLanguages
     .filter((item) => item.code !== lang)
     .map((item) => ({
       code: item.code,
@@ -84,6 +88,7 @@ const navItems = [
 
 const companyFooterLinks = [
   { href: pageUrl(lang, "about-us"), label: t.footer.about },
+  ...(lang === "en" ? [{ href: "/editorial-policy/", label: "Editorial Policy" }] : []),
   { href: pageUrl(lang, "contact-us"), label: t.footer.contact },
   { href: pageUrl(lang, "author"), label: t.footer.author || "Author" },
   { href: pageUrl(lang, "privacy-policy"), label: t.footer.privacy },
@@ -534,7 +539,7 @@ const schema = {
         <div class="footer-section language-section">
           <h3 class="footer-heading">LANGUAGE</h3>
           <div class="footer-lang-grid">
-            {languages.map((item) => (
+            {alternateLanguages.map((item) => (
               <a
                 href={pageUrl(item.code, slug)}
                 hreflang={item.code}
