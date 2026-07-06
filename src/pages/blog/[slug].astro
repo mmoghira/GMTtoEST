@@ -2,7 +2,7 @@
 import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { getCollection, render } from "astro:content";
 import { siteUrl } from "theme/i18n/config";
-import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
+import { ensureKeywordInAlt, getConciseDisplayTitle, getPrimaryKeyword } from "theme/utils/seo";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -19,6 +19,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const displayTitle = getConciseDisplayTitle(Astro.params.slug, post.data.title);
 const primaryKeyword = getPrimaryKeyword(post.data.keywords, post.data.title);
 const imageAlt = ensureKeywordInAlt(post.data.imageAlt, primaryKeyword, `${primaryKeyword} featured image`);
 const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
@@ -90,7 +91,7 @@ const articleSchema = {
 
   <article class="content blog-post" aria-labelledby="post-title">
     <header class="post-header">
-      <h1 id="post-title">{post.data.title}</h1>
+      <h1 id="post-title">{displayTitle}</h1>
       <div class="post-meta">
         <time datetime={post.data.pubDate.toISOString()} itemprop="datePublished">
           {post.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}

@@ -4,8 +4,12 @@ import { getPageMeta, siteUrl, languages, getLang } from "theme/i18n/config";
 import { getCollection } from "astro:content";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
-export function getStaticPaths() {
-  return languages.filter(l => l.code !== "en").map(l => ({ params: { lang: l.code } }));
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  const translatedLanguages = new Set(posts.map((post) => post.id.split("/")[0]));
+  return languages
+    .filter((language) => language.code !== "en" && translatedLanguages.has(language.code))
+    .map((language) => ({ params: { lang: language.code } }));
 }
 
 const lang = getLang(Astro.params.lang);
@@ -22,12 +26,9 @@ const meta = {
 const pageUrl = `${siteUrl}/${lang.code}/blog/`;
 
 const allPosts = await getCollection("blog");
-// Fallback to English posts if localized posts aren't available yet
-let posts = allPosts.filter(post => post.id.startsWith(`${lang.code}/`));
-if (posts.length === 0) {
-  posts = allPosts.filter(post => post.id.startsWith("en/"));
-}
-posts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = allPosts
+  .filter(post => post.id.startsWith(`${lang.code}/`))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
 <BaseLayout lang={lang.code} dir={lang.dir} title={meta.title} description={meta.description} slug="blog" meta={meta}>
@@ -48,6 +49,7 @@ posts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
             <article class="blog-card">
               {post.data.image && (
                 <a class="blog-card-image" href={`/${lang.code}/blog/${slug}/`} aria-label={post.data.title}>
+                  <span class="sr-only">{post.data.title}</span>
                   <picture>
                     {responsiveImageBase && <source type="image/avif" srcset={`${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w`} sizes="(max-width: 760px) 100vw, 360px" />}
                     {responsiveImageBase && <source type="image/webp" srcset={`${responsiveImageBase}-600.webp 600w, ${responsiveImageBase}-1200.webp 1200w`} sizes="(max-width: 760px) 100vw, 360px" />}
@@ -61,7 +63,7 @@ posts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
                   {post.data.pubDate.toLocaleDateString(lang.code, { year: "numeric", month: "long", day: "numeric" })}
                 </time>
                 <p>{post.data.description}</p>
-                <a class="read-more" href={`/${lang.code}/blog/${slug}/`}>Read more &rarr;</a>
+                <a class="read-more" href={`/${lang.code}/blog/${slug}/`}>Read {post.data.title} &rarr;</a>
               </div>
             </article>
           );

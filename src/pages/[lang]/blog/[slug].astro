@@ -6,28 +6,15 @@ import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
-  const paths = [];
-  
-  languages.filter(l => l.code !== "en").forEach(lang => {
-    // First find localized posts for this language
-    const langPosts = posts.filter(post => post.id.startsWith(`${lang.code}/`));
-    
-    if (langPosts.length > 0) {
-      langPosts.forEach(post => {
-        const slug = post.id.split('/').slice(1).join('/');
-        paths.push({ params: { lang: lang.code, slug }, props: { post, actualLang: lang.code } });
-      });
-    } else {
-      // Fallback to English posts
-      const enPosts = posts.filter(post => post.id.startsWith("en/"));
-      enPosts.forEach(post => {
-        const slug = post.id.split('/').slice(1).join('/');
-        paths.push({ params: { lang: lang.code, slug }, props: { post, actualLang: "en" } });
-      });
-    }
-  });
-  
-  return paths;
+  return posts
+    .filter((post) => !post.id.startsWith("en/"))
+    .map((post) => {
+      const [lang, ...slugParts] = post.id.split("/");
+      return {
+        params: { lang, slug: slugParts.join("/") },
+        props: { post, actualLang: lang }
+      };
+    });
 }
 
 const { lang: paramLang } = Astro.params;
@@ -77,7 +64,7 @@ const articleSchema = {
   author: {
     "@type": "Person",
     name: post.data.author || "Jackie Bruce",
-    url: `${siteUrl}${pageUrl(langObj.code, "author/jackie-bruce")}`
+    url: `${siteUrl}/author/jackie-bruce/`
   },
   publisher: {
     "@type": "Organization",
@@ -123,7 +110,7 @@ const articleSchema = {
             &bull; Updated <time datetime={post.data.updatedDate.toISOString()} itemprop="dateModified">{post.data.updatedDate.toLocaleDateString(langObj.code, { year: "numeric", month: "long", day: "numeric" })}</time>
           </span>
         )}
-        {post.data.author && <span>&bull; By <a href={pageUrl(langObj.code, "author/jackie-bruce")} rel="author">{post.data.author}</a></span>}
+        {post.data.author && <span>&bull; By <a href="/author/jackie-bruce/" rel="author">{post.data.author}</a></span>}
       </div>
     </header>
 
@@ -147,7 +134,7 @@ const articleSchema = {
           <span aria-hidden="true">{post.data.author.charAt(0)}</span>
         </div>
         <div class="author-info">
-          <h3>Written by <a href={pageUrl(langObj.code, "author/jackie-bruce")} rel="author">{post.data.author}</a></h3>
+          <h3>Written by <a href="/author/jackie-bruce/" rel="author">{post.data.author}</a></h3>
           <p>Timezone Content Specialist covering GMT, EST, EDT, daylight saving time, and global scheduling.</p>
         </div>
       </section>

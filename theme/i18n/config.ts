@@ -118,23 +118,51 @@ function replaceTemplates(text: string, replacements: Record<string, string>): s
 
 export function getPageMeta(code: string, labelKey = "home", pageContext?: any) {
   const t = getTranslation(code);
+  const english = (modules["./translations/en.json"] as any)?.default || {};
+  const selected = (modules[`./translations/${code}.json`] as any)?.default || english;
   const specificDynamicKeys = ["cdtToEst", "cstToEst", "kstToEst", "pdtToEst", "mstToEst", "astToEst"];
   const isSpecificDynamic = specificDynamicKeys.includes(labelKey);
 
   if ((labelKey === "dynamic" || isSpecificDynamic) && pageContext) {
     const { from, to, fromZone, toZone } = pageContext;
     const replacements = { from, to, fromZone: fromZone || "UTC", toZone: toZone || "UTC" };
-    
-    const baseMeta = t.pages[labelKey] || t.pages.dynamic || {};
-    const rawTitle = baseMeta.title || "{from} to {to} Converter";
+
+    const selectedSpecificMeta = selected.pages?.[labelKey];
+    const englishSpecificMeta = english.pages?.[labelKey];
+    const usesEnglishSpecificFallback =
+      code !== "en" &&
+      isSpecificDynamic &&
+      selectedSpecificMeta?.title === englishSpecificMeta?.title;
+    const localizedHomeMeta = selected.pages?.home || t.pages?.home || {};
+    const localizedPairMeta = {
+      ...(selected.pages?.dynamic || t.pages?.dynamic || {}),
+      title: localizedHomeMeta.title
+        ?.replace(/\bGMT\b/g, "{from}")
+        .replace(/\bEST\b/g, "{to}"),
+      description: localizedHomeMeta.description
+        ?.replace(/\bGMT\b/g, "{from}")
+        .replace(/\bEST\b/g, "{to}")
+    };
+    const baseMeta = usesEnglishSpecificFallback
+      ? localizedPairMeta
+      : selectedSpecificMeta || t.pages[labelKey] || t.pages.dynamic || {};
+    const rawTitle = isSpecificDynamic
+      ? localizedPairMeta.title || baseMeta.title || "{from} to {to} Converter"
+      : baseMeta.title || "{from} to {to} Converter";
     const rawDescription = baseMeta.description || "Use this {from} to {to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.";
     
     const title = replaceTemplates(rawTitle, replacements);
     const description = replaceTemplates(rawDescription, replacements);
 
-    const faqsSource = isSpecificDynamic ? (t[`faqs_${labelKey}`]?.items || []) : (t.faqs_dynamic || []);
-    const useCasesSource = isSpecificDynamic ? (t[`useCases_${labelKey}`]?.items || []) : (t.useCases_dynamic || []);
-    const topicsSource = isSpecificDynamic ? (t[`topics_${labelKey}`]?.items || []) : (t.topics_dynamic || []);
+    const faqsSource = isSpecificDynamic && !usesEnglishSpecificFallback
+      ? (t[`faqs_${labelKey}`]?.items || [])
+      : (selected.faqs_dynamic || t.faqs_dynamic || []);
+    const useCasesSource = isSpecificDynamic && !usesEnglishSpecificFallback
+      ? (t[`useCases_${labelKey}`]?.items || [])
+      : (selected.useCases_dynamic || t.useCases_dynamic || []);
+    const topicsSource = isSpecificDynamic && !usesEnglishSpecificFallback
+      ? (t[`topics_${labelKey}`]?.items || [])
+      : (selected.topics_dynamic || t.topics_dynamic || []);
 
     const faqs = faqsSource.map((faq: any) => ({
       q: replaceTemplates(faq.q, replacements),
@@ -154,7 +182,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
     return {
       title,
       description,
-      keywords: `${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} converter, ${from} to ${to} time difference`,
+      keywords: `${title}, ${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} time difference`,
       image: baseMeta.image || "/images/og/default.png",
       imageAlt: baseMeta.imageAlt || `${from} to ${to} Converter - timezone conversion tool`,
       faqs,
@@ -200,8 +228,15 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
     topics = t[`topics_${labelKey}`]?.items || t.topics_dynamic || t.topics?.items || [];
   }
 
+  const description = code !== "en" &&
+    labelKey !== "home" &&
+    baseMeta.description === t.pages?.home?.description
+      ? `${baseMeta.title}. ${baseMeta.description}`
+      : baseMeta.description;
+
   return {
     ...baseMeta,
+    description,
     faqs,
     useCases,
     topics

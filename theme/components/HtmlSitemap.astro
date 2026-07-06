@@ -23,15 +23,8 @@ const dynamicPages: SitemapItem[] = pages
     label: getConverterDisplayName(page) || `${page.context.from} to ${page.context.to} Converter`,
   }));
 
-// Since all dynamic timezone converter pages (gmt-to-* and *-to-est) are currently
-// permanently redirected to the homepage in vercel.json, they are excluded here
-// to prevent listing redirected URLs in the HTML sitemap.
-const gmtConverters = dynamicPages.filter((page) => 
-  page.slug.startsWith("gmt-to-") && false // Exclude all since they redirect
-);
-const estConverters = dynamicPages.filter((page) => 
-  page.slug.endsWith("-to-est") && false // Exclude all since they redirect
-);
+const gmtConverters = dynamicPages.filter((page) => page.slug.startsWith("gmt-to-"));
+const estConverters = dynamicPages.filter((page) => page.slug.endsWith("-to-est"));
 
 const sitePages: SitemapItem[] = [
   { slug: "about-us", label: "About Us" },
@@ -61,11 +54,16 @@ const groups = [
   { title: "Blog posts", items: blogPosts },
 ].filter((group) => group.items.length);
 
-const englishOnlySlugs = new Set(["editorial-policy"]);
+const englishOnlySlugs = new Set([
+  ...sitePages.map((item) => item.slug),
+  ...blogPosts.map((item) => item.slug),
+]);
+const isAvailableForLanguage = (item: SitemapItem, languageCode: string) =>
+  languageCode === "en" || !englishOnlySlugs.has(item.slug);
 const totalUrls = languages.reduce(
   (total, language) =>
     total + groups.reduce(
-      (sum, group) => sum + group.items.filter((item) => !englishOnlySlugs.has(item.slug) || language.code === "en").length,
+      (sum, group) => sum + group.items.filter((item) => isAvailableForLanguage(item, language.code)).length,
       0
     ),
   0
@@ -89,12 +87,12 @@ const totalUrls = languages.reduce(
   {languages.map((language) => (
     <section class="sitemap-language" id={`sitemap-${language.code}`} aria-labelledby={`sitemap-${language.code}-heading`}>
       <h2 id={`sitemap-${language.code}-heading`}>{language.name}</h2>
-      {groups.map((group) => (
+      {groups.filter((group) => group.items.some((item) => isAvailableForLanguage(item, language.code))).map((group) => (
         <section class="sitemap-group" aria-labelledby={`sitemap-${language.code}-${group.title.toLowerCase().replaceAll(" ", "-")}`}>
           <h3 id={`sitemap-${language.code}-${group.title.toLowerCase().replaceAll(" ", "-")}`}>{group.title}</h3>
           <ul>
             {group.items
-              .filter((item) => !englishOnlySlugs.has(item.slug) || language.code === "en")
+              .filter((item) => isAvailableForLanguage(item, language.code))
               .map((item) => (
               <li>
                 <a href={pageUrl(language.code, item.slug)} hreflang={language.code}>
