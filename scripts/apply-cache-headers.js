@@ -10,20 +10,6 @@ if (!fs.existsSync(configPath)) {
 
 const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 const securityHeadersSource = "^/(.*)$";
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.clarity.ms https://*.clarity.ms https://va.vercel-scripts.com https://*.effectivecpmnetwork.com https://sleepoverlimitprofound.com https://fizzyacerbitymellow.com",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://pagead2.googlesyndication.com https://www.clarity.ms https://*.clarity.ms https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.effectivecpmnetwork.com https://sleepoverlimitprofound.com https://protrafficinspector.com",
-  "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
-  "form-action 'self' https://formsubmit.co",
-  "upgrade-insecure-requests",
-].join("; ");
 const managedSources = new Set([
   securityHeadersSource,
   "^/assets/(.*)$",
@@ -35,7 +21,6 @@ const securityRoutes = [
   {
     src: securityHeadersSource,
     headers: {
-      "content-security-policy": contentSecurityPolicy,
       "x-content-type-options": "nosniff",
       "x-frame-options": "SAMEORIGIN",
       "referrer-policy": "strict-origin-when-cross-origin",

@@ -125,6 +125,7 @@ const companyFooterLinks = [
   { href: "/contact-us/", label: t.footer.contact },
   { href: "/author/", label: t.footer.author || "Author" },
   { href: "/privacy-policy/", label: t.footer.privacy },
+  { href: "/privacy-policy/#privacy-rights", label: "Privacy Choices" },
   { href: "/terms-of-service/", label: t.footer.terms || "Terms of Service" },
   { href: "/disclaimer/", label: t.footer.disclaimer || "Disclaimer" },
   { href: "/sitemap/", label: t.footer.sitemap }
@@ -166,7 +167,11 @@ const isConverterPage = isHome || isComparison || isReverse || isDynamic;
 const breadcrumbCurrentLabel = breadcrumbLabel || title;
 
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
-const shouldLoadAds = allowAds ?? (isUtilityPage || slug.startsWith("blog/"));
+// Keep the initial AdSense review focused on the strongest, fully reviewed
+// English content. Other locales can be enabled individually after a human
+// translation/content-quality review.
+const isAdsenseEligiblePage = isUtilityPage || slug.startsWith("blog/");
+const shouldLoadAds = lang === "en" && !isNoindexPage && (allowAds ?? isAdsenseEligiblePage);
 
 // WebApplication schema for the homepage and every converter page.
 const converterAppSchema = isConverterPage ? [
@@ -398,17 +403,32 @@ const schema = {
   <head>
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-    <link rel="dns-prefetch" href="https://www.clarity.ms" />
     <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Google tag (gtag.js) stub -->
+    <!-- Privacy-first Consent Mode defaults. A Google-certified CMP must update
+         these values after the visitor makes a choice. -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
       gtag('js', new Date());
       gtag('config', 'G-ZY6RBZFSY3');
     </script>
     <meta name="google-adsense-account" content="ca-pub-3364858473460532" />
+    {shouldLoadAds && (
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532"
+        crossorigin="anonymous"
+        is:inline
+      ></script>
+    )}
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{documentTitle}</title>
@@ -463,33 +483,7 @@ const schema = {
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme) document.documentElement.dataset.theme = savedTheme;
     </script>
-    <!-- Microsoft Clarity tracking code, deferred until after first paint/interaction. -->
-    <script type="text/javascript" is:inline>
-      (function(w,d,a,i){
-        w[a]=w[a]||function(){(w[a].q=w[a].q||[]).push(arguments)};
-        var loaded=false;
-        var events=["pointerdown","keydown","touchstart","scroll"];
-        function cleanup(){events.forEach(function(e){w.removeEventListener(e,load,{passive:true});});}
-        function load(){
-          if(loaded)return;
-          loaded=true;
-          cleanup();
-          var s=d.createElement("script");
-          s.async=true;
-          s.src="https://www.clarity.ms/tag/"+i;
-          d.head.appendChild(s);
-        }
-        function schedule(){
-          var idle=w.requestIdleCallback||function(cb){return w.setTimeout(cb,2500)};
-          idle(load,{timeout:3500});
-        }
-        events.forEach(function(e){w.addEventListener(e,load,{once:true,passive:true});});
-        if(d.readyState==="complete")schedule();
-        else w.addEventListener("load",schedule,{once:true});
-      })(window, document, "clarity", "wp0u5jkzbf");
-    </script>
     <slot name="head" />
-    <script is:inline src="https://pl30219434.effectivecpmnetwork.com/00/c8/4e/00c84ea17eff3177b0ac0d6fb94513b3.js"></script>
   </head>
   <body data-lang={lang} data-mode={mode}>
     {isEnglishHome && (
@@ -511,8 +505,6 @@ const schema = {
       <slot />
     </main>
     <footer>
-      <script async="async" data-cfasync="false" src="https://pl30219602.effectivecpmnetwork.com/13202d309427e0d7470906730918fcfc/invoke.js"></script>
-      <div id="container-13202d309427e0d7470906730918fcfc"></div>
       <div class="footer-container">
         <!-- Brand Section -->
         <div class="footer-section brand-section">
@@ -649,26 +641,8 @@ const schema = {
     </script>
     <script defer src="/assets/app.js"></script>
 
-    <!-- Deferred third-party scripts (GA4 and AdSense) -->
+    <!-- GA4 honors the Consent Mode defaults configured in the document head. -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3" is:inline></script>
-    {shouldLoadAds && <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532" crossorigin="anonymous" is:inline></script>}
-
-    <!-- DMCA Badge script loaded on idle to eliminate rendering block -->
-    <script is:inline>
-      (function(w, d) {
-        function loadDMCA() {
-          var s = d.createElement("script");
-          s.src = "https://images.dmca.com/Badges/DMCABadgeHelper.min.js";
-          s.defer = true;
-          d.head.appendChild(s);
-        }
-        if (w.requestIdleCallback) {
-          w.requestIdleCallback(loadDMCA, { timeout: 4000 });
-        } else {
-          w.setTimeout(loadDMCA, 2000);
-        }
-      })(window, document);
-    </script>
 
     <!-- Core Web Vitals Real User Monitoring (RUM) -->
     <script is:inline>
