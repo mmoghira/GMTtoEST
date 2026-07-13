@@ -91,6 +91,7 @@ export const pages: any[] = [
   { slug: "gmt-to-eet", kind: "dynamic", labelKey: "gmtToEet", context: { from: "GMT", to: "EET", fromZone: "UTC", toZone: "Europe/Athens" } },
   { slug: "edt-to-est", kind: "dynamic", labelKey: "edtToEst", context: { from: "EDT", to: "EST", fromZone: "Etc/GMT+4", toZone: "Etc/GMT+5" } },
   { slug: "gmt-to-cdt", kind: "dynamic", labelKey: "gmtToCdt", context: { from: "GMT", to: "CDT", fromZone: "UTC", toZone: "America/Chicago" } },
+  { slug: "gmt-to-eat", kind: "dynamic", labelKey: "gmtToEat", context: { from: "GMT", to: "EAT", fromZone: "UTC", toZone: "Africa/Nairobi" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },

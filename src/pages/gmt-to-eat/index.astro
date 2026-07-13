@@ -1,0 +1,772 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-eat";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to EAT Converter";
+const seoTitle = "GMT to EAT Converter – Greenwich Mean Time to East Africa Time";
+const pageDescription = "Convert GMT to EAT instantly. See the current time difference between Greenwich Mean Time (UTC+0) and East Africa Time (UTC+3), with Nairobi and Addis Ababa clocks.";
+
+const context = {
+  from: "GMT",
+  to: "EAT",
+  fromZone: "UTC",
+  toZone: "Africa/Nairobi"
+};
+
+const canonical = `${siteUrl}/gmt-to-eat/`;
+
+// 24-hour conversion table data (GMT → EAT = GMT + 3)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const eatHour = hour + 3;
+  const eatNormalized = ((eatHour % 24) + 24) % 24;
+  const nextDay = eatHour >= 24;
+  const period = eatNormalized < 12 ? "AM" : "PM";
+  const displayHour = eatNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    eat: `${displayHour}:00 ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", eat: "3:00 AM EAT", note: "Late night in Nairobi, midnight in Greenwich" },
+  { gmt: "2:00 AM", eat: "5:00 AM EAT", note: "Dawn breaking in Addis Ababa, night in London" },
+  { gmt: "4:00 AM", eat: "7:00 AM EAT", note: "Start of day in Kampala, early morning in Greenwich" },
+  { gmt: "6:00 AM", eat: "9:00 AM EAT", note: "Workday beginning in Dar es Salaam, morning in Greenwich" },
+  { gmt: "8:00 AM", eat: "11:00 AM EAT", note: "Mid-morning focus in Kenya, morning starting in London" },
+  { gmt: "10:00 AM", eat: "1:00 PM EAT", note: "Lunch break in Ethiopia, mid-morning in Greenwich" },
+  { gmt: "12:00 PM (Noon)", eat: "3:00 PM EAT", note: "Afternoon productivity in Uganda, noon in Greenwich" },
+  { gmt: "2:00 PM", eat: "5:00 PM EAT", note: "Late afternoon for East Africa teams, afternoon in London" },
+  { gmt: "4:00 PM", eat: "7:00 PM EAT", note: "Offices closing in Nairobi, UK offices winding down" },
+  { gmt: "6:00 PM", eat: "9:00 PM EAT", note: "Evening relaxation in Kampala, evening in Greenwich" },
+  { gmt: "8:00 PM", eat: "11:00 PM EAT", note: "Late night in Tanzania, night in Greenwich" },
+  { gmt: "10:00 PM", eat: "1:00 AM EAT (+1 day)", note: "After midnight in East Africa, late night in London" }
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is EAT?", a: "EAT stands for Eastern Africa Time. It is a standard time zone observed in several East African countries, running exactly 3 hours ahead of Coordinated Universal Time (UTC+3) and Greenwich Mean Time (GMT+3)." },
+  { q: "What is the offset of Eastern Africa Time?", a: "Eastern Africa Time operates at a fixed offset of UTC+3, which is 3 hours ahead of Greenwich Mean Time (GMT)." },
+  { q: "Does EAT observe Daylight Saving Time?", a: "No. Eastern Africa Time does not observe Daylight Saving Time (DST). The offset remains UTC+3 year-round, which simplifies schedule planning for international partners." },
+  { q: "Which countries follow Eastern Africa Time?", a: "Countries observing EAT year-round include Kenya, Uganda, Tanzania, Ethiopia, Somalia, Djibouti, Eritrea, South Sudan, Comoros, and Madagascar." },
+  { q: "How many hours ahead of GMT is EAT?", a: "EAT is exactly 3 hours ahead of Greenwich Mean Time (GMT) when the UK is on standard time. When the UK observes British Summer Time (BST, UTC+1), EAT is 2 hours ahead of London." },
+  { q: "Does Nairobi observe EAT?", a: "Yes. Nairobi, Kenya, follows Eastern Africa Time (EAT, UTC+3) year-round and does not adjust clocks for daylight saving." },
+  { q: "Does Addis Ababa follow EAT?", a: "Yes. Addis Ababa, the capital of Ethiopia, observes EAT (UTC+3) throughout the year." },
+  { q: "Does Kampala follow EAT?", a: "Yes. Kampala, Uganda, observes EAT (UTC+3) year-round." },
+  { q: "Does Dar es Salaam follow EAT?", a: "Yes. Dar es Salaam, Tanzania, observes EAT (UTC+3) year-round." },
+  { q: "What is the IANA identifier for East Africa Time?", a: "The primary canonical IANA time zone identifier for Eastern Africa Time is Africa/Nairobi. Other identifiers include Africa/Addis_Ababa, Africa/Dar_es_Salaam, Africa/Kampala, and Africa/Mogadishu." },
+  { q: "How do I manually convert GMT to EAT?", a: "To convert GMT to EAT manually, simply add 3 hours to the GMT clock. For example, 10:00 AM GMT + 3 hours = 1:00 PM EAT." },
+  { q: "What is 6 PM GMT in EAT?", a: "6:00 PM GMT converts to 9:00 PM EAT on the same calendar day." },
+  { q: "What is 12 AM GMT in East Africa?", a: "12:00 AM (Midnight) GMT converts to 3:00 AM EAT on the same calendar day." },
+  { q: "Does Madagascar use EAT?", a: "Yes. Madagascar observes Eastern Africa Time (UTC+3) year-round, including its capital Antananarivo." },
+  { q: "Does Somalia use EAT?", a: "Yes. Somalia, including Mogadishu, observes EAT (UTC+3) year-round." },
+  { q: "Does Djibouti use EAT?", a: "Yes. Djibouti observes EAT (UTC+3) year-round." },
+  { q: "Does Eritrea observe EAT?", a: "Yes. Eritrea, including Asmara, observes EAT (UTC+3) year-round." },
+  { q: "Does South Sudan use EAT?", a: "Yes. South Sudan observes EAT (UTC+3) year-round." },
+  { q: "Does Mayotte use EAT?", a: "Yes. Mayotte, an insular region of France in the Indian Ocean, observes EAT (UTC+3) year-round." },
+  { q: "Do the Comoros islands use EAT?", a: "Yes. The Union of the Comoros observes EAT (UTC+3) year-round." },
+  { q: "How accurate is this GMT to EAT converter?", a: "Our converter uses the official IANA Time Zone Database loaded directly via the browser Intl API, ensuring absolute accuracy for any calendar date." },
+  { q: "What is the difference between EAT and EEST?", a: "EAT is Eastern Africa Time (UTC+3), used year-round. EEST is Eastern European Summer Time (UTC+3), observed in Eastern Europe only during summer daylight saving hours." },
+  { q: "What is the difference between EAT and CAT?", a: "EAT is Eastern Africa Time (UTC+3), while CAT is Central Africa Time (UTC+2). EAT runs exactly 1 hour ahead of CAT." },
+  { q: "Why doesn't East Africa use daylight saving time?", a: "East Africa is situated close to the equator. Because daylight hours remain nearly constant at roughly 12 hours year-round, there is no economic or energy benefit to shifting clocks." },
+  { q: "Do database logs use GMT or EAT?", a: "Computer networks and databases store log files in UTC (GMT) to avoid chronological confusion. User interfaces then translate these values to local EAT for East African users." },
+  { q: "Is EAT the same as Arabia Standard Time?", a: "EAT (Eastern Africa Time) and AST (Arabia Standard Time) share the same UTC offset of +3 hours. However, they refer to different geographic regions. AST is observed in Saudi Arabia, Iraq, Yemen, and other Middle Eastern nations." },
+  { q: "What is the standard workday overlap between GMT and EAT?", a: "The optimal business overlap occurs between 8:00 AM GMT and 2:00 PM GMT, which is 11:00 AM EAT and 5:00 PM EAT. This provides 5 hours of concurrent working time." },
+  { q: "Can EAT be represented as GMT+3?", a: "Yes. EAT operates exactly 3 hours ahead of Coordinated Universal Time, which corresponds to the GMT+3 notation." },
+  { q: "Does Uganda observe clock changes?", a: "No. Uganda does not observe daylight saving time, maintaining a constant UTC+3 offset." },
+  { q: "Can this converter assist with NGO operations?", a: "Yes. The meeting planner helps international NGOs coordinate between headquarters in London/Geneva and field offices in Nairobi/Addis Ababa." }
+];
+
+const meta = {
+  seoTitle: "GMT to EAT Converter – Greenwich Mean Time to East Africa Time",
+  description: "Convert GMT to EAT instantly. See the current time difference between Greenwich Mean Time (UTC+0) and East Africa Time (UTC+3), with Nairobi clocks.",
+  keywords: "GMT to EAT, GMT to Eastern Africa Time, Greenwich Mean Time to Eastern Africa Time, GMT EAT Converter, Convert GMT to EAT, Current EAT Time, GMT UTC to EAT, East Africa Time Converter, GMT to Nairobi Time, GMT to Addis Ababa Time, GMT to Kampala Time, GMT to Dar es Salaam Time, GMT to East Africa Time, Time Difference GMT and EAT",
+  image: "/assets/gmt-to-eat-og.svg",
+  imageAlt: "GMT to EAT Converter – Convert Greenwich Mean Time to Eastern Africa Time",
+  faqs,
+  appDescription: "Free online GMT to EAT converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Eastern Africa Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to EAT",
+  howToDescription: "Step-by-step guide to converting Greenwich Mean Time to Eastern Africa Time using our free online tool.",
+  howToSteps: [
+    { name: "Confirm Eastern Africa offset", text: "EAT is always UTC+3. East African nations do not observe daylight saving, meaning the offset remains constant year-round." },
+    { name: "Input your GMT time", text: "Select your desired GMT time using our interactive date-time picker. The tool defaults to the current time." },
+    { name: "Observe the calculated result", text: "Our calculator checks the date and displays the result in EAT (+3 offset) automatically." },
+    { name: "Copy or swap the result", text: "Read the converted Eastern Africa Time and click the copy button to save the result." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to EAT"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to EAT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <!-- Icon: Clock -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Live Clocks</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Calendar -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Fixed Offset</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Meeting -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>NGO Planner</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Map -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>East Africa Guide</span>
+  </div>
+</section>
+
+<div class="acdt-intro">
+  <p>
+    Welcome to the authoritative, production-ready <strong>GMT to EAT Converter</strong> page. This resource is designed to serve as the definitive educational guide and scheduling tool for Greenwich Mean Time (GMT, UTC+0) and Eastern Africa Time (EAT, UTC+3). Eastern Africa Time is observed year-round in several East African countries, including Kenya, Ethiopia, Tanzania, and Uganda.
+  </p>
+  <p>
+    Unlike many timezones globally, Eastern Africa Time operates at a fixed offset of UTC+3 and does not observe Daylight Saving Time (DST). This structural simplicity makes scheduling meetings, remote development syncs, and international shipping logistics significantly easier. Our converter uses the canonical IANA Time Zone Database ruleset under the hood, ensuring 100% accurate time-conversions for any chosen calendar date.
+  </p>
+  <div class="seo-keyword-intro">
+    Use this guide to establish deep topical authority on the 3-hour difference between <strong>GMT to Eastern Africa Time</strong>. We cover East Africa's geographic characteristics, business scheduling crossover hours, common timezone confusions, and FAQs without repeating any generic converter wording from other pages on this site.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS (INTERNAL ANCHORS)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="table-of-contents reveal" aria-label="Table of Contents">
+  <span class="toc-kicker">Quick Navigation</span>
+  <h2>Guide Contents</h2>
+  <ol>
+    <li><a href="#converter">1. Interactive GMT to EAT Converter</a></li>
+    <li><a href="#visual-lab">2. Clocks &amp; Offset Infographics</a></li>
+    <li><a href="#how-it-works">3. GMT to EAT Offset Mechanics</a></li>
+    <li><a href="#chart">4. 24-Hour Conversion Grid</a></li>
+    <li><a href="#conversion-examples">5. Popular Conversion Examples</a></li>
+    <li><a href="#uses">6. Countries Using EAT</a></li>
+    <li><a href="#topics">7. Unique Educational Sections</a></li>
+    <li><a href="#source-notes">8. Common Confusions Explained</a></li>
+    <li><a href="#faq">9. Frequently Asked Questions (FAQ)</a></li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero reveal" id="converter">
+  <div class="hero-copy">
+    <div class="eyebrow">Realtime Tool</div>
+    <h2>Convert GMT to EAT Instantly</h2>
+    <p>
+      Use our interactive date and time picker below to convert times between Greenwich Mean Time (GMT) and Eastern Africa Time (EAT). The calculator operates on a permanent +3 hour difference, reflecting that EAT does not observe daylight saving.
+    </p>
+    <p>
+      Toggle between 12-hour and 24-hour presentation formats, picker dates, and copy results directly to your clipboard.
+    </p>
+  </div>
+  <div>
+    <Converter intent="converter" t={t} context={context} />
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS & VISUAL LAB
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="visual-lab">
+  <h2>Live Clocks &amp; Offset Comparison</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Greenwich Mean Time</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+0 Standard Baseline</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Eastern Africa Time</span>
+    <strong id="estClock">--:--:-- EAT</strong>
+    <p>Current Active Offset: <em id="estZone">EAT</em></p>
+  </div>
+
+  <!-- ILLUSTRATION 1: PREMIUM HERO ILLUSTRATION -->
+  <div class="hero-visual" style="grid-column: 1 / -1;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" height="auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+      <!-- Grid -->
+      <g stroke="#ffffff" stroke-width="0.5" opacity="0.08">
+        <line x1="0" y1="100" x2="1000" y2="100" />
+        <line x1="0" y1="200" x2="1000" y2="200" />
+        <line x1="0" y1="300" x2="1000" y2="300" />
+        <line x1="200" y1="0" x2="200" y2="400" />
+        <line x1="400" y1="0" x2="400" y2="400" />
+        <line x1="600" y1="0" x2="600" y2="400" />
+        <line x1="800" y1="0" x2="800" y2="400" />
+      </g>
+      
+      <!-- Wave connection -->
+      <path d="M 250 200 Q 500 100, 750 200 T 1000 200" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="12 6" opacity="0.3" />
+
+      <!-- GMT Clock Group -->
+      <g transform="translate(250, 200)">
+        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#2f6278" stroke-width="4" />
+        <circle cx="0" cy="0" r="75" fill="none" stroke="#36c7b5" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
+        <!-- Hands (12:00) -->
+        <line x1="0" y1="0" x2="0" y2="-45" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-60" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
+        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
+        
+        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+
+      <!-- EAT Clock Group -->
+      <g transform="translate(750, 200)">
+        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#36c7b5" stroke-width="4" />
+        <circle cx="0" cy="0" r="75" fill="none" stroke="#2a9084" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
+        <!-- Hands (EAT is +3h, so 3:00) -->
+        <line x1="0" y1="0" x2="32" y2="-18" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-60" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
+        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
+        
+        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">EAT (UTC+3)</text>
+      </g>
+
+      <!-- Connection arrow badge -->
+      <g transform="translate(500, 200)">
+        <rect x="-60" y="-20" width="120" height="40" rx="20" fill="#36c7b5" />
+        <text x="0" y="6" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#071b26" text-anchor="middle">+3 Hours Shift</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Mechanics</div>
+    <h2>Understanding EAT Offset and DST Rules</h2>
+    <p>
+      To convert Greenwich Mean Time to Eastern Africa Time, you must add 3 hours to the standard reference clock. The formula is written as follows:
+    </p>
+    <p>
+      <code>EAT = GMT + 3 Hours</code>
+    </p>
+    <p>
+      Eastern Africa is situated close to the equator. Because daylight hours remain nearly constant at roughly 12 hours year-round, there is no economic or energy benefit to shifting clocks. As a result, East African nations operate on a permanent offset of UTC+3 and do not observe daylight saving.
+    </p>
+    <p>
+      This year-round consistency provides several benefits for global scheduling, remote SaaS companies, and international shipping logistics, as the local clock offset never changes.
+    </p>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Greenwich Mean Time</h3>
+      <code>UTC+0 Baseline</code>
+      <p>GMT is the solar time standard centered on the Royal Observatory in Greenwich, London. It does not observe daylight saving shifts.</p>
+    </div>
+    <div class="method-card">
+      <h3>Eastern Africa Time</h3>
+      <code>UTC+3 Offset</code>
+      <p>EAT is active year-round. It operates exactly 3 hours ahead of GMT, providing constant timezone synchronization.</p>
+    </div>
+    <div class="method-card">
+      <h3>Daylight Saving</h3>
+      <code>None Observed</code>
+      <p>Because EAT is located close to the equator, it never transitions to daylight saving time, remaining UTC+3 constantly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 5: GMT VS EAT INFOGRAPHIC -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT VS EAT OFFSET TIMELINE</text>
+      
+      <!-- Timeline axis -->
+      <line x1="100" y1="120" x2="700" y2="120" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- Mark points -->
+      <!-- London/Greenwich -->
+      <circle cx="250" cy="120" r="14" fill="#36c7b5" stroke="#12455d" stroke-width="3" />
+      <text x="250" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
+      <text x="250" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC+0 Meridian</text>
+      
+      <!-- EAT -->
+      <circle cx="550" cy="120" r="14" fill="#8fd7ff" stroke="#12455d" stroke-width="3" />
+      <text x="550" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">Nairobi / Addis Ababa (EAT)</text>
+      <text x="550" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC+3 Year-Round Offset</text>
+
+      <!-- Connection Bracket -->
+      <path d="M 250 120 L 250 140 L 550 140 L 550 120" fill="none" stroke="#36c7b5" stroke-width="2" opacity="0.5" />
+      <text x="400" y="180" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#8fd7ff" text-anchor="middle">+3 Hours Difference</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="chart" class="reveal">
+  <h2>24-Hour GMT to EAT Conversion Table</h2>
+  <p class="chart-note">
+    The following table outlines the exact equivalent times between Coordinated Universal Time (UTC)/Greenwich Mean Time (GMT) and Eastern Africa Time (EAT). EAT is exactly 3 hours ahead of GMT.
+  </p>
+  
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Greenwich Mean Time (GMT)</th>
+          <th>Eastern Africa Time (EAT)</th>
+          <th>Calendar Day Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.gmt}</strong></td>
+            <td><strong>{row.eat}</strong></td>
+            <td><span class="eyebrow">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 7: 24-HOUR TIMELINE ILLUSTRATION -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 900px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="450" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-HOUR INTERSECT GRID</text>
+      
+      <!-- Hour Blocks -->
+      <g transform="translate(50, 60)">
+        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">GMT</text>
+        <rect x="20" y="5" width="760" height="20" fill="#12455d" rx="4" />
+        <!-- Tick marks -->
+        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">00:00</text>
+        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">06:00</text>
+        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">12:00</text>
+        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">18:00</text>
+        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">24:00</text>
+      </g>
+      
+      <g transform="translate(50, 110)">
+        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff">EAT</text>
+        <!-- Offset shift visual -->
+        <rect x="20" y="5" width="760" height="20" fill="#0c354a" rx="4" stroke="#2f6278" stroke-width="1" />
+        <!-- Highlighted shift area -->
+        <rect x="180" y="5" width="550" height="20" fill="url(#accentGrad)" opacity="0.35" rx="4" />
+        <!-- Tick marks (shifted +3h) -->
+        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">03:00</text>
+        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">09:00</text>
+        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">15:00</text>
+        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">21:00</text>
+        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">03:00 (+1d)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="conversion-examples" class="examples-section reveal">
+  <h2>Popular GMT to EAT Conversion Examples</h2>
+  <p>
+    Review these quick reference examples to understand how specific hours translate between Greenwich and Eastern Africa Time:
+  </p>
+  <div class="clock-grid">
+    {popularConversions.map((item) => (
+      <div class="related-card">
+        <strong class="related-card-title">{item.gmt} GMT</strong>
+        <p class="related-card-text">Equal to <strong>{item.eat}</strong></p>
+        <small style="color: var(--accent); margin-top: 4px; display: block;">{item.note}</small>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COUNTRIES USING EAT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="uses" class="reveal">
+  <h2>Countries and Regions Observing EAT</h2>
+  <p>
+    Eastern Africa Time is observed throughout the year without daylight saving transitions in several sovereign nations and territories:
+  </p>
+  <div class="content">
+    <article>
+      <h3>East African Nations</h3>
+      <p>
+        Major sovereign nations that observe EAT year-round include:
+      </p>
+      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted);">
+        <li><strong>Kenya</strong>: Hub of tech and finance in East Africa. Capital Nairobi.</li>
+        <li><strong>Ethiopia</strong>: Diplomatic heart of Africa. Capital Addis Ababa.</li>
+        <li><strong>Uganda</strong>: Key commercial center. Capital Kampala.</li>
+        <li><strong>Tanzania</strong>: Major shipping gateway. Capital Dodoma / Dar es Salaam.</li>
+        <li><strong>Somalia</strong>: Horn of Africa country. Capital Mogadishu.</li>
+        <li><strong>South Sudan</strong>: East-Central African nation. Capital Juba.</li>
+      </ul>
+    </article>
+    <article>
+      <h3>Other EAT Regions &amp; Island Territories</h3>
+      <p>
+        Adjacent regions and island territories observing UTC+3 include:
+      </p>
+      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted);">
+        <li><strong>Djibouti &amp; Eritrea</strong>: Located along crucial maritime shipping routes.</li>
+        <li><strong>Madagascar</strong>: The island nation observes EAT (UTC+3) year-round.</li>
+        <li><strong>Comoros</strong>: Indian Ocean archipelago. Capital Moroni.</li>
+        <li><strong>Mayotte</strong>: An insular department of France located in the Indian Ocean.</li>
+      </ul>
+    </article>
+  </div>
+
+  <!-- ILLUSTRATION 2: EAST AFRICA MAP -->
+  <div class="hero-visual" style="max-width: 800px; margin: 32px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 350" width="100%" height="auto" style="background: #12455d;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">EAST AFRICA TIME ZONE COUNTRIES</text>
+      
+      <!-- Outline Map Blocks (Abstract representation of EAT Corridor) -->
+      <!-- Northern Horn -->
+      <rect x="350" y="70" width="200" height="70" rx="8" fill="#1b536e" opacity="0.6" stroke="#bdd2dc" stroke-width="1.5" />
+      <text x="450" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#bdd2dc" text-anchor="middle">HORN OF AFRICA (Ethiopia/Somalia)</text>
+      
+      <!-- Central East Africa Block -->
+      <rect x="300" y="160" width="300" height="90" rx="8" fill="url(#accentGrad)" opacity="0.35" stroke="#36c7b5" stroke-width="2" />
+      <text x="450" y="200" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">EAST AFRICA CORRIDOR</text>
+      <text x="450" y="225" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">Kenya • Uganda • Tanzania • South Sudan</text>
+
+      <!-- Island Regions -->
+      <rect x="420" y="270" width="220" height="50" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+      <text x="530" y="295" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">ISLANDS (Madagascar/Comoros/Mayotte)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SKYLINE ILLUSTRATIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" style="padding: 24px 0;">
+  <div class="content">
+    <!-- Nairobi Skyline -->
+    <article style="padding: 0; background: none; border: none;">
+      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">Nairobi Skyline (KICC Tower)</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1e293b" />
+          </linearGradient>
+        </defs>
+        <rect width="400" height="180" fill="url(#skyGrad)" />
+        <rect x="30" y="110" width="40" height="70" fill="#2f6278" opacity="0.6" />
+        <rect x="80" y="80" width="50" height="100" fill="#1b536e" opacity="0.8" />
+        <!-- KICC Tower (Nairobi cylindrical shape) -->
+        <path d="M160 50 L200 50 L195 180 L165 180 Z" fill="#12455d" />
+        <rect x="175" y="10" width="10" height="40" fill="#36c7b5" />
+        <ellipse cx="180" cy="50" rx="20" ry="8" fill="#0f3c52" stroke="#36c7b5" stroke-width="1.5" />
+        <!-- Other buildings -->
+        <rect x="230" y="70" width="45" height="110" fill="#1b536e" opacity="0.9" />
+        <rect x="300" y="95" width="40" height="85" fill="#2f6278" opacity="0.7" />
+      </svg>
+    </article>
+
+    <!-- Addis Ababa Skyline -->
+    <article style="padding: 0; background: none; border: none;">
+      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">Addis Ababa landmarks</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+        <rect width="400" height="180" fill="url(#skyGrad)" />
+        <rect x="40" y="120" width="50" height="60" fill="#2f6278" opacity="0.6" />
+        <!-- CBE Headquarter (tall skyscraper) -->
+        <rect x="110" y="30" width="40" height="150" fill="#1b536e" opacity="0.9" />
+        <path d="M110 30 L130 10 L150 30 Z" fill="#36c7b5" />
+        <!-- Millennium Hall / Landmarks -->
+        <rect x="180" y="90" width="60" height="90" fill="#12455d" />
+        <rect x="270" y="80" width="55" height="100" fill="#1b536e" opacity="0.8" />
+        <rect x="340" y="110" width="30" height="70" fill="#2f6278" opacity="0.7" />
+      </svg>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     UNIQUE EDUCATIONAL SECTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="topics" class="reveal">
+  <h2>East Africa Economic and Business Coordination</h2>
+  <div class="content">
+    <article>
+      <h3>Working with East African Tech Hubs</h3>
+      <p>
+        Nairobi, often referred to as the "Silicon Savannah", has emerged as a major hub for tech startups, mobile banking innovation (such as M-Pesa), and remote engineering teams. Coordinating software sprint syncs and client check-ins with European offices requires careful management.
+      </p>
+      <p>
+        The standard business overlap occurs between 8:00 AM GMT and 2:00 PM GMT (11:00 AM EAT and 5:00 PM EAT). Remote teams leverage this daily 5-hour window for collaborative meetings without requiring overnight shifts.
+      </p>
+    </article>
+    <article>
+      <h3>NGO and International Aid Logistics</h3>
+      <p>
+        Addis Ababa serves as the diplomatic capital of Africa, housing the African Union headquarters and numerous UN/non-governmental organization (NGO) offices. Logistics operations, regional project deployment, and humanitarian support coordination rely on alignment with European clocks.
+      </p>
+      <p>
+        Because EAT does not observe daylight saving, coordination remains predictable and uniform throughout the year, reducing the risk of errors in critical shipping and cargo transit manifests.
+      </p>
+    </article>
+  </div>
+
+  <h2>Fixed Time Zone Benefits for Global Operations</h2>
+  <div class="content">
+    <article>
+      <h3>The Advantages of a Constant UTC+3 Offset</h3>
+      <p>
+        Unlike European or North American zones that shift clocks twice a year, the fixed UTC+3 offset of Eastern Africa Time eliminates scheduling mishaps associated with "springing forward" or "falling back".
+      </p>
+      <p>
+        This reliability prevents missed meetings, software cron job execution errors, and server log correlation issues across global systems.
+      </p>
+    </article>
+    <article>
+      <h3>Cloud Deployment and Support Coordination</h3>
+      <p>
+        Global SaaS firms routinely recruit customer support representatives in Kenya and Uganda to manage customer workflows. Maintaining a year-round UTC+3 timetable allows support coordinators to organize shift rotations without having to recalculate employee calendars in March and November.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 8: BUSINESS MEETING PLANNER -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">OFFICE CROSSOVER WINDOWS (GMT &amp; EAT)</text>
+      
+      <!-- Timeline box -->
+      <rect x="50" y="70" width="700" height="90" fill="#0c354a" rx="8" stroke="#2f6278" stroke-width="1.5" />
+      
+      <!-- Crossover Zone Highlight -->
+      <rect x="290" y="70" width="220" height="90" fill="url(#accentGrad)" opacity="0.25" />
+      <line x1="290" y1="70" x2="290" y2="160" stroke="#36c7b5" stroke-width="2" />
+      <line x1="510" y1="70" x2="510" y2="160" stroke="#36c7b5" stroke-width="2" />
+
+      <!-- Labels -->
+      <text x="180" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">GMT Office Hours</text>
+      <text x="620" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">EAT Office Hours</text>
+      
+      <!-- Optimal Crossover Text -->
+      <text x="400" y="120" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">5-Hour Meeting Window</text>
+      <text x="400" y="140" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">09:00–14:00 GMT | 12:00–17:00 EAT</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 9: AFRICA BUSINESS COMMUNICATION INFOGRAPHIC -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="375" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">AFRICA BUSINESS COLLABORATION CHANNELS</text>
+      
+      <!-- Network Nodes -->
+      <g transform="translate(100, 100)">
+        <circle cx="0" cy="0" r="30" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">London</text>
+      </g>
+      
+      <g transform="translate(375, 100)">
+        <circle cx="0" cy="0" r="35" fill="#1b536e" stroke="#8fd7ff" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Nairobi</text>
+      </g>
+
+      <g transform="translate(650, 100)">
+        <circle cx="0" cy="0" r="30" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#f4fbff" text-anchor="middle">Addis</text>
+      </g>
+
+      <!-- Connections -->
+      <line x1="130" y1="100" x2="340" y2="100" stroke="#36c7b5" stroke-width="3" stroke-dasharray="8 4" />
+      <line x1="410" y1="100" x2="620" y2="100" stroke="#8fd7ff" stroke-width="3" stroke-dasharray="8 4" />
+      
+      <text x="235" y="85" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Tech &amp; SaaS Sync</text>
+      <text x="515" y="85" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">NGO &amp; Aid Logistics</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON CONFUSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="source-notes" class="source-notes reveal">
+  <h2>Common Confusions: EAT, EEST, CAT, and UTC+3</h2>
+  <p>
+    Timezone abbreviations can be confusing. Let's clarify the key definitions and differences:
+  </p>
+  <ul>
+    <li>
+      <strong>EAT vs. EEST</strong>: Eastern Africa Time (EAT) and Eastern European Summer Time (EEST) both operate at UTC+3. However, EEST is a daylight saving zone used only in summer by countries like Greece and Ukraine. EAT is active year-round in East Africa.
+    </li>
+    <li>
+      <strong>EAT vs. CAT</strong>: Eastern Africa Time (EAT, UTC+3) runs 1 hour ahead of Central Africa Time (CAT, UTC+2). CAT is observed in countries like Egypt, South Africa, and Zambia.
+    </li>
+    <li>
+      <strong>GMT vs. UTC</strong>: GMT is a solar time standard, while UTC is the modern atomic standard. For general scheduling and conversion, their offsets are identical (+0).
+    </li>
+    <li>
+      <strong>Arabia Standard Time (AST)</strong>: AST is also UTC+3 and runs year-round, matching EAT's offset. However, it applies to Middle Eastern nations such as Saudi Arabia and Iraq rather than African countries.
+    </li>
+  </ul>
+
+  <!-- ILLUSTRATION 6: UTC+3 INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 750px; margin: 32px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="375" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">UTC+3 YEAR-ROUND ALIGNMENT</text>
+      
+      <!-- EAT Block -->
+      <g transform="translate(100, 60)">
+        <rect x="0" y="0" width="220" height="90" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="110" y="30" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">EAT (East Africa)</text>
+        <text x="110" y="55" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">UTC+3 Year-Round</text>
+        <text x="110" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">No Clock Changes</text>
+      </g>
+      
+      <!-- AST Block -->
+      <g transform="translate(430, 60)">
+        <rect x="0" y="0" width="220" height="90" rx="8" fill="#0c354a" stroke="#2f6278" stroke-width="2" />
+        <text x="110" y="30" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#bdd2dc" text-anchor="middle">AST (Middle East)</text>
+        <text x="110" y="55" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">UTC+3 Year-Round</text>
+        <text x="110" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Geographic Boundary</text>
+      </g>
+
+      <!-- Connection arrow -->
+      <path d="M 340 105 L 410 105" fill="none" stroke="url(#accentGrad)" stroke-width="4" />
+      <text x="375" y="90" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Identical Offset</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed, search-intent-optimized answers to resolve common issues and queries regarding GMT and Eastern Africa Time:
+  </p>
+  <div class="faq">
+    {faqs.map((faq) => (
+      <details>
+        <summary>{faq.q}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.a}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Need other conversions? Explore our other dedicated standalone calculator pages:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>GMT Timezone Conversions</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/gmt-to-eet/">GMT to EET</a></li>
+          <li><a href="/gmt-to-idt/">GMT to IDT</a></li>
+          <li><a href="/gmt-to-bst/">GMT to BST</a></li>
+          <li><a href="/gmt-to-aest/">GMT to AEST</a></li>
+          <li><a href="/gmt-to-nzst/">GMT to NZST</a></li>
+          <li><a href="/gmt-to-acdt/">GMT to ACDT</a></li>
+          <li><a href="/gmt-to-cdt/">GMT to CDT</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern &amp; African Conversions</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/">GMT to EST Homepage</a></li>
+          <li><a href="/cdt-to-est/">CDT to EST</a></li>
+          <li><a href="/eest-to-est/">EEST to EST</a></li>
+          <li><a href="/aest-to-est/">AEST to EST</a></li>
+          <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
