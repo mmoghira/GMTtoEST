@@ -86,6 +86,7 @@ export const pages: any[] = [
   { slug: "gmt-to-aest", kind: "dynamic", labelKey: "gmtToAest", context: { from: "GMT", to: "AEST", fromZone: "UTC", toZone: "Australia/Sydney" } },
   { slug: "gmt-to-idt", kind: "dynamic", labelKey: "gmtToIdt", context: { from: "GMT", to: "IDT", fromZone: "UTC", toZone: "Asia/Jerusalem" } },
   { slug: "eest-to-est", kind: "dynamic", labelKey: "eestToEst", context: { from: "EEST", to: "EST", fromZone: "Europe/Athens", toZone: "America/New_York" } },
+  { slug: "gmt-to-nzst", kind: "dynamic", labelKey: "gmtToNzst", context: { from: "GMT", to: "NZST", fromZone: "UTC", toZone: "Pacific/Auckland" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
