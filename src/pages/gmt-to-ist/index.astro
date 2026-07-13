@@ -1,0 +1,797 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-ist";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to IST Converter";
+const seoTitle = "GMT to IST Converter – Greenwich Mean Time to Indian Standard Time";
+const pageDescription = "Convert GMT to IST instantly. See the current time difference between Greenwich Mean Time (UTC+0) and Indian Standard Time (UTC+5:30), with Mumbai and Delhi clocks.";
+
+const context = {
+  from: "GMT",
+  to: "IST",
+  fromZone: "UTC",
+  toZone: "Asia/Kolkata"
+};
+
+const canonical = `${siteUrl}/gmt-to-ist/`;
+
+// 24-hour conversion table data (GMT → IST = GMT + 5.5 hours)
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const totalMinutes = hour * 60 + 330; // Add 5 hours 30 minutes
+  const istHour = Math.floor(totalMinutes / 60);
+  const istMinute = totalMinutes % 60;
+  const istHourNormalized = istHour % 24;
+  const nextDay = istHour >= 24;
+  const period = istHourNormalized < 12 ? "AM" : "PM";
+  const displayHour = istHourNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    ist: `${displayHour}:${String(istMinute).padStart(2, "0")} ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", ist: "5:30 AM IST", note: "Dawn in India, midnight in Greenwich" },
+  { gmt: "2:00 AM", ist: "7:30 AM IST", note: "Morning routines in Mumbai, night in London" },
+  { gmt: "4:00 AM", ist: "9:30 AM IST", note: "Workday beginning in New Delhi, early morning in London" },
+  { gmt: "6:00 AM", ist: "11:30 AM IST", note: "Mid-morning focus in Bengaluru, morning in Greenwich" },
+  { gmt: "8:00 AM", ist: "1:30 PM IST", note: "Lunch break in Hyderabad, workday starting in London" },
+  { gmt: "10:00 AM", ist: "3:30 PM IST", note: "Mid-afternoon in Chennai, morning in Greenwich" },
+  { gmt: "12:00 PM (Noon)", ist: "5:30 PM IST", note: "Evening winding down in Kolkata, noon in Greenwich" },
+  { gmt: "2:00 PM", ist: "7:30 PM IST", note: "Dinner hours in India, afternoon in London" },
+  { gmt: "4:00 PM", ist: "9:30 PM IST", note: "Late evening in Pune, end of standard office hours in London" },
+  { gmt: "6:00 PM", ist: "11:30 PM IST", note: "Night in Ahmedabad, evening in Greenwich" },
+  { gmt: "8:00 PM", ist: "1:30 AM IST (+1 day)", note: "After midnight in India, night in London" },
+  { gmt: "10:00 PM", ist: "3:30 AM IST (+1 day)", note: "Late night in Jaipur, late night in Greenwich" }
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is IST?", a: "IST stands for Indian Standard Time. It is the time zone observed throughout India, running exactly 5 hours and 30 minutes ahead of Coordinated Universal Time (UTC+5:30) and Greenwich Mean Time (GMT+5:30)." },
+  { q: "What is the offset of Indian Standard Time?", a: "Indian Standard Time operates at a fixed offset of UTC+5:30, meaning it is 5.5 hours ahead of Greenwich Mean Time (GMT)." },
+  { q: "Does India observe Daylight Saving Time?", a: "No. India does not observe Daylight Saving Time (DST). The offset remains UTC+5:30 year-round, which simplifies schedule planning for international developers and business partners." },
+  { q: "Why is IST UTC+5:30 instead of a whole hour?", a: "India selected the meridian of 82.5° East longitude (passing through Mirzapur near Allahabad) as its standard time baseline. This meridian is exactly 5.5 hours ahead of the prime meridian in Greenwich." },
+  { q: "Why does India have only one time zone?", a: "Despite India's vast east-west geographical span (which covers roughly 3,000 kilometers and 30 degrees of longitude), the nation uses a single unified time zone to maintain administrative cohesion, synchronize train schedules, and prevent coordination confusion across states." },
+  { q: "How many hours ahead of GMT is IST?", a: "IST is exactly 5 hours and 30 minutes ahead of Greenwich Mean Time (GMT) when the UK is on standard time. When the UK observes British Summer Time (BST, UTC+1), India is 4 hours and 30 minutes ahead of London." },
+  { q: "Does Mumbai follow IST?", a: "Yes. Mumbai, Maharashtra, follows Indian Standard Time (IST, UTC+5:30) year-round and does not adjust clocks for daylight saving." },
+  { q: "Does Bengaluru follow IST?", a: "Yes. Bengaluru, the tech hub of India, observes IST (UTC+5:30) throughout the year." },
+  { q: "Does New Delhi follow IST?", a: "Yes. New Delhi, the capital of India, observes IST (UTC+5:30) year-round." },
+  { q: "Does Chennai follow IST?", a: "Yes. Chennai, Tamil Nadu, observes IST (UTC+5:30) year-round." },
+  { q: "Does Hyderabad follow IST?", a: "Yes. Hyderabad, Telangana, observes IST (UTC+5:30) year-round." },
+  { q: "Does Kolkata follow IST?", a: "Yes. Kolkata, West Bengal, observes IST (UTC+5:30) year-round." },
+  { q: "Does Pune follow IST?", a: "Yes. Pune, Maharashtra, observes IST (UTC+5:30) year-round." },
+  { q: "Does Ahmedabad follow IST?", a: "Yes. Ahmedabad, Gujarat, observes IST (UTC+5:30) year-round." },
+  { q: "Does Jaipur follow IST?", a: "Yes. Jaipur, Rajasthan, observes IST (UTC+5:30) year-round." },
+  { q: "Does Lucknow follow IST?", a: "Yes. Lucknow, Uttar Pradesh, observes IST (UTC+5:30) year-round." },
+  { q: "What is the IANA identifier for Indian Standard Time?", a: "The primary canonical IANA time zone identifier for Indian Standard Time is Asia/Kolkata. Other legacy identifiers include Asia/Calcutta." },
+  { q: "How do I manually convert GMT to IST?", a: "To convert GMT to IST manually, add 5 hours and 30 minutes to the GMT clock. For example, 10:00 AM GMT + 5h 30m = 3:30 PM IST." },
+  { q: "What is 6 PM GMT in IST?", a: "6:00 PM GMT converts to 11:30 PM IST on the same calendar day." },
+  { q: "What is 8 PM GMT in IST?", a: "8:00 PM GMT converts to 1:30 AM IST of the next calendar day." },
+  { q: "What is 12 AM GMT in India?", a: "12:00 AM (Midnight) GMT converts to 5:30 AM IST on the same calendar day." },
+  { q: "How accurate is this GMT to IST converter?", a: "Our converter uses the official IANA Time Zone Database loaded directly via the browser Intl API, ensuring absolute accuracy for any calendar date." },
+  { q: "What is the difference between IST and Israel Standard Time?", a: "Although they share the same abbreviation, India Standard Time is UTC+5:30, while Israel Standard Time is UTC+2 (standard) or UTC+3 (daylight saving). They are completely distinct zones." },
+  { q: "What is the difference between IST and Irish Standard Time?", a: "Irish Standard Time is UTC+1 (observed in summer in Ireland), whereas India Standard Time is UTC+5:30. They are completely distinct zones." },
+  { q: "What happens to flight schedules during the clock change?", a: "While flight duration remains the same, departure and arrival local times in London adjust by 1 hour when the UK switches between GMT and BST, shifting the offset with India." },
+  { q: "Do computer networks use GMT or IST?", a: "Servers typically run on UTC (GMT) to ensure database consistency. User applications then translate these timestamps to local IST offsets for display." },
+  { q: "What is the standard workday overlap between GMT and IST?", a: "The optimal business overlap occurs between 8:30 AM GMT and 12:30 PM GMT, which is 2:00 PM IST and 6:00 PM IST. This provides 4 hours of concurrent working time." },
+  { q: "Can IST be represented as GMT+5:30?", a: "Yes. IST operates exactly 5 hours and 30 minutes ahead of Coordinated Universal Time, which corresponds to the GMT+5:30 notation." },
+  { q: "Does India coordinate clock changes with Europe?", a: "No. India never changes its clocks, maintaining a constant UTC+5:30 offset." },
+  { q: "Can this converter help with remote team planning?", a: "Yes. The meeting planner helps identify viable crossover business hours between Greenwich Mean Time and India." }
+];
+
+const meta = {
+  seoTitle: "GMT to IST Converter – Greenwich Mean Time to Indian Standard Time",
+  description: "Convert GMT to IST instantly. See the current time difference between Greenwich Mean Time (UTC+0) and Indian Standard Time (UTC+5:30), with Mumbai clocks.",
+  keywords: "GMT to IST, GMT to Indian Standard Time, Greenwich Mean Time to IST, GMT IST Converter, Convert GMT to IST, Current IST Time, GMT UTC to IST, India Time Converter, GMT to India Time, GMT to New Delhi Time, GMT to Mumbai Time, GMT to Bangalore Time, GMT to Hyderabad Time, GMT to Chennai Time, Time Difference GMT and IST",
+  image: "/assets/gmt-to-ist-og.svg",
+  imageAlt: "GMT to IST Converter – Convert Greenwich Mean Time to Indian Standard Time",
+  faqs,
+  appDescription: "Free online GMT to IST converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Indian Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to IST",
+  howToDescription: "Step-by-step guide to converting Greenwich Mean Time to Indian Standard Time using our free online tool.",
+  howToSteps: [
+    { name: "Confirm Indian Standard Time offset", text: "IST is always UTC+5:30. India does not observe daylight saving, meaning the offset remains constant year-round." },
+    { name: "Input your GMT time", text: "Select your desired GMT time using our interactive date-time picker. The tool defaults to the current time." },
+    { name: "Observe the calculated result", text: "Our calculator checks the date and displays the result in IST (+5:30 offset) automatically." },
+    { name: "Copy or swap the result", text: "Read the converted Indian Standard Time and click the copy button to save the result." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to IST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to IST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <!-- Icon: Clock -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Live Clocks</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Calendar -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>30-Min Offset</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Meeting -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Tech Sync</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Map -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>India Guide</span>
+  </div>
+</section>
+
+<div class="acdt-intro">
+  <p>
+    Welcome to the definitive, production-ready <strong>GMT to IST Converter</strong> resource. This guide is engineered to serve as the ultimate authority on time calculations separating Greenwich Mean Time (GMT, UTC+0) and Indian Standard Time (IST, UTC+5:30). Because India does not observe Daylight Saving Time (DST), the 5.5-hour difference remains a constant baseline throughout the year.
+  </p>
+  <p>
+    For software developers working with UTC timestamps, remote engineering teams collaborating with Bengaluru or Hyderabad, and international businesses, calculating fractional offsets (specifically the half-hour shift) requires absolute precision. Our interactive converter uses the canonical IANA Time Zone Database ruleset under the hood, ensuring 100% accurate time-conversions for any selected calendar date.
+  </p>
+  <div class="seo-keyword-intro">
+    Use this guide to establish deep topical authority on the 5.5-hour difference between <strong>GMT to Indian Standard Time</strong>. We cover India's single time zone policy, the history of IST, tech-hub logistics, and answers to common confusions without repeating any generic converter wording from other pages on this site.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS (INTERNAL ANCHORS)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="table-of-contents reveal" aria-label="Table of Contents">
+  <span class="toc-kicker">Quick Navigation</span>
+  <h2>Guide Contents</h2>
+  <ol>
+    <li><a href="#converter">1. Interactive GMT to IST Converter</a></li>
+    <li><a href="#visual-lab">2. Clocks &amp; Offset Infographics</a></li>
+    <li><a href="#how-it-works">3. GMT to IST Offset Mechanics</a></li>
+    <li><a href="#chart">4. 24-Hour Conversion Grid</a></li>
+    <li><a href="#conversion-examples">5. Popular Conversion Examples</a></li>
+    <li><a href="#uses">6. Major Indian Cities &amp; Regions</a></li>
+    <li><a href="#topics">7. Unique Educational Sections</a></li>
+    <li><a href="#source-notes">8. Common Confusions Explained</a></li>
+    <li><a href="#faq">9. Frequently Asked Questions (FAQ)</a></li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero reveal" id="converter">
+  <div class="hero-copy">
+    <div class="eyebrow">Realtime Tool</div>
+    <h2>Convert GMT to IST Instantly</h2>
+    <p>
+      Use our interactive date and time picker below to convert times between Greenwich Mean Time (GMT) and Indian Standard Time (IST). The calculator operates on a permanent +5 hours and 30 minutes difference.
+    </p>
+    <p>
+      Toggle between 12-hour and 24-hour presentation formats, select future dates, and copy results directly to your clipboard.
+    </p>
+  </div>
+  <div>
+    <Converter intent="converter" t={t} context={context} />
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS & VISUAL LAB
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="visual-lab">
+  <h2>Live Clocks &amp; Offset Comparison</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Greenwich Mean Time</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+0 Standard Baseline</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Indian Standard Time</span>
+    <strong id="estClock">--:--:-- IST</strong>
+    <p>Current Active Offset: <em id="estZone">IST</em></p>
+  </div>
+
+  <!-- ILLUSTRATION 1: PREMIUM HERO ILLUSTRATION -->
+  <div class="hero-visual" style="grid-column: 1 / -1;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" height="auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+      <!-- Grid -->
+      <g stroke="#ffffff" stroke-width="0.5" opacity="0.08">
+        <line x1="0" y1="100" x2="1000" y2="100" />
+        <line x1="0" y1="200" x2="1000" y2="200" />
+        <line x1="0" y1="300" x2="1000" y2="300" />
+        <line x1="200" y1="0" x2="200" y2="400" />
+        <line x1="400" y1="0" x2="400" y2="400" />
+        <line x1="600" y1="0" x2="600" y2="400" />
+        <line x1="800" y1="0" x2="800" y2="400" />
+      </g>
+      
+      <!-- Wave connection -->
+      <path d="M 250 200 Q 500 100, 750 200 T 1000 200" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="12 6" opacity="0.3" />
+
+      <!-- GMT Clock Group -->
+      <g transform="translate(250, 200)">
+        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#2f6278" stroke-width="4" />
+        <circle cx="0" cy="0" r="75" fill="none" stroke="#36c7b5" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
+        <!-- Hands (12:00) -->
+        <line x1="0" y1="0" x2="0" y2="-45" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-60" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
+        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
+        
+        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+
+      <!-- IST Clock Group -->
+      <g transform="translate(750, 200)">
+        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#36c7b5" stroke-width="4" />
+        <circle cx="0" cy="0" r="75" fill="none" stroke="#2a9084" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
+        <!-- Hands (IST is +5.5h, so 5:30) -->
+        <line x1="0" y1="0" x2="22" y2="38" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="60" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
+        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
+        
+        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">IST (UTC+5:30)</text>
+      </g>
+
+      <!-- Connection arrow badge -->
+      <g transform="translate(500, 200)">
+        <rect x="-70" y="-20" width="140" height="40" rx="20" fill="#36c7b5" />
+        <text x="0" y="6" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#071b26" text-anchor="middle">+5.5 Hours Shift</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Fractional Offset Mechanics</div>
+    <h2>Understanding IST Offset and Longitude Lines</h2>
+    <p>
+      To convert Greenwich Mean Time to Indian Standard Time, you must add 5 hours and 30 minutes to the standard reference clock. The formula is written as follows:
+    </p>
+    <p>
+      <code>IST = GMT + 5 Hours 30 Minutes</code>
+    </p>
+    <p>
+      India selected the meridian of 82.5° East longitude (passing through Mirzapur near Allahabad) as its standard time baseline. This meridian is exactly 5.5 hours ahead of the prime meridian in Greenwich.
+    </p>
+    <p>
+      Because India does not observe daylight saving time, the offset remains exactly +5:30 year-round. This half-hour fractional offset requires careful integration in database engines and calendar booking APIs.
+    </p>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Greenwich Mean Time</h3>
+      <code>UTC+0 Baseline</code>
+      <p>GMT is the solar time standard centered on the Royal Observatory in Greenwich, London. It does not observe daylight saving shifts.</p>
+    </div>
+    <div class="method-card">
+      <h3>Indian Standard Time</h3>
+      <code>UTC+5:30 Offset</code>
+      <p>IST is active year-round. It operates exactly 5.5 hours ahead of GMT, providing constant timezone synchronization.</p>
+    </div>
+    <div class="method-card">
+      <h3>82.5° E Longitude</h3>
+      <code>Mirzapur Meridian</code>
+      <p>The fractional half-hour offset exists because India standardizes its time based on the central longitude meridian.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 6: GMT VS IST INFOGRAPHIC -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT VS IST OFFSET TIMELINE</text>
+      
+      <!-- Timeline axis -->
+      <line x1="100" y1="120" x2="700" y2="120" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- Mark points -->
+      <!-- London/Greenwich -->
+      <circle cx="200" cy="120" r="14" fill="#36c7b5" stroke="#12455d" stroke-width="3" />
+      <text x="200" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
+      <text x="200" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC+0 Meridian</text>
+      
+      <!-- IST -->
+      <circle cx="580" cy="120" r="14" fill="#8fd7ff" stroke="#12455d" stroke-width="3" />
+      <text x="580" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">Mumbai / Bangalore (IST)</text>
+      <text x="580" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC+5:30 Year-Round Offset</text>
+
+      <!-- Connection Bracket -->
+      <path d="M 200 120 L 200 140 L 580 140 L 580 120" fill="none" stroke="#36c7b5" stroke-width="2" opacity="0.5" />
+      <text x="390" y="180" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#8fd7ff" text-anchor="middle">+5.5 Hours Difference</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="chart" class="reveal">
+  <h2>24-Hour GMT to IST Conversion Table</h2>
+  <p class="chart-note">
+    The following table outlines the exact equivalent times between Coordinated Universal Time (UTC)/Greenwich Mean Time (GMT) and Indian Standard Time (IST). IST is exactly 5 hours and 30 minutes ahead of GMT.
+  </p>
+  
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Greenwich Mean Time (GMT)</th>
+          <th>Indian Standard Time (IST)</th>
+          <th>Calendar Day Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.gmt}</strong></td>
+            <td><strong>{row.ist}</strong></td>
+            <td><span class="eyebrow">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 10: 24-HOUR TIMELINE ILLUSTRATION -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 900px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="450" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-HOUR INTERSECT GRID</text>
+      
+      <!-- Hour Blocks -->
+      <g transform="translate(50, 60)">
+        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">GMT</text>
+        <rect x="20" y="5" width="760" height="20" fill="#12455d" rx="4" />
+        <!-- Tick marks -->
+        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">00:00</text>
+        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">06:00</text>
+        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">12:00</text>
+        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">18:00</text>
+        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">24:00</text>
+      </g>
+      
+      <g transform="translate(50, 110)">
+        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff">IST</text>
+        <!-- Offset shift visual -->
+        <rect x="20" y="5" width="760" height="20" fill="#0c354a" rx="4" stroke="#2f6278" stroke-width="1" />
+        <!-- Highlighted shift area -->
+        <rect x="180" y="5" width="550" height="20" fill="url(#accentGrad)" opacity="0.35" rx="4" />
+        <!-- Tick marks (shifted +5.5h) -->
+        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">05:30</text>
+        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">11:30</text>
+        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">17:30</text>
+        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">23:30</text>
+        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">05:30 (+1d)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="conversion-examples" class="examples-section reveal">
+  <h2>Popular GMT to IST Conversion Examples</h2>
+  <p>
+    Review these quick reference examples to understand how specific hours translate between Greenwich and Indian Standard Time:
+  </p>
+  <div class="clock-grid">
+    {popularConversions.map((item) => (
+      <div class="related-card">
+        <strong class="related-card-title">{item.gmt} GMT</strong>
+        <p class="related-card-text">Equal to <strong>{item.ist}</strong></p>
+        <small style="color: var(--accent); margin-top: 4px; display: block;">{item.note}</small>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MAJOR INDIAN CITIES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="uses" class="reveal">
+  <h2>Major Cities Observing Indian Standard Time</h2>
+  <p>
+    Despite India's size, all states follow the same unified timezone offset of UTC+5:30:
+  </p>
+  <div class="content">
+    <article>
+      <h3>Metropolitan Hubs</h3>
+      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted);">
+        <li><strong>New Delhi</strong>: The capital territory and political administrative heart.</li>
+        <li><strong>Mumbai</strong>: The financial and trade capital of the country.</li>
+        <li><strong>Bengaluru</strong>: The silicon valley of India, leading global software exports.</li>
+        <li><strong>Hyderabad</strong>: Major pharmaceutical and software hub.</li>
+        <li><strong>Chennai</strong>: Critical automotive and software export gateway.</li>
+      </ul>
+    </article>
+    <article>
+      <h3>Other Major Urban Centres</h3>
+      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted);">
+        <li><strong>Kolkata</strong>: Cultural capital and eastern trade center.</li>
+        <li><strong>Pune</strong>: Academic and automobile engineering hub.</li>
+        <li><strong>Ahmedabad</strong>: Major industrial and textile city in western India.</li>
+        <li><strong>Jaipur &amp; Lucknow</strong>: Cultural centers and growing software parks.</li>
+      </ul>
+    </article>
+  </div>
+
+  <!-- ILLUSTRATION 2: MAP OF INDIA -->
+  <div class="hero-visual" style="max-width: 800px; margin: 32px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 350" width="100%" height="auto" style="background: #12455d;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">INDIA MAP TIME ZONE COVERAGE</text>
+      
+      <!-- Outline Map Blocks (Abstract representation of India) -->
+      <!-- Northern Region -->
+      <rect x="350" y="70" width="100" height="70" rx="8" fill="#1b536e" opacity="0.6" stroke="#bdd2dc" stroke-width="1.5" />
+      <text x="400" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">DELHI (IST)</text>
+      
+      <!-- Central Peninsula Block -->
+      <rect x="300" y="150" width="200" height="110" rx="8" fill="url(#accentGrad)" opacity="0.35" stroke="#36c7b5" stroke-width="2" />
+      <text x="400" y="195" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">PENINSULAR INDIA</text>
+      <text x="400" y="220" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Mumbai • Bengaluru • Hyderabad</text>
+
+      <!-- Eastern Block -->
+      <rect x="510" y="140" width="100" height="60" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+      <text x="560" y="175" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">KOLKATA</text>
+      
+      <!-- Southern Block -->
+      <rect x="340" y="270" width="120" height="50" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+      <text x="400" y="300" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">CHENNAI (IST)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SKYLINE ILLUSTRATIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" style="padding: 24px 0;">
+  <div class="content">
+    <!-- New Delhi Skyline -->
+    <article style="padding: 0; background: none; border: none;">
+      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">New Delhi Silhouette (Lotus Temple style)</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1e293b" />
+          </linearGradient>
+        </defs>
+        <rect width="400" height="180" fill="url(#skyGrad)" />
+        <rect x="30" y="120" width="50" height="60" fill="#2f6278" opacity="0.6" />
+        <!-- Lotus Temple Silhouette representation -->
+        <path d="M140 180 C 140 120, 160 100, 180 100 C 200 100, 220 120, 220 180 Z" fill="#1b536e" opacity="0.8" />
+        <path d="M150 180 C 150 130, 165 110, 180 110 C 195 110, 210 130, 210 180 Z" fill="#12455d" />
+        <path d="M160 180 C 160 140, 170 125, 180 125 C 190 125, 200 140, 200 180 Z" fill="#36c7b5" opacity="0.4" />
+        <!-- India Gate Outline style -->
+        <rect x="250" y="80" width="60" height="100" fill="#1b536e" opacity="0.9" />
+        <path d="M270 180 L270 120 L290 120 L290 180 Z" fill="#0f172a" />
+        <path d="M250 80 Q 280 60, 310 80 Z" fill="#12455d" />
+      </svg>
+    </article>
+
+    <!-- Mumbai Skyline -->
+    <article style="padding: 0; background: none; border: none;">
+      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">Mumbai Silhouette (Gateway of India)</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+        <rect width="400" height="180" fill="url(#skyGrad)" />
+        <rect x="40" y="110" width="40" height="70" fill="#2f6278" opacity="0.6" />
+        <!-- Gateway of India representation -->
+        <rect x="120" y="70" width="90" height="110" fill="#12455d" />
+        <path d="M150 180 L150 110 L180 110 L180 180 Z" fill="#0f172a" />
+        <circle cx="130" cy="70" r="10" fill="#0c354a" stroke="#36c7b5" stroke-width="1.5" />
+        <circle cx="200" cy="70" r="10" fill="#0c354a" stroke="#36c7b5" stroke-width="1.5" />
+        <!-- Skyscrapers -->
+        <rect x="240" y="40" width="30" height="140" fill="#1b536e" opacity="0.9" />
+        <rect x="290" y="20" width="35" height="160" fill="#12455d" />
+        <rect x="340" y="80" width="30" height="100" fill="#2f6278" opacity="0.7" />
+      </svg>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BENGALURU TECHNOLOGY ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" style="padding: 24px 0;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">BENGALURU TECHNOLOGY HUB SYNC</text>
+      
+      <!-- Tech circuit style nodes -->
+      <g transform="translate(150, 110)">
+        <circle cx="0" cy="0" r="24" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#f4fbff" text-anchor="middle">Cloud</text>
+      </g>
+      
+      <g transform="translate(400, 110)">
+        <circle cx="0" cy="0" r="30" fill="#1b536e" stroke="#8fd7ff" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Code</text>
+      </g>
+
+      <g transform="translate(650, 110)">
+        <circle cx="0" cy="0" r="24" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#f4fbff" text-anchor="middle">API</text>
+      </g>
+
+      <!-- Connections -->
+      <line x1="174" y1="110" x2="370" y2="110" stroke="#36c7b5" stroke-width="2" />
+      <line x1="430" y1="110" x2="626" y2="110" stroke="#8fd7ff" stroke-width="2" />
+      
+      <circle cx="270" cy="110" r="5" fill="#36c7b5" />
+      <circle cx="530" cy="110" r="5" fill="#8fd7ff" />
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     UNIQUE EDUCATIONAL SECTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="topics" class="reveal">
+  <h2>History and Longitude Meridian of Indian Standard Time</h2>
+  <div class="content">
+    <article>
+      <h3>Why India Standard Time uses UTC+5:30</h3>
+      <p>
+        The origin of standard time in India traces back to Madras Time, established by the East India Company in 1805. Under British rule, regional time meridians were observed in Mumbai (Bombay Time) and Kolkata (Calcutta Time), which had a 33-minute difference.
+      </p>
+      <p>
+        In 1906, standard time was standardized on the 82.5° East longitude meridian passing through the observatory in Mirzapur. Selecting a central meridian situated halfway between standard UTC offsets produced the unique UTC+5:30 fractional offset.
+      </p>
+    </article>
+    <article>
+      <h3>Why India maintains a Single Time Zone</h3>
+      <p>
+        India's geographical width spans nearly 30 degrees of longitude, meaning the sun rises almost two hours earlier in the northeastern state of Assam than in western Gujarat. While regional groups have campaigned for a second time zone (often called "Chaibagaan time") to save daylight in the east, the Union government maintains a single time zone.
+      </p>
+      <p>
+        A unified clock prevents rail and flight collisions, simplifies banking systems, and coordinates federal administration.
+      </p>
+    </article>
+  </div>
+
+  <h2>GMT to IST Remote Work &amp; SaaS Integrations</h2>
+  <div class="content">
+    <article>
+      <h3>Collaborating with Indian Software Teams</h3>
+      <p>
+        Bengaluru and Hyderabad house some of the largest software engineering centers in the world. Developers routinely push code, deploy API microservices, and manage database pipelines while coordinating tasks with project managers in London.
+      </p>
+      <p>
+        The standard workday overlap occurs between 8:30 AM GMT and 12:30 PM GMT (which is 2:00 PM IST and 6:00 PM IST). Teams leverage these 4 hours for live troubleshooting, code reviews, and project syncs.
+      </p>
+    </article>
+    <article>
+      <h3>Cloud Deployment and Support Windows</h3>
+      <p>
+        Because India does not observe daylight saving, scheduled system maintenance windows are predictable year-round. Network operations centers (NOCs) typically target 9:30 PM GMT (3:00 AM IST the next day) for large cloud infrastructure migrations to minimize disruptions.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 7: UTC+5:30 VISUAL EXPLANATION -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">MERIDIAN OF INDIAN STANDARD TIME (82.5° E)</text>
+      
+      <!-- Longitude line visual -->
+      <line x1="400" y1="60" x2="400" y2="160" stroke="#f4fbff" stroke-width="3" stroke-dasharray="8 4" />
+      <text x="415" y="80" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc">82.5° East Meridian</text>
+      
+      <circle cx="400" cy="110" r="10" fill="#36c7b5" />
+      <text x="415" y="115" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">Mirzapur (Reference Point)</text>
+
+      <!-- Offset calculation -->
+      <text x="250" y="120" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#bdd2dc" text-anchor="middle">UTC+5 Offset</text>
+      <text x="550" y="120" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#bdd2dc" text-anchor="middle">UTC+6 Offset</text>
+
+      <path d="M 250 130 Q 400 160, 550 130" fill="none" stroke="#2f6278" stroke-width="2" />
+      <text x="400" y="180" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">IST is exactly in the middle (UTC+5:30)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ILLUSTRATION 9: BUSINESS MEETING PLANNER -->
+<section class="reveal" style="padding: 0 0 24px;">
+  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">OFFICE CROSSOVER WINDOWS (GMT &amp; IST)</text>
+      
+      <!-- Timeline box -->
+      <rect x="50" y="70" width="700" height="90" fill="#0c354a" rx="8" stroke="#2f6278" stroke-width="1.5" />
+      
+      <!-- Crossover Zone Highlight -->
+      <rect x="300" y="70" width="200" height="90" fill="url(#accentGrad)" opacity="0.25" />
+      <line x1="300" y1="70" x2="300" y2="160" stroke="#36c7b5" stroke-width="2" />
+      <line x1="500" y1="70" x2="500" y2="160" stroke="#36c7b5" stroke-width="2" />
+
+      <!-- Labels -->
+      <text x="180" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">GMT Office Hours</text>
+      <text x="620" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">IST Office Hours</text>
+      
+      <!-- Optimal Crossover Text -->
+      <text x="400" y="120" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">4-Hour Meeting Window</text>
+      <text x="400" y="140" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">08:30–12:30 GMT | 14:00–18:00 IST</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON CONFUSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="source-notes" class="source-notes reveal">
+  <h2>Common Confusions: IST, GMT, UTC, and Israel/Irish Time</h2>
+  <p>
+    Timezone abbreviations are easily confused. Let's clarify the key definitions and differences:
+  </p>
+  <ul>
+    <li>
+      <strong>IST vs. Israel Standard Time</strong>: Both share the "IST" acronym. However, Israel Standard Time is UTC+2 (standard) or UTC+3 (summer). Indian Standard Time is UTC+5:30 year-round. It is crucial to verify which zone is intended during Middle Eastern business scheduling.
+    </li>
+    <li>
+      <strong>IST vs. Irish Standard Time</strong>: Irish Standard Time is observed in Ireland during summer daylight saving hours (UTC+1). Indian Standard Time is always UTC+5:30.
+    </li>
+    <li>
+      <strong>UTC+5 vs. UTC+5:30</strong>: Standard standard time zones are aligned to whole-hour meridians. Fractional zones like India (UTC+5:30) and Nepal (UTC+5:45) use fractional meridians to match local solar cycles more closely.
+    </li>
+  </ul>
+
+  <!-- ILLUSTRATION 8: HALF-HOUR TIMEZONE INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 750px; margin: 32px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="375" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">FRACTIONAL VS WHOLE TIME ZONES</text>
+      
+      <!-- UTC+5 Block -->
+      <g transform="translate(80, 60)">
+        <rect x="0" y="0" width="180" height="90" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="90" y="30" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#bdd2dc" text-anchor="middle">UTC+5 (Pakistan)</text>
+        <text x="90" y="55" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">Standard hour</text>
+      </g>
+      
+      <!-- UTC+5:30 Block -->
+      <g transform="translate(285, 60)">
+        <rect x="0" y="0" width="180" height="90" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+        <text x="90" y="30" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">UTC+5:30 (IST)</text>
+        <text x="90" y="55" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">Fractional 30m</text>
+      </g>
+
+      <!-- UTC+6 Block -->
+      <g transform="translate(490, 60)">
+        <rect x="0" y="0" width="180" height="90" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="90" y="30" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#bdd2dc" text-anchor="middle">UTC+6 (Bangladesh)</text>
+        <text x="90" y="55" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">Standard hour</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed, search-intent-optimized answers to resolve common issues and queries regarding GMT and Indian Standard Time:
+  </p>
+  <div class="faq">
+    {faqs.map((faq) => (
+      <details>
+        <summary>{faq.q}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.a}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Need other conversions? Explore our other dedicated standalone calculator pages:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>GMT Timezone Conversions</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/gmt-to-eet/">GMT to EET</a></li>
+          <li><a href="/gmt-to-idt/">GMT to IDT</a></li>
+          <li><a href="/gmt-to-bst/">GMT to BST</a></li>
+          <li><a href="/gmt-to-aest/">GMT to AEST</a></li>
+          <li><a href="/gmt-to-nzst/">GMT to NZST</a></li>
+          <li><a href="/gmt-to-acdt/">GMT to ACDT</a></li>
+          <li><a href="/gmt-to-cdt/">GMT to CDT</a></li>
+          <li><a href="/gmt-to-eat/">GMT to EAT</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern &amp; Indian Conversions</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/">GMT to EST Homepage</a></li>
+          <li><a href="/cdt-to-est/">CDT to EST</a></li>
+          <li><a href="/eest-to-est/">EEST to EST</a></li>
+          <li><a href="/aest-to-est/">AEST to EST</a></li>
+          <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

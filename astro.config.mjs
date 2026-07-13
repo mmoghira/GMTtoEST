@@ -70,7 +70,7 @@ export default defineConfig({
         
         // Exclude dynamic timezone converter pages that redirect to the homepage,
         // while keeping activated converter landing pages indexable.
-        if (!["/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/", "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/"].includes(cleanPath)) {
+        if (!["/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/", "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/"].includes(cleanPath)) {
           const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
           const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
           
