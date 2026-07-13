@@ -1,7 +1,8 @@
 (() => {
-  const easternZone = "America/New_York";
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => [...document.querySelectorAll(s)];
+  const sourceZone = qs("#converter")?.dataset.sourceZone || "UTC";
+  const easternZone = qs("#converter")?.dataset.targetZone || "America/New_York";
   const state = {
     mode: qs("#converter")?.dataset.startMode || document.body.dataset.mode || "gmt-est",
     intent: qs("#converter")?.dataset.intent || "converter",
@@ -28,24 +29,24 @@
     return map;
   }
 
-  function zoneName(date) {
-    return parts(date, easternZone).timeZoneName || "ET";
+  function zoneName(date, timeZone) {
+    return parts(date, timeZone || easternZone).timeZoneName || "ET";
   }
 
-  function offsetMinutes(date) {
-    const p = parts(date, easternZone);
+  function offsetMinutes(date, timeZone) {
+    const p = parts(date, timeZone || easternZone);
     const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
     return Math.round((asUTC - date.getTime()) / 60000);
   }
 
-  function localEasternToUtc(value) {
+  function localZoneToUtc(value, timeZone) {
     const [d, t] = value.split("T");
     const [year, month, day] = d.split("-").map(Number);
     const [hour, minute] = t.split(":").map(Number);
     const base = Date.UTC(year, month - 1, day, hour, minute);
-    let guess = base - offsetMinutes(new Date(base)) * 60000;
+    let guess = base - offsetMinutes(new Date(base), timeZone) * 60000;
     for (let i = 0; i < 4; i += 1) {
-      guess = base - offsetMinutes(new Date(guess)) * 60000;
+      guess = base - offsetMinutes(new Date(guess), timeZone) * 60000;
     }
     return new Date(guess);
   }
@@ -53,8 +54,8 @@
   function parseInput() {
     const value = qs("#datetime").value;
     if (!value) return null;
-    if (state.mode === "gmt-est") return new Date(`${value}:00Z`);
-    return localEasternToUtc(value);
+    if (state.mode === "gmt-est") return localZoneToUtc(value, sourceZone);
+    return localZoneToUtc(value, easternZone);
   }
 
   function format(date, timeZone) {
@@ -88,10 +89,19 @@
   }
 
   function explain(date) {
-    const offset = offsetMinutes(date);
-    const hours = Math.abs(offset / 60);
-    const z = zoneName(date);
-    return `${z} is ${hours} hours behind GMT on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.`;
+    const offsetSource = offsetMinutes(date, sourceZone);
+    const offsetTarget = offsetMinutes(date, easternZone);
+    const diff = Math.round((offsetSource - offsetTarget) / 60);
+    const zSource = zoneName(date, sourceZone);
+    const zTarget = zoneName(date, easternZone);
+    if (diff === 0) {
+      return `Both zones are at the same offset (${zSource}/${zTarget}) on this date.`;
+    }
+    const absDiff = Math.abs(diff);
+    const direction = diff > 0 ? "behind" : "ahead";
+    const sourceLabelVal = qs("#converter")?.dataset.sourceLabel || "GMT";
+    const targetLabelVal = qs("#converter")?.dataset.targetLabel || "EST";
+    return `${zTarget} (${targetLabelVal}) is ${absDiff} hour${absDiff > 1 ? "s" : ""} ${direction} of ${zSource} (${sourceLabelVal}) on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.`;
   }
 
   function shortFormat(date, timeZone) {
@@ -114,57 +124,79 @@
   function convert() {
     const date = parseInput();
     if (!date || Number.isNaN(date.getTime())) return;
-    const target = state.mode === "gmt-est" ? easternZone : "UTC";
-    const source = state.mode === "gmt-est" ? "UTC" : easternZone;
-    const label = state.mode === "gmt-est" ? "Eastern Time" : "GMT";
-    const easternLabel = format(date, easternZone);
-    const gmtLabel = format(date, "UTC");
+    const target = state.mode === "gmt-est" ? easternZone : sourceZone;
+    const source = state.mode === "gmt-est" ? sourceZone : easternZone;
+    const label = state.mode === "gmt-est" ? (state.labels.target || "EST") : (state.labels.source || "GMT");
+    const targetLabel = format(date, target);
+    const sourceLabel = format(date, source);
     if (state.intent === "difference") {
-      state.lastText = `GMT: ${gmtLabel} | ${state.labels.eastern || "Eastern"}: ${easternLabel} | ${explain(date)}`;
+      state.lastText = `${sourceZone}: ${sourceLabel} | ${easternZone}: ${targetLabel} | ${explain(date)}`;
     } else if (state.intent === "guide") {
-      state.lastText = `${state.labels.meetingPlanner || "Meeting planner"}: ${gmtLabel} ${state.labels.is || "is"} ${easternLabel}`;
+      state.lastText = `${state.labels.meetingPlanner || "Meeting planner"}: ${sourceLabel} is ${targetLabel}`;
     } else {
       state.lastText = `${label}: ${format(date, target)}`;
     }
     const result = qs("#result");
-    result.textContent = state.intent === "difference"
-      ? `${Math.abs(offsetMinutes(date) / 60)} ${state.labels.hoursBehindGmt || "hours behind GMT"}`
-      : shortFormat(date, target);
-    result.classList.remove("pulse");
-    requestAnimationFrame(() => {
+    if (result) {
+      const diff = Math.round((offsetMinutes(date, sourceZone) - offsetMinutes(date, easternZone)) / 60);
+      result.textContent = state.intent === "difference"
+        ? `${Math.abs(diff)} ${state.labels.hoursBehindGmt || "hours behind"}`
+        : shortFormat(date, target);
+      result.classList.remove("pulse");
       requestAnimationFrame(() => {
-        result.classList.add("pulse");
+        requestAnimationFrame(() => {
+          result.classList.add("pulse");
+        });
       });
-    });
+    }
     setText("#sourcePreview", shortFormat(date, source));
     setText("#difference", state.intent === "guide"
-      ? `${state.labels.bestForScheduling || "Best for scheduling"}: ${gmtLabel} ${state.labels.convertsTo || "converts to"} ${easternLabel}. ${explain(date)}`
+      ? `${state.labels.bestForScheduling || "Best for scheduling"}: ${sourceLabel} converts to ${targetLabel}. ${explain(date)}`
       : explain(date));
-    setText("#offsetBadge", `${Math.abs(offsetMinutes(date) / 60)}h difference - ${zoneName(date)}`);
+    const finalDiff = Math.round((offsetMinutes(date, sourceZone) - offsetMinutes(date, easternZone)) / 60);
+    setText("#offsetBadge", `${Math.abs(finalDiff)}h difference - ${zoneName(date, target)}`);
   }
 
   function tick() {
     const now = new Date();
-    qs("#gmtClock").textContent = compact(now, "UTC");
-    qs("#estClock").textContent = compact(now, easternZone);
-    qs("#estZone").textContent = zoneName(now);
+    const gmtClock = qs("#gmtClock");
+    if (gmtClock) gmtClock.textContent = compact(now, sourceZone);
+    const estClock = qs("#estClock");
+    if (estClock) estClock.textContent = compact(now, easternZone);
+    const estZone = qs("#estZone");
+    if (estZone) estZone.textContent = zoneName(now, easternZone);
+  }
+
+  function formatHourOnly(date, timeZone) {
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone,
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: !state.use24,
+      timeZoneName: "short"
+    }).format(date);
   }
 
   function buildTable() {
     const tbody = qs("#timeTable tbody");
     if (!tbody) return;
     const today = new Date();
-    const p = parts(today, "UTC");
+    const p = parts(today, sourceZone);
     const frag = document.createDocumentFragment();
+    const sourceLabelVal = qs("#converter")?.dataset.sourceLabel || "GMT";
     for (let h = 0; h < 24; h += 1) {
-      const date = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, 0));
+      const dateString = `${p.year}-${p.month}-${p.day}T${String(h).padStart(2, "0")}:00`;
+      const date = localZoneToUtc(dateString, sourceZone);
       const tr = document.createElement("tr");
       const td1 = document.createElement("td");
-      td1.textContent = `${String(h).padStart(2, "0")}:00 GMT`;
+      td1.textContent = formatHourOnly(date, sourceZone);
       const td2 = document.createElement("td");
-      td2.textContent = format(date, easternZone);
+      td2.textContent = formatHourOnly(date, easternZone);
       const td3 = document.createElement("td");
-      td3.textContent = `${Math.abs(offsetMinutes(date) / 60)} hours behind`;
+      const diff = Math.round((offsetMinutes(date, sourceZone) - offsetMinutes(date, easternZone)) / 60);
+      td3.textContent = diff === 0
+        ? "No difference"
+        : `${Math.abs(diff)} hour${Math.abs(diff) > 1 ? "s" : ""} ${diff > 0 ? "behind" : "ahead"}`;
       tr.append(td1, td2, td3);
       frag.appendChild(tr);
     }
@@ -176,11 +208,12 @@
     const strip = qs("#timeStrip");
     if (!strip) return;
     strip.innerHTML = "";
+    const sourceLabelVal = qs("#converter")?.dataset.sourceLabel || "GMT";
     for (let h = 0; h < 24; h += 1) {
       const cell = document.createElement("span");
       const isOverlap = h >= 13 && h <= 18;
       cell.className = isOverlap ? "overlap" : "";
-      cell.innerHTML = `<b>${String(h).padStart(2, "0")}:00</b><small>GMT</small>`;
+      cell.innerHTML = `<b>${String(h).padStart(2, "0")}:00</b><small>${sourceLabelVal}</small>`;
       strip.appendChild(cell);
     }
   }
@@ -203,7 +236,7 @@
       setText("#sourceZone", labels.source);
       setText("#outputZoneName", labels.target);
     }
-    setInputFromDate(new Date(), state.mode === "gmt-est" ? "UTC" : easternZone);
+    setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : easternZone);
     convert();
   }
 
