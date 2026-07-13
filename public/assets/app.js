@@ -5,6 +5,8 @@
   const converterNode = qs("#converter");
   const sourceZone = converterNode?.dataset.sourceZone || "UTC";
   const targetZone = converterNode?.dataset.targetZone || "America/New_York";
+  const configuredSourceLabel = converterNode?.dataset.sourceLabel || "";
+  const configuredTargetLabel = converterNode?.dataset.targetLabel || "";
 
   const state = {
     mode: converterNode?.dataset.startMode || document.body.dataset.mode || "gmt-est",
@@ -40,7 +42,18 @@
   }
 
   function zoneName(date, zone = targetZone) {
-    return parts(date, zone).timeZoneName || "ET";
+    const shortName = parts(date, zone).timeZoneName || "ET";
+    if (zone === "UTC") {
+      if (zone === sourceZone && configuredSourceLabel) return configuredSourceLabel;
+      if (zone === targetZone && configuredTargetLabel) return configuredTargetLabel;
+      return "GMT";
+    }
+    if (zone === "Australia/Adelaide") {
+      const offset = offsetMinutes(date, zone);
+      if (offset === 630) return "ACDT";
+      if (offset === 570) return "ACST";
+    }
+    return shortName;
   }
 
   function offsetMinutes(date, zone = targetZone) {
@@ -69,12 +82,18 @@
     return localToUtc(value, currentInputZone);
   }
 
+  function applyZoneLabel(text, date, timeZone) {
+    const intlName = parts(date, timeZone).timeZoneName;
+    const displayName = zoneName(date, timeZone);
+    return intlName && displayName && intlName !== displayName ? text.replace(intlName, displayName) : text;
+  }
+
   function format(date, timeZone) {
     const f = getFormatter("format", timeZone, {
       weekday: "short", year: "numeric", month: "short", day: "numeric",
       hour: "numeric", minute: "2-digit", hour12: !state.use24, timeZoneName: "short"
     });
-    return f.format(date);
+    return applyZoneLabel(f.format(date), date, timeZone);
   }
 
   function compact(date, timeZone) {
@@ -82,7 +101,7 @@
       hour: "numeric", minute: "2-digit", second: "2-digit",
       hour12: !state.use24, timeZoneName: "short"
     });
-    return f.format(date);
+    return applyZoneLabel(f.format(date), date, timeZone);
   }
 
   function setInputFromDate(date, zone) {
@@ -102,7 +121,7 @@
       month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
       hour12: !state.use24, timeZoneName: "short"
     });
-    return f.format(date);
+    return applyZoneLabel(f.format(date), date, timeZone);
   }
 
   function setText(selector, text) {

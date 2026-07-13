@@ -1,0 +1,511 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-acdt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to ACDT Converter";
+const seoTitle = "GMT to ACDT Converter – Greenwich Mean Time to Adelaide Time";
+const pageDescription = "Convert GMT to ACDT instantly with our free, DST-aware converter. See the current time difference between Greenwich Mean Time and Australian Central Daylight Time, plus a full 24-hour conversion chart, meeting planner, and Adelaide time zone guide.";
+
+const context = {
+  from: "GMT",
+  to: "ACDT",
+  fromZone: "UTC",
+  toZone: "Australia/Adelaide"
+};
+
+const canonical = `${siteUrl}/gmt-to-acdt/`;
+
+// 24-hour conversion table data (GMT → ACDT = GMT + 10:30)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:30 ${period}`;
+}
+function formatHourGMT(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const acdtHour = hour + 10;
+  const acdtMinutes = 30;
+  const acdtNormalized = ((acdtHour % 24) + 24) % 24;
+  const nextDay = acdtHour >= 24;
+  const period = acdtNormalized < 12 ? "AM" : "PM";
+  const displayHour = acdtNormalized % 12 || 12;
+  return {
+    gmt: formatHourGMT(hour),
+    acdt: `${displayHour}:${String(acdtMinutes).padStart(2, "0")} ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", acdt: "10:30 AM ACDT", note: "Morning in Adelaide when it's midnight in Greenwich" },
+  { gmt: "2:00 AM", acdt: "12:30 PM ACDT", note: "Lunchtime in Adelaide, early morning in London" },
+  { gmt: "5:00 AM", acdt: "3:30 PM ACDT", note: "Mid-afternoon in Adelaide, dawn in Greenwich" },
+  { gmt: "8:00 AM", acdt: "6:30 PM ACDT", note: "Evening in Adelaide when London starts work" },
+  { gmt: "10:00 AM", acdt: "8:30 PM ACDT", note: "Adelaide's evening wind-down, London's mid-morning" },
+  { gmt: "12:00 PM (Noon)", acdt: "10:30 PM ACDT", note: "Late evening in Adelaide, midday in Greenwich" },
+  { gmt: "2:00 PM", acdt: "12:30 AM ACDT (+1)", note: "Past midnight in Adelaide, afternoon in London" },
+  { gmt: "4:00 PM", acdt: "2:30 AM ACDT (+1)", note: "Adelaide is sleeping, London finishes work" },
+  { gmt: "6:00 PM", acdt: "4:30 AM ACDT (+1)", note: "Pre-dawn in Adelaide, evening in Greenwich" },
+  { gmt: "8:00 PM", acdt: "6:30 AM ACDT (+1)", note: "Early morning in Adelaide, night in London" },
+  { gmt: "10:00 PM", acdt: "8:30 AM ACDT (+1)", note: "Adelaide's workday begins, London's bedtime" },
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is GMT?", a: "Greenwich Mean Time (GMT) is the clock time at the Royal Observatory in Greenwich, London. It sits at UTC+0 and does not observe daylight saving time. GMT serves as the global baseline from which other time zones calculate their offsets. Aviation, shipping, and international broadcasting still reference GMT as a universal anchor point." },
+  { q: "What is ACDT?", a: "Australian Central Daylight Time (ACDT) is the daylight saving time designation for the Australian Central Time zone. It runs at UTC+10:30, which is 30 minutes ahead of Australian Eastern Daylight Time (AEDT) and 10 hours 30 minutes ahead of GMT. ACDT is used in South Australia and the Northern Territory border region during the warmer months." },
+  { q: "Is GMT the same as UTC?", a: "For everyday scheduling, GMT and UTC are interchangeable — both represent the zero-offset reference point. Technically, UTC is the modern scientific standard maintained by atomic clocks, while GMT is the older astronomical standard tied to solar observations at Greenwich. The practical difference is less than a second, so time zone converters treat them identically." },
+  { q: "Is Adelaide always on ACDT?", a: "No. Adelaide and South Australia switch between ACST (Australian Central Standard Time, UTC+9:30) and ACDT (Australian Central Daylight Time, UTC+10:30) each year. ACDT typically applies from the first Sunday in October until the first Sunday in April. During the remaining months, Adelaide uses ACST." },
+  { q: "How many hours ahead is ACDT compared to GMT?", a: "ACDT is exactly 10 hours and 30 minutes ahead of GMT. This means when it is 12:00 noon GMT, it is 10:30 PM ACDT on the same day. The half-hour offset is unique to the Australian Central Time zone and a handful of other regions worldwide." },
+  { q: "When does Australia use ACDT?", a: "ACDT is active from the first Sunday in October at 2:00 AM local time until the first Sunday in April at 3:00 AM local time. During this stretch, clocks in South Australia spring forward by one hour. The exact start and end dates shift by a day or two each year since they're pegged to specific Sundays." },
+  { q: "What is the time difference between GMT and Adelaide?", a: "The time difference between GMT and Adelaide depends on the season. During daylight saving time (October to April), Adelaide runs on ACDT at UTC+10:30, making it 10 hours 30 minutes ahead of GMT. During standard time (April to October), Adelaide uses ACST at UTC+9:30, which is 9 hours 30 minutes ahead." },
+  { q: "What is the difference between ACDT and ACST?", a: "ACDT (UTC+10:30) and ACST (UTC+9:30) differ by exactly one hour. ACDT is the daylight saving version — clocks are set one hour ahead of standard time to extend evening daylight. When daylight saving ends, clocks fall back to ACST. Both apply to the same geographic region in central Australia." },
+  { q: "How does ACDT compare to AEST?", a: "AEST (Australian Eastern Standard Time) runs at UTC+10:00, while ACDT runs at UTC+10:30. So ACDT is actually 30 minutes ahead of AEST. This can cause confusion because the 'central' zone is ahead of the 'eastern' zone during the months when South Australia has daylight saving but New South Wales or Queensland has not yet switched or does not observe DST." },
+  { q: "How does ACDT compare to AEDT?", a: "AEDT (Australian Eastern Daylight Time) runs at UTC+11:00, which is 30 minutes ahead of ACDT (UTC+10:30). When both zones are in daylight saving mode, Sydney is half an hour ahead of Adelaide. This 30-minute gap applies during the overlapping DST period, roughly October through early April." },
+  { q: "Is ACDT a daylight saving time zone?", a: "Yes. The 'D' in ACDT stands for Daylight. Australian Central Daylight Time is the DST variant of the Australian Central Time zone. It runs from early October to early April each year, adding one hour to the standard offset. Outside this window, the region uses ACST (Australian Central Standard Time)." },
+  { q: "How do I convert GMT to ACDT manually?", a: "Add 10 hours and 30 minutes to the GMT time. For instance, 3:00 PM GMT becomes 1:30 AM ACDT the next day (15:00 + 10:30 = 25:30, which wraps to 01:30 next day). Always check whether ACDT is actually in effect on your target date, since the offset drops to +9:30 during ACST months." },
+  { q: "Which cities use ACDT?", a: "Adelaide is the largest city using ACDT. Other locations include Broken Hill in New South Wales (which follows South Australia's time rules despite being in a different state), and several regional towns across South Australia. The Northern Territory does not observe daylight saving, so it stays on ACST year-round." },
+  { q: "Is ACDT used all year round?", a: "No. ACDT only applies during the Australian daylight saving period, roughly early October to early April. For the rest of the year, the region reverts to ACST (UTC+9:30). If you're scheduling outside of the October–April window, use ACST instead of ACDT." },
+  { q: "Why does Australia change its clocks?", a: "Australia adopted daylight saving time to make better use of natural daylight during longer summer days. By shifting clocks forward one hour, residents gain an extra hour of evening sunlight. Not all Australian states participate — Queensland, Western Australia, and the Northern Territory do not observe DST. South Australia and the eastern states that do observe it follow slightly different transition rules." },
+  { q: "What time is 8 PM GMT in ACDT?", a: "8:00 PM GMT converts to 6:30 AM ACDT the following day. Since ACDT is 10 hours and 30 minutes ahead, adding that offset to 20:00 gives 30:30, which normalizes to 06:30 the next calendar day. This means a late Monday evening call in London lands on Tuesday morning in Adelaide." },
+  { q: "How accurate is this converter?", a: "Our converter uses the IANA Time Zone Database (tzdata) via the Intl.DateTimeFormat API built into modern browsers. It automatically accounts for daylight saving transitions, half-hour offsets, and historical rule changes. For mission-critical legal, medical, or financial scheduling, we recommend cross-checking with an official government time source." },
+  { q: "Does Broken Hill use ACDT?", a: "Yes. Despite being geographically located in New South Wales, Broken Hill follows South Australian time zone rules. This means Broken Hill uses ACDT during daylight saving months and ACST during standard time, making it 30 minutes behind the rest of New South Wales during overlapping DST periods." },
+  { q: "What is the IANA zone identifier for ACDT?", a: "The IANA time zone database uses Australia/Adelaide as the canonical identifier for the region that observes ACDT and ACST. This identifier encodes all historical and current DST transition rules. When writing software, always use Australia/Adelaide rather than a fixed UTC offset to ensure correct conversions across all dates." },
+  { q: "Can I use this converter for past or future dates?", a: "Yes. The date picker allows you to select any date, and the converter adjusts the offset based on whether ACDT or ACST was in effect on that specific date. This is useful for checking historical timestamps or planning events months in advance." },
+  { q: "Why is Australia's central time zone offset by 30 minutes?", a: "When Australian colonies standardized their time zones in the late 1800s, South Australia chose a 30-minute offset as a geographic compromise. The state sits roughly halfway between the eastern and western time zone meridians, so officials selected UTC+9:30 (and UTC+10:30 during DST) rather than rounding to a full hour." },
+  { q: "What happens at the ACDT to ACST transition?", a: "On the first Sunday in April at 3:00 AM ACDT, clocks fall back to 2:00 AM ACST. This means the hour between 2:00 AM and 3:00 AM occurs twice. Conversely, on the first Sunday in October at 2:00 AM ACST, clocks spring forward to 3:00 AM ACDT, skipping the 2:00–3:00 AM hour entirely." },
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to ACDT, GMT to Australian Central Daylight Time, Greenwich Mean Time to ACDT, Convert GMT to ACDT, GMT ACDT Converter, GMT to Adelaide Time, ACDT Time Converter, Australian Central Daylight Time Converter, Current ACDT Time, GMT to South Australia Time, Time Difference GMT and ACDT, Meeting Planner GMT to Adelaide",
+  image: "/images/og/default.png",
+  imageAlt: "GMT to ACDT Converter – Convert Greenwich Mean Time to Australian Central Daylight Time",
+  faqs,
+  appDescription: "Free online GMT to ACDT converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Australian Central Daylight Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to ACDT",
+  howToDescription: "Step-by-step guide to converting Greenwich Mean Time to Australian Central Daylight Time using our free online tool.",
+  howToSteps: [
+    { name: "Check the current date", text: "Determine whether the target date falls within the ACDT period (early October to early April) or the ACST period. This affects the UTC offset: ACDT uses UTC+10:30 while ACST uses UTC+9:30." },
+    { name: "Enter your GMT time", text: "Use the converter's date and time picker to select the specific GMT time you want to convert. The tool defaults to the current time but accepts any date." },
+    { name: "Read the ACDT result", text: "The converter displays the equivalent ACDT time, including the active timezone label (ACDT or ACST), the UTC offset, and whether the result falls on the same or next calendar day." },
+    { name: "Copy or adjust as needed", text: "Use the copy button to save the result to your clipboard. Toggle between 12-hour and 24-hour format, or use the swap button to convert in the reverse direction (ACDT to GMT)." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to ACDT"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to ACDT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About This GMT to ACDT Converter</h2>
+  <p>
+    <strong>GMT to ACDT Converter</strong> bridges two time references separated by 10 hours and 30 minutes — Greenwich Mean Time, the world's zero-offset baseline anchored to the Royal Observatory in London, and Australian Central Daylight Time, the summer clock used across South Australia and the city of Adelaide. Whether you are coordinating a product launch with a team in Adelaide, joining an early-morning standup from London, or booking flights into Adelaide Airport, an accurate conversion that respects daylight saving transitions is essential.
+  </p>
+  <p>
+    Greenwich Mean Time (GMT) holds the UTC+0 position on the global time scale. It never shifts for daylight saving, which makes it a dependable reference for international scheduling. Aviation, maritime navigation, and meteorological reporting all anchor their timestamps to GMT or its modern equivalent, Coordinated Universal Time (UTC). When someone says "the meeting is at 14:00 GMT," the meaning is unambiguous regardless of the listener's local DST status.
+  </p>
+  <p>
+    Australian Central Daylight Time (ACDT) sits at UTC+10:30 and is used when South Australia's clocks spring forward by one hour from their standard offset of UTC+9:30. The transition typically happens on the first Sunday of October and reverts on the first Sunday of April. Adelaide — South Australia's capital and largest city — is the most prominent location running on ACDT. Broken Hill, despite being inside New South Wales, also follows South Australia's time rules and therefore observes ACDT during the same period.
+  </p>
+  <p>
+    This converter serves a broad audience. <strong>Business professionals</strong> scheduling cross-border meetings between the United Kingdom and South Australia rely on precise offsets to avoid missed calls. <strong>Software developers</strong> handling time-stamped data pipelines between UTC-based servers and Adelaide-based users need confidence that their date-time logic accounts for the half-hour offset. <strong>Remote workers</strong> spread across GMT and ACDT must align their working hours around the ten-and-a-half-hour gap to maintain productive overlap windows. <strong>Students</strong> enrolled in Australian universities from overseas need to calculate lecture times without error. <strong>International businesses</strong> with partners or clients in South Australia depend on knowing whether Adelaide is on ACDT or ACST before setting deadlines. And <strong>travellers</strong> planning trips to the Barossa Valley, Kangaroo Island, or the Adelaide Hills need to adjust their internal clocks well before landing.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE INTERACTIVE CONVERTER TOOL
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Instant GMT to Adelaide timezone calculator</p>
+    <h2 id="converter-tool-heading">Convert GMT to ACDT in Real Time</h2>
+    <p>
+      Select any date and time in GMT and receive the precise ACDT equivalent below. The tool automatically determines whether Australian Central Daylight Time or Australian Central Standard Time applies to your chosen date, so you never have to memorise transition calendars.
+    </p>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">GMT to ACDT Converter Live Clocks</h2>
+  <div class="clock-card"><span>Current GMT</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current ACDT (Adelaide)</span><strong id="estClock">--:--</strong><em id="estZone">ACDT</em></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Offset analysis</p>
+    <h2 id="time-diff-heading">Understanding the GMT to ACDT Time Difference</h2>
+    <p>
+      The core arithmetic is straightforward: GMT sits at UTC+0, while ACDT occupies UTC+10:30. That gives a fixed gap of <strong>10 hours and 30 minutes</strong> during the months when daylight saving is active in South Australia. When Adelaide reverts to Australian Central Standard Time (ACST) in early April, the offset shrinks to 9 hours and 30 minutes because ACST is UTC+9:30.
+    </p>
+    <p>
+      This half-hour component is one of the distinguishing features of Australia's central time zone. Most time zones around the world use whole-hour offsets from UTC, but India (UTC+5:30), Nepal (UTC+5:45), Myanmar (UTC+6:30), and the Chatham Islands (UTC+12:45) join the Australian Central zone in using fractional offsets. For software engineers and database administrators, the half-hour offset demands extra care — rounding to the nearest hour will produce incorrect timestamps every single time.
+    </p>
+  </div>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>GMT — The Zero Point</h3>
+      <p>Greenwich Mean Time is UTC+0 year-round. It does not observe daylight saving. The United Kingdom itself uses BST (British Summer Time, UTC+1) during summer, but GMT as a reference standard remains fixed. Any conversion from GMT starts at zero and adds the target offset.</p>
+    </article>
+    <article class="method-card">
+      <h3>ACDT — Australia's Summer Clock</h3>
+      <p>ACDT runs at UTC+10:30 from early October to early April. South Australia mandates the switch to give residents longer evening daylight during warmer months. When ACDT is active, Adelaide is 10 hours and 30 minutes ahead of Greenwich. During ACST months, the gap narrows to 9 hours and 30 minutes.</p>
+    </article>
+    <article class="method-card">
+      <h3>Daylight Saving Transition Dates</h3>
+      <p>Clocks spring forward on the first Sunday of October at 2:00 AM ACST (becoming 3:00 AM ACDT). They fall back on the first Sunday of April at 3:00 AM ACDT (reverting to 2:00 AM ACST). Our converter handles these transitions automatically for every date in its calendar picker.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour GMT to ACDT Conversion Table</h2>
+    <p>Every hour of the day in GMT mapped to its ACDT equivalent during daylight saving time (UTC+10:30). For ACST months, subtract one hour from the ACDT column.</p>
+    <div class="table-wrap">
+      <table aria-label="GMT to ACDT 24-hour conversion table">
+        <caption class="sr-only">Full 24-hour GMT to Australian Central Daylight Time conversion reference grid</caption>
+        <thead>
+          <tr><th>GMT Time</th><th>ACDT Time</th><th>Day Status</th></tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td>{row.gmt}</td>
+              <td>{row.acdt}</td>
+              <td>{row.dayNote}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Times from 2:00 PM GMT onward cross into the next calendar day in Adelaide. Always verify the date when scheduling late-afternoon or evening GMT events for ACDT participants.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <div>
+    <h2 id="popular-heading">Popular GMT to ACDT Conversion Examples</h2>
+    <p>Frequently searched time conversions between Greenwich Mean Time and Australian Central Daylight Time, with practical context for each.</p>
+    <div class="table-wrap">
+      <table aria-label="Popular GMT to ACDT conversion examples">
+        <caption class="sr-only">Common GMT to ACDT time conversion examples with scheduling notes</caption>
+        <thead>
+          <tr><th>GMT</th><th>ACDT</th><th>Practical Context</th></tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((row) => (
+            <tr>
+              <td>{row.gmt}</td>
+              <td>{row.acdt}</td>
+              <td>{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WORKDAY OVERLAP VISUALIZER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section aria-labelledby="strip-heading">
+  <h2 id="strip-heading">GMT to ACDT Workday Overlap</h2>
+  <div class="time-strip" id="timeStrip" aria-label="Business hour overlap visualiser for GMT and ACDT"></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="meeting-planner" aria-labelledby="meeting-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Scheduling strategy</p>
+    <h2 id="meeting-heading">Meeting Planner: Best Hours to Connect GMT and ACDT</h2>
+    <p>
+      A 10.5-hour gap means there is no period where standard 9-to-5 business hours overlap directly between GMT and ACDT. However, creative scheduling opens several practical windows. The best approach depends on which side is willing to flex — early mornings in Adelaide or late evenings in London.
+    </p>
+  </div>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>GMT Morning → ACDT Evening</h3>
+      <p>Schedule between <strong>7:00–9:00 AM GMT</strong> to catch Adelaide at <strong>5:30–7:30 PM ACDT</strong>. This is the single most productive window: London is starting the workday while Adelaide wraps up. Ideal for daily standups, status reviews, and handover calls. Both sides are still reasonably fresh, and the meeting falls within tolerable hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>Multi-Region Meetings (GMT + ACDT + US)</h3>
+      <p>Including US Eastern Time (UTC−5) creates a 15.5-hour spread. The only viable slot is around <strong>8:00 AM GMT / 6:30 PM ACDT / 3:00 AM ET</strong> — impractical for Americans. For three-way calls, rotate meeting times weekly or record sessions for the absent region. Alternatively, schedule two separate syncs: one for GMT↔ACDT and another for GMT↔ET.</p>
+    </article>
+    <article class="method-card">
+      <h3>GMT + ACDT + Asia Overlap</h3>
+      <p>Asian time zones (IST at UTC+5:30, JST at UTC+9) sit between GMT and ACDT. A meeting at <strong>8:00 AM GMT / 1:30 PM IST / 5:00 PM JST / 6:30 PM ACDT</strong> lands in comfortable hours for everyone. This slot works particularly well for multinational teams spanning India, Japan, and Australia with a UK-based headquarters.</p>
+    </article>
+    <article class="method-card">
+      <h3>Async-First Approach</h3>
+      <p>When live overlap is too narrow, adopt asynchronous workflows. Record video updates at the end of each working day and tag colleagues in the other time zone. Tools like Loom, Slack, or Notion let the Adelaide team review London's output during their morning, and vice versa. Reserve synchronous meetings for decisions that genuinely require real-time discussion.</p>
+    </article>
+  </div>
+
+  <div class="table-wrap" style="margin-top: 2rem;">
+    <table aria-label="Business hour overlap between GMT and ACDT regions">
+      <caption class="sr-only">Regional business hour overlap chart for scheduling between GMT and ACDT</caption>
+      <thead>
+        <tr><th>GMT Window</th><th>ACDT Equivalent</th><th>US Eastern (ET)</th><th>Scheduling Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>7:00 AM</td><td>5:30 PM</td><td>2:00 AM</td><td>✅ Best GMT↔ACDT slot</td></tr>
+        <tr><td>8:00 AM</td><td>6:30 PM</td><td>3:00 AM</td><td>✅ Good for GMT↔ACDT</td></tr>
+        <tr><td>9:00 AM</td><td>7:30 PM</td><td>4:00 AM</td><td>⚠️ Late for Adelaide</td></tr>
+        <tr><td>12:00 PM</td><td>10:30 PM</td><td>7:00 AM</td><td>❌ Too late for Adelaide</td></tr>
+        <tr><td>5:00 PM</td><td>3:30 AM (+1)</td><td>12:00 PM</td><td>❌ Adelaide sleeping</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN TO USE ACDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content" id="when-acdt" aria-labelledby="when-acdt-heading">
+  <h2 id="when-acdt-heading">When to Use ACDT and How It Relates to Other Australian Time Zones</h2>
+  <article>
+    <h3>South Australia and the ACDT Calendar</h3>
+    <p>
+      ACDT governs civil time across the entire state of South Australia — from Adelaide on the coast to Coober Pedy in the outback — during the daylight saving period. The transition begins on the first Sunday in October when clocks jump forward from 2:00 AM ACST to 3:00 AM ACDT. It ends on the first Sunday in April when clocks fall back from 3:00 AM ACDT to 2:00 AM ACST. For roughly six months of the year, every clock in South Australia reads ACDT. The Northern Territory, which shares the same standard offset (UTC+9:30), does not observe daylight saving and remains on ACST year-round.
+    </p>
+  </article>
+  <article>
+    <h3>ACDT vs ACST — The One-Hour Swing</h3>
+    <p>
+      The only difference between ACDT and ACST is one hour. ACST sits at UTC+9:30 and applies during the cooler months (April through September). When daylight saving kicks in, the offset becomes UTC+10:30, and the label changes to ACDT. This means any GMT-to-Adelaide conversion must first determine which of these two regimes is active on the target date. Our converter does this automatically using the IANA time zone database entry for <code>Australia/Adelaide</code>.
+    </p>
+  </article>
+  <article>
+    <h3>ACDT vs AEST — The 30-Minute Quirk</h3>
+    <p>
+      AEST (Australian Eastern Standard Time) is UTC+10:00, while ACDT is UTC+10:30. During the months when South Australia has daylight saving but Queensland does not (Queensland never observes DST), Adelaide is actually <em>ahead</em> of Brisbane by 30 minutes. This counter-intuitive result catches many first-time visitors off guard — the "central" zone ends up ahead of the "eastern" zone. When New South Wales and Victoria switch to AEDT (UTC+11:00), Sydney regains the 30-minute lead over Adelaide.
+    </p>
+  </article>
+  <article>
+    <h3>ACDT vs AEDT — Neighbouring Daylight Zones</h3>
+    <p>
+      AEDT (Australian Eastern Daylight Time) is UTC+11:00, placing Sydney and Melbourne 30 minutes ahead of Adelaide during their shared daylight saving period. A flight departing Adelaide at 6:00 PM ACDT arrives in Sydney at a local time that is 30 minutes later than the departure clock might suggest if you forgot the offset. For businesses operating across both zones, this half-hour gap can silently misalign meetings, deadlines, and API timestamps.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Time Zone Mistakes When Converting GMT to ACDT</h2>
+  <article>
+    <h3>Confusing ACDT with ACST</h3>
+    <p>
+      The most frequent error is applying the ACDT offset (UTC+10:30) during months when South Australia is actually on ACST (UTC+9:30). This one-hour mistake can mean showing up for a meeting sixty minutes early or missing a deadline by an hour. Always check whether your target date falls within the daylight saving window (October–April) before applying the +10:30 offset.
+    </p>
+  </article>
+  <article>
+    <h3>Swapping ACDT and AEDT</h3>
+    <p>
+      ACDT and AEDT look similar but represent different offsets: ACDT is UTC+10:30 (Adelaide) while AEDT is UTC+11:00 (Sydney, Melbourne). Mixing them up produces a 30-minute error — subtle enough to go unnoticed until someone misses the first half of a presentation. Pay attention to the "C" (Central) versus "E" (Eastern) in the abbreviation.
+    </p>
+  </article>
+  <article>
+    <h3>Assuming GMT Equals British Local Time</h3>
+    <p>
+      The United Kingdom uses GMT only during winter (late October to late March). During British Summer Time (BST), the UK clock moves to UTC+1. If you're converting "London time" to ACDT, you need to know whether London is on GMT or BST. Converting BST as if it were GMT adds an extra hour to your result.
+    </p>
+  </article>
+  <article>
+    <h3>Forgetting the Half-Hour Offset</h3>
+    <p>
+      Rounding the ACDT offset to +10 or +11 hours is tempting but always wrong. The half-hour component is not optional — it's a fundamental feature of Australia's central time zone. Every conversion must account for 30 minutes on top of the 10-hour gap, or all downstream timestamps will be off by exactly half an hour.
+    </p>
+  </article>
+  <article>
+    <h3>Using UTC and GMT Interchangeably Without Checking Context</h3>
+    <p>
+      While GMT and UTC are practically identical for scheduling purposes (both at offset +0), some legacy systems treat them differently. Certain calendar applications store events in "UTC" but display "GMT" in the UI, or vice versa. If your software makes a distinction, verify which reference it uses before trusting the conversion output.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="use-cases" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Real-World Use Cases for GMT to ACDT Conversion</h2>
+  <article>
+    <h3>Remote Teams Spanning London and Adelaide</h3>
+    <p>Distributed engineering teams with members in both the UK and South Australia face a 10.5-hour differential that compresses their synchronous overlap to roughly 90 minutes. Scrum masters typically anchor daily standups at 7:30 AM GMT (6:00 PM ACDT) to catch both sides during tolerable hours. Sprint planning and retrospectives often rotate between early-morning and late-evening slots to share the scheduling burden equitably.</p>
+  </article>
+  <article>
+    <h3>Freelancers Serving Australian Clients</h3>
+    <p>UK-based freelancers working with Adelaide agencies must deliver drafts, designs, or code before the Australian workday starts. Submitting work by 10:00 PM GMT means it arrives at 8:30 AM ACDT — ready for review when the client opens their laptop. Freelancers who miss this window lose an entire business day of feedback, slowing project momentum.</p>
+  </article>
+  <article>
+    <h3>Software Developers and API Timestamps</h3>
+    <p>Backend systems often log events in UTC (functionally identical to GMT). When those logs are displayed in a dashboard for Adelaide users, the front-end code must add the correct offset — 10:30 during ACDT, 9:30 during ACST. Hardcoding either offset without checking the DST calendar creates a subtle bug that surfaces twice a year and confuses users for weeks until someone traces it to a timezone calculation error.</p>
+  </article>
+  <article>
+    <h3>Financial Trading Across GMT and ACDT Markets</h3>
+    <p>The Australian Securities Exchange (ASX) opens at 10:00 AM AEST/AEDT, but cross-listed securities and forex pairs also track Adelaide-based agricultural and mining firms. Traders in London who monitor ASX-listed companies need precise GMT-to-ACDT conversions to time their orders around pre-market announcements, earnings calls, and regulatory filings released on South Australian schedules.</p>
+  </article>
+  <article>
+    <h3>Travel Planning to South Australia</h3>
+    <p>Passengers flying from London Heathrow to Adelaide Airport face a journey of roughly 20–22 hours with at least one stopover. Adjusting for the time zone difference is critical for rebooking connections, notifying hosts of arrival times, and resetting sleep patterns. Knowing that a departure at 9:00 PM GMT lands you at approximately 7:30 PM ACDT the following day (after flight time) helps set realistic expectations.</p>
+  </article>
+  <article>
+    <h3>Online Gaming and Esports</h3>
+    <p>Competitive gaming events with participants in both the UK and Australia require lobbies to open at mutually viable hours. A tournament starting at 8:00 AM GMT places Adelaide players at 6:30 PM ACDT — acceptable for an evening gaming session. Weekend events can stretch the window earlier, but weeknight matches must respect school and work schedules on both sides.</p>
+  </article>
+  <article>
+    <h3>Live Streaming and Content Creation</h3>
+    <p>Streamers targeting dual audiences in the UK and Australia often schedule broadcasts at 6:00–7:00 AM GMT (4:30–5:30 PM ACDT) to capture the afternoon viewing window in Adelaide and the early-bird UK audience. Co-streaming sessions between a UK and an Adelaide creator need precisely synchronised start times, making a reliable converter non-negotiable.</p>
+  </article>
+  <article>
+    <h3>International Calls and Family Communication</h3>
+    <p>Families split between the UK and South Australia navigate the 10.5-hour gap daily. A quick call at 7:00 AM GMT reaches Adelaide at 5:30 PM ACDT — just as the Australian side finishes work. Weekend calls offer more flexibility, but even then, confirming the exact offset before dialling prevents the awkwardness of calling at 3:00 AM Adelaide time.</p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED TOOLS / INTERNAL LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore More Time Zone Converters</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Time with full DST support.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-acst/">GMT to ACST Converter</a></div>
+      <div class="related-card-text">Convert to Australian Central Standard Time for non-DST months.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-aest/">GMT to AEST Converter</a></div>
+      <div class="related-card-text">Convert to Australian Eastern Standard Time for Sydney and Melbourne.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-aedt/">GMT to AEDT Converter</a></div>
+      <div class="related-card-text">Convert to Australian Eastern Daylight Time during summer months.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-pst/">GMT to PST Converter</a></div>
+      <div class="related-card-text">Convert to US Pacific Standard Time for West Coast scheduling.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-ist/">GMT to IST Converter</a></div>
+      <div class="related-card-text">Convert to Indian Standard Time for teams in Mumbai and Bangalore.</div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">GMT to ACDT Converter: Frequently Asked Questions</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: Converting GMT to Australian Central Daylight Time</h2>
+  <p>
+    The 10-hour-30-minute offset between GMT and ACDT makes precise conversion tools indispensable for anyone scheduling across these two zones. Adelaide's half-hour offset, combined with the seasonal switch between ACDT and ACST, adds a layer of complexity that simple mental arithmetic cannot reliably handle. This page provides a real-time interactive converter, a full 24-hour reference table, a meeting planner with multi-region overlap analysis, and 22 detailed answers to the most common questions about GMT and ACDT.
+  </p>
+  <p>
+    Whether you are booking a flight to Adelaide, coordinating a sprint review between London and South Australia, or debugging timestamp drift in a distributed application, the goal is the same — the right time, on the right day, in the right zone. Bookmark this converter, share it with your team, and never let the half-hour offset catch you off guard again.
+  </p>
+  <p>
+    <strong>Next Step:</strong> Use the <a href="#converter-section">converter above</a> to check any GMT time against ACDT, or explore our <a href="/">GMT to EST Converter</a> for US Eastern Time conversions. For the standard-time equivalent, visit our <a href="/gmt-to-acst/">GMT to ACST Converter</a>.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  /* ── Page-specific styles for GMT to ACDT standalone page ────────────── */
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .content-section article {
+    margin-bottom: 1.5rem;
+  }
+  .content-section article h3 {
+    margin-bottom: 0.5rem;
+  }
+</style>

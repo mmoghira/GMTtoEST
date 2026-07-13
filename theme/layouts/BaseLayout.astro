@@ -135,6 +135,7 @@ const currentConverterLinks = [
   { href: pageUrl(lang, ""), label: "GMT to EST Converter" },
   { href: pageUrl(lang, "est-to-gmt"), label: "EST to GMT Converter" },
   { href: pageUrl(lang, "gmt-vs-est"), label: "GMT vs EST Difference" },
+  { href: pageUrl(lang, "gmt-to-acdt"), label: "GMT to ACDT Converter" },
   { href: pageUrl(lang, "cdt-to-est"), label: "CDT to EST Converter" },
   { href: pageUrl(lang, "cst-to-est"), label: "CST to EST Converter" },
   { href: pageUrl(lang, "pdt-to-est"), label: "PDT to EST Converter" },
@@ -173,16 +174,16 @@ const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includ
 const isAdsenseEligiblePage = isUtilityPage || slug.startsWith("blog/");
 const shouldLoadAds = lang === "en" && !isNoindexPage && (allowAds ?? isAdsenseEligiblePage);
 
-// WebApplication schema for the homepage and every converter page.
+// SoftwareApplication schema for the homepage and every converter page.
 const converterAppSchema = isConverterPage ? [
   {
-    "@type": "WebApplication",
-    "@id": `${canonical}#webapp`,
+    "@type": "SoftwareApplication",
+    "@id": `${canonical}#software-application`,
     name: getConverterDisplayName(pages.find((page: any) => page.slug === slug)) || seoTitle,
     url: canonical,
-    description: "Free GMT to EST converter with DST-aware time conversion, live clocks, and a 24-hour chart.",
-    applicationCategory: "UtilityApplication",
-    operatingSystem: "All",
+    description: meta?.appDescription || description,
+    applicationCategory: meta?.applicationCategory || "UtilityApplication",
+    operatingSystem: meta?.operatingSystem || "Any",
     offers: {
       "@type": "Offer",
       price: "0",
@@ -190,6 +191,22 @@ const converterAppSchema = isConverterPage ? [
     }
   }
 ] : [];
+
+const webPageSchema = {
+  "@type": "WebPage",
+  "@id": `${canonical}#webpage`,
+  url: canonical,
+  name: seoTitle,
+  description: seoDescription,
+  inLanguage: lang,
+  isPartOf: { "@id": `${siteUrl}/#website` },
+  breadcrumb: { "@id": `${canonical}#breadcrumb` },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: metaImage
+  },
+  dateModified: meta?.updatedDate || articleDateModified || undefined
+};
 
 // 2. TechArticle schema for Comparison
 const comparisonSchema = isComparison ? [
@@ -270,6 +287,21 @@ const reverseSchema = isReverse ? [
         text: "Verify the calculated GMT output matches the 24-hour UTC timeline."
       }
     ]
+  }
+] : [];
+
+const customHowToSchema = meta?.howToSteps?.length ? [
+  {
+    "@type": "HowTo",
+    "@id": `${canonical}#howto`,
+    name: meta?.howToName || `How to use ${seoTitle}`,
+    description: meta?.howToDescription || description,
+    step: meta.howToSteps.map((step: any, index: number) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text
+    }))
   }
 ] : [];
 
@@ -366,6 +398,8 @@ const schema = {
       }
     },
 
+    webPageSchema,
+
     // ── 3. BreadcrumbList (per-page) ───────────────────────────────────────────
     {
       "@type": "BreadcrumbList",
@@ -382,6 +416,7 @@ const schema = {
     ...comparisonSchema,
     ...guideSchema,
     ...reverseSchema,
+    ...customHowToSchema,
     ...articleSchemas,
 
     // ── 5. FAQPage (pages with a visible FAQ section) ─────────────────────────
