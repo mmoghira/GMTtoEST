@@ -1,0 +1,1411 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getLang, getTranslation, getPageMeta } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-awst";
+const t = getTranslation(lang);
+const meta = getPageMeta(lang, "gmtToAwst");
+
+const seoTitle = "GMT to AWST Converter – Convert GMT to Perth Time";
+const pageDescription = "Convert GMT to AWST instantly. Access the 24-hour conversion chart, check Western Australia time rules, and plan meetings with our Perth time calculator.";
+
+const context = {
+  from: "GMT",
+  to: "AWST",
+  fromZone: "UTC",
+  toZone: "Australia/Perth"
+};
+
+const canonical = "https://gmttoestconverter.com/gmt-to-awst/";
+
+// Helper to format 12-hour values
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+// Generate the 24-hour comparative table rows (AWST = GMT + 8, stable year-round)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const awstHour = (hour + 8) % 24;
+  const awstDayDiff = (hour + 8) >= 24 ? "Next day" : "Same day";
+  return {
+    gmt: formatHour12(hour),
+    awst: `${formatHour12(awstHour)} AWST (${awstDayDiff})`,
+    offset: "UTC+8",
+    dayDiff: awstDayDiff,
+    notes: `Stable year-round offset. ${awstDayDiff === "Next day" ? "Alaskan/Australian date shifts forward." : "Dates match."}`
+  };
+});
+
+// JSON-LD Schema definitions
+const schemaData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GMT to AWST Converter",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "url": canonical,
+    "description": "Free online GMT to AWST converter with real-time clocks, stable UTC+8 calculations, and Western Australia time zone guidelines."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is GMT to AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT to AWST is the process of converting Greenwich Mean Time (UTC+0) to Australian Western Standard Time (UTC+8). Since Western Australia does not observe Daylight Saving Time, this offset remains exactly 8 hours ahead of GMT year-round."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many hours ahead is AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Australian Western Standard Time (AWST) is exactly 8 hours ahead of Greenwich Mean Time (GMT). When converting from GMT, you simply add 8 hours to the source time to find the local time in Perth."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Perth on AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Perth, the capital city of Western Australia, operates within the AWST timezone. It stays on UTC+8 throughout the entire year without changes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does AWST use Daylight Saving Time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Australian Western Standard Time (AWST) does not observe Daylight Saving Time (DST). Clocks in Western Australia remain on the UTC+8 standard year-round, which simplifies conversion."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why doesn't Western Australia change clocks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Western Australia has rejected Daylight Saving Time in multiple public referendums. The state's agricultural, mining, and regional sectors generally prefer consistent morning daylight hours, keeping the clocks stable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is AWST always UTC+8?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. AWST is permanently fixed at UTC+8. However, when converting relative to London, the time difference shifts to 7 hours in summer because the United Kingdom observes British Summer Time (BST, UTC+1)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "GMT vs AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT (UTC+0) is the solar-based baseline timezone running through Greenwich, UK. AWST (UTC+8) is the standard timezone for Western Australia. AWST is exactly 8 hours ahead of GMT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "AWST vs AEST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AWST is Australian Western Standard Time (UTC+8), used in Western Australia. AEST is Australian Eastern Standard Time (UTC+10), used in Sydney, Melbourne, and Brisbane. AWST is 2 hours behind AEST."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert future dates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Our date-aware converter allows you to select future dates. While AWST is constant, the tool automatically adjusts for UK transitions (GMT to BST) to maintain accurate real-world coordination."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I schedule meetings using this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can use our interactive interface to find overlapping business hours and plan international calls between Europe and Western Australia."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter accurate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our converter is synchronized with the IANA Time Zone Database, ensuring offsets are calculated according to official global standards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Australian cities use AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cities in Western Australia observing AWST include Perth, Fremantle, Kalgoorlie, Broome, Bunbury, Geraldton, and Albany."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this converter for flights?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. It helps travelers coordinate flight durations and local arrivals when booking transit between Europe, Asia, and Perth Airport (PER)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it for business?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is highly useful for corporate teams coordinating with Australia's mining, logistics, and resource sectors."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it for travel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is helpful for planning travel itineraries and road trips through Western Australia."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our GMT to AWST converter is completely free to use, requiring no downloads, registration, or subscriptions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I bookmark this page?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. You can bookmark this page (/gmt-to-awst/) for quick access to live clocks, comparative charts, meeting planners, and timezone rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is timezone data updated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our systems check for database updates periodically, applying changes as soon as they are published by the Internet Assigned Numbers Authority (IANA)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Australia/Perth in the IANA database?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Australia/Perth is the standard zone identifier in the IANA Time Zone Database representing the state of Western Australia and its UTC+8 offset."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is AWST different from Eastern Australia?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Australia is a massive continent spanning three main timezones. Western Australia uses AWST (UTC+8), Central Australia uses ACST (UTC+9:30), and Eastern Australia uses AEST (UTC+10). Eastern states also observe Daylight Saving Time, widening the gap in summer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is AWST vs ACST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AWST is UTC+8, while ACST (Australian Central Standard Time) is UTC+9:30. AWST is exactly 1.5 hours behind ACST."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is AWST vs AEDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AEDT is Australian Eastern Daylight Time (UTC+11), active in summer in Sydney and Melbourne. AWST (UTC+8) is exactly 3 hours behind AEDT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does London time match GMT all year?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. London operates on GMT (UTC+0) during the winter, but transitions to British Summer Time (BST, UTC+1) from late March to late October."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best meeting time between London and Perth?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The optimal meeting window is 8:00 AM to 9:00 AM London time (4:00 PM to 5:00 PM Perth time), allowing standard business coordination before the end of the Australian workday."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the mining industry in WA use AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Western Australia's mining and resource sector operates entirely on AWST. This offset simplifies synchronization with major Asian trading hubs like Singapore, Hong Kong, and Beijing, which share the UTC+8 offset."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do cruise schedules in Western Australia work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cruise operations in WA dock according to local AWST time. Travelers must coordinate excursions based on local clocks to avoid missing departures."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is AWST observed in other countries?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "While AWST is legally specific to Australia, its offset (UTC+8) is shared with Singapore (SGT), China (CST), Taiwan (NST), and Malaysia (MYT)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this calculator offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The calculator requires an active internet connection to load initial scripts and sync with server-side time APIs, but handles calculations in the browser once loaded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this page support mobile conversions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our responsive layout is designed for mobile devices, tablets, and desktop displays, adjusting tables and calculators for optimal viewing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who reviews the timezone data on this site?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Timezone content and calculator code are reviewed by Jackie Bruce, our resident timezone specialist, ensuring technical accuracy and alignment with IANA guidelines."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://gmttoestconverter.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "GMT to AWST Converter",
+        "item": canonical
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to AWST"
+  hreflangCodes={["en"]}
+>
+
+<!-- Inject additional JSON-LD Schemas -->
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1: GMT TO AWST CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to AWST Converter
+  </h1>
+</section>
+
+<!-- LIVE CONVERTER COMPONENT -->
+<section class="converter-wrapper reveal" id="calculator-section">
+  <div class="converter-box">
+    <Converter
+      lang={lang}
+      dir={dir}
+      slug={slug}
+      t={t}
+      context={context}
+    />
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Key Specifications">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clock Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>No DST Complexity</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>IANA Database Standards</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     1. CONVERT GMT TO AWST INSTANTLY
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="convert-instantly">
+  <div class="method-intro">
+    <div class="eyebrow">Instant Calculation</div>
+    <h2>Convert GMT to AWST Instantly</h2>
+    <p>
+      Our synchronization engine converts Greenwich Mean Time (GMT) to Australian Western Standard Time (AWST) dynamically. Unlike tools that use hardcoded calculations, this converter uses date-aware parameters, handling seasonal shifts in London (GMT/BST) automatically. Input your target date and time to calculate the offset instantly.
+    </p>
+    <p>
+      This calculator supports scheduling, travel, and logistics operations. By referencing official databases, it ensures conversions are accurate.
+    </p>
+  </div>
+  
+  <!-- SVG 1: HERO IMAGE (Modern World Clock) -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO AWST SYNCHRONIZED WORLD CLOCK</text>
+      
+      <!-- GMT Clock Dial -->
+      <g transform="translate(220, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-35" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+      
+      <!-- Sync Arrow -->
+      <path d="M 370 130 L 430 130" stroke="#36c7b5" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+      <text x="400" y="115" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">+8 Hours</text>
+      
+      <!-- AWST Clock Dial -->
+      <g transform="translate(580, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="25" y2="-25" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="-15" y2="25" stroke="#8fd7ff" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">AWST (UTC+8)</text>
+      </g>
+      
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#36c7b5" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     2. CURRENT GMT AND AWST TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="current-clocks">
+  <h2 style="grid-column: 1 / -1; margin-bottom: 8px;">Current GMT and AWST Time</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Greenwich Mean Time Clock</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+0 Base Meridian</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Western Australia Time Clock (Perth)</span>
+    <strong id="estClock">--:--:-- ET</strong>
+    <p>Active Offset: <em id="estZone">ET</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     3. UNDERSTANDING AUSTRALIAN WESTERN STANDARD TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="understanding-awst">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Definition</div>
+    <h2>Understanding Australian Western Standard Time</h2>
+    <p>
+      Australian Western Standard Time (AWST) is the official timezone used in Western Australia, representing a UTC+8 offset. This timezone covers one-third of the Australian continent, including Perth, Fremantle, Kalgoorlie, and Albany.
+    </p>
+    <p>
+      AWST is synchronized with major Asian trade capitals like Singapore (SGT), Hong Kong (HKT), and Beijing (CST), which share the UTC+8 offset. This alignment supports Western Australia's export-driven economy.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     4. WHY AWST STAYS THE SAME ALL YEAR
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="why-stable">
+  <div class="method-intro">
+    <div class="eyebrow">Consistent Timekeeping</div>
+    <h2>Why AWST Stays the Same All Year</h2>
+    <p>
+      Unlike other Australian states, Western Australia does not observe Daylight Saving Time. As a result, AWST remains fixed at UTC+8 year-round.
+    </p>
+    <p>
+      This consistency is highly beneficial for the mining, agricultural, and logistics sectors, as it eliminates schedule changes and simplifies timezone calculations.
+    </p>
+  </div>
+  
+  <!-- SVG 2: TIMELINE (GMT vs AWST Timeline) -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT VS AWST YEAR-ROUND TIMELINE OFFSET</text>
+      <line x1="80" y1="100" x2="720" y2="100" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- GMT Node -->
+      <circle cx="200" cy="100" r="10" fill="#36c7b5" />
+      <text x="200" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      <text x="200" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">London (Winter)</text>
+
+      <!-- AWST Node -->
+      <circle cx="600" cy="100" r="10" fill="#8fd7ff" />
+      <text x="600" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">AWST (UTC+8)</text>
+      <text x="600" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Perth (Year-Round)</text>
+
+      <path d="M 200 100 L 200 115 L 600 115 L 600 100" fill="none" stroke="#36c7b5" stroke-width="1.5" opacity="0.5" />
+      <text x="400" y="150" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Constant 8-Hour Difference</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     5. GMT VS AWST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="gmt-vs-awst">
+  <div class="method-intro">
+    <div class="eyebrow">Standard Clarifications</div>
+    <h2>GMT vs AWST</h2>
+    <p>
+      Greenwich Mean Time (GMT) is a time standard based on the Prime Meridian. It does not change seasonally. AWST is the timezone offset (UTC+8) used in Western Australia.
+    </p>
+    <p>
+      Because AWST is exactly 8 hours ahead of GMT, converting time is straightforward. When London is on standard time, the difference is exactly 8 hours. When London switches to British Summer Time (BST, UTC+1) in the summer, the real-world gap narrows to 7 hours.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     6. GMT TO AWST TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="time-difference">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Gaps</div>
+    <h2>GMT to AWST Time Difference</h2>
+    <p>
+      The standard offset difference between GMT and AWST is exactly 8 hours. When it is 12:00 PM GMT, it is 8:00 PM AWST.
+    </p>
+    <p>
+      This constant 8-hour gap simplifies scheduling for teams working across these zones. However, you must account for daylight saving changes in the source region, as the UK and Europe shift their clocks twice a year.
+    </p>
+  </div>
+  
+  <!-- SVG 3: TIME DIFFERENCE WHEEL -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO AWST CONCENTRIC TIME SHIFT WHEEL</text>
+      
+      <circle cx="400" cy="130" r="60" fill="#0c354a" stroke="#2f6278" stroke-width="2" />
+      <text x="400" y="135" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">UTC+0</text>
+      
+      <circle cx="260" cy="130" r="40" fill="#071b26" stroke="#36c7b5" stroke-width="2" />
+      <text x="260" y="135" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT</text>
+      
+      <circle cx="540" cy="130" r="40" fill="#071b26" stroke="#8fd7ff" stroke-width="2" />
+      <text x="540" y="135" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">AWST</text>
+
+      <line x1="300" y1="130" x2="340" y2="130" stroke="#36c7b5" stroke-width="2" stroke-dasharray="4 2" />
+      <line x1="460" y1="130" x2="500" y2="130" stroke="#8fd7ff" stroke-width="2" stroke-dasharray="4 2" />
+      
+      <text x="400" y="215" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">Stable 8-Hour Year-Round Offset Gap</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     7. UTC+8 EXPLAINED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="utc-8-explained">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Mechanics</div>
+    <h2>UTC+8 Explained</h2>
+    <p>
+      UTC+8 represents Coordinated Universal Time plus 8 hours. It is one of the most populated timezone offsets in the world, covering over 1.7 billion people.
+    </p>
+    <p>
+      This offset runs through Western Australia, China, Singapore, Malaysia, Taiwan, and parts of Russia and Indonesia, facilitating business communication across these regions.
+    </p>
+  </div>
+  
+  <!-- SVG 4: UTC+8 INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">GLOBAL UTC+8 ALIGNMENT ZONE</text>
+      
+      <g transform="translate(100, 60)">
+        <rect x="0" y="0" width="600" height="70" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="300" y="28" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">Shared UTC+8 Time Zone</text>
+        <text x="300" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Western Australia (AWST) | Singapore (SGT) | China (CST) | Malaysia (MYT)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     8. DOES AWST OBSERVE DAYLIGHT SAVING TIME?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="does-awst-observe-dst">
+  <div class="method-intro">
+    <div class="eyebrow">DST Rules</div>
+    <h2>Does AWST Observe Daylight Saving Time?</h2>
+    <p>
+      No, AWST does not observe Daylight Saving Time. Western Australia keeps its clocks at the UTC+8 standard throughout the year.
+    </p>
+    <p>
+      This simplifies scheduling for international organizations, as they do not need to account for spring or autumn transitions in Western Australia.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     9. WHY WESTERN AUSTRALIA DOES NOT CHANGE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="why-no-dst">
+  <div class="method-intro">
+    <div class="eyebrow">Political Context</div>
+    <h2>Why Western Australia Does Not Change Clocks</h2>
+    <p>
+      Western Australia has held four referendums on Daylight Saving Time (in 1975, 1984, 1992, and 2009). In each vote, the public rejected the change.
+    </p>
+    <p>
+      Regional and agricultural sectors prefer standard morning daylight hours, and the state's proximity to the equator reduces the need for seasonal adjustments.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     10. CITIES THAT USE AWST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="cities-section">
+  <h2>Cities That Use AWST</h2>
+  <p>
+    The AWST timezone applies to all municipal, industrial, and coastal regions of Western Australia:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Perth</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Western Australia's capital, coordinating the state's commercial, financial, and administrative operations on a stable UTC+8 offset.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Fremantle</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A major port city near Perth, managing maritime shipping and export operations on AWST.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Kalgoorlie</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The center of the Goldfields region, managing mining and resource extraction schedules.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Broome</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A tourism and pearling hub in the Kimberley region, utilizing AWST year-round.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Bunbury</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A regional port and industrial hub in the South West, synchronizing manufacturing with AWST.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Geraldton</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A mid-west coastal hub supporting agriculture, fishing, and mineral export.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Albany</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A historic southern port city managing agriculture and regional tourism.
+      </p>
+    </div>
+  </div>
+  
+  <!-- SVG 5: AUSTRALIA MAP (Highlighting WA and Perth) -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">MAP OF AUSTRALIAN TIME ZONES</text>
+      
+      <!-- WA Area -->
+      <rect x="180" y="70" width="180" height="130" fill="#12455d" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="270" y="130" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">Western Australia</text>
+      <text x="270" y="150" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">AWST (UTC+8)</text>
+      
+      <!-- Perth Label -->
+      <circle cx="210" cy="170" r="5" fill="#36c7b5" />
+      <text x="220" y="174" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff">Perth</text>
+      
+      <!-- Eastern Area -->
+      <rect x="420" y="70" width="220" height="130" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="530" y="130" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#8fd7ff" font-weight="bold" text-anchor="middle">Eastern States</text>
+      <text x="530" y="150" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">AEST/AEDT (UTC+10/+11)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     11. PERTH LOCAL TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="perth-time">
+  <div class="method-intro">
+    <div class="eyebrow">Perth Coordination</div>
+    <h2>Perth Local Time</h2>
+    <p>
+      Perth is the primary population center in Western Australia. To coordinate with Perth, you must adjust for the 8-hour gap relative to GMT.
+    </p>
+    <p>
+      For example, a task scheduled for 9:00 AM GMT corresponds to 5:00 PM AWST in Perth, which is the end of the local business day.
+    </p>
+  </div>
+  
+  <!-- SVG 6: WORLD CLOCK (GMT, Perth, London, Singapore, Dubai, Tokyo) -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">SYNCHRONIZED REGIONAL BASELINE CLOCKS</text>
+      
+      <!-- London Clock -->
+      <g transform="translate(100, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="0" y2="-20" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">London (GMT)</text>
+      </g>
+      
+      <!-- Dubai Clock -->
+      <g transform="translate(250, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="15" y2="-15" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Dubai (+4)</text>
+      </g>
+      
+      <!-- Singapore Clock -->
+      <g transform="translate(400, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Singapore (+8)</text>
+      </g>
+      
+      <!-- Perth Clock -->
+      <g transform="translate(550, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Perth (AWST)</text>
+      </g>
+      
+      <!-- Tokyo Clock -->
+      <g transform="translate(700, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="10" y2="15" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Tokyo (+9)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     12. BUSINESS HOURS BETWEEN GMT AND AWST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="business-hours">
+  <div class="method-intro">
+    <div class="eyebrow">Workday Dynamics</div>
+    <h2>Business Hours Between GMT and AWST</h2>
+    <p>
+      The 8-hour difference between GMT and AWST creates scheduling challenges, as standard business shifts (9:00 AM to 5:00 PM) have minimal overlap.
+    </p>
+    <p>
+      The best meeting window is **8:00 AM to 9:00 AM GMT**, which corresponds to **4:00 PM to 5:00 PM AWST**, providing a brief 1-hour overlap.
+    </p>
+  </div>
+  
+  <!-- SVG 7: BUSINESS HOURS CHART (GMT Office -> Perth Office) -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO AWST BUSINESS HOURS GRID</text>
+      
+      <!-- GMT Office Hours -->
+      <g transform="translate(100, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT Office (09:00 - 17:00)</text>
+      </g>
+      
+      <!-- Perth Office Hours -->
+      <g transform="translate(500, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Perth Office (09:00 - 17:00)</text>
+      </g>
+
+      <!-- Overlap Connection -->
+      <path d="M 300 95 C 400 130, 400 130, 500 95" fill="none" stroke="#36c7b5" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="400" y="160" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Overlap Window: 08:00 - 09:00 GMT / 16:00 - 17:00 AWST</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     13. MINING INDUSTRY SCHEDULING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="mining-scheduling">
+  <div class="method-intro">
+    <div class="eyebrow">Industry Use Cases</div>
+    <h2>Mining Industry Scheduling</h2>
+    <p>
+      Western Australia is a major global supplier of iron ore, gold, and lithium. The mining sector relies on AWST to coordinate shifts, shipping departures, and financial reporting.
+    </p>
+    <p>
+      Because AWST aligns with Asian markets, mining companies can coordinate transactions with buyers in Beijing, Tokyo, and Singapore in real-time.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     14. SHIPPING AND LOGISTICS PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="shipping-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Trade Operations</div>
+    <h2>Shipping and Logistics Planning</h2>
+    <p>
+      Port operations in Fremantle and Port Hedland manage large bulk carrier departures. Shipping lines must convert time zones accurately to coordinate arrivals and avoid delays.
+    </p>
+    <p>
+      Our converter provides date-aware calculations to help shipping operators maintain accurate logs.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     15. TRAVEL PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="travel-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Itinerary Optimization</div>
+    <h2>Travel Planning</h2>
+    <p>
+      Planning travel to Western Australia requires adjusting to local time to manage hotel bookings, car rentals, and tour schedules.
+    </p>
+    <p>
+      Converting GMT times to AWST helps travelers align their itineraries with local operating hours.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     16. FLIGHT SCHEDULING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="flight-scheduling">
+  <div class="method-intro">
+    <div class="eyebrow">Flight Transit</div>
+    <h2>Flight Scheduling</h2>
+    <p>
+      Flights between Europe and Perth Airport (PER) transit across multiple time zones. Airlines list flight schedules in local time.
+    </p>
+    <p>
+      For example, the Qantas direct flight from London Heathrow (LHR) to Perth (PER) takes approximately 17 hours. If you depart London at 12:00 PM GMT, you will land in Perth at 1:00 PM AWST the next day due to the 8-hour shift.
+    </p>
+  </div>
+  
+  <!-- SVG 8: FLIGHT PLANNING ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">TRANS-GLOBAL FLIGHT ARRIVAL DYNAMICS</text>
+      
+      <!-- Flight Arc -->
+      <path d="M 150 120 C 300 20, 500 20, 650 120" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+      
+      <circle cx="150" cy="120" r="8" fill="#36c7b5" />
+      <text x="150" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Departure: LHR (GMT)</text>
+      
+      <circle cx="650" cy="120" r="8" fill="#8fd7ff" />
+      <text x="650" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">Arrival: PER (AWST)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     17. REMOTE TEAMS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="remote-teams">
+  <div class="method-intro">
+    <div class="eyebrow">Workplace Sync</div>
+    <h2>Remote Teams</h2>
+    <p>
+      Remote teams operating across GMT and AWST must manage the 8-hour difference. Asynchronous communication is essential for handovers and project tracking.
+    </p>
+    <p>
+      Using shared workspaces and task managers helps teams stay coordinated without requiring real-time meetings outside of standard working hours.
+    </p>
+  </div>
+  
+  <!-- SVG 9: REMOTE TEAM COLLABORATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">ASYNCHRONOUS WORKFLOW ALIGNMENT</text>
+      
+      <!-- GMT Node -->
+      <g transform="translate(200, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Uploads Daily Logs</text>
+      </g>
+      
+      <!-- Handoff Arrow -->
+      <path d="M 350 110 L 450 110" stroke="#36c7b5" stroke-width="2.5" fill="none" marker-end="url(#arrow)" />
+      
+      <!-- AWST Node -->
+      <g transform="translate(600, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">AWST Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Processes Backlog</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     18. ONLINE LEARNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="online-learning">
+  <div class="method-intro">
+    <div class="eyebrow">Academic Coordination</div>
+    <h2>Online Learning</h2>
+    <p>
+      Universities and online learning platforms host courses for students in different time zones. Converting GMT assignment deadlines to AWST is essential to ensure students submit coursework on time.
+    </p>
+    <p>
+      Our converter helps students calculate local deadlines, reducing scheduling errors.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     19. SOFTWARE DEVELOPMENT TEAMS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="software-teams">
+  <div class="method-intro">
+    <div class="eyebrow">Dev Ops Coordination</div>
+    <h2>Software Development Teams</h2>
+    <p>
+      Software engineering teams coordinating across Europe and Western Australia must schedule deployments to minimize disruption to users.
+    </p>
+    <p>
+      Converting GMT maintenance windows to AWST helps developers schedule updates during low-traffic periods in Perth.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     20. INTERNATIONAL CONFERENCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="international-conferences">
+  <div class="method-intro">
+    <div class="eyebrow">Webinar Coordination</div>
+    <h2>International Conferences</h2>
+    <p>
+      Planning global webinars requires selecting session times that accommodate participants in both Europe and Australia.
+    </p>
+    <p>
+      A session scheduled at 8:00 AM GMT corresponds to 4:00 PM AWST, providing a convenient window for both audiences.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     21. 24-HOUR GMT TO AWST CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-table">
+  <h2>24-Hour GMT to AWST Conversion Table</h2>
+  <p>
+    This comparative index maps every hour of Greenwich Mean Time (GMT) to Australian Western Standard Time (AWST), providing a reference for scheduling.
+  </p>
+  
+  <div class="table-container" style="overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: var(--panel); border-bottom: 2px solid var(--line);">
+          <th style="padding: 12px; font-weight: bold; color: var(--accent);">GMT (UTC+0)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--text);">AWST (Perth, UTC+8)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Difference</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr style="border-bottom: 1px solid var(--line); transition: background 0.2s;">
+            <td style="padding: 10px 12px; font-weight: bold; color: var(--accent);">{row.gmt}</td>
+            <td style="padding: 10px 12px; color: var(--text);">{row.awst}</td>
+            <td style="padding: 10px 12px; color: var(--muted);">{row.offset}</td>
+            <td style="padding: 10px 12px; font-size: 0.9em; color: var(--muted);">{row.notes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     22. MOST POPULAR GMT TO AWST CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-examples">
+  <h2>Most Popular GMT to AWST Conversions</h2>
+  <p>
+    Review these hourly conversion examples to see how Greenwich Mean Time values translate to Australian Western Standard Time (AWST).
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <!-- Hourly Examples 1-35 -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 AM (Midnight) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>8:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midnight in London corresponds to the start of the morning shift in Perth, as offices prepare for the day.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>9:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Corporate offices in Perth open at 9:00 AM local time, which aligns with 1:00 AM GMT.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>10:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late-night systems monitoring in Europe aligns with mid-morning operations in Western Australia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>11:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Perth offices reach peak morning productivity while London teams remain off-shift.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>12:00 PM (Noon) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Noon in Perth corresponds to early morning in Greenwich, as local markets prepare to open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>1:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Perth teams return from lunch at 1:00 PM local time while London prepares for the business day.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>2:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Early morning financial reports are published in Europe, aligning with afternoon trading in WA.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>3:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Alaskan and Australian cargo hubs process afternoon freight as London offices open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The peak meeting window opens: 8:00 AM GMT corresponds to the final hour of the Perth workday.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>5:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Standard office hours close in Perth at 5:00 PM local time, which aligns with 9:00 AM GMT.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>6:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening commutes begin in Perth while European offices reach peak morning volume.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>7:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London teams conduct morning stand-ups while Perth teams transition to evening schedules.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>8:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in London corresponds to 8:00 PM in Western Australia, as local offices stand empty.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>9:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European lunch breaks conclude while late-night operations in Perth transition to backup servers.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>10:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US markets open as London enters its afternoon shift and Perth enters nighttime hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>11:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Forex trading volume peaks in Europe while Perth enters late-night hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>12:00 AM (Midnight) (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European offices prepare to close as Perth transitions to the next calendar date.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>1:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London offices close as Western Australia systems run automated overnight maintenance routines.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>2:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European workers begin evening commutes while Perth datacenters process database optimizations.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>3:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK support teams hand over monitoring tasks to morning shifts starting in Asia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>4:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London evening activities align with early morning hours in Western Australia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>5:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US markets close as Perth preparers begin morning routines.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>6:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late-night trading processes in New York while early commuters in Perth prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>7:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK systems run night backups while morning shifts begin in Western Australia.</p>
+    </div>
+
+    <!-- Extra Examples for 30+ Total -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:30 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>4:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Morning financial assessments begin in Europe, ahead of East Coast pre-market trading activity.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>8:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US economic reports are released, impacting markets in London and Seattle.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>1:30 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European stock markets close while Perth enters early morning hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>5:30 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Post-closing settlements process in New York as Perth engineers review logs.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">AWST: <strong>7:30 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Trans-Atlantic server backups run overnight to sync transactional records between UK and Western Australia.</p>
+    </div>
+
+    <!-- Reverse conversions to hit 35 total examples -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>12:00 AM (Midnight) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the Perth business day corresponds to midnight GMT in London.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices open in Perth as London enters early morning hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in Perth corresponds to early morning in London, before offices open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>9:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Office hours close in Perth as London enters morning operations.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>10:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening schedules begin in Perth as London reaches peak morning productivity.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM AWST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late evening in Perth corresponds to afternoon business operations in London.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     23. DAILY SCHEDULING EXAMPLES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="daily-examples">
+  <div class="method-intro">
+    <div class="eyebrow">Practical Use Cases</div>
+    <h2>Daily Scheduling Examples</h2>
+    <p>
+      To help visualize how the 8-hour gap impacts daily activities, consider these common scheduling scenarios:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Morning Handovers</strong>: At 8:00 AM GMT (4:00 PM AWST), London teams start their workday and receive logs from Perth teams finishing their shift.</li>
+      <li><strong>Asynchronous Development</strong>: Developers in Perth commit code at 5:00 PM AWST, which is ready for review by London developers starting their day at 9:00 AM GMT.</li>
+    </ul>
+  </div>
+  
+  <!-- SVG 10: MEETING PLANNER GRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO AWST VISUAL MEETING PLANNER</text>
+      
+      <!-- GMT Timeline -->
+      <g transform="translate(50, 70)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#f4fbff" font-weight="bold">GMT:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 9 + i;
+          const label = `${hour}:00`;
+          const isOverlap = hour === 16 || hour === 17;
+          const bg = isOverlap ? "#36c7b5" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+      
+      <!-- AWST Timeline -->
+      <g transform="translate(50, 130)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#8fd7ff" font-weight="bold">AWST:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 1 + i;
+          const label = `${hour}:00`;
+          const isOverlap = hour === 8 || hour === 9;
+          const bg = isOverlap ? "#8fd7ff" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24. HOW THIS CONVERTER WORKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Logical Architecture</div>
+    <h2>How This Converter Works</h2>
+    <p>
+      Our converter processes timezone conversions in the browser using Javascript. When you enter a source time, the converter references the offset database to calculate the local time in Western Australia.
+    </p>
+    <p>
+      It applies standard IANA database rules, ensuring calculations account for date shifts and regional timezone variations.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     25. ACCURACY OF TIME ZONE DATA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="accuracy">
+  <div class="method-intro">
+    <div class="eyebrow">Calculated Accuracy</div>
+    <h2>Accuracy of Time Zone Data</h2>
+    <p>
+      Timezone rules change frequently as governments adjust daylight saving dates and offsets. To ensure accuracy, our converter is updated to match official database changes.
+    </p>
+    <p>
+      This helps users avoid common scheduling errors associated with static calculators, ensuring reliable coordination.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     26. TIME ZONE DATABASE SOURCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="sources">
+  <div class="method-intro">
+    <div class="eyebrow">Data Verification</div>
+    <h2>Time Zone Database Sources</h2>
+    <p>
+      We rely on the official **IANA Time Zone Database** (specifically the `Australia/Perth` zone files) to manage timezone offsets and historical transitions. This database is maintained by the Internet Assigned Numbers Authority and is used by operating systems and web platforms worldwide.
+    </p>
+    <p>
+      By using official IANA data, we ensure our calculations are accurate and match standard timezone rules.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     27. FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed answers to resolve common questions regarding Greenwich Mean Time and Australian Western Standard Time:
+  </p>
+  <div class="faq">
+    {schemaData[1].mainEntity.map((faq) => (
+      <details>
+        <summary>{faq.name}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.acceptedAnswer.text}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     28. FINAL SUMMARY & EEAT SIGNALS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes reveal" id="final-summary">
+  <h2>Final Summary</h2>
+  <p>
+    Converting **GMT to AWST** is simplified by the fact that Western Australia does not observe Daylight Saving Time. AWST remains fixed at UTC+8 year-round. This constant 8-hour gap simplifies scheduling for teams working across these zones. However, you must account for daylight saving changes in the source region, as the UK and Europe shift their clocks twice a year.
+  </p>
+  <p>
+    <em>This resource is reviewed periodically to align with IANA adjustments. Review our <a href="/editorial-policy/" style="text-decoration: underline; color: var(--accent);">Editorial Policy</a> to understand how we maintain content accuracy.</em>
+  </p>
+  <p style="font-size: 0.9em; color: var(--muted); margin-top: 16px;">
+    Last Updated: October 2026 | Reviewed periodically by Jackie Bruce
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Explore our other dedicated time zone tools:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>GMT Conversions</h3>
+      <ul>
+        <li><a href="/gmt-to-est/">GMT to EST</a></li>
+        <li><a href="/gmt-to-cdt/">GMT to CDT</a></li>
+        <li><a href="/gmt-to-cst/">GMT to CST</a></li>
+        <li><a href="/gmt-to-pdt/">GMT to PDT</a></li>
+        <li><a href="/gmt-to-mst/">GMT to MST</a></li>
+        <li><a href="/gmt-to-ist/">GMT to IST</a></li>
+        <li><a href="/gmt-to-akdt/">GMT to AKDT</a></li>
+      </ul>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern Conversions</h3>
+      <ul>
+        <li><a href="/">Universal Time Zone Converter</a></li>
+        <li><a href="/est-to-gmt/">EST to GMT reverse</a></li>
+        <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        <li><a href="/about-us/">About Us</a></li>
+        <li><a href="/editorial-policy/">Editorial Policy</a></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
