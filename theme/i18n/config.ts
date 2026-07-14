@@ -76,6 +76,7 @@ const extraPages = dynamicConvertersEnabled ? [
 export const pages: any[] = [
   { slug: "", kind: "converter", labelKey: "home" },
   { slug: "gmt-to-est", kind: "converter", labelKey: "gmtToEst" },
+  { slug: "gmt-to-akdt", kind: "dynamic", labelKey: "gmtToAkdt", context: { from: "GMT", to: "AKDT", fromZone: "UTC", toZone: "America/Anchorage" } },
   { slug: "cdt-to-est", kind: "dynamic", labelKey: "cdtToEst", context: { from: "CDT", to: "EST", fromZone: "America/Chicago", toZone: "America/New_York" } },
   { slug: "cst-to-est", kind: "dynamic", labelKey: "cstToEst", context: { from: "CST", to: "EST", fromZone: "America/Chicago", toZone: "America/New_York" } },
   { slug: "kst-to-est", kind: "dynamic", labelKey: "kstToEst", context: { from: "KST", to: "EST", fromZone: "Asia/Seoul", toZone: "America/New_York" } },
@@ -133,7 +134,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
   const t = getTranslation(code);
   const english = (modules["./translations/en.json"] as any)?.default || {};
   const selected = (modules[`./translations/${code}.json`] as any)?.default || english;
-  const specificDynamicKeys = ["cdtToEst", "cstToEst", "kstToEst", "pdtToEst", "mstToEst", "astToEst"];
+  const specificDynamicKeys = ["cdtToEst", "cstToEst", "kstToEst", "pdtToEst", "mstToEst", "astToEst", "gmtToAkdt"];
   const isSpecificDynamic = specificDynamicKeys.includes(labelKey);
 
   if ((labelKey === "dynamic" || isSpecificDynamic) && pageContext) {
