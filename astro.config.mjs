@@ -7,7 +7,6 @@ const rawSiteUrl = process.env.SITE_URL || "https://gmttoestconverter.com";
 const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
 const enableMultilingualPages = true;
 const sitemapExcludedPaths = new Set([
-  "/gmt-to-est/",
   "/gmt-to-est-converter/",
   "/sitemap/",
 ]);

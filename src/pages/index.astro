@@ -10,9 +10,9 @@ const slug = "";
 const t = getTranslation(lang);
 const meta = getPageMeta(lang, "home");
 
-const pageTitle = "GMT to EST Converter";
-const seoTitle = "GMT to EST Converter – Greenwich Mean Time to Eastern Standard Time";
-const pageDescription = "Convert GMT to EST instantly. Verify the time difference between Greenwich Mean Time (UTC+0) and Eastern Time (EST/EDT) with DST detection and New York clocks.";
+const pageTitle = "Universal Time Zone Converter";
+const seoTitle = "Universal Time Zone Converter – Global Time Conversion Hub";
+const pageDescription = "Convert times across global zones instantly. Your central hub for GMT, EST, CDT, CST, PDT, MST, and international time conversions with live clocks.";
 
 const context = {
   from: "GMT",
@@ -23,288 +23,59 @@ const context = {
 
 const canonical = "https://gmttoestconverter.com/";
 
-// Helper to format 12-hour values
-function formatHour12(hour: number, minute: number = 0) {
-  const normalized = ((hour % 24) + 24) % 24;
-  const period = normalized < 12 ? "AM" : "PM";
-  const displayHour = normalized % 12 || 12;
-  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
-}
-
-// Generate the 24-hour comparative table rows (Standard EST = GMT - 5, Daylight EDT = GMT - 4)
-const conversionRows = Array.from({ length: 24 }, (_, hour) => {
-  const estHour = hour - 5;
-  const estHourNormalized = ((estHour % 24) + 24) % 24;
-  const estDayNote = estHour < 0 ? "Previous day" : "Same day";
-
-  const edtHour = hour - 4;
-  const edtHourNormalized = ((edtHour % 24) + 24) % 24;
-  const edtDayNote = edtHour < 0 ? "Previous day" : "Same day";
-
-  return {
-    gmt: formatHour12(hour),
-    est: `${formatHour12(estHourNormalized)} EST (${estDayNote})`,
-    edt: `${formatHour12(edtHourNormalized)} EDT (${edtDayNote})`
-  };
-});
-
-// All 24 Hourly Conversion Examples with specific business, meeting, and travel context
-const hourlyConversions = [
-  {
-    gmt: "12:00 AM (Midnight) GMT",
-    est: "7:00 PM EST (Previous Day)",
-    edt: "8:00 PM EDT (Previous Day)",
-    business: "Late-night server backup sweeps running in London execute while Wall Street traders conclude dinner.",
-    meeting: "A late sync for European devs and US East Coast teams winding down their evening.",
-    travel: "Overnight flights from JFK to Heathrow start boarding as midnight passes in Greenwich."
+// General Timezone FAQs
+const faqs = [
+  { 
+    q: "What is a timezone offset?", 
+    a: "A timezone offset is the difference in hours and minutes from Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT) for a particular location. It can be positive (ahead of UTC) or negative (behind UTC)." 
   },
-  {
-    gmt: "1:00 AM GMT",
-    est: "8:00 PM EST (Previous Day)",
-    edt: "9:00 PM EDT (Previous Day)",
-    business: "Automated ledger runs on London exchanges process while US retail logistics hubs hit peak shipping hours.",
-    meeting: "Esports tournament lobby coordination between European players and North American evening streamers.",
-    travel: "Red-eye flights cross the mid-Atlantic; cabin lights dim for travelers heading East."
+  { 
+    q: "What is the difference between UTC and GMT?", 
+    a: "UTC (Coordinated Universal Time) is a scientific time standard based on atomic clocks, while GMT (Greenwich Mean Time) is an astronomical time standard based on Earth's rotation. For civil scheduling purposes, UTC and GMT operate at the same offset (+0)." 
   },
-  {
-    gmt: "2:00 AM GMT",
-    est: "9:00 PM EST (Previous Day)",
-    edt: "10:00 PM EDT (Previous Day)",
-    business: "UK banking databases run batch audits while East Coast call centers transition to late-night skeleton crews.",
-    meeting: "Informal gaming lobbies and late-night tech support handovers from Atlanta to London teams.",
-    travel: "Cargo flights land at Halifax and Toronto cargo terminals, coordinating customs manifests."
+  { 
+    q: "How does Daylight Saving Time (DST) affect time zone offsets?", 
+    a: "Daylight Saving Time (DST) shifts local clocks forward by one hour during the warmer months to extend evening daylight. When DST is active, a region's offset changes (for example, Eastern Standard Time at UTC-5 shifts to Eastern Daylight Time at UTC-4)." 
   },
-  {
-    gmt: "3:00 AM GMT",
-    est: "10:00 PM EST (Previous Day)",
-    edt: "11:00 PM EDT (Previous Day)",
-    business: "Maintenance windows open for European cloud server clusters while US SaaS platforms log lowest concurrent users.",
-    meeting: "Urgent site reliability engineering (SRE) handoffs between California, New York, and Dublin engineers.",
-    travel: "Late-night regional transit arrivals at Ottawa International Airport prepare for terminal closing."
+  { 
+    q: "Why is a date-aware timezone converter important?", 
+    a: "Regions transition into and out of Daylight Saving Time on different dates around the world. A date-aware converter uses the precise date of your event to determine which offset is active in both the source and target locations, preventing scheduling errors." 
   },
-  {
-    gmt: "4:00 AM GMT",
-    est: "11:00 PM EST (Previous Day)",
-    edt: "12:00 AM (Midnight) EDT",
-    business: "London stock exchange pre-market routines commence; NYC datacenters rotate backup tapes.",
-    meeting: "Night-shift infrastructure monitoring teams check in with morning-shift operators in Western Europe.",
-    travel: "Late departures from Montreal-Trudeau airport to European hubs clear Canadian airspace."
+  { 
+    q: "Which timezone is the default standard for databases?", 
+    a: "Standard database architecture typically stores all timestamps in UTC (equivalent to GMT) to maintain chronological consistency across systems, translating them to user-specific local timezones on the client side." 
   },
-  {
-    gmt: "5:00 AM GMT",
-    est: "12:00 AM (Midnight) EST",
-    edt: "1:00 AM EDT",
-    business: "UK energy traders log on to analyze European grid demands while New York offices stand completely empty.",
-    meeting: "Automated software deployment pipelines push updates to staging environments while US users sleep.",
-    travel: "Early morning cargo departures leave East Midlands Airport bound for Newark Liberty International."
+  { 
+    q: "How can I schedule meetings across multiple time zones?", 
+    a: "To schedule international meetings, locate a window that overlaps with the standard business hours (9:00 AM to 5:00 PM) of all participants. For example, London (GMT) and New York (EST) have a convenient 3-to-4 hour overlap during the morning in New York and afternoon in London." 
   },
-  {
-    gmt: "6:00 AM GMT",
-    est: "1:00 AM EST",
-    edt: "2:00 AM EDT",
-    business: "London commodities desks open; New York commercial real estate systems perform database updates.",
-    meeting: "Emergency infrastructure patches coordinated by duty engineers in London and remote workers in Boston.",
-    travel: "Transatlantic flights enter UK airspace; passengers prepare for arrival at Heathrow or Gatwick."
+  { 
+    q: "What is the IANA Time Zone Database?", 
+    a: "The Internet Assigned Numbers Authority (IANA) database, also known as the Olson database, is a collaborative compilation of global timezone rules, boundaries, and historical offset changes. Our converter queries this database to ensure maximum accuracy." 
   },
-  {
-    gmt: "7:00 AM GMT",
-    est: "2:00 AM EST",
-    edt: "3:00 AM EDT",
-    business: "European currency markets open trading; US retail giants perform morning logistics inventory syncs.",
-    meeting: "SaaS support teams in the UK coordinate with overseas developers to resolve database latency.",
-    travel: "Morning flights land in London; travelers pass through customs during the Greenwich rush hour."
-  },
-  {
-    gmt: "8:00 AM GMT",
-    est: "3:00 AM EST",
-    edt: "4:00 AM EDT",
-    business: "UK financial markets begin core trading session; US East Coast market makers sleep before pre-market.",
-    meeting: "Morning status check-ins for European-based client coordinators aligning project milestones.",
-    travel: "Regional flights depart Boston Logan bound for major hubs in Canada and the UK."
-  },
-  {
-    gmt: "9:00 AM GMT",
-    est: "4:00 AM EST",
-    edt: "5:00 AM EDT",
-    business: "European logistics hubs reach peak sorting capacity; US port authorities monitor cargo arrivals.",
-    meeting: "Global webinar organizers in London perform dry runs before East Coast audiences wake up.",
-    travel: "High-speed rail connections across the UK connect travelers to London airports for US departures."
-  },
-  {
-    gmt: "10:00 AM GMT",
-    est: "5:00 AM EST",
-    edt: "6:00 AM EDT",
-    business: "Mid-day trading spikes in London; New York early birds check emails and project boards.",
-    meeting: "UK product managers outline tasks for incoming East Coast software engineering teams.",
-    travel: "First wave of daytime departures from Heathrow leaves the runway bound for JFK and Boston."
-  },
-  {
-    gmt: "11:00 AM GMT",
-    est: "6:00 AM EST",
-    edt: "7:00 AM EDT",
-    business: "European corporate headquarters conduct executive syncs; US East Coast commuters begin their journeys.",
-    meeting: "Cross-continental NGO coordinates campaign launches between London and Washington DC.",
-    travel: "Flight check-in desks at Toronto Pearson open for morning departures to international hubs."
-  },
-  {
-    gmt: "12:00 PM (Noon) GMT",
-    est: "7:00 AM EST",
-    edt: "8:00 AM EDT",
-    business: "London lunch hour starts; East Coast offices open doors and log onto Slack/Teams platforms.",
-    meeting: "Daily standup window opens for teams spanning the UK, France, New York, and Montreal.",
-    travel: "Midday flights land at New York airports; travelers proceed to hotel check-ins."
-  },
-  {
-    gmt: "1:00 PM GMT",
-    est: "8:00 AM EST",
-    edt: "9:00 AM EDT",
-    business: "European markets interact with early U.S. pre-market trading; retail systems sync catalogs.",
-    meeting: "Morning kick-off calls for design agencies in New York coordinating with creative directors in London.",
-    travel: "Business travelers board the morning shuttle flights connecting Washington DC and Boston."
-  },
-  {
-    gmt: "2:00 PM GMT",
-    est: "9:00 AM EST",
-    edt: "10:00 AM EDT",
-    business: "New York Stock Exchange (NYSE) and NASDAQ bells ring; European brokers trade concurrently.",
-    meeting: "Principal client feedback sessions aligning European partners and US project leads.",
-    travel: "Transatlantic business travel groups arrive at Manhattan hotels for afternoon conferences."
-  },
-  {
-    gmt: "3:00 PM GMT",
-    est: "10:00 AM EST",
-    edt: "11:00 AM EDT",
-    business: "Peak Forex trading overlap hours; billions in currency transactions settle across London and NYC.",
-    meeting: "Joint marketing presentations and product demos for investors in Boston and London.",
-    travel: "Connecting flights depart Atlanta Hartsfield-Jackson for destinations along the East Coast."
-  },
-  {
-    gmt: "4:00 PM GMT",
-    est: "11:00 AM EST",
-    edt: "12:00 PM (Noon) EDT",
-    business: "London stock trading enters its final hour; US corporate offices reach peak daily productivity.",
-    meeting: "Weekly company-wide town halls aligning all Western European and Eastern North American staff.",
-    travel: "Lunchtime business travelers check in at Montreal-Trudeau for domestic flights to Toronto."
-  },
-  {
-    gmt: "5:00 PM GMT",
-    est: "12:00 PM (Noon) EST",
-    edt: "1:00 PM EDT",
-    business: "European stock exchanges close; US East Coast teams take lunch breaks.",
-    meeting: "Technical support handovers from closing UK desks to active teams in New York and Atlanta.",
-    travel: "Afternoon flights from Miami depart for corporate destinations along the Eastern seaboard."
-  },
-  {
-    gmt: "6:00 PM GMT",
-    est: "1:00 PM EST",
-    edt: "2:00 PM EDT",
-    business: "UK offices wind down for the evening; US teams execute mid-afternoon software updates.",
-    meeting: "Sprint planning syncs for remote engineering squads spanning London and Toronto.",
-    travel: "Commuter rail networks in Boston and Philadelphia fill with afternoon professionals."
-  },
-  {
-    gmt: "7:00 PM GMT",
-    est: "2:00 PM EST",
-    edt: "3:00 PM EDT",
-    business: "London professionals commute home; US East Coast logistics networks prepare for evening shipments.",
-    meeting: "Design review calls between London consultants and New York brand directors.",
-    travel: "Evening flight check-ins begin at JFK for night departures bound for Western Europe."
-  },
-  {
-    gmt: "8:00 PM GMT",
-    est: "3:00 PM EST",
-    edt: "4:00 PM EDT",
-    business: "UK retail systems switch to automated evening routines; Wall Street enters the final hour of trading.",
-    meeting: "Wrap-up standups for joint projects spanning UK contractors and US managers.",
-    travel: "Flight arrivals at Ottawa International unload passengers from afternoon business routes."
-  },
-  {
-    gmt: "9:00 PM GMT",
-    est: "4:00 PM EST",
-    edt: "5:00 PM EDT",
-    business: "Wall Street closing bell rings; European software support desks go offline.",
-    meeting: "Final daily check-in for SRE teams handing over infrastructure to West Coast hubs.",
-    travel: "Evening shuttles connect New York LaGuardia with Logan Airport in Boston."
-  },
-  {
-    gmt: "10:00 PM GMT",
-    est: "5:00 PM EST",
-    edt: "6:00 PM EDT",
-    business: "Post-market trading begins in New York; London databases execute automated maintenance jobs.",
-    meeting: "Evening debrief calls for executives analyzing daily sales across global retail platforms.",
-    travel: "International departures board at Toronto Pearson, climbing into overnight flight paths."
-  },
-  {
-    gmt: "11:00 PM GMT",
-    est: "6:00 PM EST",
-    edt: "7:00 PM EDT",
-    business: "London systems operate on nighttime telemetry; East Coast teams start their personal evenings.",
-    meeting: "Developer syncs between East Coast engineers and incoming morning teams in Australia/Asia.",
-    travel: "Overnight flights clear the East Coast, heading out over the Atlantic toward Greenwich."
+  { 
+    q: "Are timezone offsets always in whole hours?", 
+    a: "No. Several countries and territories observe timezone offsets that are offset by 30 or 45 minutes. For example, India Standard Time (IST) is UTC+5:30, and Nepal Standard Time is UTC+5:45." 
   }
 ];
 
-// FAQs (40 items)
-const faqs = [
-  { q: "What is the difference between GMT and EST?", a: "GMT is Greenwich Mean Time (UTC+0), a fixed time standard centered on London. EST is Eastern Standard Time (UTC-5), which is observed in North America during the winter months. The standard offset difference is exactly 5 hours." },
-  { q: "Does Eastern Time use a different offset in the summer?", a: "Yes. From mid-March to early November, Eastern Time observes Daylight Saving Time (DST) and shifts to Eastern Daylight Time (EDT), which is UTC-4. During this period, Eastern Time is only 4 hours behind GMT." },
-  { q: "Does GMT observe Daylight Saving Time?", a: "No. Greenwich Mean Time (GMT) is a fixed time standard and never changes. However, the United Kingdom shifts from GMT to British Summer Time (BST, UTC+1) during the summer, which changes London's local offset." },
-  { q: "How do I manually convert GMT to EST?", a: "To convert GMT to Eastern Standard Time (EST), subtract 5 hours from the GMT clock. For example, if it is 10:00 AM GMT, subtracting 5 hours gives 5:00 AM EST." },
-  { q: "How do I manually convert GMT to EDT?", a: "To convert GMT to Eastern Daylight Time (EDT) during daylight saving, subtract 4 hours from the GMT clock. For example, 10:00 AM GMT minus 4 hours is 6:00 AM EDT." },
-  { q: "When does Eastern Time transition to Daylight Saving Time (DST) in 2026?", a: "In 2026, Eastern Time springs forward to EDT (UTC-4) on Sunday, March 8 at 2:00 AM local time, and falls back to EST (UTC-5) on Sunday, November 1 at 2:00 AM." },
-  { q: "Is EST the same as Eastern Time (ET)?", a: "EST refers specifically to Eastern Standard Time (UTC-5), which is the winter offset. Eastern Time (ET) is the general term for the zone, encompassing both EST (winter) and EDT (summer)." },
-  { q: "Which US states use Eastern Standard Time?", a: "States observing Eastern Time include New York, Washington DC, Massachusetts, Pennsylvania, Georgia, Florida, Michigan, Ohio, and parts of Indiana and Kentucky." },
-  { q: "Does Canada use Eastern Standard Time?", a: "Yes. Eastern provinces such as Ontario, Quebec, and parts of Nunavut follow Eastern Time, including major cities like Toronto, Montreal, and Ottawa." },
-  { q: "What IANA timezone identifier represents Eastern Time?", a: "The standard IANA timezone database identifier for Eastern Time is America/New_York. In Canada, America/Toronto and America/Montreal are also commonly used." },
-  { q: "Why is a date-aware timezone converter safer?", a: "Because Eastern Time shifts between UTC-5 and UTC-4 twice a year, a static calculation can result in scheduling errors. A date-aware converter automatically checks the chosen date to apply the correct offset." },
-  { q: "What is 12 AM GMT in EST and EDT?", a: "12:00 AM GMT converts to 7:00 PM EST (previous day) in the winter, and 8:00 PM EDT (previous day) in the summer." },
-  { q: "What is 8 PM GMT in EST and EDT?", a: "8:00 PM GMT converts to 3:00 PM EST in the winter, and 4:00 PM EDT in the summer." },
-  { q: "How does the stock market align with GMT?", a: "The New York Stock Exchange (NYSE) and NASDAQ operate from 9:30 AM to 4:00 PM Eastern Time. This corresponds to 2:30 PM to 9:00 PM GMT (standard time) or 1:30 PM to 8:00 PM GMT (daylight saving time)." },
-  { q: "What is the Forex trading overlap between London and New York?", a: "The peak overlap occurs between 8:00 AM and 12:00 PM EST (1:00 PM and 5:00 PM GMT), which is when both European and US financial centers are open concurrently." },
-  { q: "Does the UK observe clock changes on the same day as the US?", a: "Not always. The US shifts to daylight saving on the second Sunday of March, while the UK shifts on the last Sunday of March. In autumn, the US shifts on the first Sunday of November, while the UK shifts on the last Sunday of October. During these brief windows, the relative offset changes." },
-  { q: "How do software developers prevent timezone bugs?", a: "Developers store database timestamps in UTC (GMT) and translate them to local time zones like America/New_York on the client side using date-time libraries." },
-  { q: "Do databases store data in GMT or EST?", a: "Standard practice is to store transactional records and system logs in UTC (GMT) to avoid chronological confusion during DST transitions." },
-  { q: "Is New York always in EST?", a: "No. New York is in EST (UTC-5) from early November to mid-March, and in EDT (UTC-4) from mid-March to early November." },
-  { q: "Is Toronto in the Eastern Time Zone?", a: "Yes. Toronto, Ontario, follows Eastern Time (EST/EDT) and matches New York's clocks throughout the year." },
-  { q: "Is Montreal in the Eastern Time Zone?", a: "Yes. Montreal, Quebec, observes Eastern Time and matches Toronto and New York's clocks." },
-  { q: "Does Washington DC observe Daylight Saving Time?", a: "Yes. Washington DC follows Eastern Time and observes DST transitions year-round." },
-  { q: "Does Boston use Eastern Time?", a: "Yes. Boston, Massachusetts, observes Eastern Time and switches between EST and EDT." },
-  { q: "Does Atlanta follow Eastern Time?", a: "Yes. Atlanta, Georgia, is in the Eastern Time Zone." },
-  { q: "Does Miami use Eastern Standard Time?", a: "Yes. Miami, Florida, follows Eastern Standard Time in the winter and Eastern Daylight Time in the summer." },
-  { q: "Does Detroit follow Eastern Time?", a: "Yes. Detroit, Michigan, is in the Eastern Time Zone." },
-  { q: "Does Ottawa follow Eastern Time?", a: "Yes. Ottawa, Canada's capital, observes Eastern Time." },
-  { q: "What is UTC and how does it relate to GMT?", a: "UTC (Coordinated Universal Time) is the scientific atomic time standard, while GMT (Greenwich Mean Time) is the astronomical time standard. For general scheduling purposes, their offsets are identical (+0)." },
-  { q: "Is Irish Standard Time related to GMT?", a: "Irish Standard Time (IST) is UTC+1 (observed in summer in Ireland), while GMT is UTC+0. They are separate time zones." },
-  { q: "Is Israel Standard Time related to IST?", a: "Although both share the 'IST' abbreviation, Israel Standard Time is UTC+2 or UTC+3, while India Standard Time is UTC+5:30. They are completely separate." },
-  { q: "Why did railroads drive timezone standardization?", a: "Prior to the late 19th century, cities kept local solar time. To avoid rail collisions and coordinate nationwide timetables, railroads established standard time zones in 1883." },
-  { q: "What is the standard workday overlap between London and New York?", a: "The standard overlap occurs between 1:00 PM and 5:00 PM GMT, which is 8:00 AM to 12:00 PM EST (or 9:00 AM to 1:00 PM EDT). This provides 4 hours of concurrent office time." },
-  { q: "Can I schedule a webinar across GMT and EST?", a: "Yes. Scheduling a webinar at 3:00 PM GMT allows participants in New York to attend at 10:00 AM EST (or 11:00 AM EDT) during their morning focus hours." },
-  { q: "Does the airline industry use GMT or EST?", a: "Airlines coordinate international flight paths and logs using UTC (GMT) to maintain consistent timetables across multiple jurisdictions." },
-  { q: "Are shipping logistics affected by clock changes?", a: "Yes. Supply chain managers must adjust transit manifests and delivery windows when regions transition between EST and EDT." },
-  { q: "Is EST used in the Caribbean?", a: "Yes. Several Caribbean nations follow Eastern Standard Time, though some (like Jamaica) remain on EST (UTC-5) year-round without observing daylight saving." },
-  { q: "What happens if a database cron job runs at 2:00 AM during fall back?", a: "If the system is not configured to use UTC, the cron job might execute twice because the 2:00 AM hour occurs twice when clocks fall back." },
-  { q: "How does the Forex market handle GMT and EST transitions?", a: "As major financial centers shift between standard and daylight saving hours, the overlap times for trading sessions adjust, shifting peak market liquidity." },
-  { q: "Does Indiana follow Eastern Standard Time?", a: "Most of Indiana observes Eastern Time (EST/EDT), though several counties near Chicago and Evansville follow Central Time." },
-  { q: "Can this converter help with remote team scheduling?", a: "Yes. The interactive calendar allows project managers to select future dates and see the correct local times, avoiding scheduling conflicts during transition weeks." }
-];
-
 const metaProps = {
-  seoTitle: "GMT to EST Converter – Greenwich Mean Time to Eastern Standard Time",
-  description: "Convert GMT to EST instantly. Verify the time difference between Greenwich Mean Time (UTC+0) and Eastern Time (EST/EDT) with DST detection and New York clocks.",
-  keywords: "GMT to EST Converter, GMT to EST, EST to GMT, GMT to EST conversion, GMT to EST time difference",
-  image: "/assets/gmt-to-est-og.svg",
-  imageAlt: "GMT to EST Converter – Convert Greenwich Mean Time to Eastern Standard Time",
+  seoTitle,
+  description: pageDescription,
+  keywords: "timezone converter, universal timezone converter, global clocks, GMT, EST, CDT, PDT, CST, timezone conversion",
+  image: "/assets/world-time-map.svg",
+  imageAlt: "Universal Time Zone Converter - Global time zones map",
   faqs,
-  appDescription: "Free online GMT to EST converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Eastern Time.",
+  appDescription: "Free online timezone converter and global clock directory. Plan meetings, coordinate remote teams, and convert hours across all time zones instantly.",
   applicationCategory: "UtilityApplication",
   operatingSystem: "Any",
-  howToName: "How to Convert GMT to EST",
-  howToDescription: "Step-by-step guide to converting Greenwich Mean Time to Eastern Standard Time using our free online tool.",
+  howToName: "How to Convert Time Zones",
+  howToDescription: "Step-by-step guide to converting time zones using our free online converter tool.",
   howToSteps: [
-    { name: "Confirm Eastern Time offset", text: "Eastern Time operates at UTC-5 during winter (EST) and UTC-4 during summer (EDT)." },
-    { name: "Input your GMT time", text: "Select your desired GMT time using our interactive date-time picker. The tool defaults to the current time." },
-    { name: "Observe the calculated result", text: "Our calculator checks the date and displays the result in Eastern Time (EST or EDT) automatically." },
-    { name: "Copy or swap the result", text: "Read the converted Eastern Time and click the copy button to save the result." }
+    { name: "Select conversion direction", text: "Choose your starting time zone and target time zone from our directory of converters." },
+    { name: "Enter source date and time", text: "Input the date and time you wish to convert. The tool defaults to the current system time." },
+    { name: "Review calculated result", text: "Our tool automatically checks the date for active Daylight Saving Time changes and outputs the correct target time." },
+    { name: "Copy or share", text: "Copy the converted time to your clipboard or use our widgets to plan scheduling." }
   ],
 };
 ---
@@ -320,23 +91,19 @@ const metaProps = {
   enableFaqSchema={true}
   allowAds={true}
   breadcrumbHomeLabel="Home"
-  breadcrumbLabel="GMT to EST"
   hreflangCodes={["en"]}
 >
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     H1 & INTRODUCTION
-     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- H1 & INTRODUCTION -->
 <section class="hero-banner">
   <h1 class="hero-banner-title">
-    GMT to EST <span class="gradient-text">Converter</span>
+    Universal Time Zone <span class="gradient-text">Converter</span>
   </h1>
 </section>
 
 <!-- FEATURE STRIP -->
 <section class="feature-strip" aria-label="Tool Features">
   <div class="feature-item">
-    <!-- Icon: Clock -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
       <circle cx="12" cy="12" r="10"></circle>
       <polyline points="12 6 12 12 16 14"></polyline>
@@ -344,7 +111,6 @@ const metaProps = {
     <span>Live Clocks</span>
   </div>
   <div class="feature-item">
-    <!-- Icon: Calendar -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
       <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -354,7 +120,6 @@ const metaProps = {
     <span>DST-Aware</span>
   </div>
   <div class="feature-item">
-    <!-- Icon: Meeting -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
       <circle cx="9" cy="7" r="4"></circle>
@@ -364,60 +129,34 @@ const metaProps = {
     <span>Business Overlap</span>
   </div>
   <div class="feature-item">
-    <!-- Icon: Map -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
       <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
       <line x1="9" y1="3" x2="9" y2="18"></line>
       <line x1="15" y1="6" x2="15" y2="21"></line>
     </svg>
-    <span>Pillar Resource</span>
+    <span>Global Directory</span>
   </div>
 </section>
 
 <div class="acdt-intro">
   <p>
-    Welcome to the authoritative, flagship <strong>GMT to EST Converter</strong> portal. This resource is designed as a comprehensive pillar guide for Greenwich Mean Time (GMT, UTC+0) and North American Eastern Standard Time (EST, UTC-5) / Eastern Daylight Time (EDT, UTC-4).
+    Welcome to the <strong>Universal Time Zone Converter</strong>. This central hub is designed to help professionals, developers, travelers, and remote teams manage their global calendars. By integrating the latest IANA Time Zone Database, our portal coordinates real-time clock conversions, maps Daylight Saving Time changes, and assists in scheduling cross-border collaborations.
   </p>
   <p>
-    Understanding timezone offsets is critical for international business, software deployments, and remote collaboration. Because Eastern Time transitions between standard time (EST) and daylight saving time (EDT) twice a year, a static converter can lead to scheduling errors. Our interactive tool resolves these challenges by dynamically detecting the correct offset using the IANA Time Zone Database.
+    Timekeeping varies significantly across international borders due to regional policies and seasonal transitions. Our interactive calculator lets you compute offsets instantly, ensuring that you maintain synchronization with teams in North America, Europe, Asia, and Oceania. Use this page as your general directory for all major timezone conversions.
   </p>
-  <div class="seo-keyword-intro">
-    Use this page to access real-time clocks, conversion charts, and detailed explanations of the 4-hour and 5-hour differences between <strong>GMT and Eastern Standard Time</strong>.
-  </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     TABLE OF CONTENTS (INTERNAL ANCHORS)
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section class="table-of-contents reveal" aria-label="Table of Contents">
-  <span class="toc-kicker">Quick Navigation</span>
-  <h2>Guide Contents</h2>
-  <ol>
-    <li><a href="#converter">1. Interactive GMT to EST Converter</a></li>
-    <li><a href="#visual-lab">2. Live Clocks &amp; Visual Lab</a></li>
-    <li><a href="#offset-mechanics">3. GMT to EST Offset Mechanics</a></li>
-    <li><a href="#chart">4. 24-Hour Conversion Chart</a></li>
-    <li><a href="#conversion-examples">5. Popular Hourly Examples</a></li>
-    <li><a href="#business-overlap">6. Business Hour Overlaps</a></li>
-    <li><a href="#major-cities">7. Major Cities in Eastern Time</a></li>
-    <li><a href="#educational-topics">8. History &amp; Educational Sections</a></li>
-    <li><a href="#common-confusions">9. Common Confusions Explained</a></li>
-    <li><a href="#faq">10. Frequently Asked Questions (FAQ)</a></li>
-  </ol>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     LIVE CONVERTER
-     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INTERACTIVE CONVERTER -->
 <section class="hero reveal" id="converter">
   <div class="hero-copy">
     <div class="eyebrow">Real-Time Calculator</div>
-    <h2>Interactive GMT to EST Converter</h2>
+    <h2>Quick Time Zone Converter</h2>
     <p>
-      Select a date and time below to convert between Greenwich Mean Time (GMT) and Eastern Standard Time (EST) or Eastern Daylight Time (EDT). The calculator automatically detects daylight saving rules based on the selected date.
+      Select a date and time below to convert between standard timezones. The converter defaults to Greenwich Mean Time (GMT) to Eastern Standard Time (EST) as a convenient baseline, and automatically adjusts for Daylight Saving Time (EDT) according to your chosen date.
     </p>
     <p>
-      Toggle between 12-hour and 24-hour formats, copy results to your clipboard, and share schedules with your remote teams.
+      Toggle formats, copy results to your clipboard, and access dedicated guides for specific timezone pairs below.
     </p>
   </div>
   <div>
@@ -425,11 +164,9 @@ const metaProps = {
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     LIVE CLOCKS & VISUAL LAB
-     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- LIVE CLOCKS & VISUAL LAB -->
 <section class="clock-grid reveal" id="visual-lab">
-  <h2>Live Clocks</h2>
+  <h2>Featured Live Clocks</h2>
   
   <div class="clock-card">
     <span class="eyebrow">Greenwich Mean Time</span>
@@ -442,600 +179,98 @@ const metaProps = {
     <strong id="estClock">--:--:-- ET</strong>
     <p>Current Active Offset: <em id="estZone">ET</em></p>
   </div>
-
-  <!-- ILLUSTRATION 1: PREMIUM HERO ILLUSTRATION -->
-  <div class="hero-visual" style="grid-column: 1 / -1;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" height="auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-      <!-- Grid -->
-      <g stroke="#ffffff" stroke-width="0.5" opacity="0.08">
-        <line x1="0" y1="100" x2="1000" y2="100" />
-        <line x1="0" y1="200" x2="1000" y2="200" />
-        <line x1="0" y1="300" x2="1000" y2="300" />
-        <line x1="200" y1="0" x2="200" y2="400" />
-        <line x1="400" y1="0" x2="400" y2="400" />
-        <line x1="600" y1="0" x2="600" y2="400" />
-        <line x1="800" y1="0" x2="800" y2="400" />
-      </g>
-      
-      <!-- Wave connection -->
-      <path d="M 250 200 Q 500 100, 750 200 T 1000 200" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="12 6" opacity="0.3" />
-
-      <!-- GMT Clock Group -->
-      <g transform="translate(250, 200)">
-        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#2f6278" stroke-width="4" />
-        <circle cx="0" cy="0" r="75" fill="none" stroke="#36c7b5" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
-        <!-- Hands (12:00) -->
-        <line x1="0" y1="0" x2="0" y2="-45" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
-        <line x1="0" y1="0" x2="0" y2="-60" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
-        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
-        
-        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
-        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
-      </g>
-
-      <!-- EST Clock Group -->
-      <g transform="translate(750, 200)">
-        <circle cx="0" cy="0" r="85" fill="#0c354a" stroke="#36c7b5" stroke-width="4" />
-        <circle cx="0" cy="0" r="75" fill="none" stroke="#2a9084" stroke-width="1" stroke-dasharray="2 4" opacity="0.4" />
-        <!-- Hands (EST is -5h, so 7:00) -->
-        <line x1="0" y1="0" x2="-32" y2="18" stroke="#f4fbff" stroke-width="6" stroke-linecap="round" />
-        <line x1="0" y1="0" x2="0" y2="-60" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
-        <circle cx="0" cy="0" r="6" fill="#071b26" stroke="#f4fbff" stroke-width="2" />
-        
-        <rect x="-60" y="105" width="120" height="30" rx="6" fill="#12455d" stroke="#36c7b5" stroke-width="1.5" />
-        <text x="0" y="125" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">EST (UTC-5)</text>
-      </g>
-
-      <!-- Connection arrow badge -->
-      <g transform="translate(500, 200)">
-        <rect x="-70" y="-20" width="140" height="40" rx="20" fill="#36c7b5" />
-        <text x="0" y="6" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#071b26" text-anchor="middle">5 Hours Difference</text>
-      </g>
-    </svg>
-  </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     VISUAL LAB MOTION CARDS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<VisualLab t={t} keywordHeading="GMT to EST" />
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     OFFSET MECHANICS & DST AMBIGUITY
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section class="method-section reveal" id="offset-mechanics">
+<!-- THE GEOGRAPHY OF TIME STANDARDS -->
+<section class="method-section reveal" id="time-geography">
   <div class="method-intro">
-    <div class="eyebrow">Offset Mechanics</div>
-    <h2>EST vs EDT: Navigating the Seasonal Transition</h2>
+    <div class="eyebrow">Global Timekeeping</div>
+    <h2>Understanding Meridians, Offsets, and UTC Standards</h2>
     <p>
-      Many people search for "EST" as a catch-all term for the time observed in the eastern United States and Canada. However, Eastern Standard Time (EST) specifically refers to the winter offset of <strong>UTC-5</strong>. During the summer, the region transitions to Eastern Daylight Time (EDT), which operates at <strong>UTC-4</strong>.
+      Civil timekeeping is governed by geographic corridors called time zones. Historically, these zones were anchored to Greenwich Mean Time (GMT), which calculates solar time based on the Prime Meridian in London. Today, global systems use Coordinated Universal Time (UTC) as the high-precision atomic reference, though GMT remains widely used as a standard timezone name.
     </p>
     <p>
-      Our converter automatically handles this shift based on the chosen date. Below is a summary of the offsets and transition rules:
+      To prevent chronological conflicts, the world is divided into offsets relative to UTC. Locations to the east of Greenwich add hours (e.g., UTC+1, UTC+8), while locations to the west subtract hours (e.g., UTC-5, UTC-8). Navigating these differences requires understanding daylight transitions and regional laws.
     </p>
-    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
-      <li><strong>Eastern Standard Time (EST)</strong>: Observed from the first Sunday in November to the second Sunday in March. The offset is UTC-5 (5 hours behind Greenwich Mean Time).</li>
-      <li><strong>Eastern Daylight Time (EDT)</strong>: Observed from the second Sunday in March to the first Sunday in November. The offset is UTC-4 (4 hours behind Greenwich Mean Time).</li>
-      <li><strong>UK Summer Shifts</strong>: In the UK, British Summer Time (BST, UTC+1) is observed from late March to late October. This shifts the relative difference between London and New York from 5 hours to 4 or 6 hours during transition weeks.</li>
-    </ul>
   </div>
 
   <div class="method-grid">
     <div class="method-card">
-      <h3>Standard Offset (EST)</h3>
-      <code>GMT - 5 Hours</code>
-      <p>Active during winter. Highlights the standard difference between Greenwich and the East Coast.</p>
+      <h3>Baseline Reference</h3>
+      <code>UTC / GMT +0</code>
+      <p>The Greenwich Meridian acts as the zero-point for calculating global time offsets.</p>
     </div>
     <div class="method-card">
-      <h3>Daylight Saving (EDT)</h3>
-      <code>GMT - 4 Hours</code>
-      <p>Active during summer. Clocks shift forward to extend evening daylight.</p>
+      <h3>Negative Offsets</h3>
+      <code>West of Greenwich</code>
+      <p>North American zones (Eastern, Central, Pacific) subtract hours from the baseline.</p>
     </div>
     <div class="method-card">
-      <h3>Transition Windows</h3>
-      <code>March &amp; November</code>
-      <p>Daylight saving transitions occur at 2:00 AM local time, shifting the offset by 1 hour.</p>
+      <h3>Positive Offsets</h3>
+      <code>East of Greenwich</code>
+      <p>European, African, Asian, and Australian zones add hours to the baseline.</p>
     </div>
   </div>
 </section>
 
-<!-- ILLUSTRATION 3: GMT VS EST INFOGRAPHIC -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
-      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT VS EST OFFSET TIMELINE</text>
-      
-      <!-- Timeline axis -->
-      <line x1="100" y1="120" x2="700" y2="120" stroke="#2f6278" stroke-width="4" />
-      
-      <!-- Mark points -->
-      <!-- London/Greenwich -->
-      <circle cx="250" cy="120" r="14" fill="#36c7b5" stroke="#12455d" stroke-width="3" />
-      <text x="250" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
-      <text x="250" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC+0 Meridian</text>
-      
-      <!-- EST -->
-      <circle cx="550" cy="120" r="14" fill="#8fd7ff" stroke="#12455d" stroke-width="3" />
-      <text x="550" y="90" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">New York (EST)</text>
-      <text x="550" y="155" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">UTC-5 Standard Offset</text>
-
-      <!-- Connection Bracket -->
-      <path d="M 250 120 L 250 140 L 550 140 L 550 120" fill="none" stroke="#36c7b5" stroke-width="2" opacity="0.5" />
-      <text x="400" y="180" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#8fd7ff" text-anchor="middle">-5 Hours Difference</text>
-    </svg>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 4: EST VS EDT INFOGRAPHIC -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#f4fbff" text-anchor="middle">EST VS EDT SEASONAL SHIFTS</text>
-      
-      <!-- EST Block -->
-      <g transform="translate(150, 70)">
-        <rect x="0" y="0" width="200" height="90" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
-        <text x="100" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#bdd2dc" text-anchor="middle">EST (Winter)</text>
-        <text x="100" y="65" font-family="'Manrope', sans-serif" font-size="14" fill="#f4fbff" text-anchor="middle">UTC-5 Offset</text>
-      </g>
-      
-      <!-- EDT Block -->
-      <g transform="translate(450, 70)">
-        <rect x="0" y="0" width="200" height="90" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
-        <text x="100" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">EDT (Summer)</text>
-        <text x="100" y="65" font-family="'Manrope', sans-serif" font-size="14" fill="#f4fbff" text-anchor="middle">UTC-4 Offset</text>
-      </g>
-
-      <!-- Arrow -->
-      <path d="M 370 115 L 430 115" fill="none" stroke="url(#accentGrad)" stroke-width="4" />
-      <text x="400" y="95" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">DST Shift</text>
-    </svg>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     24-HOUR CONVERSION CHART
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="chart" class="reveal">
-  <h2>24-Hour GMT to Eastern Time Conversion Table</h2>
-  <p class="chart-note">
-    The following table outlines the exact equivalent times between Coordinated Universal Time (UTC)/Greenwich Mean Time (GMT) and Eastern Standard Time (EST) and Eastern Daylight Time (EDT).
-  </p>
-  
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Greenwich Mean Time (GMT)</th>
-          <th>Eastern Standard Time (EST)</th>
-          <th>Eastern Daylight Time (EDT)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {conversionRows.map((row) => (
-          <tr>
-            <td><strong>{row.gmt}</strong></td>
-            <td><strong>{row.est}</strong></td>
-            <td><strong>{row.edt}</strong></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 7: 24-HOUR TIMELINE ILLUSTRATION -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 900px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-      <text x="450" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-HOUR INTERSECT GRID</text>
-      
-      <!-- Hour Blocks -->
-      <g transform="translate(50, 60)">
-        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">GMT</text>
-        <rect x="20" y="5" width="760" height="20" fill="#12455d" rx="4" />
-        <!-- Tick marks -->
-        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">00:00</text>
-        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">06:00</text>
-        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">12:00</text>
-        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">18:00</text>
-        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">24:00</text>
-      </g>
-      
-      <g transform="translate(50, 110)">
-        <text x="-10" y="20" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff">EST</text>
-        <!-- Offset shift visual -->
-        <rect x="20" y="5" width="760" height="20" fill="#0c354a" rx="4" stroke="#2f6278" stroke-width="1" />
-        <!-- Highlighted shift area -->
-        <rect x="20" y="5" width="600" height="20" fill="url(#accentGrad)" opacity="0.35" rx="4" />
-        <!-- Tick marks (shifted -5h) -->
-        <text x="30" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">19:00 (prev)</text>
-        <text x="215" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">01:00</text>
-        <text x="400" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">07:00</text>
-        <text x="585" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">13:00</text>
-        <text x="770" y="42" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc">19:00</text>
-      </g>
-    </svg>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     POPULAR CONVERSIONS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="conversion-examples" class="examples-section reveal">
-  <h2>Popular GMT to EST Hourly Conversion Examples</h2>
+<!-- DIRECTORY OF POPULAR TIME ZONE CONVERTERS -->
+<section class="source-notes reveal" id="directory">
+  <h2>Dedicated Time Zone Converters</h2>
   <p>
-    Review these reference examples to understand how specific hours translate between Greenwich and Eastern Time, with specific context-rich use cases:
+    Access our deep-dive landing pages for detailed conversion charts, daylight saving transition rules, hourly examples, and specific business scheduling guidance:
   </p>
-  <div class="clock-grid">
-    {hourlyConversions.map((item) => (
-      <div class="related-card" style="grid-column: span 2; display: flex; flex-direction: column; gap: 8px;">
-        <strong class="related-card-title">{item.gmt}</strong>
-        <p class="related-card-text" style="color: var(--accent);">
-          EST: <strong>{item.est}</strong> | EDT: <strong>{item.edt}</strong>
-        </p>
-        <p style="font-size: 0.9rem; margin: 4px 0 0; color: var(--muted); line-height: 1.5;">
-          <strong>Business:</strong> {item.business}
-        </p>
-        <p style="font-size: 0.9rem; margin: 0; color: var(--muted); line-height: 1.5;">
-          <strong>Meetings:</strong> {item.meeting}
-        </p>
-        <p style="font-size: 0.9rem; margin: 0; color: var(--muted); line-height: 1.5;">
-          <strong>Travel:</strong> {item.travel}
-        </p>
-      </div>
-    ))}
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     BUSINESS HOURS OVERLAP
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="business-overlap" class="reveal">
-  <h2>GMT to EST Business Hour Overlaps</h2>
-  <p>
-    Coordinating schedules across global offices requires understanding when standard working hours intersect. Below is a comparative table showing the overlap window (9:00 AM to 5:00 PM local time) between London (GMT/BST) and major Eastern Time cities.
-  </p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>City</th>
-          <th>Standard Offset</th>
-          <th>Peak Overlap Window (GMT)</th>
-          <th>Peak Overlap Window (Local)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td><strong>New York City</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Toronto</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Washington DC</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Boston</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Atlanta</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Miami</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Detroit</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Montreal</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-        <tr><td><strong>Ottawa</strong></td><td>UTC-5 / UTC-4</td><td>1:00 PM – 5:00 PM GMT</td><td>8:00 AM – 12:00 PM EST</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ILLUSTRATION 6: BUSINESS MEETING PLANNER -->
-  <div class="hero-visual" style="max-width: 800px; margin: 32px auto 0;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">OFFICE CROSSOVER WINDOWS (GMT &amp; EST)</text>
-      
-      <!-- Timeline box -->
-      <rect x="50" y="70" width="700" height="90" fill="#0c354a" rx="8" stroke="#2f6278" stroke-width="1.5" />
-      
-      <!-- Crossover Zone Highlight -->
-      <rect x="350" y="70" width="200" height="90" fill="url(#accentGrad)" opacity="0.25" />
-      <line x1="350" y1="70" x2="350" y2="160" stroke="#36c7b5" stroke-width="2" />
-      <line x1="550" y1="70" x2="550" y2="160" stroke="#36c7b5" stroke-width="2" />
-
-      <!-- Labels -->
-      <text x="200" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">GMT Office Hours</text>
-      <text x="650" y="110" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">EST Office Hours</text>
-      
-      <!-- Optimal Crossover Text -->
-      <text x="450" y="120" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">4-Hour Meeting Window</text>
-      <text x="450" y="140" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">13:00–17:00 GMT | 08:00–12:00 EST</text>
-    </svg>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     MAJOR CITIES IN EASTERN TIME
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="major-cities" class="reveal">
-  <h2>Major Cities in the Eastern Time Zone</h2>
-  <p>
-    Eastern Time is observed by millions of people across key financial, political, and cultural centers:
-  </p>
-  <div class="content">
-    <article>
-      <h3>United States Cities</h3>
-      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted); line-height: 1.6;">
-        <li><strong>New York City, NY</strong>: The financial capital of the US, home to Wall Street and the NYSE.</li>
-        <li><strong>Washington, D.C.</strong>: The federal capital, hosting government offices and diplomatic headquarters.</li>
-        <li><strong>Boston, MA</strong>: A global education and biotechnology hub.</li>
-        <li><strong>Philadelphia, PA</strong>: A major commercial center in the Mid-Atlantic.</li>
-        <li><strong>Atlanta, GA</strong>: The southeastern transportation and logistics hub.</li>
-        <li><strong>Miami, FL</strong>: The primary gateway for Latin American trade and tourism.</li>
+  <div class="tools-grid" style="margin-top: 24px;">
+    <div class="tools-list">
+      <h3>GMT &amp; UTC Converters</h3>
+      <ul style="list-style: none; padding-left: 0;">
+        <li style="margin-bottom: 12px;">
+          <a href="/gmt-to-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">GMT to EST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Flagship guide for Greenwich Mean Time to Eastern Standard/Daylight Time conversions.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/est-to-gmt/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">EST to GMT Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Reverse calculator to convert Eastern Time (New York/Toronto) to Greenwich Mean Time.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/gmt-vs-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">GMT vs EST Difference</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Detailed breakdown of the standard 5-hour gap and 4-hour summer gap.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/gmt-to-bst/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">GMT to BST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Convert Greenwich Mean Time to British Summer Time (UTC+1).</span>
+        </li>
       </ul>
-    </article>
-    <article>
-      <h3>Canadian Cities</h3>
-      <ul style="margin: 10px 0 0; padding-left: 1.25rem; color: var(--muted); line-height: 1.6;">
-        <li><strong>Toronto, ON</strong>: Canada's financial center, home to the TMX Group.</li>
-        <li><strong>Ottawa, ON</strong>: The federal capital of Canada, coordinating government departments.</li>
-        <li><strong>Montreal, QC</strong>: A major bilingual center for aviation, artificial intelligence, and gaming.</li>
+    </div>
+    
+    <div class="tools-list">
+      <h3>North American Converters</h3>
+      <ul style="list-style: none; padding-left: 0;">
+        <li style="margin-bottom: 12px;">
+          <a href="/cdt-to-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">CDT to EST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Convert Central Daylight Time (Chicago/Houston) to Eastern Standard Time.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/cst-to-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">CST to EST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Convert Central Standard Time to Eastern Standard Time.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/pdt-to-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">PDT to EST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Pacific Daylight Time (Los Angeles/Seattle) to Eastern Time conversions.</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <a href="/mst-to-est/" style="color: var(--accent); font-weight: bold; text-decoration: underline;">MST to EST Converter</a>
+          <span style="display: block; font-size: 0.9em; color: var(--muted);">Mountain Standard Time (Denver/Phoenix) to Eastern Standard Time.</span>
+        </li>
       </ul>
-    </article>
-  </div>
-
-  <!-- ILLUSTRATION 9: NORTH AMERICA TIMEZONE MAP -->
-  <div class="hero-visual" style="max-width: 800px; margin: 32px auto 0;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 350" width="100%" height="auto" style="background: #12455d;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">NORTH AMERICAN EASTERN TIME ZONE</text>
-      
-      <!-- Outline Map Blocks (Abstract representation of EST Corridor) -->
-      <!-- Canada Eastern -->
-      <rect x="350" y="70" width="200" height="70" rx="8" fill="#1b536e" opacity="0.6" stroke="#bdd2dc" stroke-width="1.5" />
-      <text x="450" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#bdd2dc" text-anchor="middle">EASTERN CANADA (Toronto/Montreal)</text>
-      
-      <!-- US Eastern Block -->
-      <rect x="300" y="160" width="300" height="90" rx="8" fill="url(#accentGrad)" opacity="0.35" stroke="#36c7b5" stroke-width="2" />
-      <text x="450" y="200" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">US EAST COAST CORRIDOR</text>
-      <text x="450" y="225" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">New York • Washington DC • Boston • Miami</text>
-    </svg>
+    </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     SKYLINE ILLUSTRATIONS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section class="reveal" style="padding: 24px 0;">
-  <div class="content">
-    <!-- New York Skyline -->
-    <article style="padding: 0; background: none; border: none;">
-      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">New York City Skyline</h3>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-        <defs>
-          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0f172a" />
-            <stop offset="100%" stop-color="#1e293b" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="180" fill="url(#skyGrad)" />
-        <rect x="30" y="110" width="40" height="70" fill="#2f6278" opacity="0.6" />
-        <rect x="80" y="80" width="50" height="100" fill="#1b536e" opacity="0.8" />
-        <!-- Empire State Building Silhouette -->
-        <path d="M160 50 L195 50 L190 180 L165 180 Z" fill="#12455d" />
-        <rect x="175" y="10" width="5" height="40" fill="#36c7b5" />
-        <!-- Chrysler Building Silhouette -->
-        <rect x="220" y="70" width="40" height="110" fill="#1b536e" opacity="0.9" />
-        <path d="M220 70 L240 30 L260 70 Z" fill="#36c7b5" opacity="0.7" />
-        <!-- Skyline baseline -->
-        <rect x="280" y="95" width="70" height="85" fill="#2f6278" opacity="0.7" />
-      </svg>
-    </article>
-
-    <!-- Toronto Skyline -->
-    <article style="padding: 0; background: none; border: none;">
-      <h3 style="margin-bottom: 12px; font-family: 'Space Grotesk', sans-serif; color: var(--text);">Toronto Skyline</h3>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-        <rect width="400" height="180" fill="url(#skyGrad)" />
-        <rect x="40" y="120" width="50" height="60" fill="#2f6278" opacity="0.6" />
-        <!-- CN Tower Silhouette -->
-        <line x1="150" y1="20" x2="150" y2="180" stroke="#12455d" stroke-width="8" />
-        <line x1="150" y1="5" x2="150" y2="20" stroke="#36c7b5" stroke-width="2" />
-        <ellipse cx="150" cy="65" rx="15" ry="6" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
-        <!-- Rogers Centre Dome -->
-        <path d="M70 180 C 70 140, 110 140, 110 180 Z" fill="#1b536e" opacity="0.8" />
-        <!-- Downtown skyscrapers -->
-        <rect x="180" y="60" width="45" height="120" fill="#12455d" />
-        <rect x="235" y="80" width="40" height="100" fill="#1b536e" opacity="0.8" />
-        <rect x="290" y="110" width="50" height="70" fill="#2f6278" opacity="0.7" />
-      </svg>
-    </article>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     UNIQUE EDUCATIONAL SECTIONS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="educational-topics" class="reveal">
-  <h2>The History of Greenwich Mean Time &amp; Eastern Time</h2>
-  <div class="content">
-    <article>
-      <h3>History of Greenwich Mean Time</h3>
-      <p>
-        Greenwich Mean Time (GMT) was originally established in 1675 when King Charles II founded the Royal Observatory in Greenwich, London, to help mariners calculate longitude at sea.
-      </p>
-      <p>
-        In 1884, the International Meridian Conference selected the Greenwich meridian as the official prime meridian (0° longitude) for global navigation and timekeeping. This established GMT as the primary solar time standard for the world.
-      </p>
-    </article>
-    <article>
-      <h3>History of the Eastern Time Zone</h3>
-      <p>
-        Before standard time zones were established, municipalities in North America kept local solar time, leading to scheduling confusion on railroad networks. In 1883, railroads coordinated to establish four regional time zones.
-      </p>
-      <p>
-        The U.S. Congress formally codified these zones in the Standard Time Act of 1918, which officially defined Eastern Standard Time (EST) and established national daylight saving rules.
-      </p>
-    </article>
-  </div>
-
-  <h2>Why GMT and UTC Still Matter in a Digital World</h2>
-  <div class="content">
-    <article>
-      <h3>Coordinated Universal Time (UTC)</h3>
-      <p>
-        In 1972, Coordinated Universal Time (UTC) replaced GMT as the scientific atomic time standard. While GMT is based on the Earth's rotation, UTC is measured by highly precise atomic clocks.
-      </p>
-      <p>
-        For general scheduling, GMT and UTC are practically identical, but UTC is the standard used by modern operating systems, server logs, and software development frameworks.
-      </p>
-    </article>
-    <article>
-      <h3>DevOps, Cloud Deployments, and Support Shifts</h3>
-      <p>
-        SaaS companies routinely coordinate database migrations and software releases using GMT/UTC timestamps to avoid downtime during business hours.
-      </p>
-      <p>
-        Customer support teams use timezone conversions to manage shift handovers between UK, US, and Asian desks, ensuring 24/7 service coverage.
-      </p>
-    </article>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 5: UTC VS GMT INFOGRAPHIC -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">UTC VS GMT: THE STANDARDS COMPARED</text>
-      
-      <!-- UTC Block -->
-      <g transform="translate(100, 60)">
-        <rect x="0" y="0" width="220" height="90" rx="8" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
-        <text x="110" y="30" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#36c7b5" text-anchor="middle">UTC (Coordinated)</text>
-        <text x="110" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">Atomic Time Reference</text>
-        <text x="110" y="72" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Primary Scientific Standard</text>
-      </g>
-      
-      <!-- GMT Block -->
-      <g transform="translate(480, 60)">
-        <rect x="0" y="0" width="220" height="90" rx="8" fill="#0c354a" stroke="#2f6278" stroke-width="2" />
-        <text x="110" y="30" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#bdd2dc" text-anchor="middle">GMT (Greenwich)</text>
-        <text x="110" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">Astronomical solar time</text>
-        <text x="110" y="72" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Civil Time Standard</text>
-      </g>
-
-      <!-- Equals -->
-      <text x="370" y="115" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="bold" fill="#8fd7ff" text-anchor="middle">=</text>
-    </svg>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 8: DST CALENDAR TIMELINE -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">EASTERN TIME DST CALENDAR TRANSITIONS</text>
-      
-      <!-- March Spring Forward -->
-      <g transform="translate(80, 60)">
-        <rect x="0" y="0" width="280" height="110" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
-        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">March: Spring Forward</text>
-        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">Second Sunday of March</text>
-        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">2:00 AM EST becomes 3:00 AM EDT</text>
-        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Offset changes to UTC-4</text>
-      </g>
-      
-      <!-- November Fall Back -->
-      <g transform="translate(440, 60)">
-        <rect x="0" y="0" width="280" height="110" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
-        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#bdd2dc" text-anchor="middle">November: Fall Back</text>
-        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">First Sunday of November</text>
-        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">2:00 AM EDT becomes 1:00 AM EST</text>
-        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Offset changes to UTC-5</text>
-      </g>
-    </svg>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 10: WORLD TIMEZONE COMPARISON -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">GLOBAL CORRIDORS (AT 12:00 PM GMT)</text>
-      
-      <!-- Cities -->
-      <!-- London -->
-      <g transform="translate(100, 100)">
-        <circle cx="0" cy="0" r="35" fill="#0c354a" stroke="#bdd2dc" stroke-width="2" />
-        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">12:00</text>
-        <text x="0" y="55" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">London</text>
-      </g>
-
-      <!-- New York -->
-      <g transform="translate(300, 100)">
-        <circle cx="0" cy="0" r="35" fill="#0b2a3a" stroke="#36c7b5" stroke-width="2" />
-        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">07:00</text>
-        <text x="0" y="55" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">New York</text>
-      </g>
-
-      <!-- Chicago -->
-      <g transform="translate(500, 100)">
-        <circle cx="0" cy="0" r="35" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
-        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">06:00</text>
-        <text x="0" y="55" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Chicago</text>
-      </g>
-
-      <!-- Tokyo -->
-      <g transform="translate(700, 100)">
-        <circle cx="0" cy="0" r="35" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
-        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">21:00</text>
-        <text x="0" y="55" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Tokyo</text>
-      </g>
-
-      <!-- Connectors -->
-      <line x1="135" y1="100" x2="265" y2="100" stroke="#36c7b5" stroke-width="2" stroke-dasharray="4 4" />
-      <line x1="335" y1="100" x2="465" y2="100" stroke="#2f6278" stroke-width="2" stroke-dasharray="4 4" />
-      <line x1="535" y1="100" x2="665" y2="100" stroke="#2f6278" stroke-width="2" stroke-dasharray="4 4" />
-    </svg>
-  </div>
-</section>
-
-<!-- ILLUSTRATION 2: INTERACTIVE WORLD MAP / CONNECTION MAP -->
-<section class="reveal" style="padding: 0 0 24px;">
-  <div class="hero-visual" style="max-width: 800px; margin: 0 auto;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
-      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT-0 TO UTC-5 MERIDIAN CONNECTION ARC</text>
-      
-      <!-- Coordinate lines representation -->
-      <path d="M 200 60 C 350 140, 450 140, 600 60" fill="none" stroke="url(#accentGrad)" stroke-width="3" stroke-dasharray="8 4" />
-      
-      <!-- Dots -->
-      <circle cx="200" cy="60" r="10" fill="#36c7b5" />
-      <text x="200" y="45" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">London (GMT)</text>
-      
-      <circle cx="600" cy="60" r="10" fill="#8fd7ff" />
-      <text x="600" y="45" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
-    </svg>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     COMMON CONFUSIONS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="common-confusions" class="source-notes reveal">
-  <h2>Common Confusions: GMT, UTC, EST, and EDT</h2>
-  <p>
-    Timezone terminology can be confusing. Let's clarify the key definitions and differences:
-  </p>
-  <ul>
-    <li>
-      <strong>GMT vs. UTC</strong>: GMT is a solar time standard based on the prime meridian in Greenwich. UTC is the modern atomic time standard. While they operate at the same offset (+0) for general purposes, UTC is the standard used in computer science and network protocols.
-    </li>
-    <li>
-      <strong>EST vs. ET</strong>: Eastern Standard Time (EST) refers specifically to the winter offset of UTC-5. Eastern Time (ET) is the general name of the timezone corridor, which encompasses both EST (winter) and Eastern Daylight Time (EDT, UTC-4, summer).
-    </li>
-    <li>
-      <strong>EST vs. EDT</strong>: EST is UTC-5, active from early November to mid-March. EDT is UTC-4, active during daylight saving hours from mid-March to early November.
-    </li>
-  </ul>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     FAQ SECTION
-     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FAQ SECTION -->
 <section id="faq" class="reveal">
   <h2>Frequently Asked Questions</h2>
   <p>
-    Review these detailed answers to resolve common questions regarding Greenwich Mean Time and Eastern Time:
+    Review these general answers to resolve common questions about time zones, atomic standards, and daylight saving transitions:
   </p>
   <div class="faq">
     {faqs.map((faq) => (
@@ -1046,47 +281,6 @@ const metaProps = {
         </p>
       </details>
     ))}
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     INTERNAL NAVIGATION LINKS
-     ═══════════════════════════════════════════════════════════════════════ -->
-<section id="other-tools" class="reveal">
-  <h2>Additional Time Zone Resources</h2>
-  <p>
-    Need other conversions? Explore our other dedicated timezone resources:
-  </p>
-  <div class="tools-grid">
-    <div class="tools-list">
-      <h3>GMT Timezone Conversions</h3>
-      <div class="tools-link-groups">
-        <ul>
-          <li><a href="/gmt-to-eet/">GMT to EET</a></li>
-          <li><a href="/gmt-to-idt/">GMT to IDT</a></li>
-          <li><a href="/gmt-to-bst/">GMT to BST</a></li>
-          <li><a href="/gmt-to-aest/">GMT to AEST</a></li>
-          <li><a href="/gmt-to-nzst/">GMT to NZST</a></li>
-          <li><a href="/gmt-to-acdt/">GMT to ACDT</a></li>
-          <li><a href="/gmt-to-cdt/">GMT to CDT</a></li>
-          <li><a href="/gmt-to-eat/">GMT to EAT</a></li>
-          <li><a href="/gmt-to-ist/">GMT to IST</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="tools-list">
-      <h3>Eastern &amp; Standard Conversions</h3>
-      <div class="tools-link-groups">
-        <ul>
-          <li><a href="/est-to-gmt/">EST to GMT reverse</a></li>
-          <li><a href="/cdt-to-est/">CDT to EST</a></li>
-          <li><a href="/eest-to-est/">EEST to EST</a></li>
-          <li><a href="/aest-to-est/">AEST to EST</a></li>
-          <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
-        </ul>
-      </div>
-    </div>
   </div>
 </section>
 
