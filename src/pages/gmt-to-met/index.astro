@@ -1,0 +1,1363 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getLang, getTranslation, getPageMeta } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-met";
+const t = getTranslation(lang);
+const meta = getPageMeta(lang, "gmtToMet");
+
+const seoTitle = "GMT to MET Converter – Convert GMT to Middle European Time";
+const pageDescription = "Convert GMT to MET instantly. Access the 24-hour conversion chart, check DST changes between GMT and Europe, and plan meetings with our calculator.";
+
+const context = {
+  from: "GMT",
+  to: "MET",
+  fromZone: "UTC",
+  toZone: "Europe/Berlin"
+};
+
+const canonical = "https://gmttoestconverter.com/gmt-to-met/";
+
+// Helper to format 12-hour values
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+// Generate the 24-hour comparative table rows (MET = GMT + 1, MEST = GMT + 2)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const metHour = (hour + 1) % 24;
+  const metDayDiff = (hour + 1) >= 24 ? "Next day" : "Same day";
+
+  const mestHour = (hour + 2) % 24;
+  const mestDayDiff = (hour + 2) >= 24 ? "Next day" : "Same day";
+
+  return {
+    gmt: formatHour12(hour),
+    met: `${formatHour12(metHour)} MET (${metDayDiff})`,
+    mest: `${formatHour12(mestHour)} MEST (${mestDayDiff})`,
+    offset: "GMT is UTC+0 | MET is UTC+1 / MEST is UTC+2",
+    notes: `Winter gap: 1h (MET). Summer gap: 2h (MEST relative to GMT baseline).`
+  };
+});
+
+// JSON-LD Schema definitions
+const schemaData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GMT to MET Converter",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "url": canonical,
+    "description": "Free online GMT to MET converter with real-time clocks, DST-aware calculations, and Europe timezone guidelines."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MET stands for Middle European Time. It operates at a UTC+1 offset during the winter months, serving as the standard timezone for Central European countries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does MET stand for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MET stands for Middle European Time, the designation for the timezone equivalent to Central European Time (CET, UTC+1) used in winter."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is MET the same as CET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Middle European Time (MET) and Central European Time (CET) both refer to the same timezone offset of UTC+1 used during the standard winter period."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does MET observe daylight saving time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. During the summer, standard MET regions switch to Middle European Summer Time (MEST) or Central European Summer Time (CEST), shifting from UTC+1 to UTC+2."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between MET and CEST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MET is standard winter time (UTC+1), while CEST (Central European Summer Time) is summer daylight saving time (UTC+2). Clocks shift forward one hour in spring."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many hours ahead is MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MET (standard winter time) is exactly 1 hour ahead of Greenwich Mean Time (GMT). In summer, when Europe switches to CEST (UTC+2), the difference relative to GMT (UTC+0) becomes 2 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which countries use MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Countries observing MET standard or equivalent include Germany, France, Italy, Spain, Poland, Austria, Switzerland, Belgium, Netherlands, and Luxembourg."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which cities use MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Major cities observing MET in winter include Berlin, Vienna, Zurich, Amsterdam, Brussels, Paris, Rome, Madrid, Warsaw, and Luxembourg City."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert future dates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Our converter is date-aware, meaning it checks the selected date to automatically apply the 1-hour winter gap (MET) or the 2-hour summer gap (MEST) depending on active transitions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this converter account for DST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The tool automatically detects daylight saving transitions in both the source and target regions, maintaining accurate real-world coordination."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this converter for business meetings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is designed to help corporate coordinators, remote workers, and software teams align business schedules across European regions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter accurate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our converter is synchronized with the IANA Time Zone Database, providing offsets that account for regional clock adjustments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it for travel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is helpful for planning travel itineraries, flight schedules, and train transfers throughout continental Europe."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I bookmark this page?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can bookmark this page (/gmt-to-met/) for quick access to live clocks, comparative charts, meeting planners, and seasonal offset rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our GMT to MET converter is completely free to use with no registrations, limits, or subscriptions required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between GMT and UTC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT is a solar-based astronomical timezone, while UTC is an atomic-based scientific standard. For civil timekeeping, they share the same base offset (+0)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is MET vs CET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Middle European Time (MET) and Central European Time (CET) refer to the same winter timezone offset of UTC+1."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is MET vs CEST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MET is standard winter time (UTC+1), while CEST (Central European Summer Time) is summer daylight saving time (UTC+2)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does Europe change clocks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "European nations shift clocks during the summer to extend evening daylight hours, reducing energy consumption and aligning social schedules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does DST affect conversion accuracy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Daylight saving shifts change the relative offset between regions. Date-aware conversion prevents errors during spring and autumn transition windows."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the time difference between London and Berlin in summer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In summer, London is on BST (UTC+1) and Berlin is on CEST (UTC+2). The local time difference remains exactly 1 hour."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Germany use MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Germany observes Middle European Time (MET/CET, UTC+1) in winter and Central European Summer Time (CEST, UTC+2) in summer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Switzerland use MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Switzerland observes Middle European Time (UTC+1) in winter and Central European Summer Time (UTC+2) in summer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the financial sector use MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, European financial markets like the Frankfurt Stock Exchange (Xetra) and Zurich Exchange operate according to local MET/CEST clocks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do flight schedules handle MET to GMT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Airlines list all arrival and departure times in local formats (MET or GMT), making timezone conversion essential for transit logs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do universities coordinate webinars on MET?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Universities publish schedules in local formats, requiring international participants to check active daylight offsets."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who is the editorial reviewer for this timezone data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Timezone content and calculator code are reviewed by Jackie Bruce, our content specialist, ensuring technical accuracy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What database is used for these calculations?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses the official IANA Time Zone Database, maintaining synchronization with global time standards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Belgium use MET standard?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Belgium observes Middle European Time (UTC+1) in winter and Central European Summer Time (UTC+2) in summer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a mobile version of this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our responsive web application is optimized for mobile displays, adjusting layout elements for easy use on smartphones."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://gmttoestconverter.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "GMT to MET Converter",
+        "item": canonical
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to MET"
+  hreflangCodes={["en"]}
+>
+
+<!-- Inject additional JSON-LD Schemas -->
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1: GMT TO MET CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to MET Converter
+  </h1>
+</section>
+
+<!-- LIVE CONVERTER COMPONENT -->
+<section class="converter-wrapper reveal" id="calculator-section">
+  <div class="converter-box">
+    <Converter
+      lang={lang}
+      dir={dir}
+      slug={slug}
+      t={t}
+      context={context}
+    />
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Key Specifications">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clock Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>DST Transition Detection</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>IANA Database Standards</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     1. CONVERT GMT TO MIDDLE EUROPEAN TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="convert-instantly">
+  <div class="method-intro">
+    <div class="eyebrow">Instant Calculation</div>
+    <h2>Convert GMT to Middle European Time</h2>
+    <p>
+      Our synchronization engine converts Greenwich Mean Time (GMT) to Middle European Time (MET) and Middle European Summer Time (MEST) dynamically. Select your preferred date, enter the source time, and retrieve the translated value instantly.
+    </p>
+    <p>
+      This calculator supports scheduling, travel, and logistics operations. By referencing official databases, it ensures conversions are accurate.
+    </p>
+  </div>
+  
+  <!-- SVG 1: HERO WORLD CLOCK -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO MET SYNCHRONIZED WORLD CLOCK</text>
+      
+      <!-- GMT Clock Dial -->
+      <g transform="translate(220, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-35" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+      
+      <!-- Sync Arrow -->
+      <path d="M 370 130 L 430 130" stroke="#36c7b5" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+      <text x="400" y="115" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">1-2h Shift</text>
+      
+      <!-- MET Clock Dial -->
+      <g transform="translate(580, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="15" y2="-30" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="10" stroke="#8fd7ff" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">MET (UTC+1)</text>
+      </g>
+      
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#36c7b5" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     2. CURRENT GMT AND MET TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="current-clocks">
+  <h2 style="grid-column: 1 / -1; margin-bottom: 8px;">Current GMT and MET Time</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Greenwich Mean Time Clock</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+0 Base Meridian</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Middle European Time Clock (Berlin)</span>
+    <strong id="estClock">--:--:-- ET</strong>
+    <p>Active Offset: <em id="estZone">ET</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     3. WHAT IS MIDDLE EUROPEAN TIME (MET)?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="what-is-met">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Definition</div>
+    <h2>What is Middle European Time (MET)?</h2>
+    <p>
+      Middle European Time (MET) is the standard winter timezone offset used in Central European countries, operating at a UTC+1 offset.
+    </p>
+    <p>
+      During the summer, regions observing standard MET transition to Middle European Summer Time (MEST) at UTC+2, which aligns with daylight saving transitions in the US and UK.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     4. UNDERSTANDING MET AND UTC+1
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="understanding-met">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Geography</div>
+    <h2>Understanding MET and UTC+1</h2>
+    <p>
+      MET operates at a UTC+1 offset, meaning it is one hour ahead of Coordinated Universal Time (UTC) and Greenwich Mean Time (GMT).
+    </p>
+    <p>
+      This offset spans major European economies, coordinating commercial operations across Germany, France, Italy, Spain, and Poland.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     5. GMT VS MET
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="gmt-vs-met">
+  <div class="method-intro">
+    <div class="eyebrow">Standard Clarifications</div>
+    <h2>GMT vs MET</h2>
+    <p>
+      Greenwich Mean Time (GMT) is a solar-based baseline timezone that remains constant year-round. Middle European Time (MET) is the standard winter timezone for Central Europe.
+    </p>
+    <p>
+      In winter, MET is 1 hour ahead of GMT. In summer, standard MET regions switch to MEST (UTC+2) while the UK transitions to BST (UTC+1), keeping the local time gap at exactly 1 hour.
+    </p>
+  </div>
+  
+  <!-- SVG 2: GMT → MET TIMELINE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT VS MET SEASONAL TIMELINE OFFSET</text>
+      <line x1="80" y1="100" x2="720" y2="100" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- GMT Node -->
+      <circle cx="250" cy="100" r="10" fill="#36c7b5" />
+      <text x="250" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      <text x="250" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Greenwich Meridian</text>
+
+      <!-- MET Node -->
+      <circle cx="550" cy="100" r="10" fill="#8fd7ff" />
+      <text x="550" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">MET (UTC+1)</text>
+      <text x="550" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Central Europe (Winter)</text>
+
+      <path d="M 250 100 L 250 115 L 550 115 L 550 100" fill="none" stroke="#36c7b5" stroke-width="1.5" opacity="0.5" />
+      <text x="400" y="150" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">1-Hour Winter Gap | 2-Hour Summer Gap (MEST)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     6. MET VS CET
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="met-vs-cet">
+  <div class="method-intro">
+    <div class="eyebrow">Name Comparison</div>
+    <h2>MET vs CET</h2>
+    <p>
+      MET (Middle European Time) and CET (Central European Time) both refer to the same timezone offset of UTC+1 used during the standard winter period.
+    </p>
+    <p>
+      While CET is the more common abbreviation in modern scheduling, MET remains active in historical records and specialized industries.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     7. MET VS CEST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="met-vs-cest">
+  <div class="method-intro">
+    <div class="eyebrow">Summer Shifts</div>
+    <h2>MET vs CEST</h2>
+    <p>
+      MET is standard winter time (UTC+1), while CEST (Central European Summer Time) is summer daylight saving time (UTC+2).
+    </p>
+    <p>
+      Central European nations transition from MET to CEST in spring, shifting clocks forward one hour.
+    </p>
+  </div>
+  
+  <!-- SVG 3: GMT VS MET COMPARISON INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">EUROPEAN TIMING TERMINOLOGY</text>
+      
+      <!-- MET Block -->
+      <rect x="150" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="260" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">MET / CET</text>
+      <text x="260" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Standard Winter Time</text>
+      <text x="260" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#36c7b5" font-weight="bold">UTC+1 Offset</text>
+      
+      <!-- CEST Block -->
+      <rect x="430" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="540" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">MEST / CEST</text>
+      <text x="540" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Daylight Summer Time</text>
+      <text x="540" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#8fd7ff" font-weight="bold">UTC+2 Offset</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     8. GMT TO MET TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="time-difference">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Gaps</div>
+    <h2>GMT to MET Time Difference</h2>
+    <p>
+      The timezone difference between GMT and Central Europe varies seasonally:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Standard Winter Time (MET)</strong>: Central Europe is 1 hour ahead of GMT.</li>
+      <li><strong>Daylight Saving Summer Time (MEST)</strong>: Central Europe is 2 hours ahead of GMT.</li>
+    </ul>
+    <p>
+      This seasonal shift requires remote teams to verify the date when coordinating schedules.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     9. DOES MET OBSERVE DAYLIGHT SAVING TIME?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="does-met-observe-dst">
+  <div class="method-intro">
+    <div class="eyebrow">DST Rules</div>
+    <h2>Does MET Observe Daylight Saving Time?</h2>
+    <p>
+      Yes, MET observes Daylight Saving Time, transitioning to MEST (UTC+2) in summer. Clocks shift on the last Sunday of March and the last Sunday of October.
+    </p>
+  </div>
+  
+  <!-- SVG 4: DST TRANSITION INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">EUROPEAN DST TRANSITIONS</text>
+      
+      <!-- Spring Block -->
+      <g transform="translate(80, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">Spring Forward (March)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Last Sunday of March at 1:00 AM UTC</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Clocks shift forward: MET -> MEST</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New Offset: UTC+2</text>
+      </g>
+      
+      <!-- Autumn Block -->
+      <g transform="translate(440, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Fall Back (October)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Last Sunday of October at 1:00 AM UTC</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Clocks shift backward: MEST -> MET</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New Offset: UTC+1</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     10. HOW MET CHANGES DURING SUMMER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-met-changes-summer">
+  <div class="method-intro">
+    <div class="eyebrow">Summer Offset Shifts</div>
+    <h2>How MET Changes During Summer</h2>
+    <p>
+      During the summer period (late March to late October), the offset gap relative to GMT (UTC+0) shifts to 2 hours because Central Europe transitions to UTC+2.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     11. COUNTRIES USING MET
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="countries-using-met">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Geography</div>
+    <h2>Countries Using MET</h2>
+    <p>
+      Middle European Time standard applies to all Central European countries:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Germany</strong>: Coordinates its industrial hubs in Munich, Frankfurt, and Berlin on MET/MEST clocks.</li>
+      <li><strong>Austria</strong>: Observes standard MET in winter, shifting to MEST in summer.</li>
+      <li><strong>Switzerland</strong>: Synchronizes its financial centers in Zurich and Geneva on MET/MEST.</li>
+      <li><strong>Belgium, Netherlands, Luxembourg</strong>: Coordinate their maritime ports and trade centers on MET.</li>
+    </ul>
+  </div>
+  
+  <!-- SVG 5: EUROPE MAP HIGHLIGHTING MET/CET REGION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">MET/CET ZONE MAP</text>
+      
+      <!-- Central Europe Block -->
+      <rect x="250" y="70" width="300" height="130" fill="#12455d" stroke="#36c7b5" stroke-width="2.5" rx="4" />
+      <text x="400" y="130" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#36c7b5" text-anchor="middle">Central Europe (MET Zone)</text>
+      <text x="400" y="155" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Germany | Austria | Switzerland | Benelux</text>
+      <text x="400" y="175" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#f4fbff" font-weight="bold">UTC+1 / UTC+2 DST</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     12. MAJOR EUROPEAN CITIES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="major-cities">
+  <h2>Major European Cities</h2>
+  <p>
+    Major municipal, financial, and industrial centers observing MET standard include:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Berlin (Germany)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates Germany's commercial, financial, and administrative operations on MET/MEST clocks.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Vienna (Austria)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A major cultural and administrative hub in Central Europe, observing MET seasonally.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Zurich (Switzerland)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A global financial hub coordinating international asset management on MET clocks.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Amsterdam (Netherlands)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates trade and shipping logistics, synchronizing with MET year-round.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Brussels (Belgium)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The administrative center of the EU, managing policy schedules on MET/MEST.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Luxembourg City</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates financial services and administrative offices on local MET clocks.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     13. BUSINESS HOURS BETWEEN GMT AND EUROPE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="business-hours">
+  <div class="method-intro">
+    <div class="eyebrow">Workday Dynamics</div>
+    <h2>Business Hours Between GMT and Europe</h2>
+    <p>
+      Because the gap is only 1-2 hours, standard business shifts (9:00 AM to 5:00 PM local times) have excellent overlap.
+    </p>
+    <p>
+      This allows real-time meetings and workflows to occur easily, with only minor schedule differences.
+    </p>
+  </div>
+  
+  <!-- SVG 6: BUSINESS HOURS OVERLAP CHART -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO MET BUSINESS HOURS GRID</text>
+      
+      <!-- GMT Office Hours -->
+      <g transform="translate(100, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT Office (09:00 - 17:00)</text>
+      </g>
+      
+      <!-- MET Office Hours -->
+      <g transform="translate(500, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">MET Office (09:00 - 17:00)</text>
+      </g>
+
+      <!-- Overlap Connection -->
+      <path d="M 300 95 C 400 135, 400 135, 500 95" fill="none" stroke="#36c7b5" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="400" y="165" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Overlap Window: 08:00 - 16:00 GMT / 09:00 - 17:00 MET</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     14. FINANCIAL MARKET COORDINATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="financial-coordination">
+  <div class="method-intro">
+    <div class="eyebrow">Financial Services</div>
+    <h2>Financial Market Coordination</h2>
+    <p>
+      Central European financial markets like the Frankfurt Stock Exchange (Xetra) and Zurich Exchange operate according to local MET/CEST clocks.
+    </p>
+    <p>
+      Converting GMT times to MET is essential for financial institutions coordinating trades and settlements.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     15. TRAVEL PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="travel-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Itinerary Optimization</div>
+    <h2>Travel Planning</h2>
+    <p>
+      Planning travel between the UK and continental Europe requires adjusting to local time to manage hotel bookings, train transfers, and flight connections.
+    </p>
+  </div>
+  
+  <!-- SVG 7: TRAVEL PLANNING ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">TRANS-EUROPE TRANSIT DYNAMICS</text>
+      
+      <!-- Travel Path -->
+      <path d="M 150 120 C 300 20, 500 20, 650 120" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+      
+      <circle cx="150" cy="120" r="8" fill="#36c7b5" />
+      <text x="150" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Departure: LHR (GMT)</text>
+      
+      <circle cx="650" cy="120" r="8" fill="#8fd7ff" />
+      <text x="650" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">Arrival: BER (MET)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     16. INTERNATIONAL CONFERENCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="conferences">
+  <div class="method-intro">
+    <div class="eyebrow">Webinar Coordination</div>
+    <h2>International Conferences</h2>
+    <p>
+      Planning global webinars requires selecting session times that accommodate participants in both the UK and continental Europe.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     17. REMOTE TEAMS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="remote-teams">
+  <div class="method-intro">
+    <div class="eyebrow">Workplace Sync</div>
+    <h2>Remote Teams</h2>
+    <p>
+      Remote teams operating across GMT and MET must manage the 1-2 hour difference. While asynchronous communication is useful, standard meetings are easy to coordinate.
+    </p>
+  </div>
+  
+  <!-- SVG 8: WORLD CLOCK COMPARISON -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">SYNCHRONIZED REGIONAL BASELINE CLOCKS</text>
+      
+      <!-- London Clock -->
+      <g transform="translate(150, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="0" y2="-20" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">London (GMT)</text>
+      </g>
+      
+      <!-- Berlin Clock -->
+      <g transform="translate(310, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <line x1="0" y1="0" x2="15" y2="-15" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Berlin (MET)</text>
+      </g>
+      
+      <!-- New York Clock -->
+      <g transform="translate(470, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
+      </g>
+      
+      <!-- Singapore Clock -->
+      <g transform="translate(630, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Singapore (SGT)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     18. SOFTWARE DEVELOPMENT ACROSS EUROPE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="software-dev">
+  <div class="method-intro">
+    <div class="eyebrow">Dev Ops Coordination</div>
+    <h2>Software Development Across Europe</h2>
+    <p>
+      Software engineering teams coordinating across Europe and the UK must schedule deployments to minimize disruption to users.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     19. EDUCATION AND ONLINE CLASSES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="education">
+  <div class="method-intro">
+    <div class="eyebrow">Academic Coordination</div>
+    <h2>Education and Online Classes</h2>
+    <p>
+      Universities and online learning platforms host courses for students in different time zones. Converting GMT assignment deadlines to MET is essential to ensure students submit coursework on time.
+    </p>
+  </div>
+  
+  <!-- SVG 9: MEETING PLANNER GRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO MET VISUAL MEETING PLANNER</text>
+      
+      <!-- GMT Timeline -->
+      <g transform="translate(50, 70)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#f4fbff" font-weight="bold">GMT:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 9 + i;
+          const label = `${hour}:00`;
+          const isOverlap = hour === 9 || hour === 10;
+          const bg = isOverlap ? "#36c7b5" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+      
+      <!-- MET Timeline -->
+      <g transform="translate(50, 130)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#8fd7ff" font-weight="bold">MET:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 10 + i;
+          const label = `${hour}:00`;
+          const isOverlap = hour === 10 || hour === 11;
+          const bg = isOverlap ? "#8fd7ff" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     20. 24-HOUR GMT TO MET CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-table">
+  <h2>24-Hour GMT to MET Conversion Table</h2>
+  <p>
+    This comparative index maps every hour of Greenwich Mean Time (GMT) to Middle European Time (MET) and Middle European Summer Time (MEST), highlighting the changes in offset during seasonal transitions.
+  </p>
+  
+  <div class="table-container" style="overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: var(--panel); border-bottom: 2px solid var(--line);">
+          <th style="padding: 12px; font-weight: bold; color: var(--accent);">GMT (UTC+0)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--text);">MET (Winter, UTC+1)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--accent-2);">MEST (Summer, UTC+2)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr style="border-bottom: 1px solid var(--line); transition: background 0.2s;">
+            <td style="padding: 10px 12px; font-weight: bold; color: var(--accent);">{row.gmt}</td>
+            <td style="padding: 10px 12px; color: var(--text);">{row.met}</td>
+            <td style="padding: 10px 12px; color: var(--accent-2);">{row.mest}</td>
+            <td style="padding: 10px 12px; font-size: 0.9em; color: var(--muted);">{row.notes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     21. POPULAR GMT TO MET EXAMPLES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-examples">
+  <h2>Popular GMT to MET Examples</h2>
+  <p>
+    Review these hourly conversion examples to see how Greenwich Mean Time values translate to Middle European Time (MET) and Middle European Summer Time (MEST).
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <!-- Hourly Examples 1-35 -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 AM (Midnight) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>1:00 AM (Same Day)</strong> | MEST: <strong>2:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midnight in London corresponds to early morning hours in Central Europe as systems process night updates.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>2:00 AM (Same Day)</strong> | MEST: <strong>3:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London support teams log off as Central European datacenters process daily transactions.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>3:00 AM (Same Day)</strong> | MEST: <strong>4:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European SRE teams monitor platform uptime before morning traffic starts.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>4:00 AM (Same Day)</strong> | MEST: <strong>5:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Early commuters in Central Europe prepare for work while London remains asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>5:00 AM (Same Day)</strong> | MEST: <strong>6:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Pre-market workflows commence in Frankfurt while London prepares for the day.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>6:00 AM (Same Day)</strong> | MEST: <strong>7:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European logistics centers reach peak sorting volumes as morning shifts start.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>7:00 AM (Same Day)</strong> | MEST: <strong>8:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices in Central Europe open at 8:00 AM local time, which aligns with 6:00 AM GMT.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>8:00 AM (Same Day)</strong> | MEST: <strong>9:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Corporate offices in Berlin open as London commuters prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>9:00 AM (Same Day)</strong> | MEST: <strong>10:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London exchanges open, initiating financial transactions across Europe.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>10:00 AM (Same Day)</strong> | MEST: <strong>11:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Peak morning productivity is reached in Central European offices.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>11:00 AM (Same Day)</strong> | MEST: <strong>12:00 PM (Noon) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday approaches in Berlin while London teams conduct morning stand-ups.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>12:00 PM (Noon) (Same Day)</strong> | MEST: <strong>1:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European lunch breaks conclude as UK teams return from morning breaks.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>1:00 PM (Same Day)</strong> | MEST: <strong>2:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Lunch sessions start in London as afternoon tasks begin in Europe.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>2:00 PM (Same Day)</strong> | MEST: <strong>3:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK teams return from lunch to coordinate on afternoon project syncs.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>3:00 PM (Same Day)</strong> | MEST: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">NYSE and NASDAQ bells ring, initiating East Coast trading sessions.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>4:00 PM (Same Day)</strong> | MEST: <strong>5:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European stock markets enter their final trading hours as US offices open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>5:00 PM (Same Day)</strong> | MEST: <strong>6:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Standard office hours close in Central Europe as London enters late afternoon.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>6:00 PM (Same Day)</strong> | MEST: <strong>7:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London offices close as European teams transition to evening schedules.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>7:00 PM (Same Day)</strong> | MEST: <strong>8:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London workers begin their evening commutes as European teams log off.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>8:00 PM (Same Day)</strong> | MEST: <strong>9:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK SRE contractors perform system handovers to active night shifts.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>9:00 PM (Same Day)</strong> | MEST: <strong>10:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK retail portals switch to automated evening routines as European offices stand empty.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>10:00 PM (Same Day)</strong> | MEST: <strong>11:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">NYSE and NASDAQ close, and transactions process through clearing houses.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>11:00 PM (Same Day)</strong> | MEST: <strong>12:00 AM (Midnight) (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Post-market trading starts in New York while European systems run nighttime backups.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>12:00 AM (Midnight) (Next Day)</strong> | MEST: <strong>1:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European platforms transition to backup nodes as standard offices are closed.</p>
+    </div>
+
+    <!-- Extra Examples for 30+ Total -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:30 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>9:30 AM (Same Day)</strong> | MEST: <strong>10:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Morning financial assessments begin in Europe, ahead of East Coast pre-market trading activity.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>1:30 PM (Same Day)</strong> | MEST: <strong>2:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US economic reports are released, impacting markets in London and Frankfurt.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>6:30 PM (Same Day)</strong> | MEST: <strong>7:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European stock markets close while US offices reach peak daily volume.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>10:30 PM (Same Day)</strong> | MEST: <strong>11:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Post-closing settlements process in New York as European engineers review logs.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">MET: <strong>12:30 AM (Next Day)</strong> | MEST: <strong>1:30 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Trans-Atlantic server backups run overnight to sync transactional records between UK and Germany.</p>
+    </div>
+
+    <!-- Reverse conversions to hit 35 total examples -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>7:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the European business day corresponds to early morning in London.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>8:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices open in Berlin as London teams prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>11:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in Berlin corresponds to late morning in London, before lunch sessions.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Office hours close in Berlin as London enters late afternoon.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>5:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening schedules begin in Berlin as London offices close.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM MET</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>8:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late evening in Berlin corresponds to night hours in London.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     22. REAL WORLD SCHEDULING SCENARIOS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="real-world-scenarios">
+  <div class="method-intro">
+    <div class="eyebrow">Practical Use Cases</div>
+    <h2>Real World Scheduling Scenarios</h2>
+    <p>
+      To help visualize how the 1-2 hour gap impacts daily activities, consider these common scheduling scenarios:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Morning Handovers</strong>: At 9:00 AM MET (8:00 AM GMT), Berlin teams start their workday and receive logs from London teams finishing their night shifts.</li>
+      <li><strong>Asynchronous Development</strong>: Developers in Berlin commit code at 5:00 PM MET, which is ready for review by London developers starting their day at 9:00 AM GMT.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     23. HOW THIS CONVERTER WORKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Logical Architecture</div>
+    <h2>How This Converter Works</h2>
+    <p>
+      Our converter processes timezone conversions in the browser using Javascript. When you enter a source time, the converter references the offset database to calculate the local time in Central Europe.
+    </p>
+    <p>
+      It applies standard IANA database rules, ensuring calculations account for date shifts and regional timezone variations.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24. TIME ZONE ACCURACY
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="accuracy">
+  <div class="method-intro">
+    <div class="eyebrow">Calculated Accuracy</div>
+    <h2>Time Zone Accuracy</h2>
+    <p>
+      Timezone rules change frequently as governments adjust daylight saving dates and offsets. To ensure accuracy, our converter is updated to match official database changes.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     25. DATA SOURCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="sources">
+  <div class="method-intro">
+    <div class="eyebrow">Data Verification</div>
+    <h2>Data Sources</h2>
+    <p>
+      We rely on the official **IANA Time Zone Database** (specifically the `Europe/Berlin` zone files) to manage timezone offsets and historical transitions. This database is maintained by the Internet Assigned Numbers Authority.
+    </p>
+  </div>
+  
+  <!-- SVG 10: 1200X630 OPEN GRAPH SOCIAL SHARING IMAGE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="600" y="160" font-family="'Space Grotesk', sans-serif" font-size="44" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO MET CONVERTER</text>
+      <text x="600" y="240" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="bold" fill="#f4fbff" text-anchor="middle">Live Clocks & Timezone Guide</text>
+      
+      <!-- Timeline Line -->
+      <line x1="200" y1="360" x2="1000" y2="360" stroke="#2f6278" stroke-width="6" />
+      
+      <!-- London Node -->
+      <circle cx="350" cy="360" r="16" fill="#36c7b5" />
+      <text x="350" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#36c7b5" text-anchor="middle">London (GMT)</text>
+      <text x="350" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC+0</text>
+      
+      <!-- Berlin Node -->
+      <circle cx="850" cy="360" r="16" fill="#8fd7ff" />
+      <text x="850" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#f4fbff" text-anchor="middle">Berlin (MET)</text>
+      <text x="850" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC+1 / UTC+2</text>
+      
+      <text x="600" y="520" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="bold" fill="#8fd7ff" text-anchor="middle">https://gmttoestconverter.com/gmt-to-met/</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     26. FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed answers to resolve common questions regarding Greenwich Mean Time and Middle European Time:
+  </p>
+  <div class="faq">
+    {schemaData[1].mainEntity.map((faq) => (
+      <details>
+        <summary>{faq.name}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.acceptedAnswer.text}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     27. FINAL SUMMARY & EEAT SIGNALS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes reveal" id="final-summary">
+  <h2>Final Summary</h2>
+  <p>
+    Converting **GMT to MET** involves managing a seasonal shift. Central Europe (MET) remains on a permanent UTC+1 offset during winter and UTC+2 offset during summer. This makes the time difference exactly 1 hour in winter and 2 hours in summer, requiring date-aware calculations for accurate scheduling.
+  </p>
+  <p>
+    <em>This resource is reviewed periodically to align with IANA adjustments. Review our <a href="/editorial-policy/" style="text-decoration: underline; color: var(--accent);">Editorial Policy</a> to understand how we maintain content accuracy.</em>
+  </p>
+  <p style="font-size: 0.9em; color: var(--muted); margin-top: 16px;">
+    Last Updated: October 2026 | Reviewed periodically by Jackie Bruce
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Explore our other dedicated time zone tools:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>GMT Conversions</h3>
+      <ul>
+        <li><a href="/gmt-to-awst/">GMT to AWST</a></li>
+        <li><a href="/gmt-to-akdt/">GMT to AKDT</a></li>
+        <li><a href="/gmt-to-est/">GMT to EST</a></li>
+        <li><a href="/gmt-to-ist/">GMT to IST</a></li>
+      </ul>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern Conversions</h3>
+      <ul>
+        <li><a href="/">Universal Time Zone Converter</a></li>
+        <li><a href="/est-to-gmt/">EST to GMT reverse</a></li>
+        <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        <li><a href="/about-us/">About Us</a></li>
+        <li><a href="/editorial-policy/">Editorial Policy</a></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
