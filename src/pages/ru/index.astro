@@ -1,0 +1,1177 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getLang, getTranslation, getPageMeta } from "theme/i18n/config";
+
+const lang = "ru";
+const dir = "ltr";
+const slug = "";
+const t = getTranslation(lang);
+const meta = getPageMeta(lang, "home");
+
+const seoTitle = "Конвертер GMT в EST | GMT в EST с учетом летнего времени";
+const pageDescription = "Мгновенно переводите время из GMT в EST или EDT. Живые часы, 24-часовая таблица разницы во времени, календарь перевода часов и ответы на вопросы.";
+
+const context = {
+  from: "GMT",
+  to: "EST",
+  fromZone: "UTC",
+  toZone: "America/New_York"
+};
+
+const canonical = "https://gmttoestconverter.com/ru/";
+
+// Helper to format 12-hour values
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+// Generate the 24-hour comparative table rows (EST = GMT - 5, EDT = GMT - 4)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = (hour - 5 + 24) % 24;
+  const estDayDiff = (hour - 5) < 0 ? "Предыдущий день" : "Тот же день";
+
+  const edtHour = (hour - 4 + 24) % 24;
+  const edtDayDiff = (hour - 4) < 0 ? "Предыдущий день" : "Тот же день";
+
+  return {
+    gmt: formatHour12(hour),
+    est: `${formatHour12(estHour)} EST (${estDayDiff})`,
+    edt: `${formatHour12(edtHour)} EDT (${edtDayDiff})`,
+    offset: "GMT (UTC+0) | EST (UTC-5) / EDT (UTC-4)",
+    notes: `Зимой: разница 5 ч (EST). Летом: разница 4 ч (EDT).`
+  };
+});
+
+// JSON-LD Schema definitions in Russian
+const schemaData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Конвертер GMT в EST",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "url": canonical,
+    "description": "Бесплатный онлайн-конвертер GMT в EST с живыми часами, учетом летнего времени и подробными таблицами разницы во времени."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Что такое GMT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT (Greenwich Mean Time) — это Среднее время по Гринвичу, которое служит астрономическим ориентиром и соответствует часовому поясу UTC+0."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Что такое EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EST (Eastern Standard Time) — это Восточное стандартное время в Северной Америке (UTC-5), используемое в зимние месяцы."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какова разница во времени между GMT и EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Зимой разница составляет 5 часов (EST отстает от GMT на 5 часов). Летом, во время действия летнего времени EDT (UTC-4), разница сокращается до 4 часов."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Когда действует летнее время EDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Летнее время EDT действует со второго воскресенья марта до первого воскресенья ноября. В этот период восточные регионы США и Канады переводят часы на 1 час вперед (UTC-4)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Учитывает ли этот конвертер летнее время?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, калькулятор является интеллектуальным и автоматически определяет, какой офсет (EST или EDT) действует на выбранную вами дату."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какая разница между GMT и UTC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT — это часовой пояс, основанный на вращении Земли, а UTC — это международный стандарт времени, основанный на атомных часах. В гражданской практике их значения совпадают."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какие города России наиболее зависимы от разницы GMT и EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Москва, Санкт-Петербург, Новосибирск, Екатеринбург и Владивосток активно координируют международные сделки, логистику и IT-процессы с США."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какое время в Москве относительно GMT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Московское время (MSK) находится на постоянном смещении UTC+3, что означает, что Москва всегда на 3 часа опережает GMT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как координировать встречи между Москвой и Нью-Йорком?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Лучшее время для звонков — с 16:00 до 19:00 по московскому времени, что соответствует 9:00–12:00 по времени Нью-Йорка (EDT летом) или 8:00–11:00 (EST зимой)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Подходит ли этот конвертер для планирования авиарейсов?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, калькулятор точно переводит часы отправления и прибытия, помогая составить правильный план поездки."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Бесплатен ли этот сервис?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, конвертер полностью бесплатен и не требует регистрации для проведения расчетов."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как переводится аббревиатура EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EST расшифровывается как Eastern Standard Time — Восточное стандартное время Северной Америки."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Использует ли Нью-Йорк летнее время?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, Нью-Йорк переходит на летнее время (EDT, UTC-4) в марте и возвращается на зимнее (EST, UTC-5) в ноябре."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какова разница во времени между Сибирью и Восточным побережьем США?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Новосибирск (UTC+7) опережает Нью-Йорк (EST, UTC-5) на 12 часов зимой и на 11 часов летом (EDT, UTC-4)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какова разница во времени между Екатеринбургом и Нью-Йорком?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Екатеринбург (UTC+5) опережает Нью-Йорк на 10 часов зимой и на 9 часов летом."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какова разница во времени между Владивостоком и Нью-Йорком?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Владивосток (UTC+10) опережает Нью-Йорк на 15 часов зимой и на 14 часов летом, что требует тщательного планирования звонков."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как перевести 12:00 PM GMT в EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "12:00 PM GMT (полдень) — это 7:00 AM EST зимой или 8:00 AM EDT летом."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как перевести 8:00 AM GMT в EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "8:00 AM GMT — это 3:00 AM EST зимой или 4:00 AM EDT летом."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как перевести 6:00 PM GMT в EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "6:00 PM GMT — это 1:00 PM EST зимой или 2:00 PM EDT летом."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какие штаты США используют EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Штаты Восточного побережья, включая Нью-Йорк, Флориду, Пенсильванию, Массачусетс и округ Колумбия, используют EST/EDT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Использует ли Великобритания GMT круглый год?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Нет. В летние месяцы Великобритания переходит на Британское летнее время (BST, UTC+1), возвращаясь к GMT (UTC+0) зимой."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Где находится точка отсчета GMT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Точка отсчета находится на Гринвичском меридиане в Лондоне, Великобритания."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Влияет ли летнее время в Великобритании на разницу с США?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да. Поскольку переходы на летнее время в США и Великобритании происходят в разные даты, возникают короткие периоды весной и осенью, когда разница временно меняется."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какова разница во времени между Лондоном и Нью-Йорком летом?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Летом Лондон находится на BST (UTC+1), а Нью-Йорк — на EDT (UTC-4). Разница составляет ровно 5 часов."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Можно ли использовать конвертер на мобильном телефоне?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, интерфейс оптимизирован для работы на смартфонах и планшетах."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Откуда конвертер берет информацию о часовых поясах?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Все расчеты базируются на официальной базе данных часовых поясов IANA, обновляемой в реальном времени."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как работает кнопка Swap (Реверс)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Нажатие на кнопку реверса мгновенно меняет направление конвертации, позволяя переводить время из EST в GMT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Использует ли Торонто время EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, Торонто и провинция Онтарио в Канаде используют Eastern Time (EST/EDT) синхронно с Нью-Йорком."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Что делать, если время на моем компьютере настроено неправильно?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Наш конвертер ориентируется на серверное время и базу данных IANA, поэтому сбои на вашем устройстве не повлияют на точность перевода."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Кто является редактором контента на этом сайте?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Специалист по международной хронометрии Джеки Брюс периодически проверяет тексты и функционал конвертера."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Главная",
+        "item": canonical
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Главная"
+  breadcrumbLabel=""
+  hreflangCodes={["ru"]}
+>
+
+<!-- Inject additional JSON-LD Schemas -->
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1: КОНВЕРТЕР GMT В EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    Конвертер GMT в EST
+  </h1>
+</section>
+
+<!-- LIVE CONVERTER COMPONENT -->
+<section class="converter-wrapper reveal" id="calculator-section">
+  <div class="converter-box">
+    <Converter
+      lang={lang}
+      dir={dir}
+      slug={slug}
+      t={t}
+      context={context}
+    />
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Основные характеристики">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Синхронизация в реальном времени</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Автоопределение DST</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>Официальные стандарты IANA</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     1. ПЕРЕВОД ВРЕМЕНИ ИЗ GMT В EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="convert-instantly">
+  <div class="method-intro">
+    <div class="eyebrow">Мгновенный расчет</div>
+    <h2>Перевод времени из GMT в EST</h2>
+    <p>
+      Наш интерактивный калькулятор переводит Среднее время по Гринвичу (GMT) в Восточное стандартное время (EST) и Восточное летнее время (EDT). Укажите нужную дату и время, чтобы мгновенно получить точный результат.
+    </p>
+    <p>
+      Этот сервис помогает координировать расписания, планировать звонки и организовывать логистику. Все вычисления автоматически корректируются в соответствии с сезонными изменениями смещения.
+    </p>
+  </div>
+  
+  <!-- SVG 1: RUSSIAN HERO BANNER -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="bold" fill="#36c7b5" text-anchor="middle">СИНХРОНИЗИРОВАННЫЕ МИРОВЫЕ ЧАСЫ</text>
+      
+      <!-- GMT Clock Dial -->
+      <g transform="translate(180, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-35" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+      
+      <!-- Sync Arrow -->
+      <path d="M 310 130 L 490 130" stroke="#36c7b5" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+      <text x="400" y="115" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">Сдвиг на 4-5 часов назад</text>
+      
+      <!-- EST Clock Dial -->
+      <g transform="translate(620, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="-20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="15" y2="25" stroke="#8fd7ff" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+      
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#36c7b5" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     2. ТЕКУЩЕЕ ВРЕМЯ GMT И EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="current-clocks">
+  <h2 style="grid-column: 1 / -1; margin-bottom: 8px;">Текущее время GMT и EST</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Среднее время по Гринвичу (GMT)</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>Базовый меридиан UTC+0</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Восточное время (EST/EDT - Нью-Йорк)</span>
+    <strong id="estClock">--:--:-- ET</strong>
+    <p>Текущая зона: <em id="estZone">ET</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     3. ЧТО ТАКЕ СРЕДНЕЕ ВРЕМЯ ПО ГРИНВИЧУ (GMT)?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="what-is-gmt">
+  <div class="method-intro">
+    <div class="eyebrow">Определение часового пояса</div>
+    <h2>Что такое Среднее время по Гринвичу (GMT)?</h2>
+    <p>
+      Среднее время по Гринвичу (GMT) исторически привязано к Королевской обсерватории в Гринвиче, Лондон. Оно используется как базовый часовой пояс (UTC+0) для координации времени во всем мире.
+    </p>
+    <p>
+      В отличие от регионов, переходящих на летнее время, GMT остается постоянным в течение всего года, служа стабильной отправной точкой.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     4. ЧТО ТАКЕ ВОСТОЧНОЕ СТАНДАРТНОЕ ВРЕМЯ (EST)?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="what-is-est">
+  <div class="method-intro">
+    <div class="eyebrow">Определение часового пояса</div>
+    <h2>Что такое Восточное стандартное время (EST)?</h2>
+    <p>
+      Восточное стандартное время (EST) — это часовой пояс Северной Америки, имеющий смещение UTC-5. Оно охватывает крупные экономические и финансовые центры Восточного побережья США и Канады.
+    </p>
+    <p>
+      Летом в этом регионе вводится летнее время EDT (Eastern Daylight Time) со смещением UTC-4, что временно сокращает разницу с Гринвичем.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     5. РАЗНИЦА ЧАСОВЫХ ПОЯСОВ GMT И EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="time-difference">
+  <div class="method-intro">
+    <div class="eyebrow">Разница во времени</div>
+    <h2>Разница часовых поясов GMT и EST</h2>
+    <p>
+      Разница во времени между GMT и Восточным побережьем меняется в зависимости от времени года:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Зимний период (EST)</strong>: Восточное побережье отстает от Гринвича на <strong>5 часов</strong> (GMT опережает EST на 5 часов).</li>
+      <li><strong>Летний период (EDT)</strong>: Восточное побережье отстает от Гринвича на <strong>4 часа</strong> (GMT опережает EDT на 4 часа).</li>
+    </ul>
+  </div>
+  
+  <!-- SVG 2: GMT → EST INFOGRAPHIC IN RUSSIAN -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">СЕЗОННЫЙ СДВИГ ВРЕМЕНИ GMT И EST</text>
+      <line x1="80" y1="100" x2="720" y2="100" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- GMT Node -->
+      <circle cx="200" cy="100" r="10" fill="#36c7b5" />
+      <text x="200" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      <text x="200" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Гринвичский эталон</text>
+
+      <!-- EST Node -->
+      <circle cx="600" cy="100" r="10" fill="#8fd7ff" />
+      <text x="600" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">EST (UTC-5)</text>
+      <text x="600" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Восточное время (Зима)</text>
+
+      <path d="M 200 100 L 200 115 L 600 115 L 600 100" fill="none" stroke="#36c7b5" stroke-width="1.5" opacity="0.5" />
+      <text x="400" y="150" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Разница зимой: 5 часов | Разница летом: 4 часа (EDT)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     6. СРАВНЕНИЕ GMT И UTC: В ЧЕМ РАЗНИЦА?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="gmt-vs-utc">
+  <div class="method-intro">
+    <div class="eyebrow">Терминология</div>
+    <h2>Сравнение GMT и UTC: в чем разница?</h2>
+    <p>
+      GMT — это часовой пояс, основанный на вращении Земли относительно Солнца, тогда как UTC (Coordinated Universal Time) — это современный стандарт времени, основанный на высокоточных атомных часах.
+    </p>
+    <p>
+      Для гражданского использования GMT и UTC имеют одинаковое смещение (+0) и взаимозаменяемы в большинстве повседневных вычислений.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     7. ЗИМНЕЕ ВРЕМЯ EST ПРОТИВ ЛЕТНЕГО ВРЕМЕНИ EDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="est-vs-edt">
+  <div class="method-intro">
+    <div class="eyebrow">Сезонные изменения</div>
+    <h2>Зимнее время EST против летнего времени EDT</h2>
+    <p>
+      Восточные регионы переводят свои часы в марте, переходя от EST (Восточное стандартное время, UTC-5) к EDT (Восточное летнее время, UTC-4), и возвращаются к стандартному времени в ноябре.
+    </p>
+  </div>
+  
+  <!-- SVG 3: WORLD CLOCK ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">ВОСТОЧНЫЕ СЕЗОННЫЕ ПЕРИОДЫ</text>
+      
+      <!-- EST Block -->
+      <rect x="150" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="260" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">EST</text>
+      <text x="260" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Стандартное зимнее время</text>
+      <text x="260" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#36c7b5" font-weight="bold">UTC-5 Offset</text>
+      
+      <!-- EDT Block -->
+      <rect x="430" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="540" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">EDT</text>
+      <text x="540" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Дневное летнее время</text>
+      <text x="540" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#8fd7ff" font-weight="bold">UTC-4 Offset</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     8. СЕЗОННЫЙ ПЕРЕВОД ЧАСОВ НА ЛЕТНЕЕ ВРЕМЯ (DST)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="dst-explaining">
+  <div class="method-intro">
+    <div class="eyebrow">DST Правила</div>
+    <h2>Сезонный перевод часов на летнее время (DST)</h2>
+    <p>
+      Перевод часов на летнее время в США происходит во второе воскресенье марта, а возврат к зимнему времени — в первое воскресенье ноября.
+    </p>
+  </div>
+  
+  <!-- SVG 6: DST INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">КАЛЕНДАРЬ ПЕРЕВОДА ЧАСОВ (США)</text>
+      
+      <!-- Spring Block -->
+      <g transform="translate(80, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">Весенний перевод (Март)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Второе воскресенье марта в 2:00 AM</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Часы переводят вперед: EST -> EDT</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Новый офсет: UTC-4</text>
+      </g>
+      
+      <!-- Autumn Block -->
+      <g transform="translate(440, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Осенний перевод (Ноябрь)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Первое воскресенье ноября в 2:00 AM</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Часы переводят назад: EDT -> EST</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Новый офсет: UTC-5</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     9. ВЛИЯНИЕ ЧАСОВЫХ ПОЯСОВ НА ГОРОДА РОССИИ
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="russian-cities">
+  <h2>Влияние часовых поясов на города России</h2>
+  <p>
+    Различные часовые пояса России координируют свою работу со стандартами Гринвича и Восточного времени:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Время в Москве (MSK) и разница с GMT/EST</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Москва находится на постоянном смещении UTC+3. Зимой Москва опережает Нью-Йорк (EST, UTC-5) на 8 часов, а летом во время действия EDT (UTC-4) — на 7 часов.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Время в Санкт-Петербурге и координация с США</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Санкт-Петербург использует московское время (UTC+3), обеспечивая удобные вечерние часы для связи с коллегами из Нью-Йорка и Бостона.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Новосибирск (NOVT): сибирское время и американский бизнес</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Новосибирск находится на постоянном смещении UTC+7. Разница с Восточным побережьем США составляет 12 часов зимой и 11 часов летом, что усложняет координацию встреч.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Екатеринбург (YEKT) в глобальном расписании</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Екатеринбург (UTC+5) опережает Нью-Йорк на 10 часов зимой и на 9 часов летом, требуя ранних утренних звонков для West Coast и поздних вечерних для Востока.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Владивосток (VLAT): крайний восток и американские рынки</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Владивосток находится на постоянном смещении UTC+10. Разница с Восточным временем США составляет 15 часов зимой и 14 часов летом.
+      </p>
+    </div>
+  </div>
+  
+  <!-- SVG 7: WORLD MAP -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">ГЕОГРАФИЧЕСКИЕ ЧАСОВЫЕ ЗОНЫ</text>
+      
+      <!-- Russia Block -->
+      <rect x="180" y="70" width="440" height="130" fill="#12455d" stroke="#36c7b5" stroke-width="2.5" rx="4" />
+      <text x="400" y="115" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#36c7b5" text-anchor="middle">Россия (Москва, Новосибирск, Владивосток)</text>
+      <text x="400" y="145" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Смещение: от UTC+3 до UTC+12</text>
+      <text x="400" y="170" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#f4fbff" font-weight="bold">Постоянное зимнее время (без сезонного перевода)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     10. ПОПУЛЯРНЫЕ НАПРАВЛЕНИЯ КОНВЕРТАЦИИ
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="popular-converters">
+  <h2>Популярные направления конвертации</h2>
+  <p>
+    Мы также поддерживаем и координируем перевод времени для других популярных глобальных направлений:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в CST (Центральное время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Перевод времени для штатов Техас, Иллинойс и других центральных регионов США.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в PDT (Тихоокеанское летнее время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Перевод времени для Калифорнии, Вашингтона и Сиэтла в летний период.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в MST (Горное стандартное время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Ориентир времени для штатов Колорадо, Аризона и Юта.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в IST (Индийское стандартное время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Перевод времени для Нью-Дели, Мумбаи и всей Индии (UTC+5:30).
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в AWST (Западное австралийское стандартное время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Синхронизация с часами города Перт в Западной Австралии (UTC+8).
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>GMT в AKDT (Аляскинское летнее время)</h3>
+      <p style="color: var(--muted); font-size: 0.95em;">
+        Расчет времени для штата Аляска в летний сезон (UTC-8).
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     11. ПРАКТИЧЕСКИЕ СЦЕНАРИИ ИСПОЛЬЗОВАНИЯ КОНВЕРТЕРА
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="business-hours">
+  <div class="method-intro">
+    <div class="eyebrow">Применение на практике</div>
+    <h2>Практические сценарии использования конвертера</h2>
+    <p>
+      Разница во времени между GMT и EST влияет на различные типы профессиональной и личной деятельности:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Рабочие встречи</strong>: Идеальный интервал для звонков — с 13:00 до 17:00 GMT (9:00–13:00 по времени Нью-Йорка).</li>
+      <li><strong>Удаленная работа</strong>: Фрилансеры координируют сдачу задач так, чтобы готовые файлы поступали к началу рабочего дня в США.</li>
+      <li><strong>Путешествия</strong>: Расчет времени прибытия авиарейсов и трансферов.</li>
+    </ul>
+  </div>
+  
+  <!-- SVG 5: BUSINESS MEETING PLANNER -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">РАБОЧЕЕ ПЕРЕСЕЧЕНИЕ ВРЕМЕНИ GMT И EST</text>
+      
+      <!-- GMT Office Hours -->
+      <g transform="translate(100, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">Офис GMT (09:00 - 17:00)</text>
+      </g>
+      
+      <!-- EST Office Hours -->
+      <g transform="translate(500, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Офис EST (09:00 - 17:00)</text>
+      </g>
+
+      <!-- Overlap Connection -->
+      <path d="M 300 95 C 400 135, 400 135, 500 95" fill="none" stroke="#36c7b5" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="400" y="165" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Окно пересечения: 14:00 - 17:00 GMT / 09:00 - 12:00 EST</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     12. ТАБЛИЦА ПЕРЕВОДА ВРЕМЕНИ GMT В EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-table">
+  <h2>Таблица перевода времени GMT в EST (24 часа)</h2>
+  <p>
+    Этот сравнительный индекс сопоставляет каждый час суток по Гринвичу (GMT) с Восточным временем (EST/EDT), показывая сдвиг в зависимости от сезона.
+  </p>
+  
+  <div class="table-container" style="overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: var(--panel); border-bottom: 2px solid var(--line);">
+          <th style="padding: 12px; font-weight: bold; color: var(--accent);">GMT (UTC+0)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--text);">EST (Зима, UTC-5)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--accent-2);">EDT (Лето, UTC-4)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Смещение</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr style="border-bottom: 1px solid var(--line); transition: background 0.2s;">
+            <td style="padding: 10px 12px; font-weight: bold; color: var(--accent);">{row.gmt}</td>
+            <td style="padding: 10px 12px; color: var(--text);">{row.est}</td>
+            <td style="padding: 10px 12px; color: var(--accent-2);">{row.edt}</td>
+            <td style="padding: 10px 12px; font-size: 0.9em; color: var(--muted);">{row.notes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     13. ПРИМЕРЫ КОНВЕРТАЦИИ ВРЕМЕНИ GMT В EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-examples">
+  <h2>Примеры конвертации времени GMT в EST (40 примеров)</h2>
+  <p>
+    Ознакомьтесь с примерами перевода времени, чтобы быстро сориентироваться в разнице часовых поясов:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <!-- Hourly Examples 1-40 -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 AM (Полночь) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:00 PM (Предыдущий день)</strong> | EDT: <strong>8:00 PM (Предыдущий день)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Полночь в Гринвиче соответствует вечеру предыдущего дня на Восточном побережье США.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>8:00 PM (Предыдущий день)</strong> | EDT: <strong>9:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Пока Гринвич вступает в глубокую ночь, Нью-Йорк завершает вечерние транзакции.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>9:00 PM (Предыдущий день)</strong> | EDT: <strong>10:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Системные администраторы в Лондоне спят, в то время как американские пользователи завершают активность.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>10:00 PM (Предыдущий день)</strong> | EDT: <strong>11:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Начало ночной смены поддержки в Гринвиче совпадает с поздним вечером в Нью-Йорке.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>11:00 PM (Предыдущий день)</strong> | EDT: <strong>12:00 AM (Полночь)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Запуск автоматических отчетов в Великобритании совпадает с полночью на Восточном побережье.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>12:00 AM (Полночь)</strong> | EDT: <strong>1:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Ранние рыночные сессии открываются в Лондоне, пока США находятся в глубоком сне.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>1:00 AM</strong> | EDT: <strong>2:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Утренние смены в Лондоне готовят инфраструктуру к открытию европейских бирж.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>2:00 AM</strong> | EDT: <strong>3:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Ранние коммерческие рейсы отправляются из Европы в направлении США.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>3:00 AM</strong> | EDT: <strong>4:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Лондонские офисы открывают рабочий день, пока Нью-Йорк спит.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:00 AM</strong> | EDT: <strong>5:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Утренние планерки в Великобритании проходят задолго до пробуждения Восточного побережья.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>5:00 AM</strong> | EDT: <strong>6:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Лондонские аналитики завершают утренние исследования рынков.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>6:00 AM</strong> | EDT: <strong>7:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Американские специалисты просыпаются и готовятся к рабочему дню.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Полдень) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:00 AM</strong> | EDT: <strong>8:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Полдень по Гринвичу совпадает с началом утренних встреч в Нью-Йорке.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>8:00 AM</strong> | EDT: <strong>9:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Офисы открываются на Восточном побережье, инициируя общие каналы связи.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>9:00 AM</strong> | EDT: <strong>10:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Основное утреннее время в США совпадает с послеобеденной активностью в Европе.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>10:00 AM</strong> | EDT: <strong>11:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Наиболее продуктивное время для совместных планерок и вебинаров.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>11:00 AM</strong> | EDT: <strong>12:00 PM (Noon)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Полдень в Нью-Йорке наступает перед завершением стандартного рабочего дня в Лондоне.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>12:00 PM (Noon)</strong> | EDT: <strong>1:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Офисы в Лондоне закрываются, передавая задачи активным американским командам.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>1:00 PM</strong> | EDT: <strong>2:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Послеобеденный цикл задач в США запускается на полную мощность.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>2:00 PM</strong> | EDT: <strong>3:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Британские фрилансеры завершают передачу отчетов американским заказчикам.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>3:00 PM</strong> | EDT: <strong>4:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Конец рабочего дня приближается для компаний на Восточном побережье.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:00 PM</strong> | EDT: <strong>5:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Биржевые торги закрываются в Нью-Йорке, завершая финансовую активность.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>5:00 PM</strong> | EDT: <strong>6:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Офисы закрываются на Восточном побережье, переходя в вечерний режим.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>6:00 PM</strong> | EDT: <strong>7:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Серверные платформы переходят в автоматический режим ночного бэкапа.</p>
+    </div>
+
+    <!-- Additional examples to hit 40 total -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:30 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>3:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Лондон готовится к открытию рынка, пока Восточное побережье спит.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Нью-Йорк начинает утреннее планирование, пока в Великобритании обеденный перерыв.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>12:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Американские команды возвращаются с обеда, когда в Лондоне заканчивается рабочий день.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Нью-Йорк подводит итоги дня перед вечерним закрытием офисов.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>6:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Вечернее время в США, когда в Гринвиче завершаются последние сутки.</p>
+    </div>
+
+    <!-- Reverse conversions -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Раннее утро в Нью-Йорке совпадает с началом послеобеденных встреч в Великобритании.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>2:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Начало рабочего дня на Восточном побережье.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>5:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Обеденный перерыв в Нью-Йорке совпадает с закрытием офисов в Лондоне.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>10:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Конец рабочего дня в Нью-Йорке соответствует позднему вечеру по Гринвичу.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>11:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Вечерний Нью-Йорк переходит к отдыху перед ночным циклом.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM EST (Зима)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>2:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Поздний вечер в США совпадает с глубокой ночью следующих суток в Европе.</p>
+    </div>
+
+    <!-- Summer reverse examples -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM EDT (Лето)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>12:00 PM (Noon) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Летнее утро в Нью-Йорке совпадает с полднем по Гринвичу.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM EDT (Лето)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Открытие офисов летом на Восточном побережье.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM EDT (Лето)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Обеденное время летом в Нью-Йорке совпадает с концом дня в Лондоне.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM EDT (Лето)</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>9:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Конец летнего рабочего дня на Восточном побережье.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>1:30 PM (Same Day)</strong> | EDT: <strong>2:30 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Середина рабочего дня в США совпадает с ранним вечером в Великобритании.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     14. ИНСТРУКЦИЯ: КАК ПОЛЬЗОВАТЬСЯ КОНВЕРТЕРОМ
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Руководство</div>
+    <h2>Инструкция: Как пользоваться конвертером</h2>
+    <p>
+      Для проведения расчетов выполните следующие простые действия:
+    </p>
+    <ol style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li>Выберите интересующую вас дату на интерактивном календаре.</li>
+      <li>Введите исходное время в поле ввода.</li>
+      <li>Нажмите кнопку «Копировать», чтобы сохранить результат в буфер обмена.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     15. ТОЧНОСТЬ ДАННЫХ И СИНХРОНИЗАЦИЯ
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="accuracy">
+  <div class="method-intro">
+    <div class="eyebrow">Надежность вычислений</div>
+    <h2>Точность данных и синхронизация</h2>
+    <p>
+      Наш конвертер регулярно обновляется на основе официальных изменений базы данных IANA. Это исключает возникновение ошибок, связанных с законодательными переносами дат перехода на летнее или зимнее время.
+    </p>
+  </div>
+  
+  <!-- SVG 8: OG IMAGE / SOCIAL CARD -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="600" y="160" font-family="'Space Grotesk', sans-serif" font-size="44" font-weight="bold" fill="#36c7b5" text-anchor="middle">КОНВЕРТЕР GMT В EST</text>
+      <text x="600" y="240" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="bold" fill="#f4fbff" text-anchor="middle">Живое время и перевод часовых поясов</text>
+      
+      <!-- Timeline Line -->
+      <line x1="200" y1="360" x2="1000" y2="360" stroke="#2f6278" stroke-width="6" />
+      
+      <!-- London Node -->
+      <circle cx="350" cy="360" r="16" fill="#36c7b5" />
+      <text x="350" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#36c7b5" text-anchor="middle">Лондон (GMT)</text>
+      <text x="350" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC+0</text>
+      
+      <!-- New York Node -->
+      <circle cx="850" cy="360" r="16" fill="#8fd7ff" />
+      <text x="850" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#f4fbff" text-anchor="middle">Нью-Йорк (EST)</text>
+      <text x="850" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC-5 / UTC-4</text>
+      
+      <text x="600" y="520" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="bold" fill="#8fd7ff" text-anchor="middle">https://gmttoestconverter.com/ru/</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     16. ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Часто задаваемые вопросы (FAQ)</h2>
+  <p>
+    Ознакомьтесь с ответами на популярные вопросы пользователей о переводе часов:
+  </p>
+  <div class="faq">
+    {schemaData[1].mainEntity.map((faq) => (
+      <details>
+        <summary>{faq.name}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.acceptedAnswer.text}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     17. ЗАКЛЮЧЕНИЕ & EEAT SIGNALS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes reveal" id="final-summary">
+  <h2>Заключение</h2>
+  <p>
+    Перевод времени из **GMT в EST** требует учета сезонного фактора. Летний период сокращает разницу во времени до 4 часов из-за перехода США на EDT, в то время как зимний период возвращает смещение к стандартным 5 часам (EST).
+  </p>
+  <p>
+    <em>Вся информация на данном ресурсе регулярно проверяется редакционной коллегией во главе с Джеки Брюс. Подробнее читайте в разделе <a href="/editorial-policy/" style="text-decoration: underline; color: var(--accent);">Редакционная политика</a>.</em>
+  </p>
+  <p style="font-size: 0.9em; color: var(--muted); margin-top: 16px;">
+    Последнее обновление: Октябрь 2026 | Проверено Джеки Брюс
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Другие полезные конвертеры часовых поясов</h2>
+  <p>
+    Воспользуйтесь нашими специализированными инструментами для перевода времени:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>Направления GMT</h3>
+      <ul>
+        <li><a href="/ru/gmt-to-est/">GMT в EST калькулятор</a></li>
+        <li><a href="/ru/gmt-to-pdt/">GMT в PDT калькулятор</a></li>
+        <li><a href="/ru/gmt-to-awst/">GMT в AWST калькулятор</a></li>
+      </ul>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Информационные разделы</h3>
+      <ul>
+        <li><a href="/ru/">Главная страница</a></li>
+        <li><a href="/ru/time-zone-guide/">Руководство по часовым поясам</a></li>
+        <li><a href="/about-us/">О нас</a></li>
+        <li><a href="/privacy-policy/">Политика конфиденциальности</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
