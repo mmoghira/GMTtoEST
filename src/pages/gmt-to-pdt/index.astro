@@ -1,0 +1,1481 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getLang, getTranslation, getPageMeta } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-pdt";
+const t = getTranslation(lang);
+const meta = getPageMeta(lang, "gmtToPdt");
+
+const seoTitle = "GMT to PDT Converter – Convert Greenwich Time to Pacific Daylight Time";
+const pageDescription = "Convert GMT to PDT instantly. View the 24-hour conversion chart, check Pacific Daylight Time rules, and plan meetings with our calculator.";
+
+const context = {
+  from: "GMT",
+  to: "PDT",
+  fromZone: "UTC",
+  toZone: "America/Los_Angeles"
+};
+
+const canonical = "https://gmttoestconverter.com/gmt-to-pdt/";
+
+// Helper to format 12-hour values
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+// Generate the 24-hour comparative table rows (PDT = GMT - 7, PST = GMT - 8)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const pdtHour = (hour - 7 + 24) % 24;
+  const pdtDayDiff = (hour - 7) < 0 ? "Previous day" : "Same day";
+
+  const pstHour = (hour - 8 + 24) % 24;
+  const pstDayDiff = (hour - 8) < 0 ? "Previous day" : "Same day";
+
+  return {
+    gmt: formatHour12(hour),
+    pdt: `${formatHour12(pdtHour)} PDT (${pdtDayDiff})`,
+    pst: `${formatHour12(pstHour)} PST (${pstDayDiff})`,
+    offset: "GMT is UTC+0 | PDT is UTC-7 / PST is UTC-8",
+    notes: `Winter gap: 8h (PST). Summer gap: 7h (PDT relative to GMT baseline).`
+  };
+});
+
+// JSON-LD Schema definitions
+const schemaData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GMT to PDT Converter",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "url": canonical,
+    "description": "Free online GMT to PDT converter with real-time clocks, DST-aware calculations, and Pacific Daylight Time guidelines."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT stands for Pacific Daylight Time, which is the timezone offset used along the North American Pacific Coast (UTC-7) during the summer months."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does PDT stand for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT stands for Pacific Daylight Time, the designation for the timezone equivalent to UTC-7 observed during the daylight saving period."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many hours behind GMT is PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT is exactly 7 hours behind Greenwich Mean Time (GMT). In winter, when the region returns to Pacific Standard Time (PST), the gap increases to 8 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is PDT the same as Pacific Time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pacific Time is a generic term encompassing both Pacific Daylight Time (PDT, UTC-7, summer) and Pacific Standard Time (PST, UTC-8, winter)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between PDT and PST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT is Pacific Daylight Time (UTC-7), observed in summer. PST is Pacific Standard Time (UTC-8), observed in winter. Clocks shift forward one hour in spring."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which states use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "States using PDT seasonally include California, Washington, Oregon, Nevada, and the Canadian province of British Columbia."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which cities use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Major cities observing PDT in summer include Los Angeles, San Diego, San Francisco, Seattle, Sacramento, Portland, and Vancouver."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When does PDT start?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT begins on the second Sunday of March at 2:00 AM local time, when clocks spring forward one hour from PST (UTC-8) to PDT (UTC-7)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When does PDT end?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDT ends on the first Sunday of November at 2:00 AM local time, when clocks fall back one hour from PDT (UTC-7) to PST (UTC-8)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does California use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, California observes Pacific Daylight Time (PDT) seasonally during the summer daylight saving window."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Seattle use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Seattle is located in the Pacific timezone and observes Pacific Daylight Time (PDT) seasonally."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert future dates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Our converter is date-aware, meaning it checks the selected date to automatically apply the 7-hour summer gap (PDT) or the 8-hour winter gap (PST) depending on active transitions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter DST-aware?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The tool automatically detects daylight saving transitions in both the source and target regions, maintaining accurate real-world coordination."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this converter for business meetings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is designed to help corporate coordinators, remote workers, and software teams align business schedules across Pacific regions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it for webinars?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, this converter is designed to help coordinators select times that avoid conflicts for participants in both countries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it for gaming events?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is highly useful for gaming studios and communities coordinating live streams and multiplayer events across different regions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter accurate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our converter is synchronized with the IANA Time Zone Database, providing offsets that account for regional clock adjustments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is timezone data updated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our systems check for database updates periodically, applying changes as soon as they are published by the Internet Assigned Numbers Authority (IANA)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our GMT to PDT converter is completely free to use with no registrations, limits, or subscriptions required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Vancouver use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Vancouver, British Columbia (Canada) is in the Pacific timezone and observes Pacific Daylight Time (PDT) seasonally."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between GMT and UTC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GMT is a solar-based astronomical timezone, while UTC is an atomic-based scientific standard. For civil timekeeping, they share the same base offset (+0)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does daylight saving exist?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Daylight saving shifts clocks during the summer to extend evening daylight hours, reducing energy consumption and aligning social schedules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does PDT change every year?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Daylight saving dates are determined by government legislation, typically starting on the second Sunday of March and ending on the first Sunday of November."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does automatic conversion work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our converter queries the selected date to automatically apply the 7-hour summer gap (PDT) or the 8-hour winter gap (PST) based on official IANA database rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Oregon in the Pacific timezone?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, most of Oregon is in the Pacific Time Zone and observes Pacific Daylight Time (PDT) seasonally."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Nevada observe PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, most of Nevada (including Las Vegas and Reno) is in the Pacific Time Zone and observes Pacific Daylight Time (PDT) seasonally."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Arizona use PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Most of Arizona does not observe Daylight Saving Time and stays on Mountain Standard Time (MST, UTC-7) year-round. This matches the PDT offset in summer, but Arizona remains on MST."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best meeting time between London and California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The optimal meeting window is 8:00 AM to 9:00 AM Pacific Time (4:00 PM to 5:00 PM London time), allowing standard business coordination before the end of the UK workday."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who reviews the timezone data on this site?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Timezone content and calculator code are reviewed by Jackie Bruce, our content specialist, ensuring technical accuracy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What database is used for these calculations?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses the official IANA Time Zone Database, maintaining synchronization with global time standards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the US Eastern time zone differ from PDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, the Eastern Time Zone (EST/EDT) is 3 hours ahead of the Pacific Time Zone (PST/PDT)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I bookmark this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can bookmark this page (/gmt-to-pdt/) for quick access to live clocks, comparative charts, meeting planners, and seasonal offset rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a mobile version of this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our responsive web application is optimized for mobile displays, adjusting layout elements for easy use on smartphones."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does PDT affect flight scheduling?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Airlines list all arrival and departure times in local formats (PDT or GMT), making timezone conversion essential for transit logs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do SaaS companies use GMT to PDT conversions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SaaS companies run server maintenance shifts overnight relative to Pacific Time to minimize disruption to users."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://gmttoestconverter.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "GMT to PDT Converter",
+        "item": canonical
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to PDT"
+  hreflangCodes={["en"]}
+>
+
+<!-- Inject additional JSON-LD Schemas -->
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1: GMT TO PDT CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to PDT Converter
+  </h1>
+</section>
+
+<!-- LIVE CONVERTER COMPONENT -->
+<section class="converter-wrapper reveal" id="calculator-section">
+  <div class="converter-box">
+    <Converter
+      lang={lang}
+      dir={dir}
+      slug={slug}
+      t={t}
+      context={context}
+    />
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Key Specifications">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clock Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>DST Transition Detection</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>IANA Database Standards</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     1. CONVERT GMT TO PACIFIC DAYLIGHT TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="convert-instantly">
+  <div class="method-intro">
+    <div class="eyebrow">Instant Calculation</div>
+    <h2>Convert GMT to Pacific Daylight Time</h2>
+    <p>
+      Our synchronization engine converts Greenwich Mean Time (GMT) to Pacific Daylight Time (PDT) and Pacific Standard Time (PST) dynamically. Select your preferred date, enter the source time, and retrieve the translated value instantly.
+    </p>
+    <p>
+      This calculator supports scheduling, travel, and logistics operations. By referencing official databases, it ensures conversions are accurate.
+    </p>
+  </div>
+  
+  <!-- SVG 1: HERO WORLD CLOCK -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO PDT SYNCHRONIZED WORLD CLOCK</text>
+      
+      <!-- GMT Clock Dial -->
+      <g transform="translate(220, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-35" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+      
+      <!-- Sync Arrow -->
+      <path d="M 370 130 L 430 130" stroke="#36c7b5" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+      <text x="400" y="115" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">7-8h Shift</text>
+      
+      <!-- PDT Clock Dial -->
+      <g transform="translate(580, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="-20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="15" y2="25" stroke="#8fd7ff" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">PDT (UTC-7)</text>
+      </g>
+      
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#36c7b5" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     2. CURRENT GMT AND PDT TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="current-clocks">
+  <h2 style="grid-column: 1 / -1; margin-bottom: 8px;">Current GMT and PDT Time</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Greenwich Mean Time Clock</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+0 Base Meridian</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">Pacific Daylight Time Clock (Los Angeles)</span>
+    <strong id="estClock">--:--:-- ET</strong>
+    <p>Active Offset: <em id="estZone">ET</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     3. WHAT IS PACIFIC DAYLIGHT TIME?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="what-is-pdt">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Definition</div>
+    <h2>What is Pacific Daylight Time?</h2>
+    <p>
+      Pacific Daylight Time (PDT) is the timezone offset used along the North American Pacific Coast (UTC-7) during the summer months.
+    </p>
+    <p>
+      It is active from the second Sunday of March, when clocks spring forward from PST, to the first Sunday of November, when clocks fall back.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     4. UNDERSTANDING UTC-7
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="understanding-utc-7">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Mechanics</div>
+    <h2>Understanding UTC-7</h2>
+    <p>
+      UTC-7 represents Coordinated Universal Time minus 7 hours. This offset runs along the Pacific Coast of North America, including major municipal and commercial centers in California, Oregon, and Washington.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     5. GMT VS PDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="gmt-vs-pdt">
+  <div class="method-intro">
+    <div class="eyebrow">Standard Clarifications</div>
+    <h2>GMT vs PDT</h2>
+    <p>
+      Greenwich Mean Time (GMT) is a solar-based baseline timezone that remains constant year-round. Pacific Daylight Time (PDT) is the summer daylight timezone for the Pacific Coast.
+    </p>
+    <p>
+      During summer, PDT is exactly 7 hours behind GMT. In winter, when the region returns to Pacific Standard Time (PST), the gap increases to 8 hours.
+    </p>
+  </div>
+  
+  <!-- SVG 2: GMT → PDT TIMELINE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT VS PDT SEASONAL TIMELINE OFFSET</text>
+      <line x1="80" y1="100" x2="720" y2="100" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- GMT Node -->
+      <circle cx="200" cy="100" r="10" fill="#36c7b5" />
+      <text x="200" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      <text x="200" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Greenwich Meridian</text>
+
+      <!-- PDT Node -->
+      <circle cx="600" cy="100" r="10" fill="#8fd7ff" />
+      <text x="600" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">PDT (UTC-7)</text>
+      <text x="600" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Pacific Coast (Summer)</text>
+
+      <path d="M 200 100 L 200 115 L 600 115 L 600 100" fill="none" stroke="#36c7b5" stroke-width="1.5" opacity="0.5" />
+      <text x="400" y="150" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">8-Hour Winter Gap (PST) | 7-Hour Summer Gap (PDT)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DEDICATED SECTION: PDT VS PST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="pdt-vs-pst-use">
+  <div class="method-intro">
+    <div class="eyebrow">PDT vs PST Guide</div>
+    <h2>PDT vs PST: Which One Should You Use?</h2>
+    <p>
+      Selecting between PDT and PST depends entirely on the date of your conversion:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Use Pacific Daylight Time (PDT, UTC-7)</strong>: From the second Sunday of March to the first Sunday of November, during the summer months.</li>
+      <li><strong>Use Pacific Standard Time (PST, UTC-8)</strong>: From the first Sunday of November to the second Sunday of March, during the winter months.</li>
+    </ul>
+    <p>
+      Our dynamic timezone calculator handles these transitions automatically, ensuring you calculate offsets correctly.
+    </p>
+  </div>
+  
+  <!-- SVG 5: PDT VS PST COMPARISON -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">PDT VS PST TERMINOLOGY</text>
+      
+      <!-- PST Block -->
+      <rect x="150" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="260" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">PST</text>
+      <text x="260" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Standard Winter Time</text>
+      <text x="260" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#36c7b5" font-weight="bold">UTC-8 Offset</text>
+      
+      <!-- PDT Block -->
+      <rect x="430" y="70" width="220" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="540" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">PDT</text>
+      <text x="540" y="135" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Daylight Summer Time</text>
+      <text x="540" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#8fd7ff" font-weight="bold">UTC-7 Offset</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     13. WHY PDT EXISTS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="why-pdt-exists">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Background</div>
+    <h2>Why PDT Exists</h2>
+    <p>
+      Daylight saving is observed to extend evening daylight hours during the summer, aligning daylight availability with human activity.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     14. WHEN PDT STARTS AND ENDS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="when-pdt">
+  <div class="method-intro">
+    <div class="eyebrow">DST Transitions</div>
+    <h2>When PDT Starts and Ends</h2>
+    <p>
+      In the United States and Canada, PDT begins on the second Sunday of March, when clocks spring forward one hour from PST (UTC-8) to PDT (UTC-7).
+    </p>
+    <p>
+      PDT ends on the first Sunday of November, when clocks fall back one hour from PDT (UTC-7) to PST (UTC-8).
+    </p>
+  </div>
+  
+  <!-- SVG 6: DST TRANSITION TIMELINE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">PACIFIC TIME DST TRANSITIONS</text>
+      
+      <!-- Spring Block -->
+      <g transform="translate(80, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">Spring Forward (March)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Second Sunday of March at 2:00 AM</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Clocks shift forward: PST -> PDT</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New Offset: UTC-7</text>
+      </g>
+      
+      <!-- Autumn Block -->
+      <g transform="translate(440, 60)">
+        <rect x="0" y="0" width="280" height="110" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="140" y="30" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Fall Back (November)</text>
+        <text x="140" y="55" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">First Sunday of November at 2:00 AM</text>
+        <text x="140" y="75" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Clocks shift backward: PDT -> PST</text>
+        <text x="140" y="95" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New Offset: UTC-8</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     15. STATES USING PDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="states-using-pdt">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Geography</div>
+    <h2>States Using PDT</h2>
+    <p>
+      The Pacific Daylight Time offset is observed seasonally along the West Coast:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>California</strong>: Observes PDT across all municipal and business regions.</li>
+      <li><strong>Washington</strong>: Coordinates its shipping and tech hubs on Pacific clocks.</li>
+      <li><strong>Oregon</strong>: Observes PDT across most of the state.</li>
+      <li><strong>Nevada</strong>: Pacific areas observe PDT seasonally.</li>
+      <li><strong>British Columbia (Canada)</strong>: Coordinates its regional centers on PDT.</li>
+    </ul>
+  </div>
+  
+  <!-- SVG 3: PACIFIC COAST MAP -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">PACIFIC TIME CORRIDOR MAP</text>
+      
+      <!-- Pacific Coast Block -->
+      <rect x="250" y="70" width="300" height="130" fill="#12455d" stroke="#36c7b5" stroke-width="2.5" rx="4" />
+      <text x="400" y="130" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold" fill="#36c7b5" text-anchor="middle">Pacific Coast (PDT Zone)</text>
+      <text x="400" y="155" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">California | Washington | Oregon | British Columbia</text>
+      <text x="400" y="175" font-family="'Space Grotesk', sans-serif" font-size="12" fill="#f4fbff" font-weight="bold">UTC-7 Offset (Summer)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     16. MAJOR CITIES USING PDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="major-cities">
+  <h2>Major Cities Using PDT</h2>
+  <p>
+    Major municipal, financial, and industrial centers observing PDT standard include:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Los Angeles</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates California's commercial, financial, and administrative operations on Pacific clocks.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>San Diego</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A major port and biotechnology hub, observing PDT seasonally.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>San Francisco</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A global financial and technology center coordinating asset management on Pacific clocks.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Seattle</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates trade and software development, synchronizing with Pacific clocks.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Sacramento</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The administrative center of California, managing state policy schedules.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Portland</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A major regional center coordinating manufacturing and trade.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Vancouver</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Coordinates Canadian Pacific trade, maritime shipping, and tech operations.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     17. CALIFORNIA TIME EXPLAINED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="california-time">
+  <div class="method-intro">
+    <div class="eyebrow">California Time</div>
+    <h2>California Time Explained</h2>
+    <p>
+      California is permanently located within the Pacific Time Zone, observing PDT in summer and PST in winter.
+    </p>
+  </div>
+  
+  <!-- SVG 4: CALIFORNIA TIME ZONE ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">CALIFORNIA TIME SEASONS</text>
+      
+      <!-- California Time Block -->
+      <rect x="250" y="70" width="300" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="400" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">California Clocks (PT)</text>
+      <text x="400" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">PST (UTC-8, Winter) | PDT (UTC-7, Summer)</text>
+      <text x="400" y="150" font-family="'Manrope', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Los Angeles, San Francisco, San Diego</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     18. LOS ANGELES LOCAL TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="la-time">
+  <div class="method-intro">
+    <div class="eyebrow">LA Coordination</div>
+    <h2>Los Angeles Local Time</h2>
+    <p>
+      To coordinate with Los Angeles, you must subtract 7 hours during Daylight Saving Time (PDT) and 8 hours during standard winter time (PST) relative to GMT.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     19. SEATTLE LOCAL TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="seattle-time">
+  <div class="method-intro">
+    <div class="eyebrow">Seattle Coordination</div>
+    <h2>Seattle Local Time</h2>
+    <p>
+      Seattle operates on the same clocks as Los Angeles, observing PDT (UTC-7) in summer and PST (UTC-8) in winter.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     20. SAN FRANCISCO TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="sf-time">
+  <div class="method-intro">
+    <div class="eyebrow">SF Coordination</div>
+    <h2>San Francisco Time</h2>
+    <p>
+      San Francisco and Silicon Valley operate entirely on Pacific Time, observing PDT seasonally during the daylight saving window.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     21. VANCOUVER TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="vancouver-time">
+  <div class="method-intro">
+    <div class="eyebrow">Vancouver Coordination</div>
+    <h2>Vancouver Time</h2>
+    <p>
+      Vancouver, Canada, aligns its clocks with Washington and California, observing Pacific Daylight Time (PDT) seasonally.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     22. BUSINESS HOURS BETWEEN GMT AND PDT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="business-hours">
+  <div class="method-intro">
+    <div class="eyebrow">Workday Dynamics</div>
+    <h2>Business Hours Between GMT and PDT</h2>
+    <p>
+      The 7-hour difference between GMT and PDT makes standard workday overlap challenging, with only a narrow window at the start of the Pacific shift.
+    </p>
+    <p>
+      The best meeting window is **8:00 AM to 9:00 AM Pacific Time**, which corresponds to **4:00 PM to 5:00 PM London Time** (during summer).
+    </p>
+  </div>
+  
+  <!-- SVG 7: BUSINESS HOURS OVERLAP CHART -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO PDT BUSINESS HOURS GRID</text>
+      
+      <!-- GMT Office Hours -->
+      <g transform="translate(100, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT Office (09:00 - 17:00)</text>
+      </g>
+      
+      <!-- PDT Office Hours -->
+      <g transform="translate(500, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">PDT Office (09:00 - 17:00)</text>
+      </g>
+
+      <!-- Overlap Connection -->
+      <path d="M 300 95 C 400 135, 400 135, 500 95" fill="none" stroke="#36c7b5" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="400" y="165" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Overlap Window: 08:00 - 09:00 PDT / 16:00 - 17:00 GMT</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     23. REMOTE TEAMS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="remote-teams">
+  <div class="method-intro">
+    <div class="eyebrow">Workplace Sync</div>
+    <h2>Remote Teams</h2>
+    <p>
+      Remote teams operating across Europe and the US West Coast must manage the 7-hour difference. Asynchronous communication is essential for handovers and project tracking.
+    </p>
+  </div>
+  
+  <!-- SVG 11: SOFTWARE TEAM COLLABORATION GRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">ASYNCHRONOUS WORKFLOW ALIGNMENT</text>
+      
+      <!-- GMT Node -->
+      <g transform="translate(200, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">GMT Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Uploads Daily Logs</text>
+      </g>
+      
+      <!-- Handoff Arrow -->
+      <path d="M 350 110 L 450 110" stroke="#36c7b5" stroke-width="2.5" fill="none" marker-end="url(#arrow)" />
+      
+      <!-- PDT Node -->
+      <g transform="translate(600, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">PDT Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Processes Backlog</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24. SOFTWARE DEVELOPMENT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="software-dev">
+  <div class="method-intro">
+    <div class="eyebrow">Dev Ops Coordination</div>
+    <h2>Software Development</h2>
+    <p>
+      Software engineering teams coordinating across Silicon Valley and the UK must schedule deployments to minimize disruption to users.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     25. GAMING EVENTS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="gaming">
+  <div class="method-intro">
+    <div class="eyebrow">Multiplayer Coordination</div>
+    <h2>Gaming Events</h2>
+    <p>
+      Gaming studios and communities coordinating live streams and multiplayer events across different regions use this tool to manage schedules.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     26. STREAMING SCHEDULE PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="streaming">
+  <div class="method-intro">
+    <div class="eyebrow">Live Broadcasts</div>
+    <h2>Streaming Schedule Planning</h2>
+    <p>
+      YouTube creators and Twitch streamers coordinate broadcasts to capture audiences in both North America and Europe.
+    </p>
+  </div>
+  
+  <!-- SVG 9: WORLD CLOCK COMPARISON -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">SYNCHRONIZED REGIONAL BASELINE CLOCKS</text>
+      
+      <!-- London Clock -->
+      <g transform="translate(150, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="0" y2="-20" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">London (GMT)</text>
+      </g>
+      
+      <!-- Los Angeles Clock -->
+      <g transform="translate(310, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <line x1="0" y1="0" x2="15" y2="-15" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Los Angeles (PDT)</text>
+      </g>
+      
+      <!-- New York Clock -->
+      <g transform="translate(470, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
+      </g>
+      
+      <!-- Tokyo Clock -->
+      <g transform="translate(630, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Tokyo (JST)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     27. TRAVEL PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="travel-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Itinerary Optimization</div>
+    <h2>Travel Planning</h2>
+    <p>
+      Planning travel between Europe and the US West Coast requires adjusting to local time to manage hotel bookings and transit logs.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     28. FLIGHT SCHEDULING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="flight-scheduling">
+  <div class="method-intro">
+    <div class="eyebrow">Transit Coordination</div>
+    <h2>Flight Scheduling</h2>
+    <p>
+      Flights between London (LHR) and Los Angeles (LAX) take approximately 11 hours. Departing London at 12:00 PM GMT means landing in LA at 4:00 PM PDT local time due to the 7-hour shift.
+    </p>
+  </div>
+  
+  <!-- SVG 10: FLIGHT PLANNING ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">TRANS-ATLANTIC FLIGHT ARRIVAL DYNAMICS</text>
+      
+      <!-- Flight Arc -->
+      <path d="M 150 120 C 300 20, 500 20, 650 120" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+      
+      <circle cx="150" cy="120" r="8" fill="#36c7b5" />
+      <text x="150" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Departure: LHR (GMT)</text>
+      
+      <circle cx="650" cy="120" r="8" fill="#8fd7ff" />
+      <text x="650" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">Arrival: LAX (PDT)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     29. INTERNATIONAL CONFERENCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="conferences">
+  <div class="method-intro">
+    <div class="eyebrow">Webinar Coordination</div>
+    <h2>International Conferences</h2>
+    <p>
+      Planning global webinars requires selecting session times that accommodate participants in both the UK and US West Coast.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     30. 24-HOUR GMT TO PDT CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-table">
+  <h2>24-Hour GMT to PDT Conversion Table</h2>
+  <p>
+    This comparative index maps every hour of Greenwich Mean Time (GMT) to Pacific Daylight Time (PDT) and Pacific Standard Time (PST), highlighting the changes in offset during seasonal transitions.
+  </p>
+  
+  <div class="table-container" style="overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: var(--panel); border-bottom: 2px solid var(--line);">
+          <th style="padding: 12px; font-weight: bold; color: var(--accent);">GMT (UTC+0)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--text);">PDT (Summer, UTC-7)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--accent-2);">PST (Winter, UTC-8)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr style="border-bottom: 1px solid var(--line); transition: background 0.2s;">
+            <td style="padding: 10px 12px; font-weight: bold; color: var(--accent);">{row.gmt}</td>
+            <td style="padding: 10px 12px; color: var(--text);">{row.pdt}</td>
+            <td style="padding: 10px 12px; color: var(--accent-2);">{row.pst}</td>
+            <td style="padding: 10px 12px; font-size: 0.9em; color: var(--muted);">{row.notes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     31. POPULAR GMT TO PDT EXAMPLES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-examples">
+  <h2>Popular GMT to PDT Examples</h2>
+  <p>
+    Review these hourly conversion examples to see how Greenwich Mean Time values translate to Pacific Daylight Time (PDT) and Pacific Standard Time (PST).
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <!-- Hourly Examples 1-40 -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 AM (Midnight) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>5:00 PM (Previous Day)</strong> | PST: <strong>4:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midnight in London corresponds to late afternoon in California as offices wind down daily tasks.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>6:00 PM (Previous Day)</strong> | PST: <strong>5:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Corporate offices in California close as London SRE teams process nightly logs.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>7:00 PM (Previous Day)</strong> | PST: <strong>6:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">California support teams perform evening handovers while London teams are off-shift.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>8:00 PM (Previous Day)</strong> | PST: <strong>7:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European SRE teams monitor platform uptime while West Coast teams are asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>9:00 PM (Previous Day)</strong> | PST: <strong>8:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late-night systems run database maintenance while early morning approaches in the UK.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>10:00 PM (Previous Day)</strong> | PST: <strong>9:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK energy commodities traders log on to analyze grid projections while California is asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>11:00 PM (Previous Day)</strong> | PST: <strong>10:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Forex currency markets open as early commuters in Seattle prepare for standard shifts.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>12:00 AM (Midnight)</strong> | PST: <strong>11:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Morning cargo flights board at Heathrow and head west across the Atlantic.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>1:00 AM</strong> | PST: <strong>12:00 AM (Midnight)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Corporate offices in London open as West Coast teams enter deep sleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>2:00 AM</strong> | PST: <strong>1:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK design consultancies outline client creative assets for incoming engineering teams.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>3:00 AM</strong> | PST: <strong>2:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London teams reach peak morning volume while early commuters in California prepare.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>4:00 AM</strong> | PST: <strong>3:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European lunch breaks conclude as UK teams return from morning breaks.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>5:00 AM</strong> | PST: <strong>4:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in London corresponds to early morning hours on the US West Coast.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>6:00 AM</strong> | PST: <strong>5:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European workers begin afternoon tasks as early commuters in Seattle prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>7:00 AM</strong> | PST: <strong>6:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">New York exchanges open while California teams begin morning routines.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>8:00 AM</strong> | PST: <strong>7:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">California offices open at 8:00 AM local time, aligning with afternoon hours in London.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>9:00 AM</strong> | PST: <strong>8:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Standard office hours open in California as London enters late afternoon.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>10:00 AM</strong> | PST: <strong>9:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London offices close as California teams reach peak morning volume.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>11:00 AM</strong> | PST: <strong>10:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">London workers begin their evening commutes as California offices reach midday.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>12:00 PM (Noon)</strong> | PST: <strong>11:00 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK SRE contractors perform system handovers to active West Coast offices.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>1:00 PM</strong> | PST: <strong>12:00 PM (Noon)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">UK retail portals switch to automated evening routines as California teams return from lunch.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>2:00 PM</strong> | PST: <strong>1:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">NYSE and NASDAQ close, and transactions process through clearing houses.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>3:00 PM</strong> | PST: <strong>2:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Post-market trading starts in New York while California teams enter late afternoon.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>4:00 PM</strong> | PST: <strong>3:00 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European platforms transition to backup nodes as California teams prepare to close.</p>
+    </div>
+
+    <!-- Extra Examples for 40+ Total -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:30 AM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>1:30 AM</strong> | PST: <strong>12:30 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Morning financial assessments begin in Europe, ahead of East Coast pre-market trading activity.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>5:30 AM</strong> | PST: <strong>4:30 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US economic reports are released, impacting markets in London and Seattle.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>10:30 AM</strong> | PST: <strong>9:30 AM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">European stock markets close while California teams reach peak morning volume.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>2:30 PM</strong> | PST: <strong>1:30 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Post-closing settlements process in New York as California engineers review logs.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>4:30 PM</strong> | PST: <strong>3:30 PM</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Trans-Atlantic server backups run overnight to sync transactional records between UK and California.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>3:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the California business day corresponds to afternoon hours in London.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices open in Berlin as London teams prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>7:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in Berlin corresponds to late evening in London, before offices close.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>12:00 AM (Midnight) (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Office hours close in Berlin as London enters early morning hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening schedules begin in California as London enters early morning.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM PDT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late evening in California corresponds to early morning in London.</p>
+    </div>
+
+    <!-- PST winter reverse examples -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM PST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>4:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the winter workday in California corresponds to late afternoon GMT.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM PST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>5:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices open in winter in California as London offices close.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) PST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>8:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday in winter in California corresponds to evening hours in London.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM PST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">GMT: <strong>1:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Standard offices close in winter in California as London enters night hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:30 PM GMT</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">PDT: <strong>11:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday approaches in Seattle as London enters late evening.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     32. REAL WORLD SCHEDULING EXAMPLES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="real-world-scenarios">
+  <div class="method-intro">
+    <div class="eyebrow">Practical Use Cases</div>
+    <h2>Real World Scheduling Examples</h2>
+    <p>
+      To help visualize how the 7-hour gap impacts daily activities, consider these common scheduling scenarios:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Morning Handovers</strong>: At 9:00 AM PDT (4:00 PM GMT), London teams start their afternoon and receive logs from California teams starting their day.</li>
+      <li><strong>Asynchronous Development</strong>: Developers in California commit code at 5:00 PM PDT, which is ready for review by London developers starting their day at 9:00 AM GMT.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     33. HOW THIS CONVERTER WORKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Logical Architecture</div>
+    <h2>How This Converter Works</h2>
+    <p>
+      Our converter processes timezone conversions in the browser using Javascript. When you enter a source time, the converter references the offset database to calculate the local time in the Pacific Time Zone.
+    </p>
+    <p>
+      It applies standard IANA database rules, ensuring calculations account for date shifts and regional timezone variations.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     34. TIME ZONE ACCURACY
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="accuracy">
+  <div class="method-intro">
+    <div class="eyebrow">Calculated Accuracy</div>
+    <h2>Time Zone Accuracy</h2>
+    <p>
+      Timezone rules change frequently as governments adjust daylight saving dates and offsets. To ensure accuracy, our converter is updated to match official database changes.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     35. DATA SOURCES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="sources">
+  <div class="method-intro">
+    <div class="eyebrow">Data Verification</div>
+    <h2>Data Sources</h2>
+    <p>
+      We rely on the official **IANA Time Zone Database** (specifically the `America/Los_Angeles` zone files) to manage timezone offsets and historical transitions. This database is maintained by the Internet Assigned Numbers Authority.
+    </p>
+  </div>
+  
+  <!-- SVG 11: 1200X630 OPEN GRAPH SOCIAL SHARING IMAGE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="600" y="160" font-family="'Space Grotesk', sans-serif" font-size="44" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT TO PDT CONVERTER</text>
+      <text x="600" y="240" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="bold" fill="#f4fbff" text-anchor="middle">Live Clocks & Timezone Guide</text>
+      
+      <!-- Timeline Line -->
+      <line x1="200" y1="360" x2="1000" y2="360" stroke="#2f6278" stroke-width="6" />
+      
+      <!-- London Node -->
+      <circle cx="350" cy="360" r="16" fill="#36c7b5" />
+      <text x="350" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#36c7b5" text-anchor="middle">London (GMT)</text>
+      <text x="350" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC+0</text>
+      
+      <!-- Los Angeles Node -->
+      <circle cx="850" cy="360" r="16" fill="#8fd7ff" />
+      <text x="850" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#f4fbff" text-anchor="middle">Los Angeles (PDT)</text>
+      <text x="850" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC-7 / UTC-8</text>
+      
+      <text x="600" y="520" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="bold" fill="#8fd7ff" text-anchor="middle">https://gmttoestconverter.com/gmt-to-pdt/</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     36. FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed answers to resolve common questions regarding Greenwich Mean Time and Pacific Daylight Time:
+  </p>
+  <div class="faq">
+    {schemaData[1].mainEntity.map((faq) => (
+      <details>
+        <summary>{faq.name}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.acceptedAnswer.text}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     37. FINAL SUMMARY & EEAT SIGNALS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes reveal" id="final-summary">
+  <h2>Final Summary</h2>
+  <p>
+    Converting **GMT to PDT** involves managing a seasonal shift. Pacific Daylight Time (PDT) remains on a permanent UTC-7 offset during summer and UTC-8 offset during winter. This makes the time difference exactly 7 hours in summer and 8 hours in winter, requiring date-aware calculations for accurate scheduling.
+  </p>
+  <p>
+    <em>This resource is reviewed periodically to align with IANA adjustments. Review our <a href="/editorial-policy/" style="text-decoration: underline; color: var(--accent);">Editorial Policy</a> to understand how we maintain content accuracy.</em>
+  </p>
+  <p style="font-size: 0.9em; color: var(--muted); margin-top: 16px;">
+    Last Updated: October 2026 | Reviewed periodically by Jackie Bruce
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Explore our other dedicated time zone tools:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>GMT Conversions</h3>
+      <ul>
+        <li><a href="/gmt-to-pst/">GMT to PST</a></li>
+        <li><a href="/gmt-to-est/">GMT to EST</a></li>
+        <li><a href="/gmt-to-cdt/">GMT to CDT</a></li>
+        <li><a href="/gmt-to-cst/">GMT to CST</a></li>
+        <li><a href="/gmt-to-mst/">GMT to MST</a></li>
+        <li><a href="/gmt-to-akdt/">GMT to AKDT</a></li>
+        <li><a href="/gmt-to-awst/">GMT to AWST</a></li>
+      </ul>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern Conversions</h3>
+      <ul>
+        <li><a href="/">Universal Time Zone Converter</a></li>
+        <li><a href="/est-to-gmt/">EST to GMT reverse</a></li>
+        <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        <li><a href="/about-us/">About Us</a></li>
+        <li><a href="/editorial-policy/">Editorial Policy</a></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
