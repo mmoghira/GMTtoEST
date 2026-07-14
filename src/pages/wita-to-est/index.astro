@@ -1,0 +1,1341 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getLang, getTranslation, getPageMeta } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "wita-to-est";
+const t = getTranslation(lang);
+const meta = getPageMeta(lang, "witaToEst");
+
+const seoTitle = "WITA to EST Converter – Bali & Central Indonesia to Eastern Time";
+const pageDescription = "Convert WITA to EST and EDT instantly. View the 24-hour conversion chart, check Bali to New York time shifts, and schedule international meetings.";
+
+const context = {
+  from: "WITA",
+  to: "EST",
+  fromZone: "Asia/Makassar",
+  toZone: "America/New_York"
+};
+
+const canonical = "https://gmttoestconverter.com/wita-to-est/";
+
+// Helper to format 12-hour values
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+// Generate the 24-hour comparative table rows (WITA = UTC+8, EST = UTC-5 / EDT = UTC-4)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = (hour - 13 + 24) % 24;
+  const estDayDiff = (hour - 13) < 0 ? "Previous day" : "Same day";
+
+  const edtHour = (hour - 12 + 24) % 24;
+  const edtDayDiff = (hour - 12) < 0 ? "Previous day" : "Same day";
+
+  return {
+    wita: formatHour12(hour),
+    est: `${formatHour12(estHour)} EST (${estDayDiff})`,
+    edt: `${formatHour12(edtHour)} EDT (${edtDayDiff})`,
+    offset: "WITA is UTC+8 | EST is UTC-5 / EDT is UTC-4",
+    notes: `Winter gap: 13h (EST). Summer gap: 12h (EDT).`
+  };
+});
+
+// JSON-LD Schema definitions
+const schemaData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "WITA to EST Converter",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "url": canonical,
+    "description": "Free online WITA to EST converter with real-time clocks, Bali to New York time shifts, and date-aware timezone guidelines."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is WITA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WITA stands for Waktu Indonesia Tengah, which is Central Indonesian Time. It operates at a UTC+8 offset, covering regions like Bali, Sulawesi, Lesser Sunda Islands, and Nusantara (East Kalimantan)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does WITA stand for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WITA stands for Waktu Indonesia Tengah, the Indonesian name for Central Indonesian Time, used across the central archipelago."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many hours ahead is WITA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WITA is 13 hours ahead of Eastern Standard Time (EST) in winter, and 12 hours ahead of Eastern Daylight Time (EDT) in summer. Indonesia does not change its clocks, so the gap depends entirely on US daylight saving transitions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between WITA and EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The timezone difference is exactly 13 hours during standard winter time (EST, UTC-5) and reduces to 12 hours during summer daylight saving time (EDT, UTC-4)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does WITA observe daylight saving time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Indonesia does not observe Daylight Saving Time (DST). WITA remains permanently fixed at UTC+8 year-round."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does EST change during daylight saving?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, the US Eastern Time Zone transitions to Eastern Daylight Time (EDT, UTC-4) on the second Sunday of March, and returns to Eastern Standard Time (EST, UTC-5) on the first Sunday of November."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Indonesian cities use WITA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Major cities in the WITA timezone include Makassar (Sulawesi), Denpasar (Bali), Mataram (Lombok), Palu, Kendari, Kupang, and Nusantara (the new capital region in East Kalimantan)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Bali in WITA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Bali is located within the Central Indonesian Time (WITA) zone and operates on a permanent UTC+8 offset."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is WITA the same as AWST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, in terms of offset, WITA and AWST (Australian Western Standard Time) both operate at UTC+8. However, they are legally distinct and serve different geographic regions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert future dates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Our timezone converter is date-aware, meaning it checks whether Daylight Saving Time is active on the selected US date to apply the correct 12-hour (summer) or 13-hour (winter) gap automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this converter for meetings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, it is designed to help corporate coordinators, remote workers, and agencies align business hours between Indonesia and the US East Coast."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter accurate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Our converter uses the official IANA Time Zone Database (specifically the America/New_York and Asia/Makassar files) to ensure correct offsets."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is time zone data updated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our database updates automatically when changes are published by the Internet Assigned Numbers Authority (IANA)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this converter for flights?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, travelers can convert departure and arrival times to manage trans-Pacific transit between Indonesian hubs like Ngurah Rai Airport (DPS) and New York (JFK)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I bookmark this page?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can bookmark this page (/wita-to-est/) for quick access to live clocks, comparative charts, meeting planners, and seasonal offset rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this converter free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our converter is completely free to use with no registrations, limits, or subscriptions required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between WITA, WIB, and WIT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Indonesia has three timezones: WIB (Western Indonesian Time, UTC+7), WITA (Central Indonesian Time, UTC+8), and WIT (Eastern Indonesian Time, UTC+9). WITA is 1 hour ahead of WIB and 1 hour behind WIT."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Nusantara in the WITA timezone?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Nusantara, the new capital city of Indonesia located in East Kalimantan, operates within the Central Indonesian Time (WITA, UTC+8) zone."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Jakarta use WITA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, Jakarta is located in Java and uses WIB (Western Indonesian Time, UTC+7). It is 1 hour behind Bali (WITA) and 12/13 hours ahead of New York."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why doesn't Indonesia observe daylight saving time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Indonesia is located near the equator, where day length remains relatively constant throughout the year. This makes Daylight Saving Time unnecessary."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best meeting time between Bali and New York?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Due to the 12/13 hour gap, the best window is 8:00 AM to 9:00 AM New York time, which corresponds to 8:00 PM to 9:00 PM WITA in Bali."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do BPO companies in Bali manage WITA to EST schedules?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BPO companies run night shifts starting at 8:00 PM or 9:00 PM WITA to align with morning operations on the US East Coast."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Singapore share the WITA offset?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Singapore operates on Singapore Standard Time (SGT, UTC+8), which matches the WITA offset."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I schedule webinars between Indonesia and the USA using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, this converter is designed to help coordinators select times that avoid conflicts for participants in both countries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a day change when converting WITA to EST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Because WITA is 12 to 13 hours ahead of EST, early morning hours in Indonesia correspond to the previous afternoon/evening in the US."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does this converter handle EDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool automatically detects the selected date and applies a 12-hour offset during US Daylight Saving Time (EDT) and a 13-hour offset during standard winter time (EST)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who is the editorial reviewer for this site's content?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "All timezone content and calculators are reviewed by Jackie Bruce, our content specialist, ensuring technical accuracy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the database source for this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses the official IANA Time Zone Database, maintaining synchronization with global time standards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the US Eastern time zone include Florida?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Florida is located within the Eastern Time Zone (observing EST and EDT) and coordinates on the same clocks as New York."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a mobile version of this converter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our responsive web application is optimized for mobile displays, adjusting layout elements for easy use on smartphones."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://gmttoestconverter.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "WITA to EST Converter",
+        "item": canonical
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="WITA to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- Inject additional JSON-LD Schemas -->
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1: WITA TO EST CONVERTER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    WITA to EST Converter
+  </h1>
+</section>
+
+<!-- LIVE CONVERTER COMPONENT -->
+<section class="converter-wrapper reveal" id="calculator-section">
+  <div class="converter-box">
+    <Converter
+      lang={lang}
+      dir={dir}
+      slug={slug}
+      t={t}
+      context={context}
+    />
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Key Specifications">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clock Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>DST Transition Detection</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>IANA Database Standards</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     1. CONVERT CENTRAL INDONESIAN TIME TO EASTERN TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="convert-instantly">
+  <div class="method-intro">
+    <div class="eyebrow">Instant Calculation</div>
+    <h2>Convert Central Indonesian Time to Eastern Time</h2>
+    <p>
+      Our synchronization engine converts Central Indonesian Time (WITA) to Eastern Standard Time (EST) and Eastern Daylight Time (EDT) in the browser. Select your preferred date, enter the source time, and retrieve the translated value instantly.
+    </p>
+    <p>
+      This calculator supports scheduling, travel, and logistics operations. By referencing official databases, it ensures conversions are accurate.
+    </p>
+  </div>
+  
+  <!-- SVG 1: HERO WORLD CLOCK ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA TO EST SYNCHRONIZED WORLD CLOCK</text>
+      
+      <!-- WITA Clock Dial -->
+      <g transform="translate(220, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-35" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">WITA (UTC+8)</text>
+      </g>
+      
+      <!-- Sync Arrow -->
+      <path d="M 370 130 L 430 130" stroke="#36c7b5" stroke-width="3" fill="none" marker-end="url(#arrow)" />
+      <text x="400" y="115" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">12-13h Shift</text>
+      
+      <!-- EST Clock Dial -->
+      <g transform="translate(580, 130)">
+        <circle cx="0" cy="0" r="50" fill="#0c354a" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="-20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="15" y2="25" stroke="#8fd7ff" stroke-width="2" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+      
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#36c7b5" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     2. CURRENT WITA AND EST TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid reveal" id="current-clocks">
+  <h2 style="grid-column: 1 / -1; margin-bottom: 8px;">Current WITA and EST Time</h2>
+  
+  <div class="clock-card">
+    <span class="eyebrow">Central Indonesian Time Clock (Bali/Makassar)</span>
+    <strong id="gmtClock">--:--:-- GMT</strong>
+    <p>UTC+8 Standard Time</p>
+  </div>
+
+  <div class="clock-card">
+    <span class="eyebrow">US Eastern Time Clock (New York)</span>
+    <strong id="estClock">--:--:-- ET</strong>
+    <p>Active Offset: <em id="estZone">ET</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     3. WHAT IS WITA?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="what-is-wita">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Definition</div>
+    <h2>What is WITA?</h2>
+    <p>
+      WITA stands for Waktu Indonesia Tengah, which is Central Indonesian Time. It operates at a UTC+8 offset, covering regions like Bali, Sulawesi, Lesser Sunda Islands, and Nusantara (East Kalimantan).
+    </p>
+    <p>
+      Indonesia does not observe Daylight Saving Time, so WITA remains permanently fixed at UTC+8 year-round.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     4. WHERE IS WITA USED?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="where-used">
+  <div class="method-intro">
+    <div class="eyebrow">TimeZone Geography</div>
+    <h2>Where is WITA Used?</h2>
+    <p>
+      WITA is used across the central provinces of Indonesia, including Bali, East Kalimantan, South Kalimantan, North Kalimantan, Sulawesi, West Nusa Tenggara, East Nusa Tenggara, and the new capital city Nusantara.
+    </p>
+    <p>
+      This timezone acts as a bridge between the western region (WIB, UTC+7) and the eastern region (WIT, UTC+9).
+    </p>
+  </div>
+  
+  <!-- SVG 2: INDONESIA MAP HIGHLIGHTING WITA REGIONS -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">INDONESIA TIME ZONE BOUNDARIES</text>
+      
+      <!-- WIB Area -->
+      <rect x="80" y="70" width="180" height="130" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="170" y="130" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">WIB (UTC+7)</text>
+      <text x="170" y="150" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Jakarta / Java</text>
+
+      <!-- WITA Area -->
+      <rect x="300" y="70" width="200" height="130" fill="#12455d" stroke="#36c7b5" stroke-width="2.5" rx="4" />
+      <text x="400" y="130" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA (UTC+8)</text>
+      <text x="400" y="150" font-family="'Manrope', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Bali / Makassar / Nusantara</text>
+      
+      <!-- WIT Area -->
+      <rect x="540" y="70" width="180" height="130" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="630" y="130" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">WIT (UTC+9)</text>
+      <text x="630" y="150" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Maluku / Papua</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     5. WITA VS EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="wita-vs-est">
+  <div class="method-intro">
+    <div class="eyebrow">Standard Clarifications</div>
+    <h2>WITA vs EST</h2>
+    <p>
+      WITA is Central Indonesian Time (UTC+8), permanently fixed year-round. EST is US Eastern Standard Time (UTC-5), active during the winter months.
+    </p>
+    <p>
+      Because WITA is UTC+8 and EST is UTC-5, the difference is exactly 13 hours. When the US transitions to Eastern Daylight Time (EDT, UTC-4) in the summer, the gap reduces to 12 hours.
+    </p>
+  </div>
+  
+  <!-- SVG 3: WITA → EST TIMELINE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">WITA VS EST SEASONAL TIMELINE OFFSET</text>
+      <line x1="80" y1="100" x2="720" y2="100" stroke="#2f6278" stroke-width="4" />
+      
+      <!-- EST Node -->
+      <circle cx="200" cy="100" r="10" fill="#36c7b5" />
+      <text x="200" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">EST (UTC-5)</text>
+      <text x="200" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York (Winter)</text>
+
+      <!-- WITA Node -->
+      <circle cx="600" cy="100" r="10" fill="#8fd7ff" />
+      <text x="600" y="75" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA (UTC+8)</text>
+      <text x="600" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Bali (Year-Round)</text>
+
+      <path d="M 200 100 L 200 115 L 600 115 L 600 100" fill="none" stroke="#36c7b5" stroke-width="1.5" opacity="0.5" />
+      <text x="400" y="150" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#8fd7ff" text-anchor="middle">13-Hour Winter Gap | 12-Hour Summer Gap (EDT)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     6. TIME DIFFERENCE BETWEEN WITA AND EST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="time-difference">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Gaps</div>
+    <h2>Time Difference Between WITA and EST</h2>
+    <p>
+      The timezone difference between WITA and Eastern Time varies depending on the season:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>Standard Winter Time (EST)</strong>: WITA is 13 hours ahead of New York.</li>
+      <li><strong>Daylight Saving Summer Time (EDT)</strong>: WITA is 12 hours ahead of New York.</li>
+    </ul>
+    <p>
+      This shift requires remote teams and travelers to verify the date when coordinating schedules.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     7. DOES WITA OBSERVE DAYLIGHT SAVING TIME?
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="does-wita-observe-dst">
+  <div class="method-intro">
+    <div class="eyebrow">DST Rules</div>
+    <h2>Does WITA Observe Daylight Saving Time?</h2>
+    <p>
+      No. Indonesia does not observe Daylight Saving Time. The country's proximity to the equator keeps day length relatively constant year-round, eliminating the need for clock shifts.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     8. HOW EST CHANGES DURING DST
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="est-changes-dst">
+  <div class="method-intro">
+    <div class="eyebrow">US Timekeeping</div>
+    <h2>How EST Changes During DST</h2>
+    <p>
+      The US Eastern timezone observes Eastern Daylight Time (EDT, UTC-4) during the summer and Eastern Standard Time (EST, UTC-5) in the winter.
+    </p>
+    <p>
+      Clocks shift on the second Sunday of March and the first Sunday of November, changing the timezone gap with Indonesia from 13 hours to 12 hours.
+    </p>
+  </div>
+  
+  <!-- SVG 4: USA EASTERN TIME MAP -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">USA EASTERN TIME ZONE</text>
+      
+      <!-- USA Eastern Block -->
+      <rect x="250" y="70" width="300" height="100" fill="#0c354a" stroke="#2f6278" stroke-width="2" rx="4" />
+      <text x="400" y="110" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">US Eastern Time (ET)</text>
+      <text x="400" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">EST (UTC-5, Winter) | EDT (UTC-4, Summer)</text>
+      <text x="400" y="150" font-family="'Manrope', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">New York, Miami, Boston, Atlanta</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     9. INDONESIA TO NEW YORK TIME
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="indonesia-ny-time">
+  <div class="method-intro">
+    <div class="eyebrow">Regional Coordination</div>
+    <h2>Indonesia to New York Time</h2>
+    <p>
+      Coordinating between Central Indonesia (WITA) and New York (Eastern Time) requires managing a large timezone gap.
+    </p>
+    <p>
+      For example, if it is 9:00 AM in New York, it is 9:00 PM WITA in Bali (summer) or 10:00 PM WITA in Bali (winter).
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     10. INDONESIA TO USA BUSINESS HOURS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="business-hours">
+  <div class="method-intro">
+    <div class="eyebrow">Workday Dynamics</div>
+    <h2>Indonesia to USA Business Hours</h2>
+    <p>
+      Due to the 12/13 hour gap, standard business hours (9:00 AM to 5:00 PM local times) have virtually zero overlap.
+    </p>
+    <p>
+      Businesses must use asynchronous workflows, shift schedules, or coordinate during early morning/evening windows.
+    </p>
+  </div>
+  
+  <!-- SVG 5: INDONESIA ↔ USA BUSINESS HOURS OVERLAP -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="40" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">INDONESIA ↔ USA BUSINESS HOURS OVERLAP</text>
+      
+      <!-- WITA Office Hours -->
+      <g transform="translate(100, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff" text-anchor="middle">WITA Office (09:00 - 17:00)</text>
+      </g>
+      
+      <!-- Eastern Office Hours -->
+      <g transform="translate(500, 75)">
+        <rect x="0" y="0" width="200" height="40" rx="4" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="100" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#bdd2dc" text-anchor="middle">Eastern Office (09:00 - 17:00)</text>
+      </g>
+
+      <!-- Overlap Connection -->
+      <path d="M 300 95 C 400 130, 400 130, 500 95" fill="none" stroke="#36c7b5" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="400" y="160" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Overlap Window: 08:00 - 09:00 New York / 20:00 - 21:00 Bali</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     11. MEETING PLANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="meeting-planner">
+  <div class="method-intro">
+    <div class="eyebrow">Meeting Optimization</div>
+    <h2>Meeting Planner</h2>
+    <p>
+      The best meeting window is **8:00 AM to 9:00 AM New York Time**, which corresponds to **8:00 PM to 9:00 PM WITA** (summer) or **9:00 PM to 10:00 PM WITA** (winter).
+    </p>
+  </div>
+  
+  <!-- SVG 6: MEETING PLANNER INFOGRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="18" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA TO EST VISUAL MEETING PLANNER</text>
+      
+      <!-- New York Timeline -->
+      <g transform="translate(50, 70)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#f4fbff" font-weight="bold">EST:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 9 + i;
+          const label = `${hour}:00`;
+          const isOverlap = hour === 9 || hour === 10;
+          const bg = isOverlap ? "#36c7b5" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+      
+      <!-- WITA Timeline -->
+      <g transform="translate(50, 130)">
+        <text x="0" y="25" font-family="'Space Grotesk', sans-serif" font-size="14" fill="#8fd7ff" font-weight="bold">WITA:</text>
+        {Array.from({ length: 9 }, (_, i) => {
+          const hour = 9 + i;
+          const label = `${hour + 12}:00`;
+          const isOverlap = hour === 9 || hour === 10;
+          const bg = isOverlap ? "#8fd7ff" : "#0c354a";
+          const textCol = isOverlap ? "#0c354a" : "#bdd2dc";
+          return (
+            <g transform={`translate(${60 + i * 68}, 0)`}>
+              <rect x="0" y="0" width="60" height="35" fill={bg} rx="4" />
+              <text x="30" y="22" font-family="'Manrope', sans-serif" font-size="11" fill={textCol} font-weight="bold" text-anchor="middle">{label}</text>
+            </g>
+          );
+        })}
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     12. REMOTE TEAM SCHEDULING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="remote-team-scheduling">
+  <div class="method-intro">
+    <div class="eyebrow">Workplace Sync</div>
+    <h2>Remote Team Scheduling</h2>
+    <p>
+      Remote teams operating across Central Indonesia and the US East Coast must manage the 12/13 hour gap. Asynchronous communication is essential for handovers and project tracking.
+    </p>
+  </div>
+  
+  <!-- SVG 7: REMOTE TEAM COLLABORATION GRAPHIC -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">ASYNCHRONOUS WORKFLOW ALIGNMENT</text>
+      
+      <!-- EST Node -->
+      <g transform="translate(200, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">EST Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Uploads Daily Logs</text>
+      </g>
+      
+      <!-- Handoff Arrow -->
+      <path d="M 350 110 L 450 110" stroke="#36c7b5" stroke-width="2.5" fill="none" marker-end="url(#arrow)" />
+      
+      <!-- WITA Node -->
+      <g transform="translate(600, 110)">
+        <rect x="-70" y="-30" width="140" height="60" rx="6" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA Office</text>
+        <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="10" fill="#bdd2dc" text-anchor="middle">Processes Backlog</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     13. TRAVEL BETWEEN INDONESIA AND USA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="travel-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Itinerary Optimization</div>
+    <h2>Travel Between Indonesia and USA</h2>
+    <p>
+      Planning travel between Indonesia and the USA requires adjusting to local time to manage hotel bookings, car rentals, and tour schedules.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     14. FLIGHT PLANNING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="flight-planning">
+  <div class="method-intro">
+    <div class="eyebrow">Transit Coordination</div>
+    <h2>Flight Planning</h2>
+    <p>
+      Flights between Indonesia (WITA) and New York (JFK) transit across multiple time zones. Airlines list flight schedules in local time.
+    </p>
+  </div>
+  
+  <!-- SVG 8: FLIGHT ROUTE ILLUSTRATION -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="background: #0f172a; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#f4fbff" text-anchor="middle">TRANS-PACIFIC FLIGHT ARRIVAL DYNAMICS</text>
+      
+      <!-- Flight Arc -->
+      <path d="M 150 120 C 300 20, 500 20, 650 120" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+      
+      <circle cx="150" cy="120" r="8" fill="#36c7b5" />
+      <text x="150" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Departure: DPS (WITA)</text>
+      
+      <circle cx="650" cy="120" r="8" fill="#8fd7ff" />
+      <text x="650" y="145" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">Arrival: JFK (EST)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     15. EDUCATION AND ONLINE CLASSES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="education">
+  <div class="method-intro">
+    <div class="eyebrow">Academic Coordination</div>
+    <h2>Education and Online Classes</h2>
+    <p>
+      Universities and online learning platforms host courses for students in different time zones. Converting EST assignment deadlines to WITA is essential to ensure students submit coursework on time.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     16. DEVELOPERS WORKING ACROSS TIME ZONES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="developers">
+  <div class="method-intro">
+    <div class="eyebrow">Dev Ops Coordination</div>
+    <h2>Developers Working Across Time Zones</h2>
+    <p>
+      Software engineering teams coordinating across the US East Coast and Indonesia must schedule deployments to minimize disruption to users.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     17. FREELANCERS AND AGENCIES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="freelancers">
+  <div class="method-intro">
+    <div class="eyebrow">Agency Coordination</div>
+    <h2>Freelancers and Agencies</h2>
+    <p>
+      Freelancers and digital agencies working with clients in Eastern North America use this tool to manage deadlines and calls.
+    </p>
+  </div>
+  
+  <!-- SVG 9: WORLD CLOCK COMPARISON -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="auto" style="background: #12455d; border-radius: 8px;">
+      <text x="400" y="35" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">SYNCHRONIZED REGIONAL BASELINE CLOCKS</text>
+      
+      <!-- New York Clock -->
+      <g transform="translate(150, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="0" y2="-20" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
+      </g>
+      
+      <!-- London Clock -->
+      <g transform="translate(310, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="15" y2="-15" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">London (GMT)</text>
+      </g>
+      
+      <!-- Jakarta Clock -->
+      <g transform="translate(470, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#2f6278" stroke-width="1.5" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#f4fbff" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Jakarta (WIB)</text>
+      </g>
+      
+      <!-- Bali Clock -->
+      <g transform="translate(630, 110)">
+        <circle cx="0" cy="0" r="30" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="45" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">Bali (WITA)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     18. 24-HOUR WITA TO EST CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-table">
+  <h2>24-Hour WITA to EST Conversion Table</h2>
+  <p>
+    This comparative index maps every hour of Central Indonesian Time (WITA) to Eastern Standard Time (EST) and Eastern Daylight Time (EDT).
+  </p>
+  
+  <div class="table-container" style="overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: var(--panel); border-bottom: 2px solid var(--line);">
+          <th style="padding: 12px; font-weight: bold; color: var(--accent);">WITA (UTC+8)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--text);">EST (Winter, UTC-5)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--accent-2);">EDT (Summer, UTC-4)</th>
+          <th style="padding: 12px; font-weight: bold; color: var(--muted);">Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr style="border-bottom: 1px solid var(--line); transition: background 0.2s;">
+            <td style="padding: 10px 12px; font-weight: bold; color: var(--accent);">{row.wita}</td>
+            <td style="padding: 10px 12px; color: var(--text);">{row.est}</td>
+            <td style="padding: 10px 12px; color: var(--accent-2);">{row.edt}</td>
+            <td style="padding: 10px 12px; font-size: 0.9em; color: var(--muted);">{row.notes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     19. POPULAR WITA TO EST EXAMPLES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="conversion-examples">
+  <h2>Popular WITA to EST Examples</h2>
+  <p>
+    Review these hourly conversion examples to see how Central Indonesian Time (WITA) values translate to US Eastern Time.
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px;">
+    <!-- Hourly Examples 1-35 -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 AM (Midnight) WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>11:00 AM (Previous Day)</strong> | EDT: <strong>12:00 PM (Noon) (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midnight in Central Indonesia corresponds to the start of the afternoon shift in New York offices.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>12:00 PM (Noon) (Previous Day)</strong> | EDT: <strong>1:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday operations on the East Coast run while team members in Bali are asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>1:00 PM (Previous Day)</strong> | EDT: <strong>2:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late-night systems run database maintenance while East Coast offices are open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>2:00 PM (Previous Day)</strong> | EDT: <strong>3:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">New York financial offices process afternoon transactions while Bali is asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>3:00 PM (Previous Day)</strong> | EDT: <strong>4:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Eastern offices enter their final working hours as early morning approaches in Indonesia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:00 PM (Previous Day)</strong> | EDT: <strong>5:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Standard office hours close in New York as early commuters in Bali prepare for work.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>5:00 PM (Previous Day)</strong> | EDT: <strong>6:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">East Coast workers begin their evening commutes while Indonesian offices open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>6:00 PM (Previous Day)</strong> | EDT: <strong>7:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Support teams hand over active support logs as East Coast offices close.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:00 PM (Previous Day)</strong> | EDT: <strong>8:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the Indonesian business day aligns with evening hours in the US.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>8:00 PM (Previous Day)</strong> | EDT: <strong>9:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Indonesian offices open at 9:00 AM local time, corresponding to 8:00/9:00 PM in New York.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>9:00 PM (Previous Day)</strong> | EDT: <strong>10:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Mid-morning tasks in Bali run while US teams begin nighttime routines.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>10:00 PM (Previous Day)</strong> | EDT: <strong>11:00 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Noon approaches in Bali while East Coast systems transition to night backup scripts.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>11:00 PM (Previous Day)</strong> | EDT: <strong>12:00 AM (Midnight) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Lunch breaks in Central Indonesia align with midnight on the East Coast.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">1:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>12:00 AM (Midnight) (Same Day)</strong> | EDT: <strong>1:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Indonesian teams return from lunch as US teams enter sleep hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">2:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>1:00 AM (Same Day)</strong> | EDT: <strong>2:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Early afternoon sorting spikes in Makassar run while New York is asleep.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">3:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>2:00 AM (Same Day)</strong> | EDT: <strong>3:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Server backup databases sync overnight records while afternoon meetings conclude in Bali.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">4:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>3:00 AM (Same Day)</strong> | EDT: <strong>4:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening logistics operations align with early morning hours on the East Coast.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:00 AM (Same Day)</strong> | EDT: <strong>5:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Indonesian offices close as US teams prepare for morning tasks.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>5:00 AM (Same Day)</strong> | EDT: <strong>6:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening commutes begin in Bali as New York stock traders start their morning.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">7:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>6:00 AM (Same Day)</strong> | EDT: <strong>7:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Support teams hand over active logs as East Coast offices open.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:00 AM (Same Day)</strong> | EDT: <strong>8:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The peak meeting window opens: 8:00 PM WITA corresponds to 7:00/8:00 AM in New York.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>8:00 AM (Same Day)</strong> | EDT: <strong>9:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US offices open at 8:00/9:00 AM local time, which aligns with late evening in Bali.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">10:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>9:00 AM (Same Day)</strong> | EDT: <strong>10:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Forex trading volume peaks in Europe while Perth enters late-night hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:00 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>10:00 AM (Same Day)</strong> | EDT: <strong>11:00 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Midday approaches in New York while Indonesian offices prepare for the next calendar date.</p>
+    </div>
+
+    <!-- Extra Examples for 30+ Total -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:30 AM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>7:30 PM (Previous Day)</strong> | EDT: <strong>8:30 PM (Previous Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Early commuters in Bali prepare for work as the previous evening ends in New York.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:30 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>11:30 PM (Previous Day)</strong> | EDT: <strong>12:30 AM (Midnight) (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Noon lunch in Central Indonesia aligns with late night on the East Coast.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:30 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>4:30 AM (Same Day)</strong> | EDT: <strong>5:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening commutes begin in Bali as New York stock traders start their morning.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:30 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>8:30 AM (Same Day)</strong> | EDT: <strong>9:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">US markets open as New York offices open and Bali enters late evening.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">11:30 PM WITA</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">EST: <strong>10:30 AM (Same Day)</strong> | EDT: <strong>11:30 AM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late night in Indonesia aligns with morning business operations in New York.</p>
+    </div>
+
+    <!-- Reverse conversions to hit 35 total examples -->
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">8:00 AM EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>9:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">The start of the US business day corresponds to late evening in Indonesia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 AM EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>10:00 PM (Same Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Offices open in New York as Bali enters night hours.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">12:00 PM (Noon) EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>1:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Noon in New York corresponds to early morning in Bali.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">5:00 PM EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>6:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Office hours close in New York as morning shifts begin in Indonesia.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">6:00 PM EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>7:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Evening schedules begin in New York as Indonesian support shifts start.</p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3 style="color: var(--accent);">9:00 PM EST</h3>
+      <p style="color: var(--muted); margin: 4px 0 0;">WITA: <strong>10:00 AM (Next Day)</strong></p>
+      <p style="margin: 8px 0 0; font-size: 0.95em;">Late evening in New York corresponds to morning operations in Bali.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     20. CITIES USING WITA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="reveal" id="cities-section">
+  <h2>Cities Using WITA</h2>
+  <p>
+    The Central Indonesian Time zone applies to all municipal, industrial, and coastal regions in the central archipelago:
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Makassar</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The largest city in Sulawesi, coordinating maritime trade and logistics across the central region.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Denpasar (Bali)</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A major tourism and digital agency hub, coordinating travel schedules and remote contractors.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Mataram</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The capital of West Nusa Tenggara, supporting local agriculture and regional tourism.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Palu</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A central port city in Sulawesi, coordinating local administration.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Kendari</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        A coastal hub supporting agriculture and regional shipping logistics.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Kupang</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        The capital of East Nusa Tenggara, managing regional shipping and administration.
+      </p>
+    </div>
+
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+      <h3>Nusantara</h3>
+      <p style="color: var(--muted); font-size: 0.95em; margin-top: 4px;">
+        Indonesia's new capital city in East Kalimantan, coordinating state policies and logistics.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     21. INDUSTRIES OPERATING ON WITA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="industries">
+  <div class="method-intro">
+    <div class="eyebrow">Industry Use Cases</div>
+    <h2>Industries Operating on WITA</h2>
+    <p>
+      Central Indonesia's business economy relies on WITA to coordinate shifts and trade. Key sectors include:
+    </p>
+    <ul style="margin: 16px 0 0; padding-left: 1.5rem; color: var(--muted); line-height: 1.7;">
+      <li><strong>BPO Companies</strong>: Outsource customer support teams running night shifts to align with US business hours.</li>
+      <li><strong>Software Development</strong>: Remote engineering groups managing code handovers with US East Coast firms.</li>
+      <li><strong>Tourism & Cruises</strong>: Coastal cruise ships and wilderness tours coordinate docking times on local WITA clocks.</li>
+      <li><strong>Export & Import</strong>: Logistics firms coordinate bulk carrier departures from ports in South and East Kalimantan.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     22. HOW THIS CONVERTER WORKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Logical Architecture</div>
+    <h2>How This Converter Works</h2>
+    <p>
+      Our converter processes timezone conversions in the browser using Javascript. When you enter a source time, the converter references the offset database to calculate the local time in the US Eastern Time Zone.
+    </p>
+    <p>
+      It applies standard IANA database rules, ensuring calculations account for date shifts and regional timezone variations.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     23. TIME ZONE ACCURACY
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="accuracy">
+  <div class="method-intro">
+    <div class="eyebrow">Calculated Accuracy</div>
+    <h2>Time Zone Accuracy</h2>
+    <p>
+      Timezone rules change frequently as governments adjust daylight saving dates and offsets. To ensure accuracy, our converter is updated to match official database changes.
+    </p>
+    <p>
+      We rely on the official **IANA Time Zone Database** (specifically the `Asia/Makassar` and `America/New_York` zone files) to manage timezone offsets.
+    </p>
+  </div>
+  
+  <!-- SVG 10: 1200X630 OPEN GRAPH SOCIAL SHARING IMAGE -->
+  <div class="hero-visual" style="max-width: 800px; margin: 24px auto 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="auto" style="background: linear-gradient(135deg, #071b26 0%, #0f3446 100%); border-radius: 8px;">
+      <text x="600" y="160" font-family="'Space Grotesk', sans-serif" font-size="44" font-weight="bold" fill="#36c7b5" text-anchor="middle">WITA TO EST CONVERTER</text>
+      <text x="600" y="240" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="bold" fill="#f4fbff" text-anchor="middle">Live Clocks & Timezone Guide</text>
+      
+      <!-- Timeline Line -->
+      <line x1="200" y1="360" x2="1000" y2="360" stroke="#2f6278" stroke-width="6" />
+      
+      <!-- Bali Node -->
+      <circle cx="350" cy="360" r="16" fill="#36c7b5" />
+      <text x="350" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#36c7b5" text-anchor="middle">Bali (WITA)</text>
+      <text x="350" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC+8</text>
+      
+      <!-- New York Node -->
+      <circle cx="850" cy="360" r="16" fill="#8fd7ff" />
+      <text x="850" y="320" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="bold" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+      <text x="850" y="415" font-family="'Manrope', sans-serif" font-size="18" fill="#bdd2dc" text-anchor="middle">UTC-5 / UTC-4</text>
+      
+      <text x="600" y="520" font-family="'Space Grotesk', sans-serif" font-size="24" font-weight="bold" fill="#8fd7ff" text-anchor="middle">https://gmttoestconverter.com/wita-to-est/</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24. FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="reveal">
+  <h2>Frequently Asked Questions</h2>
+  <p>
+    Review these detailed answers to resolve common questions regarding Central Indonesian Time and US Eastern Time:
+  </p>
+  <div class="faq">
+    {schemaData[1].mainEntity.map((faq) => (
+      <details>
+        <summary>{faq.name}</summary>
+        <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+          {faq.acceptedAnswer.text}
+        </p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     25. FINAL SUMMARY & EEAT SIGNALS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes reveal" id="final-summary">
+  <h2>Final Summary</h2>
+  <p>
+    Converting **WITA to EST** involves managing a seasonal shift. Central Indonesia (WITA) remains on a permanent UTC+8 offset, while the US Eastern Time Zone transitions between EST (UTC-5) and EDT (UTC-4) twice a year. This makes the time difference exactly 13 hours in winter and 12 hours in summer, requiring date-aware calculations for accurate scheduling.
+  </p>
+  <p>
+    <em>This resource is reviewed periodically to align with IANA adjustments. Review our <a href="/editorial-policy/" style="text-decoration: underline; color: var(--accent);">Editorial Policy</a> to understand how we maintain content accuracy.</em>
+  </p>
+  <p style="font-size: 0.9em; color: var(--muted); margin-top: 16px;">
+    Last Updated: October 2026 | Reviewed periodically by Jackie Bruce
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INTERNAL NAVIGATION LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Additional Time Zone Resources</h2>
+  <p>
+    Explore our other dedicated time zone tools:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>WITA Conversions</h3>
+      <ul>
+        <li><a href="/gmt-to-awst/">GMT to AWST</a></li>
+        <li><a href="/gmt-to-akdt/">GMT to AKDT</a></li>
+        <li><a href="/gmt-to-est/">GMT to EST</a></li>
+      </ul>
+    </div>
+    
+    <div class="tools-list">
+      <h3>Eastern Conversions</h3>
+      <ul>
+        <li><a href="/">Universal Time Zone Converter</a></li>
+        <li><a href="/est-to-gmt/">EST to GMT reverse</a></li>
+        <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        <li><a href="/about-us/">About Us</a></li>
+        <li><a href="/editorial-policy/">Editorial Policy</a></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
