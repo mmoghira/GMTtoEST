@@ -30,5 +30,8 @@
 - `[x]` Standardize telephone display format to `+92 336 3465776`
 - `[x]` Ensure correct link format `tel:+923363465776`
 - `[x]` Add accessibility features (`aria-label`)
+- `[x]` Create `/what-is-gmt/` flagship pillar page with 3,568 words and 8 custom diagrams (custom inline SVGs)
+- `[x]` Create `/what-is-est/` flagship pillar page with 3,524 words and 7 custom diagrams (custom inline SVGs)
+- `[x]` Document changes in `walkthrough.md`aps and HTML pages
 - `[x]` Update legacy static HTML pages (`en/about/index.html` and `en/contact/index.html`)
 - `[x]` Build & verify sitemaps and HTML pages
