@@ -24,6 +24,12 @@ const primaryKeyword = getPrimaryKeyword(post.data.keywords, post.data.title);
 const imageAlt = ensureKeywordInAlt(post.data.imageAlt, primaryKeyword, `${primaryKeyword} featured image`);
 const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
 const pageUrl = `${siteUrl}/blog/${Astro.params.slug}/`;
+
+const allBlogPosts = await getCollection("blog");
+const postSlug = Astro.params.slug;
+const availableLangs = allBlogPosts
+  .filter(p => p.id.split("/").slice(1).join("/") === postSlug)
+  .map(p => p.id.split("/")[0]);
 const absoluteImage = post.data.image
   ? post.data.image.startsWith("http")
     ? post.data.image
@@ -75,7 +81,7 @@ const articleSchema = {
 };
 ---
 
-<BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta}>
+<BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug={`blog/${Astro.params.slug}`} meta={meta} hreflangCodes={availableLangs}>
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} slot="head" />
   {post.data.faq && post.data.faq.length > 0 && (
     <script type="application/ld+json" set:html={JSON.stringify({

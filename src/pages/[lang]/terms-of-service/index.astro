@@ -3,21 +3,25 @@ import BaseLayout from "theme/layouts/BaseLayout.astro";
 import { getLang, getPageMeta, languages, siteUrl } from "theme/i18n/config";
 
 export function getStaticPaths() {
-  return [];
+  return [
+    { params: { lang: "ja" } }
+  ];
 }
 
 const lang = getLang(Astro.params.lang);
 const metaBase = getPageMeta(lang.code, "terms");
 const meta = {
   ...metaBase,
+  title: lang.code === "ja" ? "利用規約 | GMT to EST Converter" : metaBase.title,
+  description: lang.code === "ja" ? "GMT to EST Converterの利用規約です。当サイトのご利用に関するルール、免責事項、免責制限について詳しく説明しています。" : metaBase.description,
   keywords: "terms of service, terms and conditions, GMT to EST terms, user agreement, acceptable use policy",
-  robots: lang.code !== "en" ? "noindex,follow" : undefined
+  robots: (lang.code !== "en" && lang.code !== "ja") ? "noindex,follow" : undefined
 };
 const title = meta.title;
 const description = meta.description;
 
 const pageUrl = `${siteUrl}/${lang.code}/terms-of-service/`;
-const lastUpdated = "May 8, 2025";
+const lastUpdated = lang.code === "ja" ? "2026年7月16日" : "May 8, 2025";
 
 const schema = [
   {
@@ -28,7 +32,7 @@ const schema = [
     name: title,
     description,
     inLanguage: lang.code,
-    dateModified: "2025-05-08",
+    dateModified: lang.code === "ja" ? "2026-07-16" : "2025-05-08",
     isPartOf: {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
@@ -39,7 +43,7 @@ const schema = [
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: "Terms of Service", item: pageUrl }
+        { "@type": "ListItem", position: 2, name: lang.code === "ja" ? "利用規約" : "Terms of Service", item: pageUrl }
       ]
     },
     author: {
@@ -55,172 +59,299 @@ const schema = [
   <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
 
   <article class="tos-page">
-    <header class="tos-header">
-      <h1>Terms of Service</h1>
-      <p class="tos-meta">Last updated: <time datetime="2025-05-08">{lastUpdated}</time></p>
-      <p class="tos-intro">
-        Please read these Terms of Service carefully before using <strong>GMT to EST Converter</strong>
-        (<a href={siteUrl}>{siteUrl}</a>). By accessing or using our website, you agree to be
-        bound by these terms. If you do not agree, please do not use the service.
-      </p>
-    </header>
+    {lang.code === "ja" ? (
+      <header class="tos-header">
+        <h1>利用規約 (Terms of Service)</h1>
+        <p class="tos-meta">最終更新日：<time datetime="2026-07-16">{lastUpdated}</time></p>
+        <p class="tos-intro">
+          <strong>GMT to EST Converter</strong> (<a href={siteUrl}>{siteUrl}</a>) をご利用いただく前に、本利用規約をよくお読みください。当Webサイトにアクセスまたはサービスを使用することにより、これらの規約に同意したものとみなされます。同意されない場合は、本サービスをご利用いただけません。
+        </p>
+      </header>
 
-    <div class="tos-body">
+      <div class="tos-body">
+        <section class="tos-section" aria-labelledby="acceptance">
+          <h2 id="acceptance">1. 規約の承諾</h2>
+          <p>
+            本サービスを利用することにより、利用者は13歳以上であり、法的な拘束力を持つ契約を結ぶ能力を有していることを表明するものとします。会社または他の法人を代表して本サービスを利用する場合、その法人を本規約に拘束する法的な権限を有していることを表明するものとします。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="acceptance">
-        <h2 id="acceptance">1. Acceptance of Terms</h2>
-        <p>
-          By using GMT to EST Converter you confirm that you are at least 13 years of age and have
-          the legal capacity to enter into a binding agreement. If you are using the service on
-          behalf of an organisation, you represent that you have authority to bind that organisation
-          to these terms.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="description">
+          <h2 id="description">2. サービスの説明</h2>
+          <p>
+            GMT to EST Converterは、グリーンウィッチ標準時（GMT）と東部時間（EST / EDT）の間の時間を変換し、夏時間（DST）の自動調整を行う、Webベースの無料時間変換ツールを提供します。本サービスは情報提供およびスケジュール調整の便宜のためのものです。
+          </p>
+          <ul>
+            <li>時間帯変換ツール (GMT ↔ EST / EDT)</li>
+            <li>ライブクロックとミーティングプランのプリセット</li>
+            <li>24時間変換チャートおよび関連ガイド</li>
+            <li>日本語を含む多言語サポート</li>
+          </ul>
+        </section>
 
-      <section class="tos-section" aria-labelledby="description">
-        <h2 id="description">2. Description of Service</h2>
-        <p>
-          GMT to EST Converter provides a free, web-based timezone conversion tool that converts
-          times between Greenwich Mean Time (GMT) and Eastern Time (EST / EDT), including automatic
-          Daylight Saving Time (DST) handling. The service is provided for informational and
-          scheduling purposes only.
-        </p>
-        <ul>
-          <li>Timezone converter (GMT â†” EST / EDT)</li>
-          <li>Live clocks and meeting-planning presets</li>
-          <li>24-hour conversion charts and guides</li>
-          <li>Multi-language support</li>
-        </ul>
-      </section>
+        <section class="tos-section" aria-labelledby="acceptable-use">
+          <h2 id="acceptable-use">3. 許容される利用</h2>
+          <p>利用者は、合法的な目的でのみ本サービスを利用し、以下の行為を行わないことに同意するものとします：</p>
+          <ul>
+            <li>適用される現地法、国内法、または国際法に違反する行為</li>
+            <li>未承諾の広告、宣伝用資料、またはスパムメール等の送信</li>
+            <li>Webサイトのサーバー、ネットワーク、インフラへの不正アクセスを試みる行為</li>
+            <li>書面による事前の同意がないデータスクレイピング、クローリング、または自動データ収集</li>
+            <li>本サービスの運営妨害、またはセキュリティシステムの脆弱性を侵害する行為</li>
+            <li>商業的な目的で本サービスの一部を複製、販売、再販する行為</li>
+          </ul>
+        </section>
 
-      <section class="tos-section" aria-labelledby="acceptable-use">
-        <h2 id="acceptable-use">3. Acceptable Use</h2>
-        <p>You agree to use the service only for lawful purposes and in a manner that does not:</p>
-        <ul>
-          <li>Violate any applicable local, national, or international law or regulation</li>
-          <li>Transmit unsolicited advertising or spam</li>
-          <li>Attempt to gain unauthorised access to any part of the website or its infrastructure</li>
-          <li>Engage in data scraping, crawling, or harvesting without prior written consent</li>
-          <li>Interfere with or disrupt the integrity or performance of the service</li>
-          <li>Reproduce, duplicate, or resell any part of the service without permission</li>
-        </ul>
-      </section>
+        <section class="tos-section" aria-labelledby="accuracy">
+          <h2 id="accuracy">4. 情報の正確性</h2>
+          <p>
+            当サイトは、IANAタイムゾーンルールを用いて常に正確なデータを提供するよう努めています。ただし、当サイトは提供されるすべての情報が正確、完全、または最新であることを保証しません。時間帯の規則は政府の決定等により、予告なく突然変更されることがあります。
+          </p>
+          <p>
+            金融取引、医療スケジュール、法的手続きなどの極めて重要な決定において、本ツールのみに依存しないでください。重要な時間は必ず公式ソースでもご確認ください。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="accuracy">
-        <h2 id="accuracy">4. Accuracy of Information</h2>
-        <p>
-          We strive to keep timezone data and DST rules up to date using IANA timezone definitions.
-          However, we make <strong>no warranty</strong> that all information is accurate, complete,
-          or current. Timezone rules can change with little notice due to government decisions.
-        </p>
-        <p>
-          You should <strong>not</strong> rely solely on this tool for time-critical applications
-          such as financial trading, medical scheduling, or legal proceedings. Always verify
-          important times through official sources.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="ip">
+          <h2 id="ip">5. 知的財産権</h2>
+          <p>
+            当Webサイトに掲載されているテキスト、グラフィック、ロゴ、コード、デザインを含むすべてのオリジナルコンテンツは、GMT to EST Converterの財産であり、適用される著作権法および知的財産権法によって保護されています。
+          </p>
+          <p>
+            著作権法の定める公正な利用（フェアユース）等を除き、当サイトの書面による事前の許可なく、いかなるコンテンツの複製、改変、配布なども行うことはできません。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="ip">
-        <h2 id="ip">5. Intellectual Property</h2>
-        <p>
-          All content on this website â€” including but not limited to text, graphics, logos, code,
-          and design â€” is the property of GMT to EST Converter and is protected by applicable
-          copyright and intellectual property laws.
-        </p>
-        <p>
-          You may not copy, reproduce, modify, create derivative works from, or distribute any
-          content from this site without our prior written permission, except as allowed under
-          fair use or equivalent provisions in your jurisdiction.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="third-party">
+          <h2 id="third-party">6. サードパーティへのリンク</h2>
+          <p>
+            当Webサイトには、第三者が所有・運営するWebサイトへのリンクが含まれる場合があります。これらは利便性のためにのみ提供されており、当サイトはそれら第三者のサイトのコンテンツやプライバシーポリシーについて何ら責任を負うものではありません。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="third-party">
-        <h2 id="third-party">6. Third-Party Links and Services</h2>
-        <p>
-          Our website may contain links to third-party websites or services. These are provided
-          for convenience only. We have no control over, and assume no responsibility for, the
-          content, privacy policies, or practices of any third-party sites. We encourage you to
-          review the terms and privacy policies of any third-party sites you visit.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="disclaimers">
+          <h2 id="disclaimers">7. 免責事項</h2>
+          <p>
+            本サービスは「現状有姿（As Is）」かつ「利用可能な範囲」で提供され、商品性、特定の目的への適合性、非侵害の保証を含むがこれらに限定されない、いかなる明示または黙示の保証も行いません。
+          </p>
+          <p>
+            当サイトは、サービスの提供が中断されないこと、エラーがないこと、安全であること、またはウイルス等の有害な要素がないことを保証しません。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="disclaimers">
-        <h2 id="disclaimers">7. Disclaimers</h2>
-        <p>
-          The service is provided on an <strong>"as is" and "as available"</strong> basis without
-          warranties of any kind, either express or implied, including but not limited to implied
-          warranties of merchantability, fitness for a particular purpose, or non-infringement.
-        </p>
-        <p>
-          We do not warrant that the service will be uninterrupted, error-free, secure, or free
-          of viruses or other harmful components.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="liability">
+          <h2 id="liability">8. 責任の制限</h2>
+          <p>
+            適用法で認められる最大限の範囲において、GMT to EST Converterおよびその運営者は、本サービスの利用もしくは利用不能、または時間変換の誤り等から発生する間接的、付随的、特別、結果的、または懲罰的な損害について、一切の責任を負いません。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="liability">
-        <h2 id="liability">8. Limitation of Liability</h2>
-        <p>
-          To the fullest extent permitted by law, GMT to EST Converter and its operators shall not
-          be liable for any indirect, incidental, special, consequential, or punitive damages
-          arising from:
-        </p>
-        <ul>
-          <li>Your use or inability to use the service</li>
-          <li>Any errors or inaccuracies in conversion results</li>
-          <li>Unauthorised access to or alteration of your data</li>
-          <li>Any other matters relating to the service</li>
-        </ul>
-        <p>
-          In no event shall our total liability to you for all claims exceed the amount you paid
-          to use the service (if any) in the twelve months preceding the claim.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="privacy">
+          <h2 id="privacy">9. プライバシー</h2>
+          <p>
+            お客様の個人情報の取り扱いは、当サイトのプライバシーポリシー（Privacy Policy）に従うものとします。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="privacy">
-        <h2 id="privacy">9. Privacy</h2>
-        <p>
-          Your use of the service is also governed by our
-          <a href={`/${lang.code}/privacy-policy/`}>Privacy Policy</a>, which is incorporated into these Terms
-          by reference. Please review it to understand our data practices.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="changes">
+          <h2 id="changes">10. 規約の変更</h2>
+          <p>
+            当サイトはいつでも本規約を変更できる権利を留保します。規約が変更された場合、本ページに最新の「最終更新日」とともに掲載されます。変更掲載後の継続利用は、改定規約への同意とみなされます。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="changes">
-        <h2 id="changes">10. Changes to Terms</h2>
-        <p>
-          We reserve the right to modify these Terms of Service at any time. Changes will be
-          posted on this page with an updated "Last updated" date. Your continued use of the
-          service after changes are posted constitutes your acceptance of the revised terms.
-        </p>
-      </section>
+        <section class="tos-section" aria-labelledby="governing-law">
+          <h2 id="governing-law">11. 準拠法</h2>
+          <p>
+            本利用規約は適用される法令に準拠し解釈されるものとします。本規約に起因する紛争については、管轄裁判所の管轄に服するものとします。
+          </p>
+        </section>
 
-      <section class="tos-section" aria-labelledby="governing-law">
-        <h2 id="governing-law">11. Governing Law</h2>
-        <p>
-          These Terms shall be governed by and construed in accordance with applicable law.
-          Any disputes arising under these Terms shall be subject to the exclusive jurisdiction
-          of competent courts in the relevant jurisdiction.
+        <section class="tos-section" aria-labelledby="contact-tos">
+          <h2 id="contact-tos">12. お問い合わせ (Contact Us)</h2>
+          <p>
+            本利用規約に関するご質問、または法的要求がございましたら、以下の連絡先までお問い合わせください：
+          </p>
+          <ul class="contact-list">
+            <li>
+              <strong>電子メール:</strong>
+              <a href="mailto:contact@gmttoestconverter.com">contact@gmttoestconverter.com</a>
+            </li>
+            <li>
+              <strong>お問い合わせフォーム:</strong>
+              <a href={`/${lang.code}/contact-us/`}>お問い合わせページに移動する</a>
+            </li>
+          </ul>
+        </section>
+      </div>
+    ) : (
+      <header class="tos-header">
+        <h1>Terms of Service</h1>
+        <p class="tos-meta">Last updated: <time datetime="2025-05-08">{lastUpdated}</time></p>
+        <p class="tos-intro">
+          Please read these Terms of Service carefully before using <strong>GMT to EST Converter</strong>
+          (<a href={siteUrl}>{siteUrl}</a>). By accessing or using our website, you agree to be
+          bound by these terms. If you do not agree, please do not use the service.
         </p>
-      </section>
+      </header>
 
-      <section class="tos-section" aria-labelledby="contact-tos">
-        <h2 id="contact-tos">12. Contact Us</h2>
-        <p>
-          If you have any questions about these Terms of Service, please contact us:
-        </p>
-        <ul class="contact-list">
-          <li>
-            <strong>Email:</strong>
-            <a href="mailto:contact@gmttoestconverter.com">contact@gmttoestconverter.com</a>
-          </li>
-          <li>
-            <strong>Contact form:</strong>
-            <a href={`/${lang.code}/contact-us/`}>Visit our Contact page</a>
-          </li>
-        </ul>
-      </section>
+      <div class="tos-body">
 
-    </div>
+        <section class="tos-section" aria-labelledby="acceptance">
+          <h2 id="acceptance">1. Acceptance of Terms</h2>
+          <p>
+            By using GMT to EST Converter you confirm that you are at least 13 years of age and have
+            the legal capacity to enter into a binding agreement. If you are using the service on
+            behalf of an organisation, you represent that you have authority to bind that organisation
+            to these terms.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="description">
+          <h2 id="description">2. Description of Service</h2>
+          <p>
+            GMT to EST Converter provides a free, web-based timezone conversion tool that converts
+            times between Greenwich Mean Time (GMT) and Eastern Time (EST / EDT), including automatic
+            Daylight Saving Time (DST) handling. The service is provided for informational and
+            scheduling purposes only.
+          </p>
+          <ul>
+            <li>Timezone converter (GMT ↔ EST / EDT)</li>
+            <li>Live clocks and meeting-planning presets</li>
+            <li>24-hour conversion charts and guides</li>
+            <li>Multi-language support</li>
+          </ul>
+        </section>
+
+        <section class="tos-section" aria-labelledby="acceptable-use">
+          <h2 id="acceptable-use">3. Acceptable Use</h2>
+          <p>You agree to use the service only for lawful purposes and in a manner that does not:</p>
+          <ul>
+            <li>Violate any applicable local, national, or international law or regulation</li>
+            <li>Transmit unsolicited advertising or spam</li>
+            <li>Attempt to gain unauthorised access to any part of the website or its infrastructure</li>
+            <li>Engage in data scraping, crawling, or harvesting without prior written consent</li>
+            <li>Interfere with or disrupt the integrity or performance of the service</li>
+            <li>Reproduce, duplicate, or resell any part of the service without permission</li>
+          </ul>
+        </section>
+
+        <section class="tos-section" aria-labelledby="accuracy">
+          <h2 id="accuracy">4. Accuracy of Information</h2>
+          <p>
+            We strive to keep timezone data and DST rules up to date using IANA timezone definitions.
+            However, we make <strong>no warranty</strong> that all information is accurate, complete,
+            or current. Timezone rules can change with little notice due to government decisions.
+          </p>
+          <p>
+            You should <strong>not</strong> rely solely on this tool for time-critical applications
+            such as financial trading, medical scheduling, or legal proceedings. Always verify
+            important times through official sources.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="ip">
+          <h2 id="ip">5. Intellectual Property</h2>
+          <p>
+            All content on this website — including but not limited to text, graphics, logos, code,
+            and design — is the property of GMT to EST Converter and is protected by applicable
+            copyright and intellectual property laws.
+          </p>
+          <p>
+            You may not copy, reproduce, modify, create derivative works from, or distribute any
+            content from this site without our prior written permission, except as allowed under
+            fair use or equivalent provisions in your jurisdiction.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="third-party">
+          <h2 id="third-party">6. Third-Party Links and Services</h2>
+          <p>
+            Our website may contain links to third-party websites or services. These are provided
+            for convenience only. We have no control over, and assume no responsibility for, the
+            content, privacy policies, or practices of any third-party sites. We encourage you to
+            review the terms and privacy policies of any third-party sites you visit.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="disclaimers">
+          <h2 id="disclaimers">7. Disclaimers</h2>
+          <p>
+            The service is provided on an <strong>"as is" and "as available"</strong> basis without
+            warranties of any kind, either express or implied, including but not limited to implied
+            warranties of merchantability, fitness for a particular purpose, or non-infringement.
+          </p>
+          <p>
+            We do not warrant that the service will be uninterrupted, error-free, secure, or free
+            of viruses or other harmful components.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="liability">
+          <h2 id="liability">8. Limitation of Liability</h2>
+          <p>
+            To the fullest extent permitted by law, GMT to EST Converter and its operators shall not
+            be liable for any indirect, incidental, special, consequential, or punitive damages
+            arising from:
+          </p>
+          <ul>
+            <li>Your use or inability to use the service</li>
+            <li>Any errors or inaccuracies in conversion results</li>
+            <li>Unauthorised access to or alteration of your data</li>
+            <li>Any other matters relating to the service</li>
+          </ul>
+          <p>
+            In no event shall our total liability to you for all claims exceed the amount you paid
+            to use the service (if any) in the twelve months preceding the claim.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="privacy">
+          <h2 id="privacy">9. Privacy</h2>
+          <p>
+            Your use of the service is also governed by our
+            <a href={`/${lang.code}/privacy-policy/`}>Privacy Policy</a>, which is incorporated into these Terms
+            by reference. Please review it to understand our data practices.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="changes">
+          <h2 id="changes">10. Changes to Terms</h2>
+          <p>
+            We reserve the right to modify these Terms of Service at any time. Changes will be
+            posted on this page with an updated "Last updated" date. Your continued use of the
+            service after changes are posted constitutes your acceptance of the revised terms.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="governing-law">
+          <h2 id="governing-law">11. Governing Law</h2>
+          <p>
+            These Terms shall be governed by and construed in accordance with applicable law.
+            Any disputes arising under these Terms shall be subject to the exclusive jurisdiction
+            of competent courts in the relevant jurisdiction.
+          </p>
+        </section>
+
+        <section class="tos-section" aria-labelledby="contact-tos">
+          <h2 id="contact-tos">12. Contact Us</h2>
+          <p>
+            If you have any questions about these Terms of Service, please contact us:
+          </p>
+          <ul class="contact-list">
+            <li>
+              <strong>Email:</strong>
+              <a href="mailto:contact@gmttoestconverter.com">contact@gmttoestconverter.com</a>
+            </li>
+            <li>
+              <strong>Contact form:</strong>
+              <a href={`/${lang.code}/contact-us/`}>Visit our Contact page</a>
+            </li>
+          </ul>
+        </section>
+
+      </div>
+    )}
   </article>
 </BaseLayout>
 
