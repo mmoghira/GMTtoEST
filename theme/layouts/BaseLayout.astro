@@ -53,8 +53,18 @@ const homePathResolved = homePath || pageUrl(lang, "");
 const homeUrl = toAbsoluteUrl(homePathResolved);
 const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
-const hasLocalizedVersion = pages.some((page: any) => page.slug === slug);
-const availableHreflangCodes = hreflangCodes || (hasLocalizedVersion ? languages.map((item) => item.code) : ["en"]);
+const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
+let computedHreflangCodes = hreflangCodes;
+
+if (mainTranslatedSlugs.includes(slug)) {
+  computedHreflangCodes = languages.map((item) => item.code);
+} else if (pages.some((page: any) => page.slug === slug)) {
+  computedHreflangCodes = ["en", "es"];
+} else if (!hreflangCodes) {
+  computedHreflangCodes = ["en"];
+}
+
+const availableHreflangCodes = computedHreflangCodes;
 const alternateLanguages = isNoindexPage
   ? []
   : languages.filter((item) => availableHreflangCodes.includes(item.code));

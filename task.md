@@ -9,6 +9,8 @@
 - `[x]` terms-of-service/index.astro (en)
 - `[x]` author/index.astro (en)
 - `[x]` author/jackie-bruce/index.astro (en)
+- `[x]` Clean up localized legal/contact links in `src/pages/ar/about-us/index.astro`
+- `[/]` Clean up localized legal/contact links in `src/pages/ar/disclaimer/index.astro`
 - `[x]` [lang]/contact-us/index.astro
 - `[x]` [lang]/privacy-policy/index.astro
 - `[x]` [lang]/terms-of-service/index.astro
