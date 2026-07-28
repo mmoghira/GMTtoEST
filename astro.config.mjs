@@ -59,7 +59,8 @@ export default defineConfig({
         const url = new URL(page);
         const pathname = url.pathname;
         
-        // Strip localized language prefix (e.g. /es/, /zh/) to perform clean path matches
+        const langMatch = pathname.match(/^\/([a-z]{2})\//);
+        const lang = langMatch ? langMatch[1] : "en";
         const cleanPath = pathname.replace(/^\/[a-z]{2}\//, "/");
         
         // Exclude paths explicitly configured in exclusions list
@@ -67,12 +68,23 @@ export default defineConfig({
           return false;
         }
         
+        const mainPaths = ["/", "/gmt-to-est/", "/est-to-gmt/", "/gmt-vs-est/", "/time-zone-guide/"];
+        
         // Exclude dynamic timezone converter pages that redirect to the homepage,
         // while keeping activated converter landing pages indexable.
         if (!["/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/", "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/"].includes(cleanPath)) {
           const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
           const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
           
+          if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
+            return false;
+          }
+        }
+        
+        // Exclude noindex non-main localized converter pages for languages other than 'es'
+        if (lang !== "en" && lang !== "es" && !mainPaths.includes(cleanPath)) {
+          const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
+          const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
           if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
             return false;
           }
