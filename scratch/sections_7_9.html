@@ -1,0 +1,213 @@
+<section class="content-section reveal">
+  <h2 id="developer-section">For Developers: Time Zone Technical Reference</h2>
+  <p class="section-intro">Timezone handling is one of the most common sources of bugs in software, from missed scheduled tasks to incorrect display times. This technical reference covers the key concepts of timezone conversion to help you build robust applications.</p>
+  
+  <h3>Key Concepts</h3>
+  <div class="section-articles">
+    <article>
+      <h4>Unix Timestamp</h4>
+      <p>A Unix timestamp counts seconds since January 1, 1970 00:00:00 UTC (the epoch). It has no timezone — it's a single moment in time. To display it in EST, subtract 5 hours (or 4 during EDT). Example: timestamp 1700000000 = 2023-11-14 22:13:20 UTC = 2023-11-14 17:13:20 EST.</p>
+    </article>
+    <article>
+      <h4>ISO 8601 &amp; RFC 3339</h4>
+      <p>ISO 8601 is the international standard for date/time formatting: 2024-03-15T14:30:00Z (the Z means UTC). RFC 3339 is a profile of ISO 8601 used in APIs. Always include the UTC offset: 2024-03-15T09:30:00-05:00 for Eastern Time.</p>
+    </article>
+    <article>
+      <h4>IANA Timezone Database</h4>
+      <p>The tz database (also called Olson database) maps zone names like 'America/New_York' to their historical UTC offset rules. Unlike abbreviations (EST/EDT), IANA names encode daylight saving time transitions automatically.</p>
+    </article>
+    <article>
+      <h4>DST Edge Cases</h4>
+      <p>During the 'fall back' transition, 1:30 AM Eastern occurs twice — once in EDT and once in EST. During 'spring forward', 2:00 AM to 2:59 AM doesn't exist. Code must handle both ambiguity and gaps.</p>
+    </article>
+  </div>
+
+  <h3>Code Examples</h3>
+  <div class="section-articles">
+    <article>
+      <span class="code-label">JavaScript</span>
+      <pre class="code-block"><code>// Convert current time from GMT to Eastern Time
+const now = new Date();
+const estTime = now.toLocaleString('en-US', {
+  timeZone: 'America/New_York',
+  dateStyle: 'full',
+  timeStyle: 'long'
+});
+console.log(`Eastern Time: ${estTime}`);
+
+// Convert a specific UTC timestamp to EST/EDT
+const utcDate = new Date('2024-07-15T14:00:00Z');
+const eastern = utcDate.toLocaleString('en-US', {
+  timeZone: 'America/New_York'
+});
+// Output: 7/15/2024, 10:00:00 AM (EDT)</code></pre>
+    </article>
+    <article>
+      <span class="code-label">Python</span>
+      <pre class="code-block"><code>from datetime import datetime
+from zoneinfo import ZoneInfo  # Python 3.9+
+
+# Current time in both zones
+utc_now = datetime.now(ZoneInfo('UTC'))
+est_now = utc_now.astimezone(ZoneInfo('America/New_York'))
+print(f'UTC: {utc_now:%Y-%m-%d %H:%M %Z}')
+print(f'Eastern: {est_now:%Y-%m-%d %H:%M %Z}')
+
+# Convert a specific GMT time to Eastern
+gmt_time = datetime(2024, 7, 15, 14, 0, tzinfo=ZoneInfo('UTC'))
+eastern = gmt_time.astimezone(ZoneInfo('America/New_York'))
+# Output: 2024-07-15 10:00 EDT</code></pre>
+    </article>
+    <article>
+      <span class="code-label">PHP</span>
+      <pre class="code-block"><code>// Convert GMT to Eastern Time in PHP
+$gmt = new DateTime('2024-07-15 14:00:00', new DateTimeZone('UTC'));
+$gmt->setTimezone(new DateTimeZone('America/New_York'));
+echo $gmt->format('Y-m-d H:i:s T');
+// Output: 2024-07-15 10:00:00 EDT
+
+// Check if DST is active
+$isDST = (bool) $gmt->format('I');
+echo $isDST ? 'EDT (UTC-4)' : 'EST (UTC-5)';</code></pre>
+    </article>
+    <article>
+      <span class="code-label">Java</span>
+      <pre class="code-block"><code>import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+// Convert GMT to Eastern Time
+ZonedDateTime gmtTime = ZonedDateTime.now(ZoneId.of("UTC"));
+ZonedDateTime easternTime = gmtTime.withZoneSameInstant(
+    ZoneId.of("America/New_York")
+);
+System.out.println("GMT: " + gmtTime.format(
+    DateTimeFormatter.RFC_1123_DATE_TIME));
+System.out.println("Eastern: " + easternTime.format(
+    DateTimeFormatter.RFC_1123_DATE_TIME));</code></pre>
+    </article>
+  </div>
+
+  <h3>Best Practices</h3>
+  <div class="tip-box">
+    <ul>
+      <li>Store all timestamps in UTC. Convert to local time only for display.</li>
+      <li>Use IANA zone names ('America/New_York'), never abbreviations ('EST').</li>
+      <li>Test DST boundary cases: March 'spring forward' and November 'fall back'.</li>
+      <li>Keep timezone libraries updated — DST rules change with legislation.</li>
+      <li>Never compute offsets manually. Let the language's standard library handle it.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="content-section reveal">
+  <h2 id="business-section">For Businesses: Global Time Coordination</h2>
+  <p class="section-intro">Timezone misalignment costs businesses real money — missed handoffs, delayed decisions, and misaligned SLAs. A reliable time zone calculator can help bridge the gap across locations.</p>
+  
+  <div class="section-articles">
+    <article>
+      <h4>Global Teams</h4>
+      <p>Teams in London and New York share a 5-hour overlap window (roughly 9 AM–12 PM EST / 2 PM–5 PM GMT). Core collaboration should be concentrated here.</p>
+    </article>
+    <article>
+      <h4>Remote Companies</h4>
+      <p>Fully remote companies with UK and US East Coast employees need async-first workflows. Decisions made outside the overlap window should be documented in writing.</p>
+    </article>
+    <article>
+      <h4>International Hiring</h4>
+      <p>When interviewing candidates across GMT and EST, specify the timezone explicitly in every calendar invite. 'Tuesday at 3 PM' is ambiguous without a zone.</p>
+    </article>
+    <article>
+      <h4>Meeting Scheduling</h4>
+      <p>A weekly all-hands at 10 AM EST = 3 PM GMT. If the US shifts to EDT in March, it becomes 2 PM GMT — an hour earlier for London staff. Going from GMT to EST accurately is critical.</p>
+    </article>
+    <article>
+      <h4>CRM &amp; Sales</h4>
+      <p>Salesforce and HubSpot store timestamps in UTC internally. When a UK sales rep logs a call at 4 PM GMT, a New York manager sees it at 11 AM EST.</p>
+    </article>
+    <article>
+      <h4>Customer Support SLA</h4>
+      <p>A 4-hour SLA on a ticket filed at 5 PM EST must be resolved by 9 PM EST time — which is 2 AM GMT the next day. SLA engines must calculate across zones.</p>
+    </article>
+    <article>
+      <h4>Marketing Campaigns</h4>
+      <p>Email blast open rates peak at 10 AM local time. A campaign targeting both London and New York needs two send times: 10 AM GMT and 10 AM EST.</p>
+    </article>
+    <article>
+      <h4>Payroll &amp; HR</h4>
+      <p>Employees logging hours in different time zones can create overtime disputes. Payroll systems must track hours in each employee's local timezone.</p>
+    </article>
+    <article>
+      <h4>Operations &amp; Logistics</h4>
+      <p>Warehouse shift schedules, delivery windows, and inventory cut-off times all depend on facility-local time. A 6 PM EST cut-off is 11 PM GMT.</p>
+    </article>
+    <article>
+      <h4>Recruitment Coordination</h4>
+      <p>Interview panels spanning GMT and EST zones need shared availability blocks. Recruiters often use our EST converter to propose three time options.</p>
+    </article>
+    <article>
+      <h4>Board &amp; Investor Relations</h4>
+      <p>Earnings calls are announced in Eastern Time. International investors must convert to their local zone to join the live stream.</p>
+    </article>
+    <article>
+      <h4>Legal &amp; Compliance</h4>
+      <p>Contract deadlines ('by close of business EST') have legal implications. Filing one minute late because of a timezone error can void a submission.</p>
+    </article>
+  </div>
+
+  <div class="tip-box">
+    <p>Pro tip: When sending meeting invites to international colleagues, include the time in both zones — for example, "3 PM GMT / 10 AM EST" — to eliminate ambiguity.</p>
+  </div>
+</section>
+
+<section class="content-section reveal">
+  <h2 id="student-section">For Students: Never Miss a Deadline</h2>
+  <p class="section-intro">International education increasingly spans timezones, and a single missed deadline can affect grades, applications, or scholarship eligibility.</p>
+  
+  <div class="section-articles">
+    <article>
+      <h4>Online Classes</h4>
+      <p>Live lectures on Zoom or Teams are scheduled in the university's timezone. A class at 2 PM EST means 7 PM GMT time — check before enrolling.</p>
+    </article>
+    <article>
+      <h4>International University Applications</h4>
+      <p>Application portals close at 11:59 PM in the university's local timezone. For US East Coast schools, that's EST or EDT depending on the deadline month.</p>
+    </article>
+    <article>
+      <h4>Scholarship Deadlines</h4>
+      <p>Scholarship submissions often close at midnight Eastern Time. A student in London submitting at midnight GMT has already missed it by 5 hours.</p>
+    </article>
+    <article>
+      <h4>Exam Schedules</h4>
+      <p>Proctored online exams have strict start windows. Joining 30 minutes late because of a timezone miscalculation may mean automatic disqualification.</p>
+    </article>
+    <article>
+      <h4>Research Collaboration</h4>
+      <p>Co-authoring papers with a professor in a different timezone requires aligning feedback cycles. Set clear 'response by' times with explicit timezone labels.</p>
+    </article>
+    <article>
+      <h4>Study Abroad Preparation</h4>
+      <p>Before departing for a semester abroad, students must adjust to the destination timezone for orientation sessions, visa interviews, and housing assignments.</p>
+    </article>
+    <article>
+      <h4>Zoom Office Hours</h4>
+      <p>Professors post office hours in campus time. A student in the UK visiting virtually at what they think is the right GMT time may find the session already over.</p>
+    </article>
+    <article>
+      <h4>Assignment Submissions</h4>
+      <p>LMS platforms like Canvas and Blackboard enforce submission deadlines in the institution's timezone. The system clock, not your local clock, determines lateness.</p>
+    </article>
+    <article>
+      <h4>Exchange Programs</h4>
+      <p>Exchange students coordinating with their home university and host institution simultaneously juggle two timezone contexts for deadlines and any remote meeting.</p>
+    </article>
+    <article>
+      <h4>Group Project Coordination</h4>
+      <p>Student teams spanning GMT and EST zones must find meeting times outside class hours in both zones — typically the 2 PM–5 PM GMT / 9 AM–12 PM EST window.</p>
+    </article>
+  </div>
+
+  <div class="tip-box">
+    <p>Study tip: Add your university's timezone as a second clock on your phone. On iPhone, use the World Clock in the Clock app. On Android, add a second timezone widget to your home screen.</p>
+  </div>
+</section>
