@@ -1,0 +1,724 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "awst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "AWST to EST Converter";
+const seoTitle = "AWST to EST Converter – Australian Western Standard Time to Eastern Standard Time";
+const pageDescription = "Convert AWST to EST instantly. Calculate the exact 13-hour time difference between Australian Western Standard Time (UTC+8) and Eastern Standard Time (UTC-5) with live clocks and charts.";
+
+const context = {
+  from: "AWST",
+  to: "EST",
+  fromZone: "Australia/Perth",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/awst-to-est/`;
+
+// 24-hour conversion table data (AWST → EST = AWST - 13 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 13;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    awst: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { awst: "8:00 AM AWST", est: "7:00 PM EST (-1 day)", note: "Morning in Perth corresponds to early evening in New York on the prior calendar date" },
+  { awst: "10:00 AM AWST", est: "9:00 PM EST (-1 day)", note: "Mid-morning focus in Western Australia aligns with late evening in NYC/Miami" },
+  { awst: "12:00 PM (Noon) AWST", est: "11:00 PM EST (-1 day)", note: "Lunch hour in Perth matches bedtime hours across the US East Coast" },
+  { awst: "2:00 PM AWST", est: "1:00 AM EST", note: "Early afternoon in Western Australia corresponds to overnight pre-dawn in Eastern US" },
+  { awst: "5:00 PM AWST", est: "4:00 AM EST", note: "End of Perth workday aligns with early pre-dawn hours in North America" },
+  { awst: "6:00 PM AWST", est: "5:00 AM EST", note: "Evening in Perth coincides with early morning wake-ups on US East Coast" },
+  { awst: "8:00 PM AWST", est: "7:00 AM EST", note: "Prime overlap window: Evening in Perth aligns with US East Coast office open" },
+  { awst: "9:00 PM AWST", est: "8:00 AM EST", note: "Late evening in Western Australia matches active morning start in New York/Toronto" },
+  { awst: "10:00 PM AWST", est: "9:00 AM EST", note: "Bedtime prep in Perth aligns with core 9 AM business start in Eastern US" },
+  { awst: "11:00 PM AWST", est: "10:00 AM EST", note: "Late night in Perth corresponds to mid-morning business focus across Eastern North America" }
+];
+
+// Comprehensive FAQ dataset (25 entries)
+const faqs = [
+  { q: "What is AWST?", a: "AWST stands for Australian Western Standard Time. It is the official time zone observed across the entire state of Western Australia, operating at a constant UTC+8." },
+  { q: "What is EST?", a: "EST stands for Eastern Standard Time. It is standard winter time in eastern North America (including New York, Washington D.C., Toronto, and Miami), operating at UTC-5." },
+  { q: "How many hours is EST behind AWST?", a: "Eastern Standard Time (EST, UTC-5) is exactly 13 hours behind Australian Western Standard Time (AWST, UTC+8). When it is 8:00 PM AWST in Perth, it is 7:00 AM EST in New York on the same day." },
+  { q: "Does Western Australia observe Daylight Saving Time?", a: "No. Western Australia does not observe Daylight Saving Time. AWST remains fixed at UTC+8 all year round." },
+  { q: "Which major Australian cities use AWST?", a: "AWST covers Perth, Fremantle, Mandurah, Bunbury, Geraldton, Kalgoorlie, Albany, and Broome across Western Australia." },
+  { q: "Which major North American cities observe Eastern Standard Time?", a: "EST covers New York City, Washington D.C., Boston, Philadelphia, Atlanta, Miami, Toronto, Ottawa, and Montreal." },
+  { q: "How do I calculate AWST to EST manually?", a: "To convert AWST to EST, subtract 13 hours from the AWST timestamp. For example, 10:00 PM AWST minus 13 hours equals 9:00 AM EST." },
+  { q: "What is the best time for a call between Perth and New York during AWST/EST?", a: "The best overlap window occurs between 8:00 PM and 10:00 PM AWST, which corresponds to 7:00 AM to 9:00 AM EST in Eastern North America." },
+  { q: "When New York switches to Eastern Daylight Time (EDT, UTC-4), what is the difference?", a: "When New York is in EDT (UTC-4) and Perth is in AWST (UTC+8), the time difference decreases from 13 hours to 12 hours." },
+  { q: "What is 12:00 PM (Noon) AWST in EST?", a: "12:00 PM (Noon) AWST is equal to 11:00 PM EST on the <em>previous calendar day</em>." },
+  { q: "What is 9:00 AM EST in AWST?", a: "9:00 AM EST is equal to 10:00 PM AWST on the exact same calendar day." },
+  { q: "What is the IANA time zone identifier for Perth?", a: "The official IANA database key for Western Australia is 'Australia/Perth'." },
+  { q: "How does AWST compare to Australian Eastern Standard Time (AEST)?", a: "AWST (UTC+8) is 2 hours behind AEST (UTC+10, used in Sydney, Melbourne, and Brisbane)." },
+  { q: "How does AWST compare to China Standard Time (CST) and Singapore Time (SGT)?", a: "AWST (UTC+8), China Standard Time (UTC+8), and Singapore Time (UTC+8) share the exact same clock offset with zero time difference." },
+  { q: "Does the 13-hour difference cause significant calendar date shifts?", a: "Yes. Any AWST time between 12:00 AM Midnight AWST and 12:59 PM AWST corresponds to the <em>previous calendar day</em> in Eastern Standard Time." },
+  { q: "Why is Western Australia an important mining and energy hub for US investors?", a: "Western Australia is a global center for iron ore, lithium, LNG, and green energy extraction, requiring constant financial and technical coordination with US capital markets." },
+  { q: "How should developers handle AWST to EST timestamps in cloud applications?", a: "Cloud applications should persist timestamps in UTC format (`2026-07-30T12:00:00Z`) and apply `Australia/Perth` or `America/New_York` rules at presentation." },
+  { q: "What flight duration should I expect between Perth and New York?", a: "There are no non-stop commercial flights between Perth and New York. Travel via connecting hubs (such as Singapore, London, or Sydney) typically takes 24 to 28 hours." },
+  { q: "What is 8:00 AM AWST in EST?", a: "8:00 AM AWST is equal to 7:00 PM EST on the previous calendar day (-1 day)." },
+  { q: "What is 5:00 PM AWST in EST?", a: "5:00 PM AWST is equal to 4:00 AM EST on the exact same calendar day." },
+  { q: "Does Euclid/Eucla in WA observe a different time zone?", a: "Yes. Eucla in far southeastern WA observes Australian Central Western Standard Time (ACWST, UTC+8:45), an unofficial 45-minute fractional zone." },
+  { q: "Why is an automated AWST to EST converter recommended over mental math?", a: "A 13-hour subtraction crosses half-day and calendar day boundaries simultaneously. An automated converter eliminates date errors." },
+  { q: "What is 9:00 PM AWST in EST?", a: "9:00 PM AWST is equal to 8:00 AM EST on the exact same calendar day." },
+  { q: "What is 6:00 AM AWST in EST?", a: "6:00 AM AWST is equal to 5:00 PM EST on the previous calendar day (-1 day)." },
+  { q: "What is 11:00 PM AWST in EST?", a: "11:00 PM AWST is equal to 10:00 AM EST on the exact same calendar day." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "AWST to EST, Australian Western Standard Time to Eastern Standard Time, Perth to New York time, convert AWST to EST, Perth time zone converter, 13 hour time difference",
+  image: "/assets/awst-to-est-og.svg",
+  imageAlt: "AWST to EST Time Zone Converter illustration featuring Perth and New York clocks",
+  faqs,
+  appDescription: "Free online AWST to EST converter. Convert Australian Western Standard Time (UTC+8) to Eastern Standard Time (UTC-5) with live clocks and scheduling tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert AWST to EST",
+  howToDescription: "Simple steps for calculating Eastern Standard Time from Australian Western Standard Time.",
+  howToSteps: [
+    { name: "Input AWST Time", text: "Select your desired hour and minute in Australian Western Standard Time." },
+    { name: "Subtract 13 Hours", text: "Account for the 13-hour time difference across hemispheres." },
+    { name: "Verify Calendar Date", text: "Check whether morning AWST hours land on the prior calendar date in EST." },
+    { name: "Schedule Meetings", text: "Use the built-in overlap planner to align Perth evening hours with New York morning hours." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="AWST to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- HERO BANNER -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    AWST to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>13-Hour Time Difference</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    <span>Perth to New York</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>No DST in Western Australia</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Mining & Tech Synergy</span>
+  </div>
+</section>
+
+<!-- INTRO SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="awst-est-intro-heading">
+  <h2 id="awst-est-intro-heading" class="sr-only">About Australian Western Standard Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our official <strong>AWST to EST Time Zone Converter</strong>. Converting time between Australian Western Standard Time (AWST, UTC+8) and Eastern Standard Time (EST, UTC-5) involves spanning a major <strong>13-hour time difference across hemispheres</strong>. AWST is the fixed standard time zone governing the entire state of Western Australia, including Perth, Fremantle, Mandurah, Bunbury, Kalgoorlie, and Broome. Meanwhile, EST governs the eastern seaboard of North America during standard winter months, including New York City, Washington D.C., Toronto, Boston, and Miami.
+  </p>
+  <p>
+    Spanning 13 hours means that when it is morning or afternoon in Perth, the eastern United States is in the evening or overnight hours of the <em>previous calendar day</em>. For example, 12:00 PM (Noon) AWST on Tuesday in Perth corresponds to 11:00 PM EST on Monday night in New York.
+  </p>
+  <p>
+    The primary operational window for live communication between Perth and the US East Coast occurs during the late evening in Perth (8:00 PM to 10:00 PM AWST), which aligns with the start of the business day in New York (7:00 AM to 9:00 AM EST).
+  </p>
+  <p>
+    Our online converter calculates these hemispheric time shifts automatically, preventing date-line errors. Whether you are managing mining and energy investments in Western Australia, international shipping lines, or remote software engineering teams, this page offers complete accuracy.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & SVG HERO -->
+<section class="hero" id="converter-section" aria-labelledby="converter-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-heading">Convert AWST to Eastern Standard Time</h2>
+    <p>
+      Use the dynamic converter below to transform any Australian Western Standard Time timestamp into Eastern Standard Time. Select a date to view exact clock alignments.
+    </p>
+
+    <!-- Custom Visual SVG: Perth Swan River & New York Skyline -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M 50 180 Q 300 60 550 180" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+        
+        <!-- Perth Node -->
+        <g transform="translate(100, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">Perth (AWST)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC+8 Fixed</text>
+        </g>
+
+        <!-- Time Gap Arrow -->
+        <g transform="translate(300, 110)">
+          <rect x="-55" y="-18" width="110" height="36" rx="18" fill="#1b536e" stroke="#2f6278" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">-13 HOURS</text>
+        </g>
+
+        <!-- New York Node -->
+        <g transform="translate(500, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+          <line x1="0" y1="0" x2="-16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#8fd7ff" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: AWST vs EST</h2>
+  <div class="clock-card"><span>Current Perth / AWST (UTC+8)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current New York / EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Perth Swan River & New York Skyline Graphic</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <circle cx="120" cy="40" r="1.5" fill="#f4fbff" opacity="0.5" />
+    <circle cx="280" cy="30" r="2" fill="#36c7b5" opacity="0.7" />
+    <circle cx="650" cy="45" r="1.5" fill="#8fd7ff" opacity="0.6" />
+
+    <!-- Perth Swan Bell Tower Motif -->
+    <g transform="translate(140, 50)">
+      <polygon points="20,0 5,130 35,130" fill="#1b536e" />
+      <line x1="20" y1="0" x2="20" y2="-10" stroke="#36c7b5" stroke-width="2" />
+    </g>
+
+    <!-- Swan River Water Curve -->
+    <path d="M 0 170 Q 200 150 400 170 T 800 170" fill="none" stroke="#2f6278" stroke-width="3" opacity="0.4" />
+
+    <!-- New York Skyline Motif -->
+    <g transform="translate(620, 40)">
+      <rect x="20" y="30" width="30" height="120" fill="#1b536e" />
+      <rect x="30" y="10" width="10" height="20" fill="#164d68" />
+      <line x1="35" y1="0" x2="35" y2="10" stroke="#36c7b5" stroke-width="2" />
+    </g>
+
+    <rect x="0" y="185" width="800" height="15" fill="#071b26" />
+    <line x1="0" y1="185" x2="800" y2="185" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- TIME DIFFERENCE MECHANICS -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Time Difference Mechanics</p>
+    <h2 id="time-diff-heading">Analyzing the 13-Hour Gap: AWST vs EST</h2>
+    <p>
+      The time difference between Australian Western Standard Time (AWST, UTC+8) and Eastern Standard Time (EST, UTC-5) is <strong>13 hours</strong>. Calculating the difference: (+8) - (-5) = 13 hours total separation.
+    </p>
+    <p>
+      When it is 12:00 PM (Noon) in Perth, local time in New York or Toronto is 11:00 PM on the <em>previous calendar day</em>. When it is 8:00 PM AWST in Western Australia, it corresponds to 7:00 AM EST in Eastern North America on the same day.
+    </p>
+  </div>
+
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">AWST (UTC+8)</text>
+      </g>
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-50" y="-30" width="100" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-13 HOURS</text>
+      </g>
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>13-Hour Offset Separation</h3>
+      <p>AWST runs at UTC+8 year-round, while EST runs at UTC-5. The 13-hour gap means morning in Perth is evening on the previous day in New York.</p>
+    </article>
+    <article class="method-card">
+      <h3>Daylight Shift Dynamics</h3>
+      <p>When New York shifts to Eastern Daylight Time (EDT, UTC-4) in summer, the offset decreases from 13 hours to 12 hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>Perth Evening / US Morning Window</h3>
+      <p>The optimal window for live calls spans 8:00 PM – 10:00 PM AWST, matching 7:00 AM – 9:00 AM EST in Eastern North America.</p>
+    </article>
+  </div>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour AWST to EST Conversion Table</h2>
+    <p>This reference grid maps every hour of Australian Western Standard Time (AWST) directly to Eastern Standard Time (EST).</p>
+
+    <!-- Timeline Graphic -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">AWST to EST Timeline Mapping</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 100" width="900" height="100" style="display: block;">
+        <rect x="20" y="40" width="860" height="16" fill="#1b536e" rx="8" />
+        <g transform="translate(60, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">8 AM AWST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">7 PM EST (-1)</text>
+        </g>
+        <g transform="translate(280, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">1 PM AWST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">12 AM EST</text>
+        </g>
+        <g transform="translate(500, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">6 PM AWST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">5 AM EST</text>
+        </g>
+        <g transform="translate(720, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">10 PM AWST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">9 AM EST</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="AWST to EST conversion table">
+        <caption class="sr-only">24-hour hour-by-hour AWST to EST conversion chart</caption>
+        <thead>
+          <tr><th>AWST Time (UTC+8)</th><th>EST Equivalent (UTC-5)</th><th>Day Offset</th></tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td>{row.awst}</td>
+              <td>{row.est}</td>
+              <td>{row.dayNote}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Note: AWST hours between 12:00 AM Midnight and 12:59 PM (Noon) fall on the previous calendar day (-1 day) in Eastern Standard Time.</p>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="examples-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <div>
+    <h2 id="popular-heading">Common AWST to EST Schedule Comparisons</h2>
+    <p>Below are frequently referenced schedule points for cross-hemispheric business coordination between Western Australia and North America.</p>
+    <div class="table-wrap">
+      <table aria-label="Popular AWST to EST time conversions">
+        <caption class="sr-only">Selected popular AWST to EST times with context notes</caption>
+        <thead>
+          <tr><th>AWST Time</th><th>EST Equivalent</th><th>Context & Scenario</th></tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((row) => (
+            <tr>
+              <td>{row.awst}</td>
+              <td>{row.est}</td>
+              <td>{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- DST INFOGRAPHIC SVG SECTION -->
+<section class="content-section" id="dst-infographic" aria-labelledby="dst-info-heading">
+  <h2 id="dst-info-heading">Hemispheric Offset Shifts: AWST vs EST / EDT</h2>
+  <p>
+    Because Western Australia stays permanently on UTC+8, the gap to New York alternates between 13 hours (during US winter EST) and 12 hours (during US summer EDT).
+  </p>
+
+  <div style="margin: 2rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-align: center;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block; margin: 0 auto;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <rect x="40" y="75" width="620" height="14" fill="#1b536e" rx="7" />
+      <rect x="40" y="75" width="160" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="120" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Nov - Mar: AWST vs EST (13h)</text>
+      <rect x="200" y="75" width="340" height="14" fill="#8fd7ff" opacity="0.9" rx="4" />
+      <text x="370" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Mar - Nov: AWST vs EDT (12h)</text>
+      <rect x="540" y="75" width="120" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="600" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Nov - Dec: (13h)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER MATRIX -->
+<section class="content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">AWST to EST Cross-Border Meeting Planner</h2>
+  <p>
+    Scheduling calls across a 13-hour gap requires utilizing Perth evening hours alongside New York morning hours.
+  </p>
+
+  <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent);">Recommended Meeting Slots</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Perth Evening / US East Morning</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>8:00 PM - 10:00 PM AWST</strong> equals <strong>7:00 AM - 9:00 AM EST</strong>. Prime window for executive syncs and urgent project handoffs.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Perth Morning / US East Evening (Prior Day)</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>8:00 AM - 9:30 AM AWST</strong> equals <strong>7:00 PM - 8:30 PM EST (-1 day)</strong>. Alternative window for flexible teams.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Asynchronous Workflows</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);">Perth teams complete daily tasks and hand off code reviews by 5:00 PM AWST, ready for US East Coast morning teams to pick up at 4:00 AM/8:00 AM EST.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEN / WHERE USED -->
+<section class="content-section" id="when-where-used" aria-labelledby="usage-heading">
+  <h2 id="usage-heading">Where AWST and EST Are Observed</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Australian Western Standard Time (AWST) Territory</h3>
+    <p>
+      AWST (UTC+8) governs the entire state of Western Australia, representing over 2.8 million residents across Perth, Fremantle, Mandurah, Bunbury, Kalgoorlie, and Broome.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Eastern Standard Time (EST) Territory</h3>
+    <p>
+      EST (UTC-5) covers eastern US states (New York, Florida, Pennsylvania, Massachusetts) and eastern Canadian provinces (Ontario, Quebec) during standard winter months.
+    </p>
+  </article>
+
+  <article>
+    <h3>Global Energy & Resources Sector</h3>
+    <p>
+      Western Australia is a world leader in lithium, iron ore, and clean energy exports. Coordinating AWST with New York and Toronto capital markets drives multi-billion dollar mining investments.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content-section" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in AWST to EST Conversions</h2>
+  
+  <ul style="line-height: 1.8; color: var(--muted);">
+    <li><strong style="color: var(--text);">Confusing AWST with AEST:</strong> AWST is UTC+8 (Perth), whereas AEST is UTC+10 (Sydney/Melbourne). Do not use Sydney time for Western Australia!</li>
+    <li><strong style="color: var(--text);">Calendar Date Shift Mismatches:</strong> 10:00 AM AWST on Tuesday maps to 9:00 PM EST on <em>Monday evening</em>. Always verify the calendar date.</li>
+    <li><strong style="color: var(--text);">Assuming Western Australia Shifts Clocks:</strong> Western Australia does NOT observe DST. Do not add seasonal shifts for Perth.</li>
+  </ul>
+</section>
+
+<!-- REAL-WORLD USE CASES -->
+<section class="use-cases content-section" id="use-cases" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World AWST to EST Scenarios</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Mining Capital Markets</h3>
+      <p>Perth mining executives present resource telemetry to New York institutional investors during the 9:00 PM AWST (8:00 AM EST) morning market call.</p>
+    </article>
+    <article class="method-card">
+      <h3>Transpacific Logistics & Marine Freight</h3>
+      <p>Bulk cargo carriers departing Port Hedland or Fremantle log arrival estimates with US Atlantic maritime dispatchers using 13-hour offset logic.</p>
+    </article>
+    <article class="method-card">
+      <h3>Academic Marine Biology Research</h3>
+      <p>University of Western Australia researchers share Ningaloo Reef environmental data with Woods Hole Institute scientists at 8:00 PM AWST (7:00 AM EST).</p>
+    </article>
+    <article class="method-card">
+      <h3>24/7 Global Software Engineering</h3>
+      <p>Perth software engineers pass evening pull requests at 9:00 PM AWST to New York tech leads opening their laptops at 8:00 AM EST.</p>
+    </article>
+  </div>
+</section>
+
+<!-- TECHNICAL DATABASE INTEGRATION -->
+<section class="content-section" id="tech-integration" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Integration & Database Standards</h2>
+  <p>
+    When engineering multi-region software systems connecting Western Australia and Eastern North America, developers should store timestamps in UTC and resolve local timezone offsets via IANA rules:
+  </p>
+  <ul style="color: var(--muted); line-height: 1.8; margin-top: 1rem;">
+    <li><code>Australia/Perth</code> – Manages fixed UTC+8 rules for Western Australia.</li>
+    <li><code>America/New_York</code> – Manages EST/EDT transitions for US Eastern time.</li>
+  </ul>
+</section>
+
+<!-- RELATED CONVERTERS GRID -->
+<section class="other-tools content-section" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading" class="eyebrow">Explore Related Time Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Eastern Standard Time (5-hour difference).</p>
+    </a>
+    <a href="/gmt-to-kst/" class="related-card">
+      <h3 class="related-card-title">GMT to KST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Korea Standard Time (UTC+9).</p>
+    </a>
+    <a href="/bst-to-est/" class="related-card">
+      <h3 class="related-card-title">BST to EST</h3>
+      <p class="related-card-text">Convert British Summer Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/cet-to-est/" class="related-card">
+      <h3 class="related-card-title">CET to EST</h3>
+      <p class="related-card-text">Convert Central European Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/west-to-est/" class="related-card">
+      <h3 class="related-card-title">WEST to EST</h3>
+      <p class="related-card-text">Convert Western European Summer Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/gmt-to-ndt/" class="related-card">
+      <h3 class="related-card-title">GMT to NDT</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Newfoundland Daylight Time (2.5-hour offset).</p>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq content-section" id="faqs" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary class="faq-question"><strong>{faq.q}</strong></summary>
+        <p class="faq-answer">{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="content-section" id="conclusion" aria-labelledby="conclusion-heading">
+  <h2 id="conclusion-heading">Master Your AWST to EST Schedule</h2>
+  <p>
+    Converting time between Australian Western Standard Time and Eastern Standard Time is straightforward when factoring in the 13-hour difference. Use our interactive converter and 24-hour tables for seamless cross-hemisphere planning.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .faq-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .faq-question {
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text);
+    outline: none;
+  }
+  .faq-answer {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  td {
+    color: var(--muted);
+  }
+  .chart-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .related-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .related-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .related-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 0.5rem;
+  }
+  .related-card-text {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .clock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .clock-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .clock-card span {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .clock-card strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+  }
+  .clock-card em {
+    font-style: normal;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+  }
+</style>

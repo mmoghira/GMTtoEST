@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "idt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "IDT to EST Converter";
+const seoTitle = "IDT to EST Converter – Israel Daylight Time to Eastern Standard Time";
+const pageDescription = "Convert IDT to EST instantly. Calculate the exact 8-hour time difference between Israel Daylight Time and Eastern Standard Time with live clocks, meeting planners, and conversion tables.";
+
+const context = {
+  from: "IDT",
+  to: "EST",
+  fromZone: "Asia/Jerusalem",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/idt-to-est/`;
+
+// 24-hour conversion table data (IDT → EST = IDT - 8 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 8;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    idt: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { idt: "12:00 AM (Midnight)", est: "4:00 PM (Prev Day)", note: "Late afternoon in New York, midnight in Tel Aviv" },
+  { idt: "4:00 AM", est: "8:00 PM (Prev Day)", note: "Night in Israel, evening on US East Coast" },
+  { idt: "8:00 AM", est: "12:00 AM (Midnight)", note: "Israeli tech workday begins, midnight in NYC" },
+  { idt: "10:00 AM", est: "2:00 AM", note: "Silicon Wadi focus hours, deep night in America" },
+  { idt: "12:00 PM (Noon)", est: "4:00 AM", note: "Midday in Jerusalem, early pre-dawn in New York" },
+  { idt: "4:00 PM", est: "8:00 AM", note: "Late afternoon in Israel, US East Coast business kick-off" },
+  { idt: "5:00 PM", est: "9:00 AM", note: "Prime cross-border collaboration window (IDT afternoon / EST morning)" },
+  { idt: "6:00 PM", est: "10:00 AM", note: "Evening in Tel Aviv, active morning in NYC VC firms" },
+  { idt: "7:00 PM", est: "11:00 AM", note: "Dinner time in Israel, late morning stock trading in New York" },
+  { idt: "9:00 PM", est: "1:00 PM", note: "Night in Jerusalem, lunch hour in NYC" },
+  { idt: "11:00 PM", est: "3:00 PM", note: "Late evening in Tel Aviv, mid-afternoon in New York" },
+  { idt: "11:59 PM", est: "3:59 PM", note: "End of IDT calendar day, late afternoon on US East Coast" }
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is the time difference between IDT and EST?", a: "Eastern Standard Time (EST, UTC-5) is 8 hours behind Israel Daylight Time (IDT, UTC+3). When it is 5:00 PM IDT in Tel Aviv or Jerusalem, it is 9:00 AM EST in New York or Toronto." },
+  { q: "What does IDT stand for?", a: "IDT stands for Israel Daylight Time. It is the daylight saving time offset observed in Israel during spring, summer, and early autumn, operating at UTC+3." },
+  { q: "What is the difference between IST and IDT in Israel?", a: "IST (Israel Standard Time, UTC+2) is observed in winter, while IDT (Israel Daylight Time, UTC+3) is observed during daylight saving time. IST is 7 hours ahead of EST, whereas IDT is 8 hours ahead of EST." },
+  { q: "What does EST stand for?", a: "EST stands for Eastern Standard Time. It represents the standard time zone covering the East Coast of North America (UTC-5)." },
+  { q: "Which major cities observe Israel Daylight Time (IDT)?", a: "Major cities observing IDT (UTC+3) during summer include Tel Aviv, Jerusalem, Haifa, Beersheba, Netanya, Rishon LeZion, and Eilat." },
+  { q: "Which major cities observe Eastern Standard Time (EST)?", a: "Key cities in the EST zone (UTC-5) include New York City, Boston, Washington D.C., Philadelphia, Atlanta, Miami, Toronto, and Montreal." },
+  { q: "How do I calculate IDT to EST manually?", a: "To convert IDT to EST manually, subtract 8 hours from the IDT time. For example, 5:00 PM IDT (17:00) minus 8 hours equals 9:00 AM EST. If the hour drops below zero, subtract from 24 to find the previous day's time." },
+  { q: "What is the best time for a meeting between Tel Aviv (IDT) and New York (EST)?", a: "The best overlap window is between 4:00 PM and 7:00 PM IDT, which aligns with 8:00 AM to 11:00 AM EST. This provides a convenient morning start for US participants and late afternoon for Israeli teams." },
+  { q: "When does Israel switch between IST and IDT?", a: "Israel switches to IDT on the Friday before the last Sunday of March (clocks spring forward to UTC+3). Israel reverts to IST on the last Sunday of October (clocks fall back to UTC+2)." },
+  { q: "Why is IDT to EST conversion important for tech companies?", a: "Israel's 'Silicon Wadi' tech ecosystem features over 400 multinational R&D centers and thousands of startups backed by US venture capital. Daily syncs between Tel Aviv and New York or Boston require exact timezone calculations." },
+  { q: "How does the Tel Aviv Stock Exchange (TASE) overlap with Wall Street?", a: "The Tel Aviv Stock Exchange (TASE) operates Sunday through Thursday. On trading days when US markets are open (Monday–Thursday), TASE trading closing hours align with the morning opening of the NYSE and NASDAQ." },
+  { q: "Does Israel work Sunday through Thursday?", a: "Yes. The standard workweek in Israel runs from Sunday to Thursday, with Friday and Saturday acting as the weekend. This means Sunday in Israel overlaps with the US weekend, while Friday in the US overlaps with the Israeli weekend." },
+  { q: "What is the IANA identifier for Israel Daylight Time?", a: "In software engineering databases, Israel's time zone rules are encapsulated under the IANA database key 'Asia/Jerusalem'." },
+  { q: "What is the IANA identifier for Eastern Standard Time?", a: "The primary IANA database identifier for US Eastern Time is 'America/New_York'." },
+  { q: "What time is 12 PM IDT in EST?", a: "12:00 PM (Noon) IDT equals 4:00 AM EST on the same day." },
+  { q: "What time is 5 PM IDT in EST?", a: "5:00 PM IDT equals 9:00 AM EST on the same day, marking the start of the joint workday overlap." },
+  { q: "What time is 8 PM IDT in EST?", a: "8:00 PM IDT equals 12:00 PM (Noon) EST on the same day." },
+  { q: "What time is 10 PM IDT in EST?", a: "10:00 PM IDT equals 2:00 PM EST on the same day." },
+  { q: "What time is 1 AM IDT in EST?", a: "1:00 AM IDT equals 5:00 PM EST on the previous calendar day." },
+  { q: "What time is 6 AM IDT in EST?", a: "6:00 AM IDT equals 10:00 PM EST on the previous calendar day." },
+  { q: "What time is 2 PM IDT in EST?", a: "2:00 PM IDT equals 6:00 AM EST on the same day." },
+  { q: "What time is 6 PM IDT in EST?", a: "6:00 PM IDT equals 10:00 AM EST on the same day." },
+  { q: "What time is 9 PM IDT in EST?", a: "9:00 PM IDT equals 1:00 PM EST on the same day." },
+  { q: "Does flight travel from Tel Aviv to New York gain or lose time?", a: "Direct flights from Ben Gurion Airport (TLV) to New York (JFK/EWR) take about 11 to 12 hours. Passengers gain 8 hours traveling west, landing in New York only 3 to 4 hours after their departure time on local clocks." },
+  { q: "Are Jerusalem and Tel Aviv in the same time zone?", a: "Yes. All cities across Israel observe identical time rules under the Asia/Jerusalem database key." },
+  { q: "What time is 3 PM IDT in EST?", a: "3:00 PM IDT equals 7:00 AM EST on the same day." },
+  { q: "What time is 7 PM IDT in EST?", a: "7:00 PM IDT equals 11:00 AM EST on the same day." },
+  { q: "What time is 11 PM IDT in EST?", a: "11:00 PM IDT equals 3:00 PM EST on the same day." },
+  { q: "What time is 2 AM IDT in EST?", a: "2:00 AM IDT equals 6:00 PM EST on the previous day." },
+  { q: "What time is 7 AM IDT in EST?", a: "7:00 AM IDT equals 11:00 PM EST on the previous day." },
+  { q: "What time is 1 PM IDT in EST?", a: "1:00 PM IDT equals 5:00 AM EST on the same day." },
+  { q: "What time is 4 PM IDT in EST?", a: "4:00 PM IDT equals 8:00 AM EST on the same day." },
+  { q: "What time is 9 PM IDT in EST?", a: "9:00 PM IDT equals 1:00 PM EST on the same day." },
+  { q: "What time is 10 AM IDT in EST?", a: "10:00 AM IDT equals 2:00 AM EST on the same day." },
+  { q: "Is Haifa in the IDT time zone?", a: "Yes, Haifa, Israel operates on IDT (UTC+3) during summer daylight saving time." },
+  { q: "How many hours is Tel Aviv ahead of New York in summer?", a: "Tel Aviv (IDT, UTC+3) is 7 hours ahead of New York (EDT, UTC-4) during summer, and 8 hours ahead when New York is on winter EST (UTC-5)." },
+  { q: "What time is 12:30 PM IDT in EST?", a: "12:30 PM IDT equals 4:30 AM EST on the same day." },
+  { q: "What time is 3:30 PM IDT in EST?", a: "3:30 PM IDT equals 7:30 AM EST on the same day." },
+  { q: "What time is 5:30 PM IDT in EST?", a: "5:30 PM IDT equals 9:30 AM EST on the same day." },
+  { q: "What time is 8:30 PM IDT in EST?", a: "8:30 PM IDT equals 12:30 PM (Noon) EST on the same day." },
+  { q: "What time is 10:30 PM IDT in EST?", a: "10:30 PM IDT equals 2:30 PM EST on the same day." },
+  { q: "What time is 2:30 AM IDT in EST?", a: "2:30 AM IDT equals 6:30 PM EST on the previous day." },
+  { q: "What time is 6:30 AM IDT in EST?", a: "6:30 AM IDT equals 10:30 PM EST on the previous day." },
+  { q: "What time is 9:30 AM IDT in EST?", a: "9:30 AM IDT equals 1:30 AM EST on the same day." },
+  { q: "Does Beersheba use IDT?", a: "Yes, Beersheba and all southern regions of Israel observe IDT (UTC+3) during summer." },
+  { q: "What is the UTC offset of IDT?", a: "IDT operates at UTC+3 (Coordinated Universal Time +3 hours)." },
+  { q: "What time is 1:30 PM IDT in EST?", a: "1:30 PM IDT equals 5:30 AM EST on the same day." },
+  { q: "What time is 4:30 PM IDT in EST?", a: "4:30 PM IDT equals 8:30 AM EST on the same day." },
+  { q: "What time is 6:30 PM IDT in EST?", a: "6:30 PM IDT equals 10:30 AM EST on the same day." },
+  { q: "What time is 7:30 PM IDT in EST?", a: "7:30 PM IDT equals 11:30 AM EST on the same day." },
+  { q: "What time is 11:30 PM IDT in EST?", a: "11:30 PM IDT equals 3:30 PM EST on the same day." },
+  { q: "Is Eilat in the IDT time zone?", a: "Yes, the southern resort city of Eilat operates on IDT (UTC+3) during daylight saving time." },
+  { q: "What time is 8:00 AM IDT in EST?", a: "8:00 AM IDT equals 12:00 AM Midnight EST on the same day." },
+  { q: "What time is 11:00 AM IDT in EST?", a: "11:00 AM IDT equals 3:00 AM EST on the same day." },
+  { q: "What time is 2:00 PM IDT in EST?", a: "2:00 PM IDT equals 6:00 AM EST on the same day." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "IDT to EST, Israel Daylight Time to Eastern Standard Time, IDT EST converter, convert IDT to EST, Tel Aviv time to New York, Jerusalem time to NYC, 8 hour time difference Israel",
+  image: "/assets/idt-to-est-og.svg",
+  imageAlt: "IDT to EST Timezone Converter Diagram",
+  faqs,
+  appDescription: "Free online IDT to EST converter featuring live interactive dual clocks, Israel daylight logic, 24-hour conversion matrices, and Silicon Wadi meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert IDT to EST",
+  howToDescription: "Simple steps to convert Israel Daylight Time (IDT) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter IDT Time", text: "Select your desired hour and date in Israel Daylight Time." },
+    { name: "Check the Offset", text: "Note the 8-hour difference (EST is 8 hours behind IDT when US is on EST and Israel is on IDT)." },
+    { name: "View Converted EST", text: "Read the converted Eastern Standard Time along with any calendar date shift." },
+    { name: "Share or Schedule", text: "Use the copy button or meeting planner to coordinate across cross-border teams." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="IDT to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    IDT to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS STRIP -->
+<section class="feature-strip" aria-label="Key Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>8-Hour Subtraction Math</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Israeli DST Rule Engine</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Silicon Wadi & Wall Street Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>IANA Asia/Jerusalem Engine</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About IDT to EST Conversion</h2>
+  <p>
+    Welcome to our official <strong>IDT to EST Timezone Converter</strong>. Navigating communication between Israel's tech powerhouse in Tel Aviv and commercial centers on the US East Coast requires calculating an <strong>8-hour time gap</strong>. Israel Daylight Time (IDT) operates at Coordinated Universal Time +3 (UTC+3), whereas Eastern Standard Time (EST) operates at UTC-5. As a result, Eastern Standard Time is 8 hours behind Israel Daylight Time.
+  </p>
+  <p>
+    The relationship between IDT and EST is particularly active due to the deep integration between Israel's high-tech ecosystem ("Silicon Wadi") and US financial venture capital firms in New York and Boston. Additionally, because Israel's workweek runs from Sunday to Thursday, scheduling across the two regions requires extra attention to calendar day boundaries and weekend overlaps.
+  </p>
+  <p>
+    Our online converter utilizes native browser localization APIs backed by the standardized IANA Time Zone Database (`Asia/Jerusalem` and `America/New_York`). Whether you are coordinating daily software standups, managing financial transactions on the Tel Aviv and New York Stock Exchanges, or scheduling transatlantic flights, this guide provides real-time dual clocks, interactive 24-hour schedules, meeting planners, and detailed regional context.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONVERTER COMPONENT & HERO GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Tool</p>
+    <h2 id="converter-tool-heading">Convert Israel Daylight Time to Eastern Standard Time</h2>
+    <p>
+      Select any hour and date below to calculate the corresponding Eastern Standard Time. Our interactive calculator accounts for calendar shifts and DST transitions automatically.
+    </p>
+
+    <!-- Custom Hero SVG Illustration for IDT to EST -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        <path d="M40 160 C 170 70, 250 230, 390 100 C 470 40, 520 170, 560 80" fill="none" stroke="#36c7b5" stroke-width="3" opacity="0.8" />
+        
+        <!-- Left Clock: Israel (Tel Aviv / Jerusalem - UTC+3) -->
+        <g transform="translate(140, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Tel Aviv / Jerusalem (IDT)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+3 Offset</text>
+        </g>
+
+        <!-- Right Clock: EST (New York - UTC-5) -->
+        <g transform="translate(460, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="-28" y2="-10" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+
+        <!-- Connection Arrow & Offset Badge -->
+        <g transform="translate(300, 105)">
+          <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+          <rect x="-45" y="-35" width="90" height="26" rx="13" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">EST is -8 HRS</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS SECTION -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: Israel vs US East Coast</h2>
+  <div class="clock-card"><span>Current IDT (UTC+3)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION (TEL AVIV SHORELINE & NYC SKYLINE) -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Tel Aviv Shoreline & New York Skyline Graphics</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <!-- Stars -->
+    <circle cx="110" cy="30" r="1.5" fill="#f4fbff" opacity="0.5" />
+    <circle cx="320" cy="25" r="1.5" fill="#f4fbff" opacity="0.4" />
+    <circle cx="560" cy="35" r="2" fill="#36c7b5" opacity="0.7" />
+
+    <!-- Tel Aviv Modern Skyline (Left Side) -->
+    <g transform="translate(60, 60)">
+      <rect x="20" y="50" width="35" height="100" fill="#1b536e" />
+      <rect x="65" y="30" width="40" height="120" fill="#164d68" />
+      <circle cx="85" cy="50" r="6" fill="#36c7b5" />
+      <rect x="115" y="65" width="30" height="85" fill="#2f6278" />
+      <text x="75" y="165" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Tel Aviv / IDT</text>
+    </g>
+
+    <!-- Transatlantic Ocean Bridge Wave -->
+    <path d="M 230 140 Q 410 60 590 140" fill="none" stroke="#36c7b5" stroke-width="2" stroke-dasharray="4 4" />
+
+    <!-- NYC Skyline Silhouette (Right Side) -->
+    <g transform="translate(600, 40)">
+      <rect x="20" y="70" width="40" height="90" fill="#1b536e" />
+      <rect x="70" y="40" width="35" height="120" fill="#164d68" />
+      <line x1="87.5" y1="40" x2="87.5" y2="15" stroke="#36c7b5" stroke-width="3" />
+      <text x="55" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">New York / EST</text>
+    </g>
+
+    <!-- Sea / Ground Baseline -->
+    <rect x="0" y="190" width="800" height="10" fill="#071b26" />
+    <line x1="0" y1="190" x2="800" y2="190" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE MECHANICS SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Mathematical Mechanics</p>
+    <h2 id="time-diff-heading">Analyzing the 8-Hour IDT to EST Offset</h2>
+    <p>
+      Converting Israel Daylight Time to Eastern Standard Time involves an <strong>8-hour subtraction factor</strong>:
+    </p>
+    <p style="text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: bold; color: var(--accent); background: var(--panel); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+      EST Time = IDT Time − 8 Hours
+    </p>
+    <p>
+      When subtracting 8 hours from early morning times in Israel (00:00 to 07:59 IDT), the resulting time steps back into the previous calendar evening in EST.
+    </p>
+  </div>
+
+  <!-- SIDE-BY-SIDE GRAPHIC -->
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">IDT (UTC+3)</text>
+      </g>
+
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">SUBTRACT 8 HRS</text>
+      </g>
+
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="-28" y2="-10" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Direct Math Rule</h3>
+      <p>Subtract 8 hours from any IDT time. If the result is negative, add 24 to get the EST hour and move back one day on the calendar.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Late Afternoon Overlap Window</h3>
+      <p>The standard business overlap occurs between 4:00 PM and 7:00 PM IDT, aligning with 8:00 AM to 11:00 AM EST on the US East Coast.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Seasonal EDT & IDT Alignment</h3>
+      <p>When the US enters EDT (UTC-4) and Israel enters IDT (UTC+3), the relative difference between local Tel Aviv and New York clocks becomes 7 hours.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour IDT to EST Conversion Table</h2>
+    <p>Reference this matrix to check hour-by-hour time conversions between Israel Daylight Time and Eastern Standard Time.</p>
+
+    <!-- Timeline Grid Graphic (SVG) -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">24-Hour Timeline: IDT vs EST</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="1000" height="120" style="display: block;">
+        <rect x="20" y="45" width="960" height="20" fill="#1b536e" rx="10" />
+        <rect x="20" y="45" width="960" height="20" fill="url(#accentGrad)" rx="10" opacity="0.3" />
+        
+        <g transform="translate(60, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">8 AM IDT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">12 AM Midnight EST</text>
+        </g>
+        
+        <g transform="translate(400, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">4 PM IDT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">8 AM EST (Overlap Start)</text>
+        </g>
+
+        <g transform="translate(700, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">7 PM IDT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">11 AM EST (Overlap End)</text>
+        </g>
+
+        <g transform="translate(920, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">11 PM IDT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">3 PM EST</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Table Wrap -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Israel Daylight Time (IDT)</th>
+            <th scope="col">Eastern Standard Time (EST)</th>
+            <th scope="col">Calendar Day Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td><strong>{row.idt}</strong></td>
+              <td>{row.est}</td>
+              <td><span class={row.dayNote === "Previous day" ? "chart-note warning" : "chart-note"}>{row.dayNote}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="content-section">
+  <h2>Popular IDT to EST Time Conversions</h2>
+  <p>Below is a list of frequent time conversions used by tech leads, financial analysts, and travelers.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">IDT Time</th>
+          <th scope="col">EST Time</th>
+          <th scope="col">Context / Operational Significance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.idt}</strong></td>
+            <td><strong>{item.est}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DAYLIGHT SAVING TRANSITION INFOGRAPHIC & EXPLANATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="dst-explained">
+  <h2>Daylight Saving Time Dynamics: IDT vs EST/EDT</h2>
+  <p>
+    Israel observes Daylight Saving Time (IDT, UTC+3) from late March until late October. During winter, Israel uses Israel Standard Time (IST, UTC+2):
+  </p>
+
+  <!-- SVG DST Diagram -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(30, 40)">
+        <rect x="0" y="0" width="640" height="35" rx="6" fill="#12455d" stroke="#2f6278" />
+        <text x="15" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff">Israel Winter (IST):</text>
+        <text x="220" y="22" font-family="'Manrope', sans-serif" font-size="13" fill="#36c7b5">IST (UTC+2) vs EST (UTC-5)</text>
+        <text x="540" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff">7 Hours Gap</text>
+      </g>
+
+      <g transform="translate(30, 90)">
+        <rect x="0" y="0" width="640" height="35" rx="6" fill="#12455d" stroke="#2f6278" />
+        <text x="15" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff">Israel Summer (IDT):</text>
+        <text x="220" y="22" font-family="'Manrope', sans-serif" font-size="13" fill="#36c7b5">IDT (UTC+3) vs EDT (UTC-4)</text>
+        <text x="540" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff">7 Hours Gap</text>
+      </g>
+
+      <g transform="translate(30, 140)">
+        <rect x="0" y="0" width="640" height="40" rx="6" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="15" y="25" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">IDT vs EST (Winter US / Summer Israel):</text>
+        <text x="280" y="25" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">IDT (UTC+3) vs EST (UTC-5)</text>
+        <text x="540" y="25" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">8 Hours Gap</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION & MULTI-REGION GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="meeting-planner">
+  <h2>Cross-Border Meeting Planner: IDT to EST</h2>
+  <p>
+    Below are recommended overlap times for cross-border management between Israel and the US East Coast.
+  </p>
+
+  <!-- Multi-Region Clock Graphic (SVG) -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(50, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Tel Aviv / IDT</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">4:00 PM – 7:00 PM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Late Afternoon</text>
+      </g>
+
+      <g transform="translate(245, 70)">
+        <rect x="0" y="0" width="160" height="28" rx="14" fill="#1b536e" stroke="#36c7b5" />
+        <text x="80" y="18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">⚡ Tech Sync Window</text>
+      </g>
+
+      <g transform="translate(440, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">New York / EST</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">8:00 AM – 11:00 AM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Early Morning</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>The Morning Standup (8:30 AM EST / 4:30 PM IDT)</h3>
+      <p>Israeli developers wrap up afternoon code reviews while US East Coast team members log in for morning standups.</p>
+    </article>
+    <article class="method-card">
+      <h3>The Executive Sync (9:30 AM EST / 5:30 PM IDT)</h3>
+      <p>Ideal slot for strategic meetings between Tel Aviv startup founders and New York venture capitalists.</p>
+    </article>
+    <article class="method-card">
+      <h3>Workweek Shift (Sunday vs Friday)</h3>
+      <p>Note that Israel's workweek starts Sunday, allowing Israeli teams to push code updates before US Monday morning.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN & WHERE USED SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Where and When IDT and EST are Used</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Israel Daylight Time (IDT) Usage</h3>
+      <p>
+        IDT is used across the State of Israel during daylight saving months. Major metropolitan centers include Tel Aviv, Jerusalem, Haifa, Beersheba, and Netanya.
+      </p>
+    </article>
+    <article>
+      <h3>Eastern Standard Time (EST) Usage</h3>
+      <p>
+        EST governs civil time along the US East Coast and Eastern Canada, including financial hubs like New York, Boston, Toronto, and Washington D.C.
+      </p>
+    </article>
+    <article>
+      <h3>Silicon Wadi Tech Ecosystem</h3>
+      <p>
+        Over 400 global technology firms (including Intel, Microsoft, Google, Apple, and Nvidia) operate major R&D hubs in Israel, relying on IDT to EST conversion.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Common Mistakes When Converting IDT to EST</h2>
+  <div class="use-cases">
+    <article>
+      <h3>1. Forgetting the Sunday–Thursday Workweek</h3>
+      <p>
+        Israel operates on a Sunday-to-Thursday workweek. Scheduling Friday meetings in Tel Aviv often fails because Friday is part of the Israeli weekend.
+      </p>
+    </article>
+    <article>
+      <h3>2. Confusing IDT with IST</h3>
+      <p>
+        IST is Israel Standard Time (UTC+2) used in winter, while IDT is Israel Daylight Time (UTC+3) used in summer. Using the wrong offset creates 1-hour errors.
+      </p>
+    </article>
+    <article>
+      <h3>3. Date Boundary Errors</h3>
+      <p>
+        Converting IDT times between 12:00 AM and 7:59 AM shifts the EST time back into the previous calendar evening.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Real-World Scenarios for IDT to EST Conversion</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Venture Capital & High-Tech Startups</h3>
+      <p>
+        Tel Aviv startup founders pitch to East Coast venture funds in New York and Boston during the 4:00 PM – 7:00 PM IDT window.
+      </p>
+    </article>
+    <article>
+      <h3>Cybersecurity & Software Engineering</h3>
+      <p>
+        Israeli cybersecurity firms manage round-the-clock Security Operations Centers (SOC), transferring incident response logs to US East Coast teams.
+      </p>
+    </article>
+    <article>
+      <h3>Financial Trading & Dual-Listed Equities</h3>
+      <p>
+        Companies listed on both the Tel Aviv Stock Exchange (TASE) and NASDAQ sync market closing announcements across time zones.
+      </p>
+    </article>
+    <article>
+      <h3>Transatlantic Flight Schedules</h3>
+      <p>
+        Passengers traveling on direct El Al, Delta, or United flights between TLV and JFK/EWR calculate landing times using the 8-hour offset.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-tools-heading">
+  <h2 id="related-tools-heading">Related Timezone Converters</h2>
+  <div class="related-grid">
+    <a href="/gmt-to-est/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/gmt-to-idt/" class="related-card">
+      <h3 class="related-card-title">GMT to IDT</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Israel Daylight Time (UTC+3).</p>
+    </a>
+    <a href="/eet-to-est/" class="related-card">
+      <h3 class="related-card-title">EET to EST</h3>
+      <p class="related-card-text">Convert Eastern European Time (UTC+2) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Pacific Standard Time (UTC-8).</p>
+    </a>
+    <a href="/hst-to-est/" class="related-card">
+      <h3 class="related-card-title">HST to EST</h3>
+      <p class="related-card-text">Convert Hawaii Standard Time (UTC-10) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Home</h3>
+      <p class="related-card-text">Return to our central timezone conversion hub and dynamic calculator.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary><strong>{faq.q}</strong></summary>
+        <p>{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION SECTION -->
+<section class="content-section">
+  <h2>Conclusion</h2>
+  <p>
+    Converting Israel Daylight Time (IDT) to Eastern Standard Time (EST) is straightforward using the <strong>8-hour offset difference</strong>. With EST running 8 hours behind IDT when active, our real-time converter, dual clocks, and conversion tables ensure seamless coordination across Tel Aviv, New York, and global operations. Bookmark this page for fast conversions every day.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+</style>

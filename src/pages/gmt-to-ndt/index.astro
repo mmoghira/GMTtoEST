@@ -1,0 +1,727 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-ndt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to NDT Converter";
+const seoTitle = "GMT to NDT Converter – Greenwich Mean Time to Newfoundland Daylight Time";
+const pageDescription = "Convert GMT to NDT instantly. Calculate the exact 2.5-hour time difference between Greenwich Mean Time (UTC+0) and Newfoundland Daylight Time (UTC-2:30) with live clocks, meeting planners, and conversion tables.";
+
+const context = {
+  from: "GMT",
+  to: "NDT",
+  fromZone: "UTC",
+  toZone: "America/St_Johns"
+};
+
+const canonical = `${siteUrl}/gmt-to-ndt/`;
+
+// 24-hour conversion table data for half-hour offset (GMT → NDT = GMT - 2.5 hours / -150 minutes)
+function formatHour12(hour: number, minutes: number = 0) {
+  const totalMinutes = ((hour * 60 + minutes) % 1440 + 1440) % 1440;
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  const period = h < 12 ? "AM" : "PM";
+  const displayHour = h % 12 || 12;
+  const minStr = m < 10 ? `0${m}` : `${m}`;
+  return `${displayHour}:${minStr} ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const ndtTotalMinutes = hour * 60 - 150; // -2 hours 30 mins
+  const prevDay = ndtTotalMinutes < 0;
+  return {
+    gmt: formatHour12(hour, 0),
+    ndt: `${formatHour12(0, ndtTotalMinutes)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM Midnight GMT", ndt: "9:30 PM NDT (-1 day)", note: "Midnight in London is late evening in St. John's on the prior day" },
+  { gmt: "2:00 AM GMT", ndt: "11:30 PM NDT (-1 day)", note: "Late night in the UK, late night bedtime in Newfoundland" },
+  { gmt: "5:00 AM GMT", ndt: "2:30 AM NDT", note: "Early morning in GMT, deep overnight in St. John's" },
+  { gmt: "8:00 AM GMT", ndt: "5:30 AM NDT", note: "European workday starting, early pre-dawn hours in Newfoundland" },
+  { gmt: "10:00 AM GMT", ndt: "7:30 AM NDT", note: "Mid-morning focus in London/Dublin, early morning wake-ups in St. John's" },
+  { gmt: "11:30 AM GMT", ndt: "9:00 AM NDT", note: "Golden overlap window begins: UK late morning coincides with Newfoundland office open" },
+  { gmt: "12:00 PM (Noon) GMT", ndt: "9:30 AM NDT", note: "Lunchtime in GMT zone aligns with active morning work hours in Newfoundland" },
+  { gmt: "2:30 PM GMT", ndt: "12:00 PM (Noon) NDT", note: "Mid-afternoon GMT coincides with lunch hour in St. John's" },
+  { gmt: "4:30 PM GMT", ndt: "2:00 PM NDT", note: "Late afternoon in Europe, early afternoon project reviews in Newfoundland" },
+  { gmt: "6:00 PM GMT", ndt: "3:30 PM NDT", note: "Evening in GMT corresponds to mid-afternoon work in Newfoundland" },
+  { gmt: "7:30 PM GMT", ndt: "5:00 PM NDT", note: "GMT evening relaxation aligns with end of workday across Newfoundland" },
+  { gmt: "10:00 PM GMT", ndt: "7:30 PM NDT", note: "Late night GMT coincides with dinner and evening relaxation in St. John's" }
+];
+
+// Comprehensive FAQ dataset (25 entries)
+const faqs = [
+  { q: "What is NDT?", a: "NDT stands for Newfoundland Daylight Time. It represents the daylight saving time offset observed in the island of Newfoundland and parts of Labrador in Canada during summer months, operating at UTC-2:30 (UTC minus 2 hours and 30 minutes)." },
+  { q: "Why does Newfoundland have a half-hour time zone?", a: "Newfoundland adopted its half-hour offset in 1935. Geographically, the island lies across the 53rd meridian west, placing it midway between Atlantic Standard Time (UTC-4) and Greenland/UTC-3. Setting local time 30 minutes ahead of Atlantic Time accurately reflected local solar time." },
+  { q: "How many hours is NDT behind GMT?", a: "Newfoundland Daylight Time (NDT, UTC-2:30) is exactly 2.5 hours (2 hours and 30 minutes) behind Greenwich Mean Time (GMT, UTC+0). When it is 12:00 PM (Noon) GMT, it is 9:30 AM NDT in St. John's." },
+  { q: "What is the difference between NST and NDT?", a: "NST stands for Newfoundland Standard Time (UTC-3:30, observed in winter), while NDT stands for Newfoundland Daylight Time (UTC-2:30, observed in summer from March to November)." },
+  { q: "Which major Canadian communities observe Newfoundland Daylight Time?", a: "NDT is observed across Newfoundland, including St. John's, Mount Pearl, Corner Brook, Grand Falls-Windsor, Gander, and Conception Bay South, as well as coastal parts of Labrador." },
+  { q: "Does all of Labrador use Newfoundland Daylight Time?", a: "No. Most of Labrador (including Goose Bay and Labrador City) uses Atlantic Time (AST/ADT), while southeastern coastal communities from L'Anse-au-Clair to Norman Bay choose to observe Newfoundland Time." },
+  { q: "How do I calculate GMT to NDT manually?", a: "To convert GMT to NDT, subtract 2 hours and 30 minutes from the GMT timestamp. For instance, 4:00 PM GMT minus 2 hours 30 minutes equals 1:30 PM NDT." },
+  { q: "What is the optimal time for a call between London and St. John's during NDT?", a: "The best window for live collaboration is between 11:30 AM and 5:00 PM GMT, which corresponds to 9:00 AM to 2:30 PM NDT in Newfoundland." },
+  { q: "What is 12:00 PM (Noon) GMT in NDT?", a: "12:00 PM (Noon) GMT is equal to 9:30 AM NDT on the exact same calendar day." },
+  { q: "What is 9:00 AM NDT in GMT?", a: "9:00 AM NDT is equal to 11:30 AM GMT on the exact same calendar day." },
+  { q: "What is the IANA database key for Newfoundland Time?", a: "The standardized IANA database key representing Newfoundland Time is 'America/St_Johns'." },
+  { q: "How does NDT compare to Atlantic Daylight Time (ADT)?", a: "NDT (UTC-2:30) is exactly 30 minutes ahead of ADT (Atlantic Daylight Time, UTC-3:00, used in Nova Scotia and New Brunswick)." },
+  { q: "How does NDT compare to Eastern Daylight Time (EDT)?", a: "NDT (UTC-2:30) is exactly 1.5 hours (90 minutes) ahead of Eastern Daylight Time (EDT, UTC-4:00, used in Toronto and New York)." },
+  { q: "Does the 2.5-hour difference cause calendar date shifts?", a: "Yes. Early morning GMT hours between 12:00 AM GMT and 2:29 AM GMT map to the previous evening in Newfoundland (9:30 PM to 11:59 PM NDT -1 day)." },
+  { q: "Why was Marconi's transatlantic wireless signal in St. John's historical for time sync?", a: "In 1901, Guglielmo Marconi received the first transatlantic wireless signal (Morse code for 'S') at Signal Hill in St. John's, transmitted from Poldhu, Cornwall in GMT, establishing early transatlantic communications." },
+  { q: "How do software systems handle half-hour time zones like NDT?", a: "Modern software systems parse half-hour offsets naturally using standard ISO-8601 strings (e.g., `-02:30`). Developers should format timestamps using the `America/St_Johns` IANA rule." },
+  { q: "What flight time should I expect between London and St. John's?", a: "St. John's is the closest North American city to Europe. A direct flight takes approximately 5 hours and 30 minutes from London, making it a key transatlantic aviation waypoint." },
+  { q: "What is 2:30 PM GMT in NDT?", a: "2:30 PM GMT is equal to 12:00 PM (Noon) NDT on the exact same calendar day." },
+  { q: "What is 7:30 PM GMT in NDT?", a: "7:30 PM GMT is equal to 5:00 PM NDT on the exact same calendar day." },
+  { q: "Does Newfoundland observe the same DST transition dates as the rest of Canada?", a: "Yes. Newfoundland switches to NDT on the second Sunday of March and reverts to NST on the first Sunday of November, aligning with federal Canadian DST schedules." },
+  { q: "Why is an automated GMT to NDT converter essential?", a: "Because of the unique 30-minute fractional offset, mental math errors are extremely common. An automated converter eliminates minute-level mistakes." },
+  { q: "What is 8:00 AM GMT in NDT?", a: "8:00 AM GMT is equal to 5:30 AM NDT on the exact same calendar day." },
+  { q: "What is 5:00 PM GMT in NDT?", a: "5:00 PM GMT is equal to 2:30 PM NDT on the exact same calendar day." },
+  { q: "Is Newfoundland Time used anywhere else in the world?", a: "No. The `America/St_Johns` 30-minute offset rules are unique to the island of Newfoundland and its immediate coastal Labrador territories." },
+  { q: "What is 10:00 PM GMT in NDT?", a: "10:00 PM GMT is equal to 7:30 PM NDT on the exact same calendar day." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to NDT, Greenwich Mean Time to Newfoundland Daylight Time, London to St Johns time, convert GMT to NDT, Newfoundland time converter, 2.5 hour time difference, St Johns clock",
+  image: "/assets/gmt-to-ndt-og.svg",
+  imageAlt: "GMT to NDT Time Zone Converter illustration featuring Greenwich Observatory and Cabot Tower clocks",
+  faqs,
+  appDescription: "Free online GMT to NDT converter. Convert Greenwich Mean Time (UTC+0) to Newfoundland Daylight Time (UTC-2:30) with real-time clocks and meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to NDT",
+  howToDescription: "Step-by-step instructions for converting Greenwich Mean Time to Newfoundland Daylight Time.",
+  howToSteps: [
+    { name: "Input GMT Time", text: "Select your desired hour and minute in Greenwich Mean Time." },
+    { name: "Subtract 2.5 Hours", text: "Account for the unique 2-hour 30-minute fractional time difference." },
+    { name: "Check Minutes", text: "Verify that top-of-the-hour GMT times map to half-past hours in NDT." },
+    { name: "Coordinate Meetings", text: "Use the schedule planner to connect European and Canadian Maritime teams easily." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to NDT"
+  hreflangCodes={["en"]}
+>
+
+<!-- HERO BANNER -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to NDT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>-2.5 Hour Fractional Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    <span>London to St. John's</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Half-Hour Offset Logic</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Transatlantic Maritime Sync</span>
+  </div>
+</section>
+
+<!-- INTRO SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="gmt-ndt-intro-heading">
+  <h2 id="gmt-ndt-intro-heading" class="sr-only">About Greenwich Mean Time to Newfoundland Daylight Time Conversion</h2>
+  <p>
+    Welcome to our official <strong>GMT to NDT Time Zone Converter</strong>. Converting time from Greenwich Mean Time (GMT, UTC+0) to Newfoundland Daylight Time (NDT, UTC-2:30) involves calculating a unique <strong>2-hour and 30-minute time difference</strong>. Newfoundland Daylight Time is one of the world's few half-hour fractional time zones, observed across the Canadian island province of Newfoundland and Labrador during spring and summer.
+  </p>
+  <p>
+    Because of Newfoundland's geographic position sticking out into the North Atlantic Ocean, local solar time sits approximately 3.5 hours behind Greenwich, UK. During summer daylight saving, Newfoundland advances 1 hour to UTC-2:30. Consequently, top-of-the-hour timestamps in London or Dublin (such as 12:00 PM GMT) convert to half-past timestamps in St. John's (9:30 AM NDT).
+  </p>
+  <p>
+    Managing communication across a fractional 2.5-hour difference requires attention to detail. When European business teams in GMT finish morning tasks around 11:30 AM GMT, colleagues in St. John's are just opening their office doors at 9:00 AM NDT. The prime window for live calls spans 11:30 AM to 5:00 PM GMT, which translates to 9:00 AM through 2:30 PM NDT across Newfoundland.
+  </p>
+  <p>
+    Our online conversion utility computes exact half-hour time equivalents dynamically, eliminating manual calculation errors. Whether you are managing Atlantic fisheries, transatlantic aviation routes, offshore energy exploration, or digital tech partnerships between the UK and Atlantic Canada, this guide provides complete precision.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & SVG HERO -->
+<section class="hero" id="converter-section" aria-labelledby="converter-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-heading">Convert GMT to Newfoundland Daylight Time</h2>
+    <p>
+      Use the dynamic converter below to calculate the exact Newfoundland Daylight Time for any GMT timestamp. Select any hour and minute to account for the half-hour offset.
+    </p>
+
+    <!-- Custom Visual SVG: Greenwich Observatory & Cabot Tower Signal Hill -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M 60 170 C 200 80, 400 80, 540 170" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+        
+        <!-- Greenwich Node -->
+        <g transform="translate(100, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="16" y2="0" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC+0 Baseline</text>
+        </g>
+
+        <!-- Offset Arrow -->
+        <g transform="translate(300, 110)">
+          <rect x="-55" y="-18" width="110" height="36" rx="18" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">-2.5 HOURS</text>
+        </g>
+
+        <!-- St. John's Node -->
+        <g transform="translate(500, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="-18" y2="-18" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="24" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">St. John's (NDT)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC-2:30 Half-Hour</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: GMT vs NDT</h2>
+  <div class="clock-card"><span>Current Greenwich / GMT (UTC+0)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current St. John's / NDT (UTC-2:30)</span><strong id="estClock">--:--</strong><em id="estZone">NDT</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Greenwich & Cabot Tower Signal Hill Skyline Graphic</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <circle cx="100" cy="40" r="1.5" fill="#f4fbff" opacity="0.6" />
+    <circle cx="250" cy="30" r="2" fill="#36c7b5" opacity="0.8" />
+    <circle cx="650" cy="40" r="1.5" fill="#8fd7ff" opacity="0.5" />
+
+    <!-- Greenwich Royal Observatory Motif -->
+    <g transform="translate(100, 110)">
+      <path d="M0 40 A30 30 0 0 1 60 40 Z" fill="#1b536e" />
+      <rect x="10" y="40" width="40" height="40" fill="#164d68" />
+      <circle cx="30" cy="25" r="5" fill="#36c7b5" />
+    </g>
+
+    <!-- Signal Hill Hilltop Curve -->
+    <path d="M 450 185 Q 600 110 750 185 Z" fill="#164d68" opacity="0.8" />
+
+    <!-- Cabot Tower Silhouette (St. John's, Signal Hill) -->
+    <g transform="translate(600, 70)">
+      <rect x="15" y="30" width="30" height="70" fill="#1b536e" />
+      <rect x="22" y="10" width="16" height="20" fill="#12455d" />
+      <line x1="30" y1="0" x2="30" y2="10" stroke="#36c7b5" stroke-width="2" />
+    </g>
+
+    <rect x="0" y="185" width="800" height="15" fill="#071b26" />
+    <line x1="0" y1="185" x2="800" y2="185" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- TIME DIFFERENCE MECHANICS -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Mathematical Mechanics</p>
+    <h2 id="time-diff-heading">Understanding the -2.5 Hour Fractional Difference</h2>
+    <p>
+      The time gap between Greenwich Mean Time (UTC+0) and Newfoundland Daylight Time (UTC-2:30) is calculated by subtracting 2 hours and 30 minutes from the GMT clock.
+    </p>
+    <p>
+      When it is 12:00 PM (Noon) GMT in London, local time in St. John's or Corner Brook is 9:30 AM NDT. When GMT reaches 2:30 PM, Newfoundland reaches 12:00 PM (Noon) NDT on the same calendar day.
+    </p>
+  </div>
+
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-55" y="-30" width="110" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-2.5 HOURS</text>
+      </g>
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="-18" y2="-18" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="24" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">NDT (UTC-2:30)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Fractional Half-Hour Math</h3>
+      <p>Subtracting 2.5 hours means top-of-the-hour GMT times map to half-past NDT times (e.g. 10:00 AM GMT = 7:30 AM NDT).</p>
+    </article>
+    <article class="method-card">
+      <h3>Day Boundary Shifts</h3>
+      <p>Early morning GMT timestamps (12:00 AM to 2:29 AM GMT) map to the prior evening in St. John's (9:30 PM to 11:59 PM NDT -1 day).</p>
+    </article>
+    <article class="method-card">
+      <h3>Prime Transatlantic Overlap</h3>
+      <p>European late morning and early afternoon (11:30 AM to 5:00 PM GMT) align seamlessly with Newfoundland's core business hours (9:00 AM to 2:30 PM NDT).</p>
+    </article>
+  </div>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour GMT to NDT Conversion Table</h2>
+    <p>This reference chart converts every hour of Greenwich Mean Time (GMT) to Newfoundland Daylight Time (NDT).</p>
+
+    <!-- Timeline Graphic -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">GMT to NDT Timeline Grid</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 100" width="900" height="100" style="display: block;">
+        <rect x="20" y="40" width="860" height="16" fill="#1b536e" rx="8" />
+        <g transform="translate(60, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">6 AM GMT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">3:30 AM NDT</text>
+        </g>
+        <g transform="translate(280, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">12 PM GMT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">9:30 AM NDT</text>
+        </g>
+        <g transform="translate(500, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">5 PM GMT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">2:30 PM NDT</text>
+        </g>
+        <g transform="translate(720, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">11 PM GMT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">8:30 PM NDT</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="GMT to NDT conversion table">
+        <caption class="sr-only">24-hour hour-by-hour GMT to NDT conversion chart</caption>
+        <thead>
+          <tr><th>GMT Time (UTC+0)</th><th>NDT Equivalent (UTC-2:30)</th><th>Day Offset</th></tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td>{row.gmt}</td>
+              <td>{row.ndt}</td>
+              <td>{row.dayNote}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Note: Hours between 12:00 AM GMT and 2:29 AM GMT fall on the previous calendar day (-1 day) in Newfoundland Daylight Time.</p>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="examples-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <div>
+    <h2 id="popular-heading">Common GMT to NDT Time Comparisons</h2>
+    <p>Below are frequently searched schedules for maritime logistics, flight routes, and business communication.</p>
+    <div class="table-wrap">
+      <table aria-label="Popular GMT to NDT conversions">
+        <caption class="sr-only">Common GMT to NDT time conversions with context</caption>
+        <thead>
+          <tr><th>GMT Time</th><th>NDT Equivalent</th><th>Context & Scenario</th></tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((row) => (
+            <tr>
+              <td>{row.gmt}</td>
+              <td>{row.ndt}</td>
+              <td>{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- DST INFOGRAPHIC SVG SECTION -->
+<section class="content-section" id="dst-infographic" aria-labelledby="dst-info-heading">
+  <h2 id="dst-info-heading">Seasonal Daylight Shifts: NST vs NDT</h2>
+  <p>
+    Newfoundland operates on Newfoundland Standard Time (NST, UTC-3:30) during winter and shifts to Newfoundland Daylight Time (NDT, UTC-2:30) in summer, maintaining its unique 30-minute fractional offset year-round.
+  </p>
+
+  <div style="margin: 2rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-align: center;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block; margin: 0 auto;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <rect x="40" y="75" width="620" height="14" fill="#1b536e" rx="7" />
+      <rect x="40" y="75" width="160" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="120" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Winter: NST (UTC-3:30)</text>
+      <rect x="200" y="75" width="340" height="14" fill="#8fd7ff" opacity="0.9" rx="4" />
+      <text x="370" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Summer: NDT (UTC-2:30)</text>
+      <rect x="540" y="75" width="120" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="600" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Winter: NST (UTC-3:30)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER MATRIX -->
+<section class="content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">GMT to NDT Cross-Border Meeting Planner</h2>
+  <p>
+    Coordinating calls across a 2.5-hour gap allows generous overlap during the European afternoon and Newfoundland morning.
+  </p>
+
+  <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent);">Recommended Work Windows</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">GMT Afternoon / NDT Morning</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>11:30 AM - 2:30 PM GMT</strong> equals <strong>9:00 AM - 12:00 PM NDT</strong>. Prime window for team standups and project reviews.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Late European Afternoon / Early NDT Afternoon</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>2:30 PM - 5:00 PM GMT</strong> equals <strong>12:00 PM - 2:30 PM NDT</strong>. Great for urgent handoffs before European offices close.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Asynchronous Operations</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);">For work submitted after 5:00 PM GMT, Newfoundland teams receive items by 2:30 PM NDT and process them before 5:00 PM NDT.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEN / WHERE USED -->
+<section class="content-section" id="when-where-used" aria-labelledby="usage-heading">
+  <h2 id="usage-heading">Regions Observing NDT and GMT</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Newfoundland Daylight Time (NDT) Jurisdiction</h3>
+    <p>
+      NDT applies to the island of Newfoundland (St. John's, Mount Pearl, Corner Brook, Grand Falls-Windsor) and southeastern coastal Labrador communities from March to November.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Greenwich Mean Time (GMT) Baseline</h3>
+    <p>
+      GMT (UTC+0) serves as standard winter time in the UK and Ireland, and year-round standard time in West Africa and international aviation systems.
+    </p>
+  </article>
+
+  <article>
+    <h3>Maritime & Transatlantic Aviation Links</h3>
+    <p>
+      St. John's is historically known as the 'Gateway to the Atlantic', connecting marine logistics, transatlantic subsea cables, offshore energy, and search-and-rescue operations with UK endpoints.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content-section" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in GMT to NDT Conversions</h2>
+  
+  <ul style="line-height: 1.8; color: var(--muted);">
+    <li><strong style="color: var(--text);">Forgetting the 30-Minute Fraction:</strong> Newfoundland is 2.5 hours behind GMT, not 2 or 3 whole hours. Top-of-the-hour GMT times always map to half-past NDT times!</li>
+    <li><strong style="color: var(--text);">Confusing NDT with ADT or EDT:</strong> Newfoundland Time is 30 minutes ahead of Atlantic Daylight Time (ADT) and 1.5 hours ahead of Eastern Daylight Time (EDT). Do not confuse Canadian regional offsets.</li>
+    <li><strong style="color: var(--text);">Date Boundary Errors:</strong> Midnight GMT (12:00 AM) equals 9:30 PM NDT on the <em>previous calendar date</em>.</li>
+  </ul>
+</section>
+
+<!-- REAL-WORLD USE CASES -->
+<section class="use-cases content-section" id="use-cases" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World GMT to NDT Scenarios</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Offshore Energy & Marine Syncs</h3>
+      <p>Offshore oil platform managers off the Grand Banks sync operational logs with Aberdeen and London energy headquarters at 12:00 PM GMT (9:30 AM NDT).</p>
+    </article>
+    <article class="method-card">
+      <h3>Transatlantic Subsea Telecoms</h3>
+      <p>Network engineers monitoring transatlantic optical fiber landings in Newfoundland coordinate maintenance calls with UK landing stations during the 2:30 PM GMT (12:00 PM NDT) window.</p>
+    </article>
+    <article class="method-card">
+      <h3>Transatlantic Flight Routing</h3>
+      <p>Flights crossing from European airspace into Gander oceanic control calculate waypoint reporting times using exact GMT to NDT offset logic.</p>
+    </article>
+    <article class="method-card">
+      <h3>Atlantic Tech Startup Operations</h3>
+      <p>Tech startups in St. John's conduct joint standups with UK software partners at 11:30 AM GMT (9:00 AM NDT).</p>
+    </article>
+  </div>
+</section>
+
+<!-- TECHNICAL DATABASE INTEGRATION -->
+<section class="content-section" id="tech-integration" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Integration & Half-Hour Timezone Specs</h2>
+  <p>
+    When engineering software systems for half-hour time zones like Newfoundland, developers must ensure ISO-8601 parsers support non-integer offsets:
+  </p>
+  <ul style="color: var(--muted); line-height: 1.8; margin-top: 1rem;">
+    <li><code>UTC</code> or <code>Etc/GMT</code> – Baseline universal timestamp format.</li>
+    <li><code>America/St_Johns</code> – Official IANA database key for Newfoundland Time rules.</li>
+  </ul>
+</section>
+
+<!-- RELATED CONVERTERS GRID -->
+<section class="other-tools content-section" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading" class="eyebrow">Explore Related Time Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Eastern Standard Time (5-hour difference).</p>
+    </a>
+    <a href="/gmt-to-bst/" class="related-card">
+      <h3 class="related-card-title">GMT to BST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to British Summer Time (+1 hour offset).</p>
+    </a>
+    <a href="/bst-to-est/" class="related-card">
+      <h3 class="related-card-title">BST to EST</h3>
+      <p class="related-card-text">Convert British Summer Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/cet-to-est/" class="related-card">
+      <h3 class="related-card-title">CET to EST</h3>
+      <p class="related-card-text">Convert Central European Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/west-to-est/" class="related-card">
+      <h3 class="related-card-title">WEST to EST</h3>
+      <p class="related-card-text">Convert Western European Summer Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/gmt-to-kst/" class="related-card">
+      <h3 class="related-card-title">GMT to KST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Korea Standard Time (UTC+9).</p>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq content-section" id="faqs" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary class="faq-question"><strong>{faq.q}</strong></summary>
+        <p class="faq-answer">{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="content-section" id="conclusion" aria-labelledby="conclusion-heading">
+  <h2 id="conclusion-heading">Master Your GMT to NDT Calculations</h2>
+  <p>
+    Converting Greenwich Mean Time to Newfoundland Daylight Time is fast and accurate when accounting for the 2.5-hour subtraction. Use our interactive tool and 24-hour charts for error-free scheduling.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .faq-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .faq-question {
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text);
+    outline: none;
+  }
+  .faq-answer {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  td {
+    color: var(--muted);
+  }
+  .chart-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .related-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .related-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .related-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 0.5rem;
+  }
+  .related-card-text {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .clock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .clock-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .clock-card span {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .clock-card strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+  }
+  .clock-card em {
+    font-style: normal;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+  }
+</style>

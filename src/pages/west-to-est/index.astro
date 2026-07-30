@@ -1,0 +1,756 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "west-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "WEST to EST Converter";
+const seoTitle = "WEST to EST Converter – Western European Summer Time to Eastern Standard Time";
+const pageDescription = "Convert WEST to EST instantly. Our free, DST-aware time zone calculator converts Western European Summer Time to Eastern Standard Time with live clocks, meeting schedules, and 24-hour charts.";
+
+const context = {
+  from: "WEST",
+  to: "EST",
+  fromZone: "Europe/Lisbon",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/west-to-est/`;
+
+// 24-hour conversion table data (WEST → EST = WEST - 6 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 6;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    west: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { west: "12:00 AM Midnight WEST", est: "6:00 PM EST (-1 day)", note: "Midnight in Portugal is early evening in New York on the prior day" },
+  { west: "2:00 AM WEST", est: "8:00 PM EST (-1 day)", note: "Late night in Lisbon, prime relaxation time on US East Coast" },
+  { west: "5:00 AM WEST", est: "11:00 PM EST (-1 day)", note: "Early morning in Western Europe, late night bedtime in Eastern US" },
+  { west: "8:00 AM WEST", est: "2:00 AM EST", note: "Portuguese offices opening, quiet overnight hours in North America" },
+  { west: "10:00 AM WEST", est: "4:00 AM EST", note: "Mid-morning focus in Lisbon/Porto, pre-dawn in NYC/Miami" },
+  { west: "12:00 PM (Noon) WEST", est: "6:00 AM EST", note: "Lunch break in Portugal, early wake-up call in Eastern US" },
+  { west: "1:00 PM WEST", est: "7:00 AM EST", note: "Post-lunch hour in Lisbon, early morning routines starting in New York" },
+  { west: "3:00 PM WEST", est: "9:00 AM EST", note: "Prime overlap window begins: Portuguese afternoon aligns with US East office open" },
+  { west: "5:00 PM WEST", est: "11:00 AM EST", note: "Late afternoon in Porto/Lisbon, active mid-morning across US East Coast" },
+  { west: "6:00 PM WEST", est: "12:00 PM (Noon) EST", note: "End of Lisbon workday coincides with US East Coast lunch break" },
+  { west: "8:00 PM WEST", est: "2:00 PM EST", note: "Evening leisure in Portugal, peak afternoon productivity in North America" },
+  { west: "10:00 PM WEST", est: "4:00 PM EST", note: "Late evening in Western Europe, late afternoon wrap-up in Eastern US" },
+  { west: "11:00 PM WEST", est: "5:00 PM EST", note: "Bedtime prep in Lisbon, end of business day across Eastern Standard Time" },
+];
+
+// Comprehensive FAQ dataset (25 entries)
+const faqs = [
+  { q: "What does WEST stand for in time measurement?", a: "WEST stands for Western European Summer Time. It represents the daylight saving time offset observed in countries like Portugal (mainland, Madeira), the Canary Islands (Spain), and the Faroe Islands during summer months, operating at UTC+1." },
+  { q: "What does EST stand for?", a: "EST stands for Eastern Standard Time. It is standard time in the eastern regions of North America, including major cities like New York, Washington D.C., Toronto, and Atlanta, operating at UTC-5." },
+  { q: "How many hours is EST behind WEST?", a: "Eastern Standard Time (EST, UTC-5) is exactly 6 hours behind Western European Summer Time (WEST, UTC+1). When it is 3:00 PM WEST in Lisbon, it is 9:00 AM EST in New York." },
+  { q: "Does Portugal switch between WET and WEST?", a: "Yes. Portugal operates on Western European Time (WET, UTC+0) during the winter and advances to Western European Summer Time (WEST, UTC+1) from the last Sunday of March through the last Sunday of October." },
+  { q: "Which major cities use Western European Summer Time?", a: "Cities utilizing WEST during spring and summer include Lisbon, Porto, Funchal (Madeira), Las Palmas (Canary Islands), Santa Cruz de Tenerife, and Tórshavn (Faroe Islands)." },
+  { q: "What major regions fall under Eastern Standard Time?", a: "EST covers eastern US states (New York, Florida, Georgia, Massachusetts, Pennsylvania) and eastern Canadian provinces (Ontario, Quebec), as well as several Caribbean islands during winter standard time." },
+  { q: "How do I calculate WEST to EST manually?", a: "To convert WEST to EST, subtract 6 hours from the WEST time. For example, 4:00 PM WEST minus 6 hours equals 10:00 AM EST." },
+  { q: "What is the optimal time for a call between Lisbon and New York during WEST/EST?", a: "The best window for real-time collaboration is between 3:00 PM and 6:00 PM WEST, which corresponds to 9:00 AM to 12:00 PM EST on the US East Coast." },
+  { q: "Do Lisbon and New York change daylight saving time on the same date?", a: "No. Europe switches to summer time on the last Sunday of March and back on the last Sunday of October, whereas the US enters Daylight Saving Time (EDT) on the second Sunday of March and returns to EST on the first Sunday of November." },
+  { q: "When both regions observe summer time (WEST and EDT), what is the difference?", a: "When Lisbon is in WEST (UTC+1) and New York is in EDT (UTC-4), the time difference reduces to 5 hours instead of 6 hours." },
+  { q: "Is the Canary Islands time zone identical to Portugal time?", a: "Yes. The Canary Islands (Canary Time / WET/WEST) maintain the exact same clock time as mainland Portugal throughout the year (UTC+0 in winter, UTC+1 in summer)." },
+  { q: "How does WEST compare to Central European Summer Time (CEST)?", a: "WEST (UTC+1) is 1 hour behind CEST (Central European Summer Time, UTC+2). Lisbon is 1 hour behind Madrid and Paris." },
+  { q: "Why is Lisbon on WEST while Madrid is on CEST?", a: "Geographically, Portugal sits farther west along the Atlantic coast, aligning naturally with Greenwich Mean Time, whereas Spain adopted Central European Time during WWII." },
+  { q: "Does Ireland or the UK use WEST?", a: "Ireland uses Irish Standard Time (IST, UTC+1) and the UK uses British Summer Time (BST, UTC+1). While the offset is identical to WEST, the official time zone names differ." },
+  { q: "How does financial market trading line up between WEST and EST?", a: "Euronext Lisbon opens at 8:00 AM WEST (2:00 AM EST) and closes at 4:30 PM WEST (10:30 AM EST), creating a 1.5-hour trading overlap with the New York Stock Exchange (9:30 AM - 4:00 PM EST)." },
+  { q: "What IANA database keys represent WEST and EST?", a: "The primary IANA database keys are 'Europe/Lisbon' or 'Atlantic/Madeira' for WEST, and 'America/New_York' or 'America/Toronto' for EST." },
+  { q: "Does the 6-hour difference cause calendar date shifts?", a: "Yes. Early morning times in EST (such as 12:00 AM to 5:59 AM EST) fall into the same calendar day in WEST (6:00 AM to 11:59 AM WEST). Conversely, late night times in WEST can correspond to the previous afternoon in EST." },
+  { q: "How can remote software teams handle WEST to EST timestamp logging?", a: "Engineering teams should persist all database timestamps in UTC (Coordinated Universal Time) and convert to local WEST or EST offsets only at the presentation layer." },
+  { q: "Is Madeira on the same time zone as mainland Portugal?", a: "Yes. The Autonomous Region of Madeira uses Western European Time in winter and Western European Summer Time (WEST, UTC+1) in summer, identical to Lisbon." },
+  { q: "Are the Azores on WEST?", a: "No. The Azores archipelago in Portugal is located further west in the Atlantic and operates at UTC-1 in winter (AZOT) and UTC+0 in summer (AZOST), making it 1 hour behind Lisbon." },
+  { q: "What is 2:00 PM WEST in EST?", a: "2:00 PM WEST is equal to 8:00 AM EST on the exact same calendar day." },
+  { q: "What is 9:00 AM EST in WEST?", a: "9:00 AM EST is equal to 3:00 PM WEST on the exact same calendar day." },
+  { q: "Does Florida observe Eastern Standard Time?", a: "Most of Florida observes Eastern Time (EST in winter, EDT in summer), with the exception of the western Panhandle which is on Central Time." },
+  { q: "How do flight schedules account for WEST and EST?", a: "Airlines list departure and arrival times in local time for each airport. A flight leaving Lisbon at 11:00 AM WEST and arriving in NYC at 1:30 PM EST takes 8.5 hours total elapsed flight time." },
+  { q: "Why is an automated converter recommended over mental math?", a: "Automated converters dynamically parse calendar rules, eliminating errors during spring and autumn clock shift transition weeks when offsets fluctuate between 5 and 6 hours." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "WEST to EST, Western European Summer Time to Eastern Standard Time, Lisbon to New York time, convert WEST to EST, Portugal time to EST, WEST time difference, Lisbon New York clock",
+  image: "/assets/west-to-est-og.svg",
+  imageAlt: "WEST to EST Time Zone Converter illustration featuring Lisbon and New York clocks",
+  faqs,
+  appDescription: "Free online WEST to EST converter. Convert Western European Summer Time (UTC+1) to Eastern Standard Time (UTC-5) with live clocks and scheduling tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert WEST to EST",
+  howToDescription: "Follow these simple steps to convert Western European Summer Time to Eastern Standard Time.",
+  howToSteps: [
+    { name: "Enter WEST Time", text: "Select your desired time in Western European Summer Time using the interactive time input." },
+    { name: "Verify Offset", text: "Confirm the 6-hour offset between UTC+1 (WEST) and UTC-5 (EST)." },
+    { name: "Check Result", text: "View the converted Eastern Standard Time alongside any day boundary adjustments." },
+    { name: "Plan Meetings", text: "Use the built-in meeting planner matrix to identify overlapping work hours between Portugal and Eastern North America." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="WEST to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    WEST to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Key Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>6-Hour Calculation</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    <span>Lisbon to New York</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>DST Rules Engine</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Cross-Atlantic Business</span>
+  </div>
+</section>
+
+<!-- INTRO SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="west-est-intro-heading">
+  <h2 id="west-est-intro-heading" class="sr-only">About Western European Summer Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>WEST to EST Time Zone Converter</strong>. Converting time between Western European Summer Time (WEST, UTC+1) and Eastern Standard Time (EST, UTC-5) involves bridging a <strong>6-hour time gap across the Atlantic Ocean</strong>. WEST is the daylight saving time standard observed across mainland Portugal, Porto, Lisbon, the Autonomous Region of Madeira, the Canary Islands (Spain), and the Faroe Islands during spring and summer. Meanwhile, EST governs the eastern seaboard of North America during standard winter months, including major metropolitan hubs like New York City, Washington D.C., Toronto, Boston, and Miami.
+  </p>
+  <p>
+    Managing communication across a 6-hour difference requires careful coordination. When professionals in Lisbon are enjoying lunch around 1:00 PM WEST, colleagues on the US East Coast are just starting their morning routines at 7:00 AM EST. The primary operational window for live calls, virtual conferences, and real-time support falls between 3:00 PM and 6:00 PM WEST, which maps directly to 9:00 AM through 12:00 PM EST.
+  </p>
+  <p>
+    Our online converter handles the math automatically, eliminating manual counting mistakes and accounting for date-line changes when late-night events in Europe correspond to afternoon hours in America. Whether you are a digital nomad working from Portugal's Algarve coast, an international logistics coordinator managing flights between Humberto Delgado Airport and JFK, or a software engineer deploying microservices across Lisbon and Virginia data centers, this tool provides instant accuracy.
+  </p>
+  <p>
+    With deep historical roots in Atlantic trade, maritime navigation, and modern digital commerce, understanding the temporal relationship between Western Europe and North America's Atlantic coast is essential. This page serves as a comprehensive reference guide, providing conversion logic, 24-hour grids, visual infographics, and scheduling best practices for international teams.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & SVG HERO -->
+<section class="hero" id="converter-section" aria-labelledby="converter-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-heading">Convert WEST to Eastern Standard Time</h2>
+    <p>
+      Use the dynamic converter below to transform any Western European Summer Time timestamp into Eastern Standard Time. Select a date to account for seasonal transitions in both regions.
+    </p>
+
+    <!-- Custom Visual Illustration: Lisbon Belém Tower & NYC Skyline -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M 50 180 Q 300 60 550 180" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+        
+        <!-- Lisbon Node -->
+        <g transform="translate(100, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="16" y2="0" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">Lisbon (WEST)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC+1 Offset</text>
+        </g>
+
+        <!-- Time Gap Arrow -->
+        <g transform="translate(300, 110)">
+          <rect x="-50" y="-18" width="100" height="36" rx="18" fill="#1b536e" stroke="#2f6278" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">-6 HOURS</text>
+        </g>
+
+        <!-- New York Node -->
+        <g transform="translate(500, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+          <line x1="0" y1="0" x2="-16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#8fd7ff" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: WEST vs EST</h2>
+  <div class="clock-card"><span>Current Lisbon / WEST (UTC+1)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current New York / EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Lisbon to New York Skyline Graphic</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <!-- Background Stars & Sun Element -->
+    <circle cx="150" cy="50" r="2" fill="#f4fbff" opacity="0.6" />
+    <circle cx="280" cy="35" r="1.5" fill="#f4fbff" opacity="0.4" />
+    <circle cx="650" cy="40" r="2" fill="#36c7b5" opacity="0.7" />
+    <circle cx="400" cy="60" r="30" fill="none" stroke="#36c7b5" stroke-width="1" opacity="0.2" stroke-dasharray="4 4" />
+    
+    <!-- Atlantic Bridge Connection (Ponte 25 de Abril & Brooklyn Bridge motif) -->
+    <path d="M 50 180 Q 200 120 400 160 T 750 180" fill="none" stroke="#2f6278" stroke-width="2" opacity="0.5" />
+    <line x1="200" y1="135" x2="200" y2="190" stroke="#36c7b5" stroke-width="2" />
+    <line x1="600" y1="155" x2="600" y2="190" stroke="#8fd7ff" stroke-width="2" />
+
+    <!-- Lisbon Belém Tower silhouette -->
+    <g transform="translate(100, 110)">
+      <rect x="0" y="20" width="45" height="60" fill="#1b536e" />
+      <rect x="10" y="0" width="25" height="20" fill="#164d68" />
+      <circle cx="22.5" cy="10" r="4" fill="#36c7b5" />
+    </g>
+
+    <!-- NYC Empire State & Skyline silhouette -->
+    <g transform="translate(640, 70)">
+      <rect x="30" y="30" width="30" height="90" fill="#1b536e" />
+      <rect x="40" y="10" width="10" height="20" fill="#164d68" />
+      <line x1="45" y1="0" x2="45" y2="10" stroke="#36c7b5" stroke-width="2" />
+      <rect x="0" y="50" width="25" height="70" fill="#164d68" />
+      <rect x="65" y="40" width="25" height="80" fill="#12455d" />
+    </g>
+
+    <!-- Ocean Floor line -->
+    <rect x="0" y="190" width="800" height="10" fill="#071b26" />
+    <line x1="0" y1="190" x2="800" y2="190" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- TIME DIFFERENCE MECHANICS -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Time Difference Analysis</p>
+    <h2 id="time-diff-heading">How the 6-Hour WEST to EST Gap Works</h2>
+    <p>
+      The standard offset between Western European Summer Time (WEST, UTC+1) and Eastern Standard Time (EST, UTC-5) is <strong>6 hours</strong>. Because WEST is located east of the Prime Meridian baseline and observes summer daylight savings, while EST is located in North America at UTC-5, EST is always 6 hours behind WEST when both time zone definitions strictly apply.
+    </p>
+    <p>
+      When it is 12:00 PM (Noon) in Lisbon or Porto, the local time in New York or Miami is 6:00 AM on the same day. As the day progresses, 6:00 PM in Western Europe coincides with 12:00 PM (Noon) in Eastern North America.
+    </p>
+  </div>
+
+  <!-- Custom Graphic Component -->
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">WEST (UTC+1)</text>
+      </g>
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-6 HOURS</text>
+      </g>
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>UTC Offsets Explained</h3>
+      <p>WEST runs at UTC+1 (Coordinated Universal Time plus 1 hour), while EST runs at UTC-5. Calculating the difference: (+1) - (-5) = 6 hours total separation.</p>
+    </article>
+    <article class="method-card">
+      <h3>The Spring & Autumn Shift</h3>
+      <p>Because the US and Europe transition daylight saving clocks on different Sundays in March and October/November, the gap temporarily contracts to 5 hours when New York enters EDT (UTC-4) before Lisbon enters WEST, or vice versa.</p>
+    </article>
+    <article class="method-card">
+      <h3>Business Overlap Hours</h3>
+      <p>With a 6-hour difference, the golden window for collaborative work spans 3:00 PM – 6:00 PM WEST, matching 9:00 AM – 12:00 PM EST. This gives remote teams 3 solid hours of real-time overlap each workday.</p>
+    </article>
+  </div>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour WEST to EST Conversion Table</h2>
+    <p>This reference grid maps every hour of Western European Summer Time (WEST) directly to Eastern Standard Time (EST).</p>
+
+    <!-- Timeline Graphic -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">WEST to EST Timeline Mapping</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 100" width="900" height="100" style="display: block;">
+        <rect x="20" y="40" width="860" height="16" fill="#1b536e" rx="8" />
+        <!-- Key Markers -->
+        <g transform="translate(60, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">6 AM WEST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">12 AM EST</text>
+        </g>
+        <g transform="translate(280, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">12 PM WEST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">6 AM EST</text>
+        </g>
+        <g transform="translate(500, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">5 PM WEST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">11 AM EST</text>
+        </g>
+        <g transform="translate(720, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">11 PM WEST</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">5 PM EST</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="WEST to EST conversion table">
+        <caption class="sr-only">24-hour hour-by-hour WEST to EST conversion chart</caption>
+        <thead>
+          <tr><th>WEST Time (UTC+1)</th><th>EST Equivalent (UTC-5)</th><th>Day Offset</th></tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td>{row.west}</td>
+              <td>{row.est}</td>
+              <td>{row.dayNote}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Note: Hours between 12:00 AM WEST and 5:59 AM WEST correspond to the previous calendar day in Eastern Standard Time (6:00 PM to 11:59 PM EST -1 day).</p>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="examples-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <div>
+    <h2 id="popular-heading">Common WEST to EST Time Comparisons</h2>
+    <p>Below are frequently referenced schedule points for cross-Atlantic coordination between Portugal and the US East Coast.</p>
+    <div class="table-wrap">
+      <table aria-label="Popular WEST to EST time conversions">
+        <caption class="sr-only">Selected popular WEST to EST times with context notes</caption>
+        <thead>
+          <tr><th>WEST Time</th><th>EST Equivalent</th><th>Context & Business Impact</th></tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((row) => (
+            <tr>
+              <td>{row.west}</td>
+              <td>{row.est}</td>
+              <td>{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- DST INFOGRAPHIC SVG SECTION -->
+<section class="content-section" id="dst-infographic" aria-labelledby="dst-info-heading">
+  <h2 id="dst-info-heading">Daylight Saving Time Transitions: WEST vs EST</h2>
+  <p>
+    Both Western Europe and Eastern North America observe Daylight Saving Time, but their annual calendar transitions do not sync perfectly. Understanding these shifting windows prevents timing mismatches during spring and autumn.
+  </p>
+
+  <div style="margin: 2rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-align: center;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block; margin: 0 auto;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      <!-- Timeline bar for year -->
+      <rect x="40" y="100" width="620" height="14" fill="#1b536e" rx="7" />
+      
+      <!-- Winter Window: 6 hr gap -->
+      <rect x="40" y="100" width="120" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="100" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Jan - Mar (6h Gap)</text>
+      
+      <!-- Spring Shift Window: 5 hr gap -->
+      <rect x="160" y="100" width="60" height="14" fill="#8fd7ff" opacity="0.9" rx="4" />
+      <text x="190" y="140" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Spring Gap (5h)</text>
+      
+      <!-- Summer Window: 5 hr gap (EDT vs WEST) -->
+      <rect x="220" y="100" width="340" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="390" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Apr - Oct: WEST vs EDT (5h Gap)</text>
+      
+      <!-- Autumn Shift Window: 6 hr gap -->
+      <rect x="560" y="100" width="40" height="14" fill="#8fd7ff" opacity="0.9" rx="4" />
+      <text x="580" y="140" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Autumn Shift</text>
+
+      <!-- Late Nov / Dec: 6 hr gap -->
+      <rect x="600" y="100" width="60" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="630" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Nov - Dec (6h)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER MATRIX -->
+<section class="content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">WEST to EST Cross-Border Meeting Planner</h2>
+  <p>
+    Planning meetings across a 6-hour difference requires understanding local business practices. In Portugal, typical office hours run from 9:00 AM to 6:00 PM WEST, while standard US East Coast business hours run from 9:00 AM to 5:00 PM EST.
+  </p>
+
+  <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent);">Optimal Meeting Windows</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Morning US / Afternoon Portugal</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>3:00 PM - 5:00 PM WEST</strong> equals <strong>9:00 AM - 11:00 AM EST</strong>. Best slot for standups, executive syncs, and team project reviews.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Late Afternoon Portugal / Midday US</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>5:00 PM - 6:00 PM WEST</strong> equals <strong>11:00 AM - 12:00 PM EST</strong>. Great for urgent daily handoffs before Western Europe closes.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Asynchronous Operations</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);">For items raised after 6:00 PM WEST, US teams receive them by 12:00 PM EST and can process them during their afternoon.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEN / WHERE USED -->
+<section class="content-section" id="when-where-used" aria-labelledby="usage-heading">
+  <h2 id="usage-heading">Where and When WEST and EST Are Observed</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Western European Summer Time (WEST) Territory</h3>
+    <p>
+      WEST (UTC+1) is the daylight saving time offset implemented across Portugal (Lisbon, Porto, Braga, Coimbra), the Autonomous Region of Madeira (Funchal), the Canary Islands of Spain (Tenerife, Gran Canaria), and the Faroe Islands (Denmark). It begins on the last Sunday in March and ends on the last Sunday in October.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Eastern Standard Time (EST) Territory</h3>
+    <p>
+      EST (UTC-5) is the standard winter time zone covering 23 US states in the Eastern time zone (New York, Florida, Pennsylvania, Ohio, Massachusetts), eastern provinces of Canada (Ontario, Quebec), and parts of the Caribbean (Jamaica, Cayman Islands, Bahamas).
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Cross-Continental Economic Links</h3>
+    <p>
+      Portugal has emerged as a premier European technology hub, drawing extensive US venture capital and remote engineering partnerships. Managing the WEST to EST time conversion accurately is critical for tech startups in Lisbon, financial markets, aviation lines connecting Portela and Newark, and hospitality sectors catering to transatlantic travelers.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content-section" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in WEST to EST Conversions</h2>
+  
+  <ul style="line-height: 1.8; color: var(--muted);">
+    <li><strong style="color: var(--text);">Confusing WEST with CEST:</strong> Western European Summer Time is UTC+1 (Lisbon time), whereas Central European Summer Time (CEST, used in Madrid/Paris) is UTC+2. Do not treat Lisbon time as identical to Spain mainland time!</li>
+    <li><strong style="color: var(--text);">Ignoring Seasonal Daylight Saving Shifts:</strong> The US switches between EST (UTC-5) and EDT (UTC-4) in March/November, while Europe switches between WET (UTC+0) and WEST (UTC+1). Always check exact calendar dates for 5-hour vs 6-hour gaps.</li>
+    <li><strong style="color: var(--text);">Date Rollback Errors:</strong> A time such as 2:00 AM WEST corresponds to 8:00 PM EST on the <em>previous evening</em>. Failing to adjust the calendar date causes scheduling mismatches.</li>
+  </ul>
+</section>
+
+<!-- REAL-WORLD USE CASES -->
+<section class="use-cases content-section" id="use-cases" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World WEST to EST Scenarios</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Tech Handoffs (Lisbon to NYC)</h3>
+      <p>Engineering teams in Lisbon push code reviews before 6:00 PM WEST, allowing New York product managers to review updates by 12:00 PM EST on the same day.</p>
+    </article>
+    <article class="method-card">
+      <h3>Stock Market & Forex Trading</h3>
+      <p>Traders monitoring Euronext Lisbon and NYSE track the 1.5-hour morning overlap between 2:30 PM WEST (9:30 AM EST) and 4:30 PM WEST (10:30 AM EST).</p>
+    </article>
+    <article class="method-card">
+      <h3>Transatlantic Flight Scheduling</h3>
+      <p>A direct flight departing Lisbon Portela at 10:00 AM WEST arrives in Newark around 1:00 PM EST, taking into account the 6-hour time differential and 8-hour flight duration.</p>
+    </article>
+    <article class="method-card">
+      <h3>Academic & Research Collaborations</h3>
+      <p>Researchers at the University of Lisbon schedule joint virtual lectures with MIT or Columbia University during early EST mornings (9:00 AM EST = 3:00 PM WEST).</p>
+    </article>
+  </div>
+</section>
+
+<!-- TECHNICAL INTEGRATION & DATABASE NOTES -->
+<section class="content-section" id="tech-integration" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Integration & Database Time Handling</h2>
+  <p>
+    When engineering software systems for cross-Atlantic usage between Portugal and Eastern North America, database timestamps must be handled with care. Standard practice dictates storing all UTC timestamps in ISO-8601 format (`2026-07-30T12:00:00Z`). When formatting timestamps for client user interfaces in Lisbon or New York, use the standardized IANA time zone identifiers:
+  </p>
+  <ul style="color: var(--muted); line-height: 1.8; margin-top: 1rem;">
+    <li><code>Europe/Lisbon</code> – Controls Lisbon, Porto, and mainland Portugal transitions.</li>
+    <li><code>Atlantic/Madeira</code> – Controls Madeira island daylight savings rules.</li>
+    <li><code>Atlantic/Canary</code> – Controls Canary Islands (Spain) local rules.</li>
+    <li><code>America/New_York</code> – Controls US Eastern Time rules.</li>
+  </ul>
+</section>
+
+<!-- RELATED CONVERTERS GRID -->
+<section class="other-tools content-section" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading" class="eyebrow">Explore Related Time Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert standard Greenwich Mean Time to Eastern Standard Time (5-hour difference).</p>
+    </a>
+    <a href="/bst-to-est/" class="related-card">
+      <h3 class="related-card-title">BST to EST</h3>
+      <p class="related-card-text">Convert British Summer Time (UTC+1) to Eastern Standard Time (6-hour difference).</p>
+    </a>
+    <a href="/cet-to-est/" class="related-card">
+      <h3 class="related-card-title">CET to EST</h3>
+      <p class="related-card-text">Convert Central European Time (UTC+1) to Eastern Standard Time.</p>
+    </a>
+    <a href="/gmt-to-bst/" class="related-card">
+      <h3 class="related-card-title">GMT to BST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to UK British Summer Time (+1 hour offset).</p>
+    </a>
+    <a href="/gmt-to-kst/" class="related-card">
+      <h3 class="related-card-title">GMT to KST</h3>
+      <p class="related-card-text">Convert GMT to Korea Standard Time (UTC+9).</p>
+    </a>
+    <a href="/awst-to-est/" class="related-card">
+      <h3 class="related-card-title">AWST to EST</h3>
+      <p class="related-card-text">Convert Australian Western Standard Time (Perth) to Eastern Standard Time.</p>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq content-section" id="faqs" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary class="faq-question"><strong>{faq.q}</strong></summary>
+        <p class="faq-answer">{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="content-section" id="conclusion" aria-labelledby="conclusion-heading">
+  <h2 id="conclusion-heading">Master Your Transatlantic Schedule</h2>
+  <p>
+    Converting time between Western European Summer Time and Eastern Standard Time is simple once you factor in the 6-hour offset. Bookmark this page for quick access to real-time clocks, conversion tables, and DST calculations for your Portugal and US East Coast operations.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .faq-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .faq-question {
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text);
+    outline: none;
+  }
+  .faq-answer {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  td {
+    color: var(--muted);
+  }
+  .chart-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .related-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .related-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .related-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 0.5rem;
+  }
+  .related-card-text {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .clock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .clock-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .clock-card span {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .clock-card strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+  }
+  .clock-card em {
+    font-style: normal;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+  }
+</style>

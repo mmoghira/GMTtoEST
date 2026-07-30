@@ -1,0 +1,685 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-wit";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to WIT Converter";
+const seoTitle = "GMT to WIT Converter – Greenwich Mean Time to Eastern Indonesia Time";
+const pageDescription = "Convert GMT to WIT accurately. Calculate the 9-hour time difference between Greenwich Mean Time and Eastern Indonesia Time (Waktu Indonesia Timur - Papua & Maluku) with live clocks, conversion table, and meeting scheduling tools.";
+
+const context = {
+  from: "GMT",
+  to: "WIT",
+  fromZone: "UTC",
+  toZone: "Asia/Jayapura"
+};
+
+const canonical = `${siteUrl}/gmt-to-wit/`;
+
+// 24-hour conversion table data (GMT → WIT = GMT + 9 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const witHour = hour + 9;
+  const normalizedWit = ((witHour % 24) + 24) % 24;
+  const nextDay = witHour >= 24;
+  const period = normalizedWit < 12 ? "AM" : "PM";
+  const displayHour = normalizedWit % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    wit: `${displayHour}:00 ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Popular conversions array
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", wit: "9:00 AM WIT", note: "Midnight GMT matches opening business hours in Jayapura & Ambon" },
+  { gmt: "2:00 AM GMT", wit: "11:00 AM WIT", note: "Overnight GMT aligns with mid-morning focus hours in Maluku" },
+  { gmt: "4:00 AM GMT", wit: "1:00 PM WIT", note: "Early morning GMT matches afternoon work restart in Papua" },
+  { gmt: "6:00 AM GMT", wit: "3:00 PM WIT", note: "London morning commute aligns with late afternoon in Eastern Indonesia" },
+  { gmt: "8:00 AM GMT", wit: "5:00 PM WIT", note: "London workday opening syncs with office wrap-up in Jayapura" },
+  { gmt: "10:00 AM GMT", wit: "7:00 PM WIT", note: "Mid-morning in the UK matches evening dinner hours in Papua" },
+  { gmt: "12:00 PM (Noon)", wit: "9:00 PM WIT", note: "GMT noon matches prime-time evening in Maluku & Papua" },
+  { gmt: "3:00 PM GMT", wit: "12:00 AM WIT (Midnight +1)", note: "Afternoon GMT matches midnight date change in Jayapura" },
+  { gmt: "5:00 PM GMT", wit: "2:00 AM WIT (+1)", note: "End of European business day matches overnight in Eastern Indonesia" },
+  { gmt: "7:00 PM GMT", wit: "4:00 AM WIT (+1)", note: "Evening GMT coincides with early pre-dawn hours in Papua" },
+  { gmt: "9:00 PM GMT", wit: "6:00 AM WIT (+1)", note: "Late evening GMT matches sunrise start in Jayapura & Sorong" },
+  { gmt: "11:00 PM GMT", wit: "8:00 AM WIT (+1)", note: "Night in Greenwich aligns with next-day morning opening in WIT" }
+];
+
+// 18 COMPLETELY UNIQUE FAQs
+const faqs = [
+  {
+    q: "What is the exact time difference between GMT and WIT?",
+    a: "Eastern Indonesia Time (WIT - Waktu Indonesia Timur) is exactly 9 hours ahead of Greenwich Mean Time (GMT). When it is 8:00 AM GMT in London, it is 5:00 PM WIT in Jayapura."
+  },
+  {
+    q: "What regions in Indonesia observe WIT?",
+    a: "WIT is observed in Eastern Indonesia, including the provinces of Papua, Central Papua, Highland Papua, South Papua, Southwest Papua, West Papua, Maluku, and North Maluku. Major cities include Jayapura, Sorong, Ambon, and Ternate."
+  },
+  {
+    q: "Does WIT observe Daylight Saving Time?",
+    a: "No. Tropical Indonesia does not observe Daylight Saving Time. WIT remains fixed at UTC+9 throughout the entire calendar year."
+  },
+  {
+    q: "What does WIT stand for in Indonesian?",
+    a: "WIT stands for 'Waktu Indonesia Timur', which translates literally to Eastern Indonesia Time."
+  },
+  {
+    q: "How many time zones does Indonesia have?",
+    a: "Indonesia spans three time zones: WIB (Western Indonesia Time, UTC+7), WITA (Central Indonesia Time, UTC+8), and WIT (Eastern Indonesia Time, UTC+9)."
+  },
+  {
+    q: "Is WIT ahead of or behind GMT?",
+    a: "WIT is 9 hours ahead of GMT. Eastern Indonesia experiences sunrise, business hours, and evening activities 9 hours earlier than regions on Greenwich Mean Time."
+  },
+  {
+    q: "How do I manually convert GMT to WIT?",
+    a: "To convert GMT to WIT manually, add 9 hours to the GMT time. For example, 10:00 AM GMT plus 9 hours equals 7:00 PM WIT on the same calendar day."
+  },
+  {
+    q: "When does the calendar date shift when converting GMT to WIT?",
+    a: "Any GMT time between 3:00 PM (15:00) and 11:59 PM (23:59) crosses midnight in Eastern Indonesia, advancing to the next calendar day (+1 day) in WIT."
+  },
+  {
+    q: "What is the optimal window for a call between London and Jayapura?",
+    a: "The most practical meeting window is between 7:00 AM and 9:00 AM GMT, which corresponds to 4:00 PM to 6:00 PM WIT in Jayapura and Ambon."
+  },
+  {
+    q: "What is the IANA time zone key for Jayapura?",
+    a: "The standardized IANA key for Eastern Indonesia Time is 'Asia/Jayapura'."
+  },
+  {
+    q: "How do mining companies in Papua coordinate global reporting with GMT?",
+    a: "Major mining ventures (such as the Grasberg mine in Central Papua) log production metrics in local WIT (UTC+9) and convert reports to GMT/UTC for global corporate headquarters."
+  },
+  {
+    q: "Does the UK move to BST alter the time gap to WIT?",
+    a: "Yes. When the UK switches to British Summer Time (BST, UTC+1) in summer, the time gap between London and Jayapura reduces from 9 hours to 8 hours."
+  },
+  {
+    q: "What is the time difference between WIT and Japan Standard Time (JST)?",
+    a: "WIT (UTC+9) and JST (UTC+9) share the exact same offset. There is zero time difference between Jayapura and Tokyo."
+  },
+  {
+    q: "What maritime shipping ports operate on WIT?",
+    a: "Major ports in Ambon, Sorong, and Jayapura handle Pacific and Indonesian archipelagic cargo under WIT timestamps."
+  },
+  {
+    q: "Why is WIT essential for Indonesian aviation logistics?",
+    a: "Airlines like Garuda Indonesia operating flights across the archipelago convert UTC/GMT flight plans into local WIB, WITA, and WIT arrival times for passengers."
+  },
+  {
+    q: "Is WIT used anywhere outside of Indonesia?",
+    a: "No. WIT is unique to Eastern Indonesia. Neighboring East Timor uses Timor-Leste Time (TLT), which also operates at UTC+9."
+  },
+  {
+    q: "Can calendar apps handle the 9-hour shift automatically?",
+    a: "Yes. Digital calendars configured with 'Asia/Jayapura' and 'UTC' handle the 9-hour gap and date rollover automatically."
+  },
+  {
+    q: "How does sunrise timing in Jayapura compare to Greenwich?",
+    a: "Because Jayapura is located at ~140° East longitude near the equator, daylight begins around 5:30 AM WIT every day, roughly 9 hours before sunrise in London."
+  },
+  {
+    q: "What is the historical background of Indonesia's three time zones?",
+    a: "Presidential Decree No. 41 of 1987 established WIB, WITA, and WIT to streamline national governance across the 5,000-kilometer archipelagic expanse."
+  },
+  {
+    q: "How do satellite telecommunication ground stations sync between London and Jayapura?",
+    a: "Ground stations parse signal metadata in UTC baseline timestamps (GMT) to synchronize transponder handoffs while converting local logs to WIT for engineers."
+  },
+  {
+    q: "Does WIT share an offset with Australian Western Standard Time (AWST)?",
+    a: "No. AWST is UTC+8 (1 hour behind WIT). However, Australian Central Standard Time (ACST, UTC+9:30) is 30 minutes ahead of WIT."
+  },
+  {
+    q: "Are commercial banking transactions between London and Papua affected by the 9-hour gap?",
+    a: "SWIFT interbank wires dispatched from London in the morning (8:00 AM GMT) arrive in Jayapura at 5:00 PM WIT, near the end of the Indonesian banking day."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to WIT, Greenwich Mean Time to Eastern Indonesia Time, London to Jayapura time, GMT WIT converter, Waktu Indonesia Timur, 9 hour time difference, Papua Ambon timezone",
+  image: "/assets/gmt-to-wit-og.svg",
+  imageAlt: "GMT to WIT Time Zone Converter",
+  faqs,
+  appDescription: "Convert Greenwich Mean Time (GMT) to Eastern Indonesia Time (WIT) with real-time accuracy, 24-hour conversion matrix, live clocks, and Indonesian scheduling tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to WIT",
+  howToDescription: "Simple steps to convert Greenwich Mean Time to Eastern Indonesia Time.",
+  howToSteps: [
+    { name: "Determine the GMT time", text: "Select your reference timestamp in GMT (UTC+0)." },
+    { name: "Add 9 hours", text: "Add 9 hours to calculate local Eastern Indonesia Time (WIT)." },
+    { name: "Check date transition", text: "GMT times after 3:00 PM (15:00) advance to the next calendar day in WIT." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to WIT"
+  hreflangCodes={["en"]}
+>
+  <!-- Hero Section -->
+  <header class="hero-banner">
+    <div class="hero-content">
+      <span class="eyebrow">Eastern Indonesia & Greenwich Time Portal</span>
+      <h1 class="hero-banner-title">GMT to WIT Converter</h1>
+      <p class="hero-subtitle">
+        Convert Greenwich Mean Time (UTC+0) to Waktu Indonesia Timur (UTC+9) for Papua and Maluku with 9-hour precision.
+      </p>
+    </div>
+  </header>
+
+  <!-- Feature Strip -->
+  <div class="feature-strip">
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>9-Hour Difference</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>London & Jayapura</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Waktu Indonesia Timur</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>No DST in Indonesia</span>
+    </div>
+  </div>
+
+  <!-- Introduction Section -->
+  <section class="wit-intro content-section">
+    <p>
+      Managing time zone conversions between Western Europe and the Indonesian archipelago requires calculating the gap between <strong>Greenwich Mean Time (GMT)</strong> and <strong>Eastern Indonesia Time (WIT - Waktu Indonesia Timur)</strong>. Operating at <strong>UTC+9</strong>, WIT covers the easternmost provinces of Indonesia, including Papua, West Papua, Central Papua, South Papua, Maluku, and North Maluku.
+    </p>
+    <p>
+      Because WIT is exactly <strong>9 hours ahead of GMT (UTC+0)</strong>, when it is 8:00 AM GMT in Greenwich, local clocks in Jayapura, Sorong, and Ambon show 5:00 PM WIT. Furthermore, any GMT timestamp past 3:00 PM (15:00) crosses midnight in Papua, advancing the date in Eastern Indonesia to the next calendar day (+1 day).
+    </p>
+    <p>
+      Whether you are coordinating mining operations in Freeport Papua, organizing marine conservation expeditions in Raja Ampat, managing air cargo routes, or communicating with regional teams, our converter provides accurate calculations and interactive tools.
+    </p>
+  </section>
+
+  <!-- Interactive Converter Section -->
+  <section class="converter-section" id="interactive-converter">
+    <div class="converter-header">
+      <h2>Interactive GMT to WIT Time Converter</h2>
+      <p>Select any GMT timestamp to determine the exact Eastern Indonesia hour instantly.</p>
+    </div>
+    <Converter intent="dynamic" t={t} context={context} />
+  </section>
+
+  <!-- Live Clocks Section -->
+  <section class="clock-grid" aria-labelledby="live-clocks-heading">
+    <h2 id="live-clocks-heading" class="sr-only">Live Clocks: GMT vs WIT</h2>
+    <div class="clock-card">
+      <div class="clock-header">
+        <span class="clock-flag">🇬🇧</span>
+        <span>Current GMT (Greenwich)</span>
+      </div>
+      <strong id="gmtClock">8:00 AM</strong>
+      <em id="gmtZone">UTC+0 • Greenwich Mean Time</em>
+    </div>
+    <div class="clock-card accent-card">
+      <div class="clock-header">
+        <span class="clock-flag">🇮🇩</span>
+        <span>Current WIT (Jayapura / Ambon)</span>
+      </div>
+      <strong id="witClock">5:00 PM</strong>
+      <em id="witZone">UTC+9 • Waktu Indonesia Timur</em>
+    </div>
+  </section>
+
+  <!-- Custom Regional SVG Illustration -->
+  <div class="svg-container banner-svg">
+    <svg viewBox="0 0 800 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GMT to WIT Indonesian map visual">
+      <rect width="800" height="200" fill="#0c354a" rx="12"/>
+      <!-- Greenwich Node -->
+      <g transform="translate(120, 60)">
+        <circle cx="50" cy="40" r="34" fill="#1b536e" stroke="#36c7b5" stroke-width="3"/>
+        <text x="50" y="45" fill="#f4fbff" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">GMT</text>
+        <text x="50" y="95" fill="#8fd7ff" font-family="Manrope, sans-serif" font-size="12" text-anchor="middle">London (UTC+0)</text>
+      </g>
+      <!-- Connection Path -->
+      <path d="M 220 100 Q 400 30 580 100" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4"/>
+      <g transform="translate(355, 40)">
+        <rect x="0" y="0" width="90" height="28" fill="#12455d" rx="14" stroke="#2f6278" stroke-width="1"/>
+        <text x="45" y="18" fill="#36c7b5" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="12" text-anchor="middle">+9 HOURS</text>
+      </g>
+      <!-- Jayapura Node -->
+      <g transform="translate(530, 60)">
+        <circle cx="50" cy="40" r="34" fill="#1b536e" stroke="#8fd7ff" stroke-width="3"/>
+        <text x="50" y="45" fill="#f4fbff" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">WIT</text>
+        <text x="50" y="95" fill="#8fd7ff" font-family="Manrope, sans-serif" font-size="12" text-anchor="middle">Jayapura (UTC+9)</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Time Difference Breakdown -->
+  <section class="method-section content-section">
+    <h2>Understanding the 9-Hour Time Gap</h2>
+    <p class="method-intro">
+      Converting Greenwich Mean Time to Waktu Indonesia Timur requires adding 9 full hours to any baseline GMT clock.
+    </p>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        </div>
+        <h3>Mathematical Formula</h3>
+        <p class="formula-box">WIT = GMT + 9 hours</p>
+        <p>Add 9 hours to any GMT timestamp. For instance, 7:00 AM GMT plus 9 hours equals 4:00 PM WIT on the same calendar day.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        </div>
+        <h3>UTC Base Offsets</h3>
+        <p>GMT operates at <strong>UTC+0</strong>. WIT operates at <strong>UTC+9</strong>. Because Eastern Indonesia sits 135° to 141° East of Greenwich, time advances 9 hours ahead of baseline UTC.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <h3>Next-Day Rollover Boundary</h3>
+        <p>GMT times between <strong>3:00 PM (15:00) and 11:59 PM (23:59)</strong> cross midnight in Jayapura, advancing to the <strong>next calendar day (+1 day)</strong> in WIT.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3>No Daylight Saving Transitions</h3>
+        <p>Indonesia does not observe Daylight Saving Time. The 9-hour gap between GMT and WIT remains fixed throughout the year.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24-Hour Conversion Table -->
+  <section class="table-section content-section">
+    <h2>24-Hour GMT to WIT Conversion Chart</h2>
+    <p>Use this reference table to map every hour of the day from Greenwich Mean Time to Eastern Indonesia Time.</p>
+
+    <!-- Timeline Graphic SVG -->
+    <div class="svg-container timeline-svg">
+      <svg viewBox="0 0 800 80" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="80" fill="#0c354a" rx="8"/>
+        <line x1="50" y1="40" x2="750" y2="40" stroke="#2f6278" stroke-width="4"/>
+        <circle cx="120" cy="40" r="10" fill="#36c7b5"/>
+        <text x="120" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">12:00 AM GMT</text>
+        <text x="120" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">9:00 AM WIT</text>
+
+        <circle cx="400" cy="40" r="10" fill="#36c7b5"/>
+        <text x="400" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">8:00 AM GMT</text>
+        <text x="400" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">5:00 PM WIT</text>
+
+        <circle cx="680" cy="40" r="10" fill="#36c7b5"/>
+        <text x="680" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">3:00 PM GMT</text>
+        <text x="680" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">12:00 AM WIT (+1d)</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table class="conversion-table">
+        <thead>
+          <tr>
+            <th>GMT Time (Greenwich)</th>
+            <th>WIT Time (Jayapura / Ambon)</th>
+            <th>Calendar Day Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td><strong>{row.gmt}</strong></td>
+              <td><span class="converted-time">{row.wit}</span></td>
+              <td><span class={`day-badge ${row.dayNote === "Next day" ? "prev-day" : "same-day"}`}>{row.dayNote}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Popular Conversions Table -->
+  <section class="examples-section content-section">
+    <h2>Key Operational Time Pairs</h2>
+    <p>Frequently referenced conversions for trade, mining, shipping, and travel between GMT and Eastern Indonesia.</p>
+    <div class="table-wrap">
+      <table class="conversion-table">
+        <thead>
+          <tr>
+            <th>GMT Benchmark</th>
+            <th>WIT Equivalent</th>
+            <th>Operational Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((item) => (
+            <tr>
+              <td><strong>{item.gmt}</strong></td>
+              <td><span class="converted-time">{item.wit}</span></td>
+              <td>{item.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Meeting Planner Section -->
+  <section class="planner-section content-section">
+    <h2>Optimal Meeting Windows: London to Jayapura</h2>
+    <p>Scheduling teleconferences across a 9-hour time difference requires selecting early morning GMT slots.</p>
+
+    <!-- Multi-Region Clock SVG -->
+    <div class="svg-container planner-svg">
+      <svg viewBox="0 0 800 140" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="140" fill="#0c354a" rx="10"/>
+        <g transform="translate(60, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Early Morning GMT</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">7:00 AM GMT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">4:00 PM WIT</text>
+        </g>
+        <g transform="translate(300, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Standard Morning Sync</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">8:00 AM GMT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">5:00 PM WIT</text>
+        </g>
+        <g transform="translate(540, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Late Afternoon WIT</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">9:00 AM GMT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">6:00 PM WIT</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <h3>Option A: GMT Morning / WIT Late Afternoon</h3>
+        <p><strong>7:00 AM – 9:00 AM GMT</strong> matches <strong>4:00 PM – 6:00 PM WIT</strong>. Perfect for catch-up calls before Eastern Indonesian offices close.</p>
+      </div>
+
+      <div class="method-card">
+        <h3>Option B: GMT Night / WIT Morning</h3>
+        <p><strong>11:00 PM – 12:30 AM GMT</strong> matches <strong>8:00 AM – 9:30 AM WIT (+1 day)</strong>. Suitable for late evening updates in Europe matching morning starts in Jayapura.</p>
+      </div>
+
+      <div class="method-card">
+        <h3>Option C: Asynchronous Handover</h3>
+        <p>End-of-day reports prepared in Jayapura at 5:00 PM WIT arrive in European inboxes at 8:00 AM GMT, ready for immediate review.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- When and Where Used Section -->
+  <section class="use-cases content-section">
+    <h2>Geographic Coverage of WIT</h2>
+
+    <article class="use-case-card">
+      <h3>Papua & West Papua Provinces</h3>
+      <p>
+        WIT is observed across all six provinces on the island of New Guinea belonging to Indonesia, including Jayapura, Sorong, Merauke, and Timika.
+      </p>
+    </article>
+
+    <article class="use-case-card">
+      <h3>Maluku & North Maluku Archipelago</h3>
+      <p>
+        The spice islands of Maluku (Ambon) and North Maluku (Ternate, Tidore) operate on WIT (UTC+9) for all government and commercial activities.
+      </p>
+    </article>
+
+    <article class="use-case-card">
+      <h3>Indo-Pacific Maritime Logistics</h3>
+      <p>
+        Pacific shipping channels connecting New Guinea with East Asia use WIT timestamps for port arrivals and marine logistics reporting.
+      </p>
+    </article>
+  </section>
+
+  <!-- Common Mistakes Section -->
+  <section class="mistakes-section content-section">
+    <h2>Common Pitfalls When Converting GMT to WIT</h2>
+
+    <article class="mistake-card">
+      <h3>1. Confusing WIT (UTC+9) with WIB (UTC+7) or WITA (UTC+8)</h3>
+      <p>
+        Assuming all of Indonesia uses Jakarta time (WIB, UTC+7) causes a 2-hour error when communicating with Jayapura or Ambon in the WIT zone.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>2. Miscalculating Date Shift for GMT Afternoon Hours</h3>
+      <p>
+        GMT times after 3:00 PM (15:00) advance to the next calendar date in Eastern Indonesia. Failing to verify calendar dates causes missed appointments.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>3. Confusing UK Summer Time (BST) with GMT Baseline</h3>
+      <p>
+        During UK summer (BST, UTC+1), the time difference to WIT reduces to 8 hours instead of the 9-hour GMT baseline.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>4. Assuming Indonesia Observes Daylight Saving Time</h3>
+      <p>
+        Indonesia maintains constant year-round offsets without DST. Assuming WIT changes seasonally causes scheduling errors.
+      </p>
+    </article>
+  </section>
+
+  <!-- Real-World Use Cases Section -->
+  <section class="real-world-section content-section">
+    <h2>Real-World Operational Scenarios</h2>
+
+    <div class="use-case-grid">
+      <div class="use-case-box">
+        <h3>Mining Operations in Freeport Papua</h3>
+        <p>
+          Corporate managers in London review shift logs from Grasberg mine submitted at 5:00 PM WIT (8:00 AM GMT).
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Marine Biology Research in Raja Ampat</h3>
+        <p>
+          International oceanographers coordinate coral reef survey schedules using synchronized GMT-to-WIT logbooks.
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Archipelagic Airline Logistics</h3>
+        <p>
+          Flight operations centers track flights connecting Jakarta (WIB), Bali (WITA), and Jayapura (WIT) back to UTC/GMT baselines.
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Spice & Agricultural Commodity Exports</h3>
+        <p>
+          Exporters in Maluku dispatch shipping bills of lading to European buyers, matching local 10:00 AM WIT timestamps to 1:00 AM GMT.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Converters Grid -->
+  <section class="related-section content-section">
+    <h2>Related Time Zone Converters</h2>
+    <p>Explore converters for other Asian and Pacific timezone pairs.</p>
+    <div class="related-grid">
+      <a href="/gmt-to-ist/" class="related-card">
+        <span class="related-card-title">GMT to IST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to India Standard Time</span>
+      </a>
+      <a href="/gmt-to-chst/" class="related-card">
+        <span class="related-card-title">GMT to CHST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Chamorro Standard Time</span>
+      </a>
+      <a href="/gmt-to-aest/" class="related-card">
+        <span class="related-card-title">GMT to AEST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Australian Eastern Standard Time</span>
+      </a>
+      <a href="/gmt-to-pst/" class="related-card">
+        <span class="related-card-title">GMT to PST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Pacific Standard Time</span>
+      </a>
+      <a href="/gmt-to-est/" class="related-card">
+        <span class="related-card-title">GMT to EST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Eastern Standard Time</span>
+      </a>
+      <a href="/gmt-to-bst/" class="related-card">
+        <span class="related-card-title">GMT to BST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to British Summer Time</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion Section -->
+  <section class="faq content-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      {faqs.map((faq) => (
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>{faq.q}</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="faq-answer">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Conclusion Section -->
+  <section class="conclusion-section content-section">
+    <h2>Mastering GMT to WIT Conversion</h2>
+    <p>
+      Converting Greenwich Mean Time to Eastern Indonesia Time is simple when adding 9 hours and watching for midnight date shifts. Utilizing our interactive converter and 24-hour table guarantees smooth communication across Western Europe and Eastern Indonesia.
+    </p>
+    <div class="method-grid">
+      <div class="method-card">
+        <h3>Add 9 Hours</h3>
+        <p>Advance GMT by 9 hours to find the exact local WIT time in Jayapura and Ambon.</p>
+      </div>
+      <div class="method-card">
+        <h3>Watch Date Rollover</h3>
+        <p>GMT timestamps after 3:00 PM (15:00) advance to the next calendar day in WIT.</p>
+      </div>
+      <div class="method-card">
+        <h3>Fixed Year-Round</h3>
+        <p>WIT operates at UTC+9 year-round without daylight saving adjustments.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .wit-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .wit-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .wit-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+
+  .converter-section { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .converter-header { text-align: center; margin-bottom: 1.5rem; }
+  .converter-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; color: var(--text); }
+  .converter-header p { color: var(--muted); font-size: 1rem; }
+
+  .clock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .clock-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; }
+  .clock-card.accent-card { border-color: var(--accent); }
+  .clock-header { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; color: var(--muted); font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .clock-card strong { display: block; font-size: 2.2rem; font-family: 'Space Grotesk', sans-serif; color: var(--text); margin: 0.4rem 0; }
+  .clock-card em { font-style: normal; font-size: 0.85rem; color: var(--accent); }
+
+  .svg-container { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .banner-svg svg, .timeline-svg svg, .dst-svg svg, .planner-svg svg { width: 100%; height: auto; display: block; border-radius: 10px; }
+
+  .content-section { max-width: 860px; margin: 2.5rem auto; padding: 0 1.5rem; }
+  .content-section h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; color: var(--text); margin-bottom: 1rem; }
+  .content-section p { font-size: 1.05rem; line-height: 1.7; color: var(--muted); margin-bottom: 1.2rem; }
+
+  .method-intro { font-size: 1.1rem; color: var(--text); }
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .method-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+  .method-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; color: var(--text); margin-bottom: 0.5rem; }
+  .method-card p { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin: 0; }
+  .card-icon { color: var(--accent); margin-bottom: 0.75rem; }
+  .formula-box { background: rgba(54, 199, 181, 0.1); border-left: 3px solid var(--accent); padding: 0.5rem 0.75rem; font-family: monospace; font-weight: bold; color: var(--text) !important; margin-bottom: 0.75rem !important; }
+
+  .table-wrap { overflow-x: auto; margin-top: 1.5rem; border: 1px solid var(--line); border-radius: 10px; }
+  .conversion-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+  .conversion-table th { background: rgba(255, 255, 255, 0.05); color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 0.85rem 1rem; border-bottom: 1px solid var(--line); }
+  .conversion-table td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: var(--muted); }
+  .conversion-table tr:last-child td { border-bottom: none; }
+  .converted-time { color: var(--accent); font-weight: 600; }
+  .day-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+  .day-badge.prev-day { background: rgba(235, 87, 87, 0.15); color: #eb5757; }
+  .day-badge.same-day { background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+
+  .use-case-card, .mistake-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+  .use-case-card h3, .mistake-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .use-case-card p, .mistake-card p { font-size: 0.98rem; color: var(--muted); line-height: 1.65; margin: 0; }
+
+  .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .use-case-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+  .use-case-box h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+  .use-case-box p { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+  .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .related-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; text-decoration: none; transition: border-color 0.2s; }
+  .related-card:hover { border-color: var(--accent); }
+  .related-card-title { display: block; font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .related-card-text { font-size: 0.85rem; color: var(--muted); }
+
+  .faq-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .faq-item { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; }
+  .faq-question { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--text); list-style: none; }
+  .faq-question::-webkit-details-marker { display: none; }
+  .faq-icon { color: var(--accent); transition: transform 0.2s; }
+  .faq-item[open] .faq-icon { transform: rotate(180deg); }
+  .faq-answer { margin-top: 0.75rem; font-size: 0.98rem; color: var(--muted); line-height: 1.65; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>

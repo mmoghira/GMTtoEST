@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "cat-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "CAT to EST Converter";
+const seoTitle = "CAT to EST Converter – Central Africa Time to Eastern Standard Time";
+const pageDescription = "Convert CAT to EST instantly. Calculate the exact 7-hour time difference between Central Africa Time and US Eastern Standard Time with live clocks, meeting planner, and conversion charts.";
+
+const context = {
+  from: "CAT",
+  to: "EST",
+  fromZone: "Africa/Maputo",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/cat-to-est/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA & HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+// CAT → EST: EST is 7 hours behind CAT
+// ═══════════════════════════════════════════════════════════════════════════
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 7;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    cat: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day in US" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { cat: "12:00 AM (Midnight)", est: "5:00 PM EST (Prev Day)", note: "Late afternoon on US East Coast as Africa enters midnight" },
+  { cat: "2:00 AM CAT", est: "7:00 PM EST (Prev Day)", note: "US prime time evening while Central Africa sleeps" },
+  { cat: "6:00 AM CAT", est: "11:00 PM EST (Prev Day)", note: "Late night in New York as Central Africa wakes up" },
+  { cat: "8:00 AM CAT", est: "1:00 AM EST", note: "African morning start while US East Coast is overnight" },
+  { cat: "10:00 AM CAT", est: "3:00 AM EST", note: "Mid-morning business hours across Mozambique, Zimbabwe, and Zambia" },
+  { cat: "12:00 PM (Noon) CAT", est: "5:00 AM EST", note: "Central Africa lunch hour; pre-dawn on US East Coast" },
+  { cat: "2:00 PM CAT", est: "7:00 AM EST", note: "US East Coast morning start overlap with African mid-afternoon" },
+  { cat: "4:00 PM CAT", est: "9:00 AM EST", note: "Prime operational window: US office open overlap with African afternoon" },
+  { cat: "5:00 PM CAT", est: "10:00 AM EST", note: "Peak collaboration hour before Central Africa offices close" },
+  { cat: "7:00 PM CAT", est: "12:00 PM (Noon) EST", note: "US lunchtime while Central Africa relaxes in evening" },
+  { cat: "9:00 PM CAT", est: "2:00 PM EST", note: "US mid-afternoon work hours during African evening" },
+  { cat: "11:00 PM CAT", est: "4:00 PM EST", note: "US market closing wrap-up window" },
+];
+
+// FAQ data (18 detailed FAQs)
+const faqs = [
+  { q: "What is Central Africa Time (CAT)?", a: "Central Africa Time (CAT) is a time zone used in central and southern Africa. It is set at UTC+2 (two hours ahead of Coordinated Universal Time). Nations using CAT include Mozambique, Zimbabwe, Zambia, Malawi, Rwanda, Burundi, Botswana, and eastern Democratic Republic of the Congo." },
+  { q: "What is Eastern Standard Time (EST)?", a: "Eastern Standard Time (EST) is the standard time offset used on the East Coast of North America, including major hubs like New York, Washington D.C., Atlanta, Miami, and Toronto. It runs at UTC-5 (five hours behind Coordinated Universal Time)." },
+  { q: "How many hours is EST behind CAT?", a: "Eastern Standard Time (EST) is exactly 7 hours behind Central Africa Time (CAT). To convert CAT to EST, subtract 7 hours from the CAT time (e.g., 4:00 PM CAT becomes 9:00 AM EST)." },
+  { q: "Does Central Africa Time (CAT) observe Daylight Saving Time?", a: "No. None of the countries in the Central Africa Time zone observe Daylight Saving Time (DST). CAT remains strictly at UTC+2 throughout the entire calendar year." },
+  { q: "Does Eastern Standard Time (EST) switch to Daylight Saving Time?", a: "Yes. In the United States and Canada, regions in the Eastern time zone switch to Eastern Daylight Time (EDT, UTC-4) from the second Sunday in March to the first Sunday in November. During the EDT summer period, the gap narrows to 6 hours instead of 7 hours." },
+  { q: "Which major African cities operate on CAT?", a: "Key commercial hubs on CAT include Maputo (Mozambique), Harare (Zimbabwe), Lusaka (Zambia), Lilongwe (Malawi), Kigali (Rwanda), Bujumbura (Burundi), Lubumbashi (DRC), and Gaborone (Botswana)." },
+  { q: "What is the best time for a meeting between CAT and EST?", a: "The best overlap window for video calls between Central Africa and the US East Coast is between 3:00 PM CAT and 5:00 PM CAT. This corresponds to 8:00 AM EST to 10:00 AM EST in New York, capturing the start of the US workday and the end of the African workday." },
+  { q: "Is CAT the same offset as South Africa Standard Time (SAST)?", a: "Yes. Both Central Africa Time (CAT) and South Africa Standard Time (SAST) operate at UTC+2 and do not observe Daylight Saving Time. They share identical clock times year-round." },
+  { q: "Is CAT the same offset as Eastern European Time (EET)?", a: "During the winter months, Eastern European Time (EET) is at UTC+2, matching CAT. However, in summer, Eastern European countries switch to EEST (UTC+3), whereas CAT stays at UTC+2 year-round." },
+  { q: "How do I calculate CAT to EST manually?", a: "Subtract 7 hours from the CAT time. If the result is negative, add 24 hours and roll back to the previous calendar day. For instance, 5:00 AM CAT minus 7 hours equals 10:00 PM EST on the previous evening." },
+  { q: "Why are mineral and agricultural trades between Southern Africa and New York sensitive to timezone differences?", a: "Major mining operations in Zambia and DRC export copper and cobalt, while agriculture exporters in Malawi and Zimbabwe deal with US commodity markets. Scheduling morning price fixes requires syncing CAT afternoon hours with US morning opening bells." },
+  { q: "How does the date change when converting CAT to EST?", a: "Because EST is 7 hours behind CAT, early morning hours in Central Africa (between 12:00 AM Midnight and 6:59 AM CAT) correspond to the previous calendar day in Eastern Standard Time." },
+  { q: "Do airlines flying between North America and Southern Africa use CAT or EST?", a: "Airlines list local departure and arrival times in local airport time (CAT or EST/EDT), but flight operations, telemetry, and pilot logs are managed in UTC to ensure flight safety." },
+  { q: "What is the IANA timezone identifier for Central Africa Time?", a: "The IANA Time Zone Database represents CAT using keys such as Africa/Maputo, Africa/Harare, Africa/Lusaka, and Africa/Kigali. All these identifiers resolve to UTC+2." },
+  { q: "Are financial transactions between US banks and CAT institutions instant?", a: "Interbank SWIFT settlements sent from US East Coast institutions during US afternoon hours arrive in Central Africa after African banks have closed for the day, processing on the following CAT business morning." },
+  { q: "Does Egypt standard time match CAT?", a: "Egypt has periodically adjusted its DST policies. When Egypt operates at UTC+2, it matches CAT, but when Egypt observes summer DST (UTC+3), it runs one hour ahead of CAT." },
+  { q: "What is the time difference between Kigali (Rwanda) and New York (EST)?", a: "Kigali is on Central Africa Time (UTC+2). During EST (winter), Kigali is 7 hours ahead of New York. During EDT (summer), Kigali is 6 hours ahead of New York." },
+  { q: "How reliable is this CAT to EST conversion calculator?", a: "Our converter uses standard IANA timezone database rules via native browser engine calls, accurately accounting for daylight savings rules in North America while maintaining CAT's static offset." },
+  { q: "How does Central Africa Time compare to Greenwich Mean Time (GMT)?", a: "Central Africa Time (CAT) is exactly 2 hours ahead of Greenwich Mean Time (GMT/UTC+0). When it is 12:00 PM GMT in London during winter, it is 2:00 PM CAT in Maputo and Harare." },
+  { q: "Do Mozambique and Zimbabwe ever change their timezone?", a: "No. Neither Mozambique nor Zimbabwe has altered its UTC+2 standard time offset in recent decades. The offset remains permanent across all seasons." },
+  { q: "What is the offset difference between Lusaka (Zambia) and Atlanta (Georgia)?", a: "Lusaka operates on CAT (UTC+2) and Atlanta operates on EST (UTC-5) or EDT (UTC-4). During US winter, Lusaka is 7 hours ahead of Atlanta; during US summer, it is 6 hours ahead." },
+  { q: "How does CAT affect international sports broadcasting?", a: "Major sporting events hosted in Southern Africa (such as international cricket tests in Harare or football matches in Maputo) broadcast in prime afternoon CAT slots, which air during early morning EST hours in the United States." },
+  { q: "What time zone is Lubumbashi in the Democratic Republic of the Congo?", a: "Lubumbashi, the mining capital of the DRC, operates on Central Africa Time (CAT, UTC+2). Unlike western DRC (Kinshasa, which uses WAT UTC+1), eastern DRC remains permanently at UTC+2." },
+  { q: "Does Botswana use Central Africa Time all year round?", a: "Yes. Botswana observes Central Africa Time (CAT, UTC+2) permanently throughout the year without seasonal clock changes." },
+  { q: "How do US investors monitor African stock markets on CAT?", a: "Stock exchanges like the Lusaka Securities Exchange (LuSE) and the Zimbabwe Stock Exchange (ZSE) operate during morning and midday CAT hours, which correspond to overnight and pre-dawn hours in EST." },
+  { q: "What is the offset difference between Blantyre (Malawi) and Boston (Massachusetts)?", a: "Blantyre runs on CAT (UTC+2) and Boston runs on EST (UTC-5). In winter, Blantyre is 7 hours ahead of Boston; in summer (EDT, UTC-4), Blantyre is 6 hours ahead." },
+  { q: "Does Mozambique observe Daylight Saving Time?", a: "No, Mozambique does not observe Daylight Saving Time. It stays on Central Africa Time (CAT, UTC+2) year-round." },
+  { q: "How do international flight arrivals from Johannesburg/Maputo map to EST?", a: "Flights departing Southern Africa late in the evening (around 9:00 PM CAT) arrive in North America early the following morning EST after a long-haul transoceanic flight." },
+  { q: "What is the time difference between Victoria Falls and New York City?", a: "Victoria Falls (Zambia/Zimbabwe) is on CAT (UTC+2), making it 7 hours ahead of New York during EST and 6 hours ahead during EDT." },
+  { q: "How do software systems parse Africa/Maputo and America/New_York timestamps?", a: "System libraries use Olson IANA timezone database definitions to map Africa/Maputo (+02:00) and America/New_York (-05:00 standard, -04:00 DST), resolving timestamps automatically." },
+  { q: "What is the capital of Mozambique and what timezone does it use?", a: "Maputo is the capital of Mozambique, and it uses Central Africa Time (CAT, UTC+2) permanently." },
+  { q: "What is the capital of Zimbabwe and what timezone does it use?", a: "Harare is the capital of Zimbabwe, operating on Central Africa Time (CAT, UTC+2) without daylight saving changes." },
+  { q: "What is the capital of Zambia and what timezone does it use?", a: "Lusaka is the capital of Zambia, operating on Central Africa Time (CAT, UTC+2) permanently." },
+  { q: "What is the capital of Malawi and what timezone does it use?", a: "Lilongwe is the capital of Malawi, operating on Central Africa Time (CAT, UTC+2) year-round." },
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "CAT to EST, CAT to EST Converter, Central Africa Time to Eastern Standard Time, Convert CAT to EST, Maputo to New York time, Lusaka to EST, Harare to New York time difference, CAT timezone offset",
+  image: "/assets/cat-to-est-og.svg",
+  imageAlt: "CAT to EST Converter – Convert Central Africa Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online CAT to EST converter featuring real-time interactive clocks, 24-hour comparison charts, and global business meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert CAT to EST",
+  howToDescription: "Simple steps to convert Central Africa Time to US Eastern Standard Time.",
+  howToSteps: [
+    { name: "Input CAT Time", text: "Select your desired Central Africa Time in the converter." },
+    { name: "Subtract 7 Hours", text: "The tool automatically subtracts 7 hours to calculate the Eastern Standard Time (EST)." },
+    { name: "Check Date Shift", text: "If the input CAT time is early morning (before 7:00 AM), note that the EST time falls on the previous calendar day." },
+    { name: "Account for US Summer Time", text: "If converting dates between March and November, remember the US observes Eastern Daylight Time (EDT, UTC-4), making the difference 6 hours." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="CAT to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    CAT to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS (CUSTOM SVG) -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>7-Hour Time Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>US DST Logic Included</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Transatlantic Meeting Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span>Africa & US East Coast</span>
+  </div>
+</section>
+
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About Central Africa Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>CAT to EST Converter</strong>. This specialized online utility provides accurate time conversion between <strong>Central Africa Time (CAT, UTC+2)</strong> and <strong>Eastern Standard Time (EST, UTC-5)</strong>. During standard winter months, Eastern Standard Time is exactly <strong>7 hours behind Central Africa Time</strong>. When it is 4:00 PM in Maputo, Harare, or Lusaka, it is 9:00 AM in New York, Washington D.C., and Toronto.
+  </p>
+  <p>
+    <strong>Central Africa Time (CAT)</strong> spans a vast and economically dynamic zone in central and southern Africa. Used by nations such as Mozambique, Zimbabwe, Zambia, Malawi, Rwanda, Burundi, Botswana, and eastern DRC, CAT operates at UTC+2 without seasonal daylight saving shifts. Because Central Africa lies close to the equator, sunrise and sunset times remain relatively constant throughout the year, eliminating the need for bi-annual clock adjustments.
+  </p>
+  <p>
+    On the opposite side of the Atlantic, <strong>Eastern Standard Time (EST)</strong> serves the financial, administrative, and cultural capitals of the United States and Canada. Major metropolitan areas including New York City, Boston, Philadelphia, Atlanta, Miami, and Montreal rely on Eastern time. Unlike CAT, North American regions switch to Eastern Daylight Time (EDT, UTC-4) during summer, narrowing the time gap between CAT and the US East Coast to 6 hours from March to November.
+  </p>
+  <p>
+    Whether you are a <strong>mining executive</strong> coordinating copper exports between Zambia's Copperbelt and Wall Street commodities brokers, an <strong>NGO director</strong> managing health initiatives in Kigali and Washington D.C., a <strong>safari operator</strong> booking international guests from the US, or a <strong>software developer</strong> working remotely across continents, our tool ensures flawless scheduling without missing deadlines.
+  </p>
+  <p>
+    Understanding the 7-hour difference between Central Africa Time and US Eastern Standard Time is vital for business strategy, supply chain management, and international diplomacy. With no daylight saving time in CAT countries, the offset stays rock-solid for five months of the year, shifting only when North America moves into Daylight Saving Time. This page gives you all the tools and data you need for seamless cross-border timing.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE INTERACTIVE CONVERTER TOOL & HERO ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-tool-heading">Convert CAT to Eastern Standard Time</h2>
+    <p>
+      Select any hour to instantly calculate the corresponding Eastern Standard Time. Our tool handles calendar date shifts and daylight saving calculations automatically.
+    </p>
+
+    <!-- Custom Hero Illustration (SVG) -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        <path d="M50 170 Q 200 80, 350 140 T 550 110" fill="none" stroke="#36c7b5" stroke-width="3" opacity="0.6" stroke-dasharray="6 4" />
+
+        <!-- Left Clock: Central Africa Time (Maputo/Harare) -->
+        <g transform="translate(140, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-28" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#f4fbff" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Central Africa (CAT)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+2 Standard</text>
+        </g>
+
+        <!-- Offset Arrow Badge -->
+        <g transform="translate(300, 110)">
+          <rect x="-50" y="-20" width="100" height="32" rx="16" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+          <text x="0" y="2" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">EST is -7 Hrs</text>
+        </g>
+
+        <!-- Right Clock: US Eastern Time (New York) -->
+        <g transform="translate(460, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="-20" y2="10" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-30" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">US Eastern (EST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: Central Africa vs US Eastern</h2>
+  <div class="clock-card"><span>Current CAT (UTC+2)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     AFRICAN & NYC LANDMARK GRAPHIC ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Central Africa Victoria Falls & New York City Visual Graphic</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <!-- African Savanna Silhouette (Left) -->
+      <g transform="translate(100, 110)">
+        <path d="M-70 40 L-70 10 C-40 0, -20 -10, 0 -10 C 20 -10, 40 0, 70 10 L70 40 Z" fill="#12455d" />
+        <!-- Acacia Tree silhouette -->
+        <path d="M-20 10 L-20 -20 C-35 -30, -10 -45, 0 -45 C 10 -45, 35 -30, 20 -20 L20 10 Z" fill="#36c7b5" opacity="0.7" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Central Africa (CAT)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">Maputo • Harare • Lusaka</text>
+      </g>
+
+      <!-- Center offset indicator -->
+      <g transform="translate(350, 100)">
+        <circle cx="0" cy="-10" r="35" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-14" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">7 HOURS</text>
+        <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">BEHIND</text>
+        <path d="M-40 25 L40 25" stroke="#36c7b5" stroke-width="2" marker-end="url(#arrow)" />
+      </g>
+
+      <!-- New York City Skyline (Right) -->
+      <g transform="translate(590, 110)">
+        <rect x="-60" y="-30" width="20" height="70" fill="#12455d" />
+        <rect x="-35" y="-55" width="25" height="95" fill="#1b536e" />
+        <rect x="-5" y="-70" width="30" height="110" fill="#2f6278" />
+        <rect x="30" y="-40" width="20" height="80" fill="#12455d" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">Wall Street • East Coast</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE & METHOD CARDS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section content-section" aria-labelledby="method-heading">
+  <h2 id="method-heading">How to Convert Central Africa Time to EST</h2>
+  <p class="method-intro">
+    Calculating times between Central Africa and North America requires subtracting 7 hours during standard winter months. Here are three straightforward methods to quickly convert CAT to EST.
+  </p>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Method 1</p>
+      <h3>Direct 7-Hour Subtraction</h3>
+      <p>
+        Subtract 7 hours from the CAT clock. For example, if a business call is scheduled for 3:00 PM CAT in Harare, subtract 7 hours to get 8:00 AM EST in New York.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 2</p>
+      <h3>The Overnight Date Rollback Rule</h3>
+      <p>
+        When converting early morning CAT times (between 12:00 AM and 6:59 AM), subtracting 7 hours rolls back to the late afternoon or evening of the previous day in EST (e.g., 2:00 AM CAT Tuesday = 7:00 PM EST Monday).
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 3</p>
+      <h3>North American Summer Adjustment (EDT)</h3>
+      <p>
+        From mid-March to early November, the US East Coast uses Eastern Daylight Time (EDT, UTC-4). During this daylight saving period, subtract only 6 hours from CAT instead of 7 hours.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour CAT to EST Conversion Table</h2>
+  <p>
+    Review the table below for a complete hour-by-hour map converting Central Africa Time (CAT) to US Eastern Standard Time (EST).
+  </p>
+
+  <!-- Timeline SVG -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1rem; border-radius: 8px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 60" width="100%" height="auto">
+      <rect width="600" height="60" fill="#0c354a" rx="6" />
+      <line x1="30" y1="30" x2="570" y2="30" stroke="#2f6278" stroke-width="3" />
+      <circle cx="30" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="165" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="300" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="435" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="570" cy="30" r="5" fill="#36c7b5" />
+      <text x="30" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">00:00 CAT (17:00 EST -1d)</text>
+      <text x="165" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">07:00 CAT (00:00 EST)</text>
+      <text x="300" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">12:00 CAT (05:00 EST)</text>
+      <text x="435" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">16:00 CAT (09:00 EST)</text>
+      <text x="570" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">23:00 CAT (16:00 EST)</text>
+      <text x="300" y="18" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-Hour Timeline: 7-Hour Constant Shift</text>
+    </svg>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Central Africa Time (CAT)</th>
+          <th>Eastern Standard Time (EST)</th>
+          <th>Day / Operational Context</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.cat}</strong></td>
+            <td><strong style="color: var(--accent);">{row.est}</strong></td>
+            <td><span class="badge">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key Business Hours & Operational Milestones</h2>
+  <p>
+    Below are common business checkpoints between Central Africa and North American commercial hubs.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>CAT Time</th>
+          <th>EST Equivalent</th>
+          <th>Operational Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.cat}</strong></td>
+            <td><strong style="color: var(--accent);">{item.est}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DST INFOGRAPHIC SVG
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin: 3rem 0;">
+  <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">Seasonal Daylight Saving Changes (EST vs EDT)</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 180" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="180" fill="#0c354a" rx="8" />
+      <rect x="30" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+      <text x="165" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">WINTER (NOV – MARCH)</text>
+      <text x="165" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">CAT = UTC+2 | EST = UTC-5</text>
+      <text x="165" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">7 Hours Difference</text>
+      <text x="165" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(Standard winter offset)</text>
+
+      <rect x="350" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+      <text x="485" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">SUMMER (MARCH – NOV)</text>
+      <text x="485" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">CAT = UTC+2 | EDT = UTC-4</text>
+      <text x="485" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">6 Hours Difference</text>
+      <text x="485" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(US switches to Daylight Time)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">CAT & EST Business Meeting Planner</h2>
+  <p>
+    Bridging a 7-hour timezone difference requires careful scheduling. Below are the optimal overlap windows for connecting teams in Central Africa with partners in New York and the US East Coast.
+  </p>
+
+  <!-- Multi-region SVG graphic -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">16:00 CAT</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">African Late Afternoon</text>
+      </g>
+
+      <g transform="translate(325, 80)">
+        <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" marker-end="url(#arrow)" />
+        <rect x="-45" y="-18" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-2" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#36c7b5" text-anchor="middle">OPTIMAL</text>
+      </g>
+
+      <g transform="translate(530, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">09:00 EST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">US Morning Start</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Golden Window</p>
+      <h3>4:00 PM CAT = 9:00 AM EST</h3>
+      <p>
+        The single best window for live syncs. US East Coast staff start their day at 9:00 AM, while Central African offices wrap up their afternoon at 4:00 PM.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Secondary Window</p>
+      <h3>5:00 PM CAT = 10:00 AM EST</h3>
+      <p>
+        Great for quick end-of-day handoffs from African teams to US morning teams before African offices close for the evening.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Early US Window</p>
+      <h3>3:00 PM CAT = 8:00 AM EST</h3>
+      <p>
+        Ideal for executive calls and urgent status updates prior to standard US office hours.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN AND WHERE USED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="where-used-heading">
+  <h2 id="where-used-heading">Where CAT & EST Are Used</h2>
+  
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">1. Central & Southern African Nations (CAT)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Central Africa Time (UTC+2) is officially observed across Mozambique, Zimbabwe, Zambia, Malawi, Rwanda, Burundi, Botswana, and eastern provinces of the Democratic Republic of the Congo. Major commercial cities like Maputo, Harare, Lusaka, and Kigali rely on CAT for commerce, government operations, and education.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">2. US East Coast & Eastern Canada (EST)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Eastern Standard Time (UTC-5) covers 23 US states in whole or part, including New York, Florida, Pennsylvania, Georgia, Massachusetts, and the District of Columbia. It is also used across Eastern Canadian provinces such as Ontario and Quebec.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">3. Mining & Commodity Supply Chains</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Zambia and the Democratic Republic of the Congo are major global producers of copper and cobalt. Mining headquarters in North America monitor daily production reports and shipment dispatches coming out of Central Africa during US morning hours.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">4. International Development & Global Health NGOs</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Kigali (Rwanda) and Lilongwe (Malawi) host regional headquarters for international development agencies, global health organizations, and humanitarian funds. Communication with program sponsors in Washington D.C. relies heavily on daily afternoon CAT overlap windows.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">5. Energy & Hydroelectric Infrastructure Projects</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Major energy projects such as Kariba Dam (Zambia/Zimbabwe) and Cahora Bassa (Mozambique) involve international engineering consortia based on the US East Coast. Daily operational logs and engineering syncs require aligning CAT workdays with US morning shifts.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">6. Conservation & Wildlife Research Partnerships</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Environmental research centers in national parks like Nyungwe (Rwanda) and South Luangwa (Zambia) share ecological data and satellite tracking logs with US university research departments in EST.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Mistakes When Converting CAT to EST</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 1: Forgetting North American Daylight Saving Time</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Central Africa Time remains at UTC+2 all year, but New York switches to EDT (UTC-4) in March. Forgetting this transition results in meeting invitations being off by one hour between March and November.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 2: Confusing CAT with East Africa Time (EAT)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Neighbouring East African countries (Kenya, Uganda, Tanzania, Ethiopia) run on EAT (UTC+3), which is one hour ahead of CAT (UTC+2). Ensure you select CAT (UTC+2) for countries like Zambia, Zimbabwe, or Rwanda.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 3: Date Line Confusion for Early Morning Hours</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      A timestamp of 3:00 AM CAT on Tuesday morning equates to 8:00 PM EST on Monday evening. Miscalculating the date shift can lead to missing overnight automated deployments or flight arrivals.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World Business & Travel Use Cases</h2>
+  
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Tourism & Safari Bookings</h3>
+      <p>
+        US travel agencies booking Victoria Falls safari tours sync itinerary confirmations with local African tour operators during African office hours.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Agricultural Export Coordination</h3>
+      <p>
+        Tobacco exporters in Malawi and tea exporters in Rwanda coordinate logistics documents with US East Coast import hubs.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Fintech & Cross-Border Remittances</h3>
+      <p>
+        Fintech platforms facilitating diaspora payments from North America to Central Africa log transactions across timezone boundaries.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Remote Software Engineering</h3>
+      <p>
+        African tech talent in Kigali and Harare collaborate with US tech startups, utilizing late afternoon CAT hours for daily standup calls.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Academic Research Exchanges</h3>
+      <p>
+        Universities in Maputo and Harare partner with East Coast US academic institutions on joint medical research and climate study data synchronization.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Telecommunications Infrastructure Operations</h3>
+      <p>
+        Network operations centers (NOCs) managing fiber connections across Southern Africa communicate system status logs to US equipment vendors in EST.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-eat/" class="related-card">
+      <h3 class="related-card-title">GMT to EAT Converter</h3>
+      <p class="related-card-text">Convert GMT to East Africa Time (Nairobi, Kampala, Addis Ababa).</p>
+    </a>
+    <a href="/gmt-to-utc/" class="related-card">
+      <h3 class="related-card-title">GMT to UTC Converter</h3>
+      <p class="related-card-text">Compare Greenwich Mean Time and Coordinated Universal Time (0-hour offset).</p>
+    </a>
+    <a href="/ist-to-est/" class="related-card">
+      <h3 class="related-card-title">IST to EST Converter</h3>
+      <p class="related-card-text">Convert India Standard Time to US Eastern Standard Time (10.5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-aest/" class="related-card">
+      <h3 class="related-card-title">GMT to AEST Converter</h3>
+      <p class="related-card-text">Convert GMT to Australian Eastern Standard Time (10-hour offset).</p>
+    </a>
+    <a href="/eest-to-est/" class="related-card">
+      <h3 class="related-card-title">EEST to EST Converter</h3>
+      <p class="related-card-text">Convert Eastern European Summer Time to US Eastern Standard Time.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  {faqs.map((faq) => (
+    <details class="faq-item">
+      <summary class="faq-question"><strong>{faq.q}</strong></summary>
+      <p class="faq-answer">{faq.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin-top: 3rem; text-align: center;">
+  <h2 style="font-family: 'Space Grotesk', sans-serif; color: var(--text);">Streamline Your Central Africa to US Time Conversions</h2>
+  <p style="color: var(--muted); max-width: 750px; margin: 1rem auto; line-height: 1.7;">
+    Whether you are scheduling cross-continental business calls, coordinating logistics, or planning international travel, our CAT to EST converter ensures complete timing accuracy. Bookmark this tool for quick access to real-time clock conversions.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+  .faq-item { margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .faq-question { cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .faq-answer { margin-top: 0.75rem; color: var(--muted); line-height: 1.6; }
+</style>

@@ -1,0 +1,797 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "wet-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "WET to EST Converter";
+const seoTitle = "WET to EST Converter – Western European Time to US Eastern Standard Time";
+const pageDescription = "Convert WET to EST instantly. Calculate the exact time difference between Western European Time (UTC+0) and Eastern Standard Time (UTC-5) with live clocks, conversion table, and meeting planner.";
+
+const context = {
+  from: "WET",
+  to: "EST",
+  fromZone: "Europe/Lisbon",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/wet-to-est/`;
+
+// 24-hour conversion table data (WET → EST = WET - 5)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 5;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    wet: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous calendar day" : "Same calendar day",
+    status: (estNormalized >= 8 && estNormalized < 17) ? "Business Hours" : (estNormalized >= 17 && estNormalized < 22) ? "Evening Hours" : "Night Hours"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { wet: "12:00 AM (Midnight)", est: "7:00 PM EST (Prev Day)", note: "Midnight in Lisbon/Porto, prime-time evening in New York" },
+  { wet: "1:00 AM WET", est: "8:00 PM EST (Prev Day)", note: "Late evening television hours in North American Eastern zone" },
+  { wet: "2:00 AM WET", est: "9:00 PM EST (Prev Day)", note: "Late night in Portugal, evening wrapping up in Toronto" },
+  { wet: "3:00 AM WET", est: "10:00 PM EST (Prev Day)", note: "Deep night in Western Europe, bedtime in Miami and Boston" },
+  { wet: "4:00 AM WET", est: "11:00 PM EST (Prev Day)", note: "Late night across US Eastern Seaboard" },
+  { wet: "5:00 AM WET", est: "12:00 AM (Midnight) EST", note: "Midnight transition in US Eastern time" },
+  { wet: "6:00 AM WET", est: "1:00 AM EST", note: "Early pre-dawn in New York, morning routines in Lisbon" },
+  { gmt: "7:00 AM WET", wet: "7:00 AM WET", est: "2:00 AM EST", note: "Quiet early morning in Lisbon, deep sleep in America" },
+  { wet: "8:00 AM WET", est: "3:00 AM EST", note: "Portuguese offices opening, quiet hours in New York" },
+  { wet: "9:00 AM WET", est: "4:00 AM EST", note: "Morning focus across Lisbon tech hubs, pre-dawn in US" },
+  { wet: "10:00 AM WET", est: "5:00 AM EST", note: "Early risers waking up in Toronto and Miami" },
+  { wet: "11:00 AM WET", est: "6:00 AM EST", note: "Commute window starting in North American Eastern cities" },
+  { wet: "12:00 PM (Noon)", est: "7:00 AM EST", note: "Midday lunch in Lisbon, early morning routines in US" },
+  { wet: "1:00 PM WET", est: "8:00 AM EST", note: "New York and Toronto offices opening, prime crossover window begins" },
+  { wet: "2:00 PM WET", est: "9:00 AM EST", note: "Wall Street opening bell, active transatlantic trading" },
+  { wet: "3:00 PM WET", est: "10:00 AM EST", note: "Peak morning focus in US, mid-afternoon in Portugal" },
+  { wet: "4:00 PM WET", est: "11:00 AM EST", note: "Late afternoon strategy calls between Lisbon and New York" },
+  { wet: "5:00 PM WET", est: "12:00 PM (Noon) EST", note: "Lunchtime in New York, end of standard WET workday" },
+  { wet: "6:00 PM WET", est: "1:00 PM EST", note: "Afternoon work session in North America, evening in Lisbon" },
+  { wet: "7:00 PM WET", est: "2:00 PM EST", note: "Mid-afternoon engineering focus in Toronto and Boston" },
+  { wet: "8:00 PM WET", est: "3:00 PM EST", note: "Late afternoon tasks on US East Coast" },
+  { wet: "9:00 PM WET", est: "4:00 PM EST", note: "US East Coast offices wrapping up business day" },
+  { wet: "10:00 PM WET", est: "5:00 PM EST", note: "End of standard business day in Eastern North America" },
+  { wet: "11:00 PM WET", est: "6:00 PM EST", note: "Evening relaxation across both Atlantic seaboards" }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is WET?",
+    a: "WET stands for Western European Time. It is the winter standard time zone used in Portugal, the Canary Islands (Spain), the Faroe Islands, and Iceland, operating at UTC+0 (zero offset from Coordinated Universal Time)."
+  },
+  {
+    q: "What is EST?",
+    a: "EST stands for Eastern Standard Time. It is the winter standard time zone used on the East Coast of North America (including New York, Toronto, and Miami), running at UTC-5 (5 hours behind Coordinated Universal Time)."
+  },
+  {
+    q: "What is the exact time difference between WET and EST?",
+    a: "Eastern Standard Time (EST) is exactly 5 hours behind Western European Time (WET). For example, when it is 2:00 PM WET in Lisbon, it is 9:00 AM EST in New York."
+  },
+  {
+    q: "Is WET the same as GMT?",
+    a: "Yes. Western European Time (WET) and Greenwich Mean Time (GMT) both share the UTC+0 offset. WET is the regional name used in Western European countries like Portugal."
+  },
+  {
+    q: "Which European countries and territories use WET?",
+    a: "WET is observed during winter in Portugal (mainland), the Autonomous Region of Madeira, the Canary Islands (as WET/WEST), the Faroe Islands, and Iceland (which observes UTC+0 year-round)."
+  },
+  {
+    q: "Which North American cities observe Eastern Standard Time (EST)?",
+    a: "Major cities observing EST in winter include New York City, Toronto, Montreal, Boston, Philadelphia, Washington D.C., Atlanta, and Miami."
+  },
+  {
+    q: "How do I convert WET to EST manually?",
+    a: "To convert WET to EST, subtract 5 hours from the WET timestamp. For example: 1:00 PM WET minus 5 hours = 8:00 AM EST. If the result is negative, roll back to the previous day."
+  },
+  {
+    q: "What is 5:00 PM WET in EST?",
+    a: "5:00 PM WET converts to 12:00 PM (Noon) EST on the exact same calendar day."
+  },
+  {
+    q: "What happens when Portugal switches to WEST and the US switches to EDT?",
+    a: "In summer, Portugal shifts to Western European Summer Time (WEST, UTC+1) and the US shifts to Eastern Daylight Time (EDT, UTC-4). The time difference remains 5 hours (WEST is 5 hours ahead of EDT)."
+  },
+  {
+    q: "What is the primary IANA time zone identifier for WET?",
+    a: "The canonical IANA time zone identifier for WET in Portugal is Europe/Lisbon. For the Canary Islands, Atlantic/Canary is used."
+  },
+  {
+    q: "What is the primary IANA identifier for EST?",
+    a: "The primary IANA time zone identifier for US Eastern Time is America/New_York."
+  },
+  {
+    q: "What is the best overlap window for meetings between Lisbon (WET) and New York (EST)?",
+    a: "The golden window for meetings occurs between 1:00 PM and 5:00 PM WET, which corresponds to 8:00 AM to 12:00 PM EST, capturing 4 hours of shared business time."
+  },
+  {
+    q: "How do digital nomads in Lisbon coordinate with US East Coast clients?",
+    a: "Lisbon's tech and remote work community utilizes the 5-hour time gap by doing deep focus work in the morning (9:00 AM to 1:00 PM WET) and holding client calls in the afternoon."
+  },
+  {
+    q: "What is 12:00 AM Midnight WET in EST?",
+    a: "12:00 AM WET corresponds to 7:00 PM EST on the previous calendar evening."
+  },
+  {
+    q: "Why is Lisbon a major transatlantic tech and aviation hub?",
+    a: "Lisbon is the westernmost continental capital in Europe, offering shortest flight times across the Atlantic and seamless timezone alignment with both the US East Coast and Mainland Europe."
+  },
+  {
+    q: "What is the military time designation for UTC+0 and UTC-5?",
+    a: "UTC+0 is designated as Zulu Time Zone (Z), while UTC-5 is designated as Romeo Time Zone (R)."
+  },
+  {
+    q: "How do international stock markets align between Lisbon and Wall Street?",
+    a: "Euronext Lisbon trades from 8:00 AM to 4:30 PM WET (3:00 AM to 11:30 AM EST). The New York Stock Exchange opens at 9:30 AM EST (2:30 PM WET), providing 2 hours of live trading overlap."
+  },
+  {
+    q: "What is 10:00 AM WET in EST?",
+    a: "10:00 AM WET minus 5 hours equals 5:00 AM EST on the same morning."
+  },
+  {
+    q: "Do Azores islands observe WET?",
+    a: "No. The Azores archipelago (Portugal) operates on Azores Time (AZOT, UTC-1 in winter), which is 1 hour behind mainland Portugal (WET)."
+  },
+  {
+    q: "What is 8:00 PM EST in WET?",
+    a: "8:00 PM EST plus 5 hours equals 1:00 AM WET on the following morning."
+  },
+  {
+    q: "How does flight travel between Lisbon (LIS) and New York (JFK) work?",
+    a: "Flight time between Lisbon and New York is roughly 7.5 hours. Departing Lisbon at 12:00 PM WET lands at JFK around 2:30 PM EST due to the 5-hour backward shift."
+  },
+  {
+    q: "Can this converter handle both summer and winter offsets automatically?",
+    a: "Yes. Our interactive tool dynamically computes exact daylight saving rules based on your selected date."
+  },
+  {
+    q: "What is 3:00 PM WET in EST?",
+    a: "3:00 PM WET minus 5 hours equals 10:00 AM EST on the same day."
+  },
+  {
+    q: "How do transatlantic submarine cables connect WET and EST zones?",
+    a: "Fiber-optic cables landing near Lisbon (such as EllaLink and Equiano) carry high-speed data across the Atlantic, where server logs are timestamped in UTC (WET) baseline."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "WET to EST, Western European Time to Eastern Standard Time, Convert WET to EST, WET Time Zone, Lisbon Time, New York Time, UTC+0 to UTC-5, WET EST Time Difference",
+  image: "/assets/wet-to-est-og.svg",
+  imageAlt: "WET to EST Time Converter – Western European Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online WET to EST converter with live clocks, 24-hour schedules, meeting planner, and transatlantic Lisbon-New York time details.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert WET to EST",
+  howToDescription: "Step-by-step instructions for converting Western European Time to Eastern Standard Time.",
+  howToSteps: [
+    { name: "Enter WET Timestamp", text: "Select your desired starting Western European Time using our interactive picker." },
+    { name: "Subtract Five Hours", text: "Subtract 5 hours to convert from UTC+0 (WET) to UTC-5 (EST)." },
+    { name: "Verify Calendar Date", text: "Check if the 5-hour subtraction crosses midnight into the previous calendar day." },
+    { name: "Copy and Share", text: "Copy the converted EST result for your business meeting or flight schedule." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="WET to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    WET to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clocks</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
+    <span>5-Hour Transatlantic Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Lisbon to NY Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>Europe/Lisbon to America/New_York</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About Western European Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our premier standalone <strong>WET to EST Converter</strong>, built for tech founders, remote teams, digital nomads, financial traders, and transatlantic travelers operating between Western European Time (UTC+0) and North American Eastern Standard Time (UTC-5). Western European Time represents the standard winter time zone observed across mainland Portugal, Madeira, the Canary Islands, and the Faroe Islands.
+  </p>
+  <p>
+    Western European Time shares the identical UTC+0 offset with Greenwich Mean Time (GMT). As continental Europe's westernmost time boundary, WET provides an advantageous geographic position for businesses collaborating with the US Eastern Seaboard, offering a manageable 5-hour time difference.
+  </p>
+  <p>
+    Eastern Standard Time (EST) governs commerce across key North American financial and cultural epicenters, including New York City, Toronto, Miami, Boston, Washington D.C., and Atlanta. Understanding the 5-hour offset between Lisbon and New York is vital for scheduling transatlantic conference calls, managing cloud infrastructure deployments, and coordinating international air travel.
+  </p>
+  <p>
+    Explore our interactive live clocks, dynamic conversion tool, 24-hour reference matrix, transatlantic meeting recommendations, and technical timezone metadata below.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & HERO GRAPHIC -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Conversion Tool</p>
+    <h2 id="converter-tool-heading">Convert WET to Eastern Standard Time</h2>
+    <p>
+      Select any Western European Time to calculate the equivalent Eastern Standard Time instantly. Our calculator automatically manages relative offsets and date shifts.
+    </p>
+
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M0 40 H600 M0 80 H600 M0 120 H600 M0 160 H600 M0 200 H600" stroke="#12455d" stroke-width="1" />
+        
+        <!-- WET Node -->
+        <g transform="translate(150, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">WET</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC+0</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Lisbon / Porto</text>
+        </g>
+        <!-- Arrow + Offset -->
+        <g transform="translate(300, 120)">
+          <line x1="-50" y1="0" x2="50" y2="0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6,4"/>
+          <polygon points="45,-6 55,0 45,6" fill="#36c7b5"/>
+          <rect x="-45" y="-22" width="90" height="24" fill="#1b536e" rx="4"/>
+          <text x="0" y="-6" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">-5 Hours Behind</text>
+        </g>
+        <!-- EST Node -->
+        <g transform="translate(450, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">EST</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading" style="margin: 2rem 0;">
+  <h2 id="live-clocks-heading" class="sr-only">Live Clocks WET vs EST</h2>
+  <div class="clock-card">
+    <span>Current WET (UTC+0)</span>
+    <strong id="gmtClock">--:--</strong>
+    <em>Western European Time</em>
+  </div>
+  <div class="clock-card">
+    <span>Current EST (UTC-5)</span>
+    <strong id="toClock">--:--</strong>
+    <em>Eastern Standard Time</em>
+  </div>
+</section>
+
+<!-- TIME DIFFERENCE & CALCULATION METHODS -->
+<section class="method-section content-section" id="calculation-methods" aria-labelledby="methods-heading">
+  <h2 id="methods-heading">How to Calculate WET to EST Time Differences</h2>
+  <p class="method-intro">
+    Converting WET to EST involves subtracting 5 hours from the Western European time. Because both regions observe winter standard offsets in this baseline, the 5-hour offset provides predictable scheduling.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">WET to EST Transatlantic Timeline (-5 Hours)</text>
+      <!-- WET Bar -->
+      <rect x="50" y="65" width="600" height="34" fill="#12455d" rx="4"/>
+      <text x="70" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">WET: 01:00 PM</text>
+      <text x="350" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">05:00 PM</text>
+      <text x="600" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">09:00 PM</text>
+      <!-- EST Bar -->
+      <rect x="50" y="125" width="600" height="34" fill="#1b536e" rx="4"/>
+      <text x="70" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">EST: 08:00 AM</text>
+      <text x="350" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">12:00 PM (Noon)</text>
+      <text x="600" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">04:00 PM</text>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. The -5 Subtraction Formula</h3>
+      <p>Subtract 5 hours from the WET time. For example, 2:00 PM WET minus 5 hours = 9:00 AM EST. If the calculation yields a negative hour, roll back to the previous day.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Transatlantic Business Overlap</h3>
+      <p>The 5-hour offset permits a solid 4-hour meeting overlap window between 1:00 PM and 5:00 PM WET (8:00 AM to 12:00 PM EST).</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Summer WEST/EDT Synchronization</h3>
+      <p>In summer, Portugal shifts to WEST (UTC+1) and New York shifts to EDT (UTC-4). The time gap remains exactly 5 hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. WET vs GMT Identity</h3>
+      <p>WET and GMT are identical in offset (UTC+0). Rules applying to GMT to EST apply identically to WET to EST.</p>
+    </article>
+  </div>
+</section>
+
+<!-- STEP BY STEP GUIDE -->
+<section class="content-section" id="step-by-step-guide" aria-labelledby="step-heading">
+  <h2 id="step-heading">Step-by-Step Guide for Converting WET to EST</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Step 1: Obtain the Source WET Timestamp</h3>
+      <p>Identify your starting Western European Time (UTC+0) value.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 2: Subtract 5 Hours for EST</h3>
+      <p>Subtract 5 hours to calculate the local time in Eastern North America. For example, 17:00 WET becomes 12:00 PM EST.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 3: Confirm Calendar Date Rollover</h3>
+      <p>If converting early morning WET times (e.g., 03:00 AM WET), subtracting 5 hours lands at 10:00 PM EST on the previous evening.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 4: Verify US Target Zone</h3>
+      <p>Ensure your target North American location is in the US/Canada Eastern Time zone (America/New_York or America/Toronto).</p>
+    </article>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE: WET vs EST vs CET vs GMT -->
+<section class="table-wrap content-section" id="comparison-table-section" aria-labelledby="comparison-heading">
+  <h2 id="comparison-heading">Timezone Comparison: WET, EST, CET, and GMT</h2>
+  <p>Compare how Western European Time aligns with neighboring European and American time standards.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Timezone Acronym</th>
+        <th>Full Name</th>
+        <th>UTC Offset</th>
+        <th>Season Active</th>
+        <th>Primary Cities</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>WET</strong></td>
+        <td>Western European Time</td>
+        <td>UTC+0</td>
+        <td>Winter (Oct–Mar)</td>
+        <td>Lisbon, Porto, Funchal, Las Palmas</td>
+      </tr>
+      <tr>
+        <td><strong>EST</strong></td>
+        <td>Eastern Standard Time</td>
+        <td>UTC-5</td>
+        <td>Winter (Nov–Mar)</td>
+        <td>New York, Toronto, Miami, Atlanta</td>
+      </tr>
+      <tr>
+        <td><strong>GMT</strong></td>
+        <td>Greenwich Mean Time</td>
+        <td>UTC+0</td>
+        <td>Year-Round Baseline</td>
+        <td>Greenwich, Accra, Reykjavik</td>
+      </tr>
+      <tr>
+        <td><strong>CET</strong></td>
+        <td>Central European Time</td>
+        <td>UTC+1</td>
+        <td>Winter (Oct–Mar)</td>
+        <td>Madrid, Paris, Berlin, Rome</td>
+      </tr>
+      <tr>
+        <td><strong>EDT</strong></td>
+        <td>Eastern Daylight Time</td>
+        <td>UTC-4</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>New York, Toronto (summer)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="table-wrap content-section" id="conversion-table" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour WET to EST Conversion Table</h2>
+  <p>Comprehensive reference matrix displaying every hour of Western European Time alongside its corresponding Eastern Standard Time value and day status.</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>WET Time (UTC+0)</th>
+        <th>EST Time (UTC-5)</th>
+        <th>Calendar Day Status</th>
+        <th>Window Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {conversionRows.map((row) => (
+        <tr>
+          <td><strong>{row.wet}</strong></td>
+          <td><span class="highlight">{row.est}</span></td>
+          <td>{row.dayNote}</td>
+          <td>{row.status}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<!-- POPULAR CONVERSIONS -->
+<section class="examples-section content-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key WET to EST Time Milestones</h2>
+  <p class="method-intro">Explore how prominent hours in Western Europe align with daily activities and commerce in Eastern North America.</p>
+  <div class="method-grid">
+    {popularConversions.map((item) => (
+      <article class="method-card">
+        <h3>{item.wet} = {item.est}</h3>
+        <p>{item.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- REGIONAL MAP / DST INFOGRAPHIC -->
+<section class="content-section" id="dst-infographic" aria-labelledby="infographic-heading">
+  <h2 id="infographic-heading">Western European Time (WET) Geographic Scope</h2>
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="220" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">WET (UTC+0) Regional Coverage & Transatlantic Links</text>
+      
+      <g transform="translate(70, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Mainland Portugal</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+0 (WET)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Lisbon / Porto / Braga</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Tech & Startup Hubs</text>
+      </g>
+
+      <g transform="translate(270, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Atlantic Islands</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+0 (WET)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Madeira / Canary Islands</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Funchal & Las Palmas</text>
+      </g>
+
+      <g transform="translate(470, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">US East Coast</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5 (EST)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Wall Street & Tech</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER -->
+<section class="method-section content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">WET to EST Transatlantic Meeting Planner</h2>
+  <p class="method-intro">
+    The 5-hour offset between Lisbon and New York creates an optimal 4-hour business crossover during European afternoons and American mornings.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <!-- Golden Window Highlight -->
+      <rect x="200" y="40" width="320" height="80" fill="rgba(54, 199, 181, 0.12)" stroke="#36c7b5" stroke-width="1.5" stroke-dasharray="4,4" rx="6"/>
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">Optimal Crossover Window: 13:00 - 17:00 WET (08:00 - 12:00 EST)</text>
+      
+      <g transform="translate(100, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST Morning</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">08:00 AM EST</text>
+      </g>
+      <g transform="translate(350, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Transatlantic Sync</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">03:00 PM WET = 10:00 AM EST</text>
+      </g>
+      <g transform="translate(600, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">WET Close</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">05:00 PM WET</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Morning US / Afternoon Lisbon Standup</h3>
+      <p>Schedule standups at 01:30 PM WET (08:30 AM EST). US East Coast participants open their workday while Portuguese team members share midday updates.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Wall Street Open Strategy Slot</h3>
+      <p>02:30 PM WET matches 09:30 AM EST (the opening bell of the NYSE). This slot is ideal for financial strategy calls and equity trading syncs.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. European End-of-Day Handover</h3>
+      <p>04:30 PM WET corresponds to 11:30 AM EST. European engineers deliver code commits to US colleagues right before wrapping up their business day.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Digital Nomad Productivity Workflow</h3>
+      <p>Remote workers based in Lisbon utilize morning hours (09:00 AM to 01:00 PM WET) for quiet, uninterrupted focus work before US clients come online.</p>
+    </article>
+  </div>
+</section>
+
+<!-- INDUSTRY APPLICATIONS -->
+<section class="content" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Industry Applications & Cross-Border Scenarios</h2>
+  <article>
+    <h3>Lisbon & Porto Digital Ecosystem & Venture Capital</h3>
+    <p>
+      Portugal's thriving technology ecosystem (host to Web Summit in Lisbon) attracts US venture capital and tech firms. Managing investments and engineering sprints between Lisbon and New York relies on real-time WET-to-EST conversion.
+    </p>
+  </article>
+  <article>
+    <h3>Transatlantic Aviation & Airport Logistics</h3>
+    <p>
+      Humberto Delgado Airport (LIS) in Lisbon serves as Europe's westernmost gateway for nonstop flights to New York (JFK/EWR), Boston (BOS), and Miami (MIA). Synchronizing flight departures and connection schedules depends on precise WET-to-EST conversion.
+    </p>
+  </article>
+  <article>
+    <h3>Subsea Fiber-Optic Networks & Data Centers</h3>
+    <p>
+      Submarine cable landing stations in Sines and Carcavelos (Portugal) route high-speed internet data between Europe, South America, and North America. Server telemetry logs use UTC (WET) baseline offsets for network synchronization.
+    </p>
+  </article>
+  <article>
+    <h3>International Tourism & Hospitality Management</h3>
+    <p>
+      Over 1 million American tourists visit Portugal annually. Hospitality operators in Lisbon, Porto, and the Algarve synchronize hotel reservations and flight arrivals across the 5-hour WET-to-EST time difference.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in WET to EST Conversions</h2>
+  <article>
+    <h3>1. Confusing WET with Central European Time (CET)</h3>
+    <p>
+      Spain (except the Canary Islands), France, and Germany operate on CET (UTC+1), which is 1 hour ahead of WET (UTC+0). Assuming Lisbon is on CET leads to a 1-hour scheduling error.
+    </p>
+  </article>
+  <article>
+    <h3>2. Conflating EST with Eastern Daylight Time (EDT)</h3>
+    <p>
+      EST is UTC-5 (winter), while EDT is UTC-4 (summer). Always check if North America is currently observing EST or EDT on your query date.
+    </p>
+  </article>
+  <article>
+    <h3>3. Azores Island Offset Oversights</h3>
+    <p>
+      The Azores archipelago operates on Azores Time (AZOT, UTC-1), which is 1 hour behind mainland Portugal (WET). Always verify whether your Portuguese contact is in Lisbon or the Azores.
+    </p>
+  </article>
+  <article>
+    <h3>4. Date Boundary Rollover Errors</h3>
+    <p>
+      Converting 02:00 AM WET to EST yields 9:00 PM EST on the previous calendar evening. Failing to account for the date shift causes calendar invitation mistakes.
+    </p>
+  </article>
+</section>
+
+<!-- TECHNICAL TIMEZONE DATABASE SECTION -->
+<section class="content" id="technical-details" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Specifications & IANA Timezone Database Metadata</h2>
+  <p>
+    Software engineers and system architects require canonical IANA database identifiers for reliable timezone math.
+  </p>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Canonical Identifiers</h3>
+      <p>The primary IANA time zone key for WET is <code>Europe/Lisbon</code>. Alternative aliases include <code>Atlantic/Madeira</code> and <code>Atlantic/Canary</code>.</p>
+    </article>
+    <article class="method-card">
+      <h3>ISO 8601 Offset Format</h3>
+      <p>WET is expressed in ISO 8601 strings as <code>+00:00</code> or <code>Z</code> (e.g., <code>2026-07-30T14:00:00Z</code>).</p>
+    </article>
+    <article class="method-card">
+      <h3>POSIX Timezone Specification</h3>
+      <p>The standard POSIX string for Portuguese time is <code>WET0WEST,M3.5.0/1,M10.5.0/2</code>, defining March and October transitions.</p>
+    </article>
+    <article class="method-card">
+      <h3>Network Time Protocol Sync</h3>
+      <p>NTP servers in Portugal synchronize against atomic time standards maintained by the Faculty of Sciences of the University of Lisbon (FCUL).</p>
+    </article>
+  </div>
+</section>
+
+<!-- CITIES SECTION -->
+<section class="content" id="cities-section" aria-labelledby="cities-heading">
+  <h2 id="cities-heading">Major Cities Operating Under WET and EST</h2>
+  <article>
+    <h3>Western European Time (WET, UTC+0) Cities</h3>
+    <p>
+      <strong>Lisbon, Portugal:</strong> National capital, financial center, and technological hub.<br />
+      <strong>Porto, Portugal:</strong> Industrial capital and major Northern Portuguese economic center.<br />
+      <strong>Funchal, Madeira:</strong> Regional capital of Madeira archipelago.<br />
+      <strong>Las Palmas, Canary Islands:</strong> Major Spanish Atlantic port city (operating WET/WEST).<br />
+      <strong>Reykjavik, Iceland:</strong> Operating on UTC+0 baseline year-round.
+    </p>
+  </article>
+  <article>
+    <h3>Eastern Standard Time (EST, UTC-5) Cities</h3>
+    <p>
+      <strong>New York City, NY:</strong> Global financial capital and economic powerhouse.<br />
+      <strong>Toronto, ON:</strong> Canada's largest city and financial sector center.<br />
+      <strong>Miami, FL:</strong> Major Latin American gateway and international trade center.<br />
+      <strong>Boston, MA:</strong> Premier higher education, biotechnology, and venture capital hub.<br />
+      <strong>Washington D.C.:</strong> Capital of the United States.
+    </p>
+  </article>
+</section>
+
+<!-- RELATED CONVERTERS -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-bst/">GMT to BST Converter</a></div>
+      <div class="related-card-text">Convert GMT to British Summer Time (UTC+1).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/eest-to-est/">EEST to EST Converter</a></div>
+      <div class="related-card-text">Convert Eastern European Summer Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-sast/">GMT to SAST Converter</a></div>
+      <div class="related-card-text">Convert GMT to South Africa Standard Time (UTC+2).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-mdt/">GMT to MDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Mountain Daylight Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-eest/">GMT to EEST Converter</a></div>
+      <div class="related-card-text">Convert GMT to Eastern European Summer Time.</div>
+    </article>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">WET to EST Frequently Asked Questions</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- CONCLUSION -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: Converting WET to Eastern Standard Time</h2>
+  <p>
+    Converting Western European Time (WET) to Eastern Standard Time (EST) involves a 5-hour backward shift (EST = WET - 5 hours). Observed in Portugal and parts of Western Europe, WET aligns exceptionally well with US East Coast business operations.
+  </p>
+  <p>
+    Use our interactive conversion calculator or review our 24-hour table to plan seamless transatlantic meetings and avoid scheduling errors.
+  </p>
+  <p>
+    <strong>Next Step:</strong> Test your timestamps in our <a href="#converter-section">interactive WET to EST converter</a> above.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .table-wrap th, .table-wrap td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-wrap th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+</style>

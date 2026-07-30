@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "ist-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "IST to EST Converter";
+const seoTitle = "IST to EST Converter – India Standard Time to Eastern Standard Time";
+const pageDescription = "Convert IST to EST instantly. Calculate the exact 10.5-hour time difference between India Standard Time (UTC+5:30) and US Eastern Standard Time (UTC-5) with live clocks and meeting planners.";
+
+const context = {
+  from: "IST",
+  to: "EST",
+  fromZone: "Asia/Kolkata",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/ist-to-est/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA & HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+// IST → EST: EST is 10 hours 30 minutes behind IST
+// ═══════════════════════════════════════════════════════════════════════════
+function formatHour12(hour: number, minutes: number = 0) {
+  const normalizedHour = ((hour % 24) + 24) % 24;
+  const period = normalizedHour < 12 ? "AM" : "PM";
+  const displayHour = normalizedHour % 12 || 12;
+  const displayMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  return `${displayHour}:${displayMinutes} ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  // Convert IST hour:minute to total minutes, subtract 10h 30m (630 mins)
+  const totalIstMins = hour * 60;
+  let totalEstMins = totalIstMins - 630;
+  const prevDay = totalEstMins < 0;
+  if (prevDay) {
+    totalEstMins += 1440; // Add 24 hours in minutes
+  }
+  const estHour = Math.floor(totalEstMins / 60);
+  const estMins = totalEstMins % 60;
+
+  return {
+    ist: formatHour12(hour, 0),
+    est: `${formatHour12(estHour, estMins)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day in US" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { ist: "12:00 AM (Midnight) IST", est: "1:30 PM EST (Prev Day)", note: "US afternoon business hours while India enters night" },
+  { ist: "2:00 AM IST", est: "3:30 PM EST (Prev Day)", note: "US East Coast afternoon work shift wrap-up" },
+  { ist: "6:00 AM IST", est: "7:30 PM EST (Prev Day)", note: "US evening prime time while India begins early morning" },
+  { ist: "8:30 AM IST", est: "10:00 PM EST (Prev Day)", note: "India office opening hours while US East Coast sleeps" },
+  { ist: "10:00 AM IST", est: "11:30 PM EST (Prev Day)", note: "Mid-morning focus hours across Bengaluru, Mumbai, and Delhi" },
+  { ist: "1:00 PM IST", est: "2:30 AM EST", note: "Afternoon shift in India; overnight in Eastern US" },
+  { ist: "3:30 PM IST", est: "5:00 AM EST", note: "Late afternoon in India; early pre-dawn on US East Coast" },
+  { ist: "6:30 PM IST", est: "8:00 AM EST", note: "Prime collaboration window: India evening sync with US morning start" },
+  { ist: "7:30 PM IST", est: "9:00 AM EST", note: "Peak daily handoff hour for global tech and engineering teams" },
+  { ist: "9:00 PM IST", est: "10:30 AM EST", note: "India late evening shift connecting with US mid-morning focus" },
+  { ist: "10:30 PM IST", est: "12:00 PM (Noon) EST", note: "India night shift / US lunchtime meeting window" },
+  { ist: "11:30 PM IST", est: "1:00 PM EST", note: "Late night in India; US afternoon operations continue" },
+];
+
+// FAQ data (20 detailed FAQs)
+const faqs = [
+  { q: "What is India Standard Time (IST)?", a: "India Standard Time (IST) is the official time zone for India and Sri Lanka. It runs at an offset of UTC+5:30 (five hours and thirty minutes ahead of Coordinated Universal Time)." },
+  { q: "What is Eastern Standard Time (EST)?", a: "Eastern Standard Time (EST) is the standard time used on the East Coast of North America (UTC-5), including cities like New York, Washington D.C., Toronto, Boston, and Atlanta." },
+  { q: "How many hours is EST behind IST?", a: "Eastern Standard Time (EST) is exactly 10 hours and 30 minutes behind India Standard Time (IST). To calculate EST from IST, subtract 10 hours and 30 minutes from the IST clock time." },
+  { q: "Why does India have a half-hour offset (+5:30)?", a: "India selected UTC+5:30 in 1906 to establish a single unified timezone that evenly split the country's geographic expanse between longitude 68°E and 97°E, centered on 82.5°E longitude at Mirzapur near Allahabad." },
+  { q: "Does India observe Daylight Saving Time (DST)?", a: "No. India does not observe Daylight Saving Time. IST remains fixed at UTC+5:30 throughout the entire year." },
+  { q: "Does Eastern Standard Time (EST) observe Daylight Saving Time?", a: "Yes. The US East Coast switches to Eastern Daylight Time (EDT, UTC-4) from the second Sunday in March to the first Sunday in November. During the EDT summer period, the gap narrows to 9.5 hours (9 hours 30 minutes)." },
+  { q: "What is the best time for a meeting between India and New York?", a: "The best overlap window is between 6:30 PM IST and 8:30 PM IST. In New York (EST), this corresponds to 8:00 AM EST to 10:00 AM EST, allowing US teams to start their morning just as Indian teams wrap up their day." },
+  { q: "How do tech outsourcing companies handle the 10.5-hour difference?", a: "Global IT service companies in Bengaluru, Hyderabad, Pune, and Gurugram operate dual-shift patterns (including night shifts from 6:00 PM IST to 3:00 AM IST) to provide real-time support during US business hours." },
+  { q: "What cities operate on India Standard Time?", a: "All major Indian hubs run on IST, including Mumbai, New Delhi, Bengaluru, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad, and Jaipur, as well as Colombo in Sri Lanka." },
+  { q: "How do I calculate IST to EST manually?", a: "Subtract 10 hours and 30 minutes from the IST time. For example, 7:30 PM IST minus 10 hours = 9:30 AM, then minus 30 minutes = 9:00 AM EST on the same day." },
+  { q: "What happens to calendar dates when converting IST morning to EST?", a: "Because EST is 10.5 hours behind IST, morning hours in India (between 12:00 AM Midnight and 10:29 AM IST) correspond to the previous calendar afternoon/evening in EST." },
+  { q: "Is Sri Lanka Standard Time the same as IST?", a: "Yes. Sri Lanka Standard Time (SLST) operates at UTC+5:30, identical to India Standard Time year-round." },
+  { q: "What is the IANA time zone identifier for IST?", a: "The standardized IANA database key for India Standard Time is Asia/Kolkata (formerly Asia/Calcutta)." },
+  { q: "How does the stock market timing overlap between NSE/BSE and NYSE?", a: "The National Stock Exchange of India (NSE) trades from 9:15 AM to 3:30 PM IST (10:45 PM to 5:00 AM EST). There is zero daytime trading overlap between Indian markets and the New York Stock Exchange." },
+  { q: "Why is 6:30 PM IST often called the 'golden window' for transatlantic calls?", a: "At 6:30 PM IST, it is 8:00 AM EST. This provides a fresh start for US East Coast professionals while allowing Indian teams to conduct daily handoffs before finishing work." },
+  { q: "Does Pakistan or Bangladesh share the same time zone as India?", a: "No. Pakistan uses Pakistan Standard Time (PKT, UTC+5), which is 30 minutes behind IST. Bangladesh uses Bangladesh Standard Time (BST, UTC+6), which is 30 minutes ahead of IST." },
+  { q: "How do airlines calculate flight times from India to North America?", a: "Non-stop flights from Delhi or Mumbai to New York take approximately 15 to 16 hours. Flights departing at 2:00 AM IST arrive in New York at around 7:30 AM EST on the same day due to timezone rollback." },
+  { q: "How does our IST to EST converter handle leap years and dates?", a: "Our tool utilizes native ECMAScript Intl DateTimeFormat APIs and the official IANA database, automatically resolving leap days and seasonal transitions." },
+  { q: "What is the offset difference between Bengaluru and Boston?", a: "Bengaluru operates on IST (UTC+5:30) and Boston operates on EST (UTC-5). In winter, Bengaluru is 10.5 hours ahead of Boston; in summer (EDT), it is 9.5 hours ahead." },
+  { q: "What is the offset difference between Mumbai and Miami?", a: "Mumbai operates on IST (UTC+5:30) and Miami operates on EST (UTC-5). In winter, Mumbai is 10.5 hours ahead of Miami; in summer (EDT), it is 9.5 hours ahead." },
+  { q: "Does Sri Lanka use the exact same timezone as India?", a: "Yes, Sri Lanka has officially observed UTC+5:30 since 2006, matching India Standard Time perfectly." },
+  { q: "What is the time difference between New Delhi and Washington D.C.?", a: "New Delhi is on IST (UTC+5:30) and Washington D.C. is on EST (UTC-5). In winter, New Delhi is 10 hours 30 minutes ahead; in summer (EDT), it is 9 hours 30 minutes ahead." },
+  { q: "How do call centers in Gurugram and Noida manage North American shifts?", a: "Call centers operate night shifts matching US business hours. A shift starting at 6:30 PM IST corresponds to 8:00 AM EST on the US East Coast." },
+  { q: "Why did India choose a single national time zone instead of multiple zones?", a: "To maintain administrative simplicity and unified transport schedules across railways, India adopted a single timezone (IST) centered on 82.5°E longitude, despite spanning nearly 30 degrees of longitude." },
+  { q: "What is the difference between IST (India Standard Time) and IST (Irish Standard Time)?", a: "While both use the abbreviation IST, India Standard Time is fixed at UTC+5:30 year-round, whereas Irish Standard Time is Ireland's summer daylight saving offset (UTC+1)." },
+  { q: "What is the offset difference between Chennai and Charlotte (North Carolina)?", a: "Chennai runs on IST (UTC+5:30) and Charlotte runs on EST (UTC-5). During winter, Chennai is 10.5 hours ahead of Charlotte; during summer (EDT), Chennai is 9.5 hours ahead." },
+  { q: "How do aviation long-haul routes from Delhi to JFK calculate flight durations?", a: "Non-stop flights cross Europe and the Atlantic over 15–16 hours. Departing Delhi at 2:30 AM IST arrives in New York at 7:30 AM EST on the same calendar day." },
+  { q: "What is the offset difference between Kolkata and Toronto?", a: "Kolkata operates on IST (UTC+5:30) and Toronto operates on EST (UTC-5). In winter, Kolkata is 10.5 hours ahead of Toronto; in summer (EDT), it is 9.5 hours ahead." },
+  { q: "How do international legal contracts specify timestamps between US and Indian entities?", a: "Contracts typically reference both UTC (e.g. 14:00 UTC) and specify the equivalent local clock times in both IST and EST to eliminate legal ambiguity." },
+  { q: "What is the capital of India and what timezone does it use?", a: "New Delhi is the capital of India, and it uses India Standard Time (IST, UTC+5:30) permanently." },
+  { q: "What is the largest city in Sri Lanka and what timezone does it use?", a: "Colombo is the commercial capital of Sri Lanka, operating on Sri Lanka Standard Time (UTC+5:30), which matches IST." },
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "IST to EST, IST to EST Converter, India Standard Time to Eastern Standard Time, Convert IST to EST, Bengaluru to New York time, Delhi to EST, Mumbai to New York time difference, 10.5 hour timezone converter",
+  image: "/assets/ist-to-est-og.svg",
+  imageAlt: "IST to EST Converter – Convert India Standard Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online IST to EST converter featuring live clocks, half-hour offset calculations, 24-hour schedules, and transatlantic IT meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert IST to EST",
+  howToDescription: "Simple steps to convert India Standard Time to US Eastern Standard Time.",
+  howToSteps: [
+    { name: "Input IST Time", text: "Select your desired India Standard Time in the converter tool." },
+    { name: "Subtract 10 Hours 30 Minutes", text: "The calculator automatically subtracts 10.5 hours to determine Eastern Standard Time (EST)." },
+    { name: "Check Date Shift", text: "For IST morning times (before 10:30 AM), the calculated EST time falls on the previous calendar day." },
+    { name: "Account for US Summer Time", text: "From March to November, when North America observes Eastern Daylight Time (EDT, UTC-4), the offset shrinks to 9 hours 30 minutes." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="IST to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    IST to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS (CUSTOM SVG) -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>10.5-Hour Offset Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>30-Minute Fractional Math</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>IT Outsourcing & Handoff Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span>India & US East Coast</span>
+  </div>
+</section>
+
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About India Standard Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to the definitive online <strong>IST to EST Converter</strong>. This specialized calculator provides accurate time translation between <strong>India Standard Time (IST, UTC+5:30)</strong> and <strong>Eastern Standard Time (EST, UTC-5)</strong>. During standard winter months in North America, Eastern Standard Time is exactly <strong>10 hours and 30 minutes behind India Standard Time</strong>. When it is 7:30 PM in Bengaluru, Mumbai, or New Delhi, it is 9:00 AM in New York, Washington D.C., and Toronto.
+  </p>
+  <p>
+    <strong>India Standard Time (IST)</strong> is observed across the entire Republic of India and Sri Lanka. Fixed at UTC+5:30, IST represents one of the world's most populous time zones, encompassing over 1.4 billion people. The 30-minute fractional offset was chosen in 1906 to establish a balanced national standard centered on 82.5° East longitude. India does not observe Daylight Saving Time, keeping its clock fixed throughout the year.
+  </p>
+  <p>
+    On the American side, <strong>Eastern Standard Time (EST, UTC-5)</strong> governs the commercial centers of the US East Coast. Major tech hubs, financial exchanges (NYSE, NASDAQ), and corporate headquarters operate in this zone. Because the US switches to Eastern Daylight Time (EDT, UTC-4) from March to November, the time gap between India and New York shrinks to <strong>9 hours and 30 minutes</strong> during the summer months.
+  </p>
+  <p>
+    Whether you are an <strong>engineering manager</strong> coordinating software sprints between Silicon Valley, New York, and Bengaluru, a <strong>financial analyst</strong> auditing overnight back-office processing in Mumbai, a <strong>healthcare operations director</strong> managing 24/7 medical transcription services, or a <strong>family member</strong> calling loved ones across continents, our converter makes half-hour time calculations effortless.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE INTERACTIVE CONVERTER TOOL & HERO ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Tool</p>
+    <h2 id="converter-tool-heading">Convert India Standard Time to EST</h2>
+    <p>
+      Select any time to convert IST to EST. Our daylight-saving aware tool handles fractional 30-minute offset math and calendar date changes automatically.
+    </p>
+
+    <!-- Custom Hero Illustration (SVG) -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        
+        <!-- Curving Transatlantic Connection -->
+        <path d="M140 120 C 250 40, 350 200, 460 120" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.7" />
+
+        <!-- Left Clock: India (IST) -->
+        <g transform="translate(140, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-28" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="15" y2="15" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#f4fbff" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">India (IST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+5:30 Offset</text>
+        </g>
+
+        <!-- Fractional Math Badge -->
+        <g transform="translate(300, 110)">
+          <rect x="-60" y="-20" width="120" height="32" rx="16" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+          <text x="0" y="2" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">EST is -10.5 Hrs</text>
+        </g>
+
+        <!-- Right Clock: US Eastern (EST) -->
+        <g transform="translate(460, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="-20" y2="10" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-30" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">US Eastern (EST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: India vs US Eastern</h2>
+  <div class="clock-card"><span>Current IST (UTC+5:30)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     INDIA & NYC LANDMARK GRAPHIC ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">India Tech Hub & New York Skyline Visual Graphic</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <!-- Taj Mahal / India Architecture Silhouette (Left) -->
+      <g transform="translate(110, 110)">
+        <path d="M-40 40 L-40 0 L-20 0 L-20 -20 Q0 -40 20 -20 L20 0 L40 0 L40 40 Z" fill="#12455d" />
+        <circle cx="0" cy="-25" r="12" fill="#36c7b5" opacity="0.8" />
+        <line x1="-50" y1="40" x2="-50" y2="-15" stroke="#1b536e" stroke-width="4" />
+        <line x1="50" y1="40" x2="50" y2="-15" stroke="#1b536e" stroke-width="4" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">India (IST)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">Bengaluru • Mumbai • Delhi</text>
+      </g>
+
+      <!-- Center offset badge -->
+      <g transform="translate(350, 100)">
+        <circle cx="0" cy="-10" r="38" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-14" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5" text-anchor="middle">10.5 HOURS</text>
+        <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">BEHIND</text>
+        <path d="M-45 25 L45 25" stroke="#36c7b5" stroke-width="2" marker-end="url(#arrow)" />
+      </g>
+
+      <!-- New York City Skyline (Right) -->
+      <g transform="translate(590, 110)">
+        <rect x="-60" y="-30" width="20" height="70" fill="#12455d" />
+        <rect x="-35" y="-55" width="25" height="95" fill="#1b536e" />
+        <rect x="-5" y="-70" width="30" height="110" fill="#2f6278" />
+        <rect x="30" y="-40" width="20" height="80" fill="#12455d" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">Wall Street • US East Coast</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE & METHOD CARDS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section content-section" aria-labelledby="method-heading">
+  <h2 id="method-heading">How to Convert IST to EST</h2>
+  <p class="method-intro">
+    Because IST uses a half-hour offset (UTC+5:30), converting to EST (UTC-5) involves subtracting 10 full hours and then subtracting an additional 30 minutes.
+  </p>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Method 1</p>
+      <h3>Two-Step Subtraction Rule</h3>
+      <p>
+        First, subtract 10 hours from the IST time. Next, subtract 30 minutes. Example: 7:30 PM IST minus 10 hours = 9:30 AM, minus 30 minutes = 9:00 AM EST.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 2</p>
+      <h3>Previous Day Calendar Rule</h3>
+      <p>
+        Any IST time prior to 10:30 AM falls into the previous calendar day when converted to EST. For example, 9:30 AM IST on Wednesday equals 11:00 PM EST on Tuesday evening.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 3</p>
+      <h3>Summer Daylight Adjustment (EDT)</h3>
+      <p>
+        From mid-March to early November, the US East Coast uses Eastern Daylight Time (EDT, UTC-4). Subtract 9 hours and 30 minutes from IST to get EDT.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour IST to EST Conversion Table</h2>
+  <p>
+    Below is a complete hour-by-hour reference table mapping India Standard Time (IST) to US Eastern Standard Time (EST).
+  </p>
+
+  <!-- Timeline SVG -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1rem; border-radius: 8px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 60" width="100%" height="auto">
+      <rect width="600" height="60" fill="#0c354a" rx="6" />
+      <line x1="30" y1="30" x2="570" y2="30" stroke="#2f6278" stroke-width="3" />
+      <circle cx="30" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="165" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="300" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="435" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="570" cy="30" r="5" fill="#36c7b5" />
+      <text x="30" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">00:00 IST (13:30 EST -1d)</text>
+      <text x="165" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">10:30 IST (00:00 EST)</text>
+      <text x="300" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">15:30 IST (05:00 EST)</text>
+      <text x="435" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">19:30 IST (09:00 EST)</text>
+      <text x="570" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">23:30 IST (13:00 EST)</text>
+      <text x="300" y="18" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-Hour Timeline: 10.5-Hour Constant Gap</text>
+    </svg>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>India Standard Time (IST)</th>
+          <th>Eastern Standard Time (EST)</th>
+          <th>Status / Day Shift</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.ist}</strong></td>
+            <td><strong style="color: var(--accent);">{row.est}</strong></td>
+            <td><span class="badge">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key Timestamps for IT & Corporate Operations</h2>
+  <p>
+    Review standard daily operational checkpoints commonly referenced across global tech centers in India and North America.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>IST Time</th>
+          <th>EST Equivalent</th>
+          <th>Operational Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.ist}</strong></td>
+            <td><strong style="color: var(--accent);">{item.est}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DST INFOGRAPHIC SVG
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin: 3rem 0;">
+  <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">Seasonal Shift: EST (Winter) vs EDT (Summer)</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 180" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="180" fill="#0c354a" rx="8" />
+      <rect x="30" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+      <text x="165" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">WINTER (NOV – MARCH)</text>
+      <text x="165" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">IST = UTC+5:30 | EST = UTC-5</text>
+      <text x="165" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">10.5 Hours Difference</text>
+      <text x="165" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(Standard winter offset)</text>
+
+      <rect x="350" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+      <text x="485" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">SUMMER (MARCH – NOV)</text>
+      <text x="485" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">IST = UTC+5:30 | EDT = UTC-4</text>
+      <text x="485" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">9.5 Hours Difference</text>
+      <text x="485" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(US switches to Daylight Time)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">IST & EST Business Meeting Planner</h2>
+  <p>
+    Coordinating calls across a 10.5-hour gap requires selecting precise window overlap hours. Below are the top recommended slots for aligning Indian and US East Coast teams.
+  </p>
+
+  <!-- Multi-region SVG graphic -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">19:30 IST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">India Evening Handoff</text>
+      </g>
+
+      <g transform="translate(325, 80)">
+        <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" marker-end="url(#arrow)" />
+        <rect x="-45" y="-18" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-2" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#36c7b5" text-anchor="middle">GOLDEN SLOT</text>
+      </g>
+
+      <g transform="translate(530, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">09:00 EST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">US Morning Start</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">The Golden Window</p>
+      <h3>7:30 PM IST = 9:00 AM EST</h3>
+      <p>
+        The most effective daily meeting slot. US East Coast staff begin their workday at 9:00 AM while Indian engineering teams finish their evening tasks at 7:30 PM.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Early US Slot</p>
+      <h3>6:30 PM IST = 8:00 AM EST</h3>
+      <p>
+        Ideal for executive syncs and priority escalation calls before standard US core meeting hours.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Night Shift Handoff</p>
+      <h3>10:30 PM IST = 12:00 PM EST</h3>
+      <p>
+        Used by 24/7 technical support centers and night shift software engineers conducting midday reviews with US management.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN AND WHERE USED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="where-used-heading">
+  <h2 id="where-used-heading">Where IST & EST Are Used</h2>
+  
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">1. Indian Information Technology & Software Exports</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      India is the world's leading IT services exporter. Technology hubs in Bengaluru, Hyderabad, Pune, Chennai, and Gurugram coordinate software deployment pipelines and cloud maintenance with Fortune 500 enterprises headquartered along the US East Coast.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">2. US Financial Institutions & Back-Office Processing</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Major Investment banks and financial clearinghouses in New York City rely on back-office operations centers in Mumbai and GIFT City (Gujarat) to process trade clearing, fraud monitoring, and risk analysis overnight while US markets are closed.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">3. Global Telecommunications & 24/7 Helpdesks</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Enterprise SaaS platforms maintain follow-the-sun customer support models. Customer tickets submitted during the US afternoon in EST are handed off seamlessly to incoming IST morning shifts in India.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">4. Pharmaceutical Research & Clinical Trials</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Global pharmaceutical firms coordinate clinical trials and laboratory data collection between research centers in Boston/New Jersey and manufacturing facilities in Hyderabad and Ahmedabad.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">5. Global Media & Gaming Content Moderation</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Digital media companies and online gaming platforms utilize operations centers in Hyderabad and Chennai for round-the-clock content moderation, protecting US platforms during North American evening peak traffic hours.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">6. Cross-Border EdTech & Online Learning</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      EdTech startups connect Indian math and coding tutors with North American students. Classes held in the early morning in the US (EST) take place during evening hours in India (IST).
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Mistakes When Converting IST to EST</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 1: Forgetting the 30-Minute Half-Hour Offset</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      The single most common error is treating the IST offset as a whole number of hours (such as 10 hours or 11 hours). Subtracting only 10 hours instead of 10.5 hours results in being 30 minutes late for meetings.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 2: Overlooking North American Daylight Saving Time</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      India stays on UTC+5:30 all year. However, New York switches from EST (UTC-5) to EDT (UTC-4) in March. Failing to adjust the calculation to 9.5 hours during summer leads to one-hour scheduling errors.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 3: Date Boundary Miscalculations for Morning IST</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Because EST is 10.5 hours behind, any IST timestamp prior to 10:30 AM occurs on the previous calendar day in Eastern time. For example, 8:00 AM IST on Thursday is 9:30 PM EST on Wednesday evening.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World IT & Corporate Use Cases</h2>
+  
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Daily Agile Scrum Standups</h3>
+      <p>
+        Distributed software teams hold joint standup meetings at 7:30 PM IST (9:00 AM EST) to sync daily deliverables across continents.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Overnight Code Deployments</h3>
+      <p>
+        US e-commerce platforms schedule server maintenance during low-traffic US night hours (2:00 AM EST), managed live by Indian DevOps teams during their afternoon (12:30 PM IST).
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Cross-Border Academic Collaborations</h3>
+      <p>
+        Indian Institutes of Technology (IITs) conduct virtual guest lectures with East Coast US universities using overlapping evening IST slots.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Healthcare Medical Transcription</h3>
+      <p>
+        US hospital dictations recorded during the EST day shift are transcribed and formatted overnight by certified medical specialists in India for morning review.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Fintech Payment Settlement</h3>
+      <p>
+        Global remittance platforms processing payments between Indian NRIs and US banks reconcile balances across the 10.5-hour timezone difference.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Automated Machine Learning Training</h3>
+      <p>
+        Data science teams in Bengaluru schedule heavy AI training jobs on US East Coast cloud GPUs during low-utilization EST night hours.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-ist/" class="related-card">
+      <h3 class="related-card-title">GMT to IST Converter</h3>
+      <p class="related-card-text">Convert GMT to India Standard Time (5.5-hour offset).</p>
+    </a>
+    <a href="/cat-to-est/" class="related-card">
+      <h3 class="related-card-title">CAT to EST Converter</h3>
+      <p class="related-card-text">Convert Central Africa Time to US Eastern Standard Time (7-hour offset).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Pacific Standard Time (8-hour offset).</p>
+    </a>
+    <a href="/gmt-to-aest/" class="related-card">
+      <h3 class="related-card-title">GMT to AEST Converter</h3>
+      <p class="related-card-text">Convert GMT to Australian Eastern Standard Time (10-hour offset).</p>
+    </a>
+    <a href="/gmt-to-utc/" class="related-card">
+      <h3 class="related-card-title">GMT to UTC Converter</h3>
+      <p class="related-card-text">Compare Greenwich Mean Time and Coordinated Universal Time (0-hour offset).</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  {faqs.map((faq) => (
+    <details class="faq-item">
+      <summary class="faq-question"><strong>{faq.q}</strong></summary>
+      <p class="faq-answer">{faq.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin-top: 3rem; text-align: center;">
+  <h2 style="font-family: 'Space Grotesk', sans-serif; color: var(--text);">Master Your IST to EST Calculations</h2>
+  <p style="color: var(--muted); max-width: 750px; margin: 1rem auto; line-height: 1.7;">
+    Whether you are managing international IT sprints, handling financial transactions, or scheduling calls between India and North America, our converter provides instant 100% accurate results. Bookmark this page for fast, reliable time conversions.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+  .faq-item { margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .faq-question { cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .faq-answer { margin-top: 0.75rem; color: var(--muted); line-height: 1.6; }
+</style>

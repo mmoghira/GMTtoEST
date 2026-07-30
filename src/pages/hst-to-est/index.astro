@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "hst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "HST to EST Converter";
+const seoTitle = "HST to EST Converter – Hawaii Standard Time to Eastern Standard Time";
+const pageDescription = "Convert HST to EST instantly. Calculate the exact 5-hour time difference between Hawaii Standard Time and Eastern Standard Time with live clocks, meeting planners, and conversion tables.";
+
+const context = {
+  from: "HST",
+  to: "EST",
+  fromZone: "Pacific/Honolulu",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/hst-to-est/`;
+
+// 24-hour conversion table data (HST → EST = HST + 5 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour + 5;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const nextDay = estHour >= 24;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    hst: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { hst: "12:00 AM (Midnight)", est: "5:00 AM", note: "Late night in Honolulu, early pre-dawn on US East Coast" },
+  { hst: "3:00 AM", est: "8:00 AM", note: "Deep night in Hawaii, East Coast business day kick-off" },
+  { hst: "6:00 AM", est: "11:00 AM", note: "Early morning sunrise in Maui, late morning in New York" },
+  { hst: "7:00 AM", est: "12:00 PM (Noon)", est: "Hawaiian morning start, lunchtime in Washington D.C." },
+  { hst: "8:00 AM", est: "1:00 PM", note: "Hawaiian office hours begin, early afternoon in NYC" },
+  { hst: "9:00 AM", est: "2:00 PM", note: "Prime transatlantic & cross-country collaboration window" },
+  { hst: "11:00 AM", est: "4:00 PM", note: "Late morning in Honolulu, East Coast offices preparing to close" },
+  { hst: "12:00 PM (Noon)", est: "5:00 PM", note: "Lunch break in Hawaii, end of traditional East Coast workday" },
+  { hst: "2:00 PM", est: "7:00 PM", note: "Mid-afternoon in Hawaii, dinner time in New York" },
+  { hst: "5:00 PM", est: "10:00 PM", note: "Sunset in Waikiki, late evening on US East Coast" },
+  { hst: "7:00 PM", est: "12:00 AM (Midnight Next Day)", note: "Dinner in Honolulu, midnight on US Eastern Seaboard" },
+  { hst: "10:00 PM", est: "3:00 AM (Next Day)", note: "Late evening in Hawaii, deep night in New York" }
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is the time difference between HST and EST?", a: "Eastern Standard Time (EST, UTC-5) is 5 hours ahead of Hawaii Standard Time (HST, UTC-10). When it is 8:00 AM HST in Honolulu, it is 1:00 PM EST in New York." },
+  { q: "Does Hawaii observe Daylight Saving Time?", a: "No. The state of Hawaii does NOT observe Daylight Saving Time. Hawaii remains on Hawaii Standard Time (HST, UTC-10) all year round." },
+  { q: "What happens to the HST to EST time difference in summer?", a: "Because Hawaii does not change its clocks but the US East Coast shifts to Eastern Daylight Time (EDT, UTC-4) in spring, the time gap between Hawaii and the East Coast increases from 5 hours to 6 hours during summer." },
+  { q: "What does HST stand for?", a: "HST stands for Hawaii Standard Time. It represents the official time zone used across all islands of Hawaii, operating at UTC-10." },
+  { q: "What does EST stand for?", a: "EST stands for Eastern Standard Time. It is used along the eastern territory of North America, including major cities like New York, Boston, Atlanta, Miami, and Toronto, running at UTC-5 during winter." },
+  { q: "Which islands and cities observe Hawaii Standard Time (HST)?", a: "HST covers all islands in the state of Hawaii, including Oahu (Honolulu), Maui (Kahului), Hawaii Island (Hilo/Kona), Kauai (Lihue), Molokai, and Lanai." },
+  { q: "How do I manually convert HST to EST?", a: "To convert HST to EST manually, add 5 hours to the HST time during winter standard time (or 6 hours during summer daylight saving time). For example, 7:00 AM HST plus 5 hours equals 12:00 PM (Noon) EST." },
+  { q: "What is the best time for a meeting between Hawaii and New York?", a: "The best overlap window is between 7:00 AM and 12:00 PM HST, which corresponds to 12:00 PM to 5:00 PM EST. This allows Hawaiian remote workers to connect before the East Coast workday finishes." },
+  { q: "Why doesn't Hawaii observe Daylight Saving Time?", a: "Because of Hawaii's tropical latitude close to the equator, the length of daylight varies very little between summer and winter. Changing clocks would provide minimal daylight benefit." },
+  { q: "How does military coordination work between Hawaii and Washington D.C.?", a: "The US Indo-Pacific Command (INDOPACOM) headquartered at Camp H.M. Smith in Oahu coordinates continuously with the Pentagon in Washington D.C. Officers manage defense communications using the 5-hour (winter) or 6-hour (summer) offset." },
+  { q: "How does flight travel from the US East Coast to Hawaii work?", a: "A direct flight from New York (JFK or EWR) to Honolulu (HNL) takes approximately 10 to 11 hours. A flight departing NYC at 10:00 AM EST lands in Honolulu at around 3:00 PM HST local time due to losing 5 hours heading west." },
+  { q: "Is HST the same as Aleutian Standard Time?", a: "The Aleutian Islands of Alaska operate on Hawaii-Aleutian Standard Time (HAST, UTC-10), which matches Hawaii's offset during winter. However, the Aleutian Islands observe Daylight Saving Time (HAST/HADT), whereas Hawaii does not." },
+  { q: "What is the IANA identifier for Hawaii Standard Time?", a: "The standard IANA time zone identifier for Hawaii is 'Pacific/Honolulu'." },
+  { q: "What is the IANA identifier for Eastern Standard Time?", a: "The standard IANA time zone identifier for US Eastern Time is 'America/New_York'." },
+  { q: "What time is 12 PM HST in EST?", a: "12:00 PM (Noon) HST equals 5:00 PM EST on the same day during winter standard time." },
+  { q: "What time is 9 AM HST in EST?", a: "9:00 AM HST equals 2:00 PM EST on the same day." },
+  { q: "What time is 5 PM HST in EST?", a: "5:00 PM HST equals 10:00 PM EST on the same day." },
+  { q: "What time is 8 PM HST in EST?", a: "8:00 PM HST equals 1:00 AM EST on the following day." },
+  { q: "Can remote workers live in Hawaii and work for East Coast companies?", a: "Yes, many remote employees live in Hawaii. However, they must start work early in the morning (e.g. 3:00 AM or 4:00 AM HST) to align with East Coast 8:00 AM or 9:00 AM EST business hours." },
+  { q: "How does stock trading work for investors living in Hawaii?", a: "The New York Stock Exchange opens at 9:30 AM EST, which corresponds to 4:30 AM HST in Hawaii. Market investors in Hawaii must wake up before dawn to participate in opening trades." },
+  { q: "What time is 1 AM HST in EST?", a: "1:00 AM HST equals 6:00 AM EST on the same day." },
+  { q: "What time is 4 AM HST in EST?", a: "4:00 AM HST equals 9:00 AM EST on the same day." },
+  { q: "What time is 10 AM HST in EST?", a: "10:00 AM HST equals 3:00 PM EST on the same day." },
+  { q: "What time is 3 PM HST in EST?", a: "3:00 PM HST equals 8:00 PM EST on the same day." },
+  { q: "What time is 11 PM HST in EST?", a: "11:00 PM HST equals 4:00 AM EST on the following day." },
+  { q: "What time is 2 AM HST in EST?", a: "2:00 AM HST equals 7:00 AM EST on the same day." },
+  { q: "What time is 5 AM HST in EST?", a: "5:00 AM HST equals 10:00 AM EST on the same day." },
+  { q: "What time is 1 PM HST in EST?", a: "1:00 PM HST equals 6:00 PM EST on the same day." },
+  { q: "What time is 4 PM HST in EST?", a: "4:00 PM HST equals 9:00 PM EST on the same day." },
+  { q: "What time is 6 PM HST in EST?", a: "6:00 PM HST equals 11:00 PM EST on the same day." },
+  { q: "What time is 9 PM HST in EST?", a: "9:00 PM HST equals 2:00 AM EST on the following day." },
+  { q: "Does Honolulu ever change time zones?", a: "No, Honolulu has observed UTC-10 continuously since 1947 without daylight saving changes." },
+  { q: "What time is sunrise in Hawaii relative to New York?", a: "When the sun rises around 6:00 AM HST in Hawaii, it is already 11:00 AM EST on the US East Coast." },
+  { q: "What time is 12:30 PM HST in EST?", a: "12:30 PM HST equals 5:30 PM EST on the same day." },
+  { q: "What time is 3:30 AM HST in EST?", a: "3:30 AM HST equals 8:30 AM EST on the same day." },
+  { q: "What time is 6:30 AM HST in EST?", a: "6:30 AM HST equals 11:30 AM EST on the same day." },
+  { q: "What time is 8:30 AM HST in EST?", a: "8:30 AM HST equals 1:30 PM EST on the same day." },
+  { q: "What time is 2:30 PM HST in EST?", a: "2:30 PM HST equals 7:30 PM EST on the same day." },
+  { q: "What time is 5:30 PM HST in EST?", a: "5:30 PM HST equals 10:30 PM EST on the same day." },
+  { q: "What time is 7:30 PM HST in EST?", a: "7:30 PM HST equals 12:30 AM Midnight EST on the following day." },
+  { q: "What time is 10:30 PM HST in EST?", a: "10:30 PM HST equals 3:30 AM EST on the following day." },
+  { q: "Why is tracking Hawaii time important for airline passengers?", a: "Non-stop flights from the East Coast cross 5 time zones, so passengers must calculate arrival times accurately to organize hotel check-ins and rental cars." },
+  { q: "What time is 1:30 AM HST in EST?", a: "1:30 AM HST equals 6:30 AM EST on the same day." },
+  { q: "What time is 4:30 AM HST in EST?", a: "4:30 AM HST equals 9:30 AM EST on the same day." },
+  { q: "What time is 11:30 AM HST in EST?", a: "11:30 AM HST equals 4:30 PM EST on the same day." },
+  { q: "What time is 1:30 PM HST in EST?", a: "1:30 PM HST equals 6:30 PM EST on the same day." },
+  { q: "What time is 4:30 PM HST in EST?", a: "4:30 PM HST equals 9:30 PM EST on the same day." },
+  { q: "What time is 8:30 PM HST in EST?", a: "8:30 PM HST equals 1:30 AM EST on the following day." },
+  { q: "What time is 9:30 AM HST in EST?", a: "9:30 AM HST equals 2:30 PM EST on the same day." },
+  { q: "What time is 10:30 AM HST in EST?", a: "10:30 AM HST equals 3:30 PM EST on the same day." },
+  { q: "What time is 3:30 PM HST in EST?", a: "3:30 PM HST equals 8:30 PM EST on the same day." },
+  { q: "What time is 6:30 PM HST in EST?", a: "6:30 PM HST equals 11:30 PM EST on the same day." },
+  { q: "What time is 2:00 AM HST in EST?", a: "2:00 AM HST equals 7:00 AM EST on the same day." },
+  { q: "What time is 11:00 PM HST in EST?", a: "11:00 PM HST equals 4:00 AM EST on the following day." },
+  { q: "Is Hawaii always 5 hours behind NYC in winter?", a: "Yes, Hawaii is exactly 5 hours behind NYC (EST, UTC-5) during winter standard time." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "HST to EST, Hawaii Standard Time to Eastern Standard Time, HST EST converter, convert HST to EST, Honolulu time to New York, Hawaii time to NYC, 5 hour time difference Hawaii",
+  image: "/assets/hst-to-est-og.svg",
+  imageAlt: "HST to EST Timezone Converter Diagram",
+  faqs,
+  appDescription: "Free online HST to EST converter featuring live interactive clocks, non-DST Hawaii calculations, 24-hour conversion matrices, and island-to-mainland meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert HST to EST",
+  howToDescription: "Simple steps to convert Hawaii Standard Time (HST) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter HST Time", text: "Select your desired hour and date in Hawaii Standard Time." },
+    { name: "Check the Offset", text: "Note the 5-hour difference (EST is 5 hours ahead of HST in winter, 6 hours ahead in summer)." },
+    { name: "View Converted EST", text: "Read the converted Eastern Standard Time along with any calendar date shift." },
+    { name: "Share or Schedule", text: "Use the copy button or meeting planner to coordinate across island and mainland teams." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="HST to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    HST to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS STRIP -->
+<section class="feature-strip" aria-label="Key Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>5-Hour Addition Calculation</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>No-DST Hawaii Logic</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Island-to-Mainland Meeting Planner</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>IANA Pacific/Honolulu Engine</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About HST to EST Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>HST to EST Converter</strong>. Converting time between the Hawaiian Islands and the East Coast of North America involves bridging a <strong>5-hour time difference</strong> during winter standard time (and 6 hours during summer daylight saving time). Hawaii Standard Time (HST) operates at Coordinated Universal Time -10 (UTC-10), while Eastern Standard Time (EST) operates at UTC-5. This means Eastern Standard Time is 5 hours ahead of Hawaii Standard Time.
+  </p>
+  <p>
+    A unique factor governing this conversion is that <strong>Hawaii does not observe Daylight Saving Time</strong>. While mainland East Coast cities switch from EST (UTC-5) to EDT (UTC-4) in mid-March, Hawaii remains locked at UTC-10 year-round. Consequently, the time gap widens to 6 hours during spring and summer, returning to 5 hours in November when the East Coast reverts to standard time.
+  </p>
+  <p>
+    This page is designed for island residents, remote workers, defense personnel at INDOPACOM and the Pentagon, agricultural exporters (Kona coffee, pineapple), tourism operators, and vacationers traveling between New York, Atlanta, or Miami and Honolulu or Maui. Our tool leverages native browser APIs and official IANA rulesets (`Pacific/Honolulu` and `America/New_York`) to calculate accurate times across all dates.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONVERTER COMPONENT & HERO GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Tool</p>
+    <h2 id="converter-tool-heading">Convert Hawaii Standard Time to Eastern Standard Time</h2>
+    <p>
+      Select any hour and calendar date below to transform HST to EST. The calculator handles Hawaii's non-DST policy and mainland clock shifts automatically.
+    </p>
+
+    <!-- Custom Hero SVG Illustration for HST to EST -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        <path d="M50 170 C 180 90, 260 210, 390 100 C 470 50, 520 160, 550 90" fill="none" stroke="#36c7b5" stroke-width="3" opacity="0.8" />
+        
+        <!-- Left Clock: Hawaii (Honolulu - UTC-10) -->
+        <g transform="translate(140, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="-22" y2="22" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Honolulu / Hawaii (HST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-10 Offset (No DST)</text>
+        </g>
+
+        <!-- Right Clock: Eastern Standard Time (New York - UTC-5) -->
+        <g transform="translate(460, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">New York (EST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+
+        <!-- Connection Arrow & Offset Badge -->
+        <g transform="translate(300, 105)">
+          <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+          <rect x="-45" y="-35" width="90" height="26" rx="13" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">EST is +5 HRS</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS SECTION -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: Hawaii vs US East Coast</h2>
+  <div class="clock-card"><span>Current HST (UTC-10)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION (DIAMOND HEAD / HONOLULU & NYC) -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Honolulu Diamond Head & New York Skyline Graphics</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <!-- Sun / Moon in Tropical Sky -->
+    <circle cx="160" cy="50" r="25" fill="#36c7b5" opacity="0.3" />
+    <circle cx="160" cy="50" r="15" fill="#8fd7ff" opacity="0.6" />
+
+    <!-- Hawaii Palm Trees & Diamond Head Silhouette (Left) -->
+    <g transform="translate(40, 80)">
+      <!-- Diamond Head Crater Outline -->
+      <path d="M 0 100 Q 60 40 120 70 Q 180 80 220 100 Z" fill="#1b536e" />
+      <!-- Palm Tree Silhouette -->
+      <path d="M 50 100 Q 45 60 30 20" stroke="#36c7b5" stroke-width="4" fill="none" />
+      <path d="M 30 20 Q 10 10 0 20" stroke="#36c7b5" stroke-width="2" fill="none" />
+      <path d="M 30 20 Q 20 0 40 0" stroke="#36c7b5" stroke-width="2" fill="none" />
+      <path d="M 30 20 Q 50 10 60 25" stroke="#36c7b5" stroke-width="2" fill="none" />
+      <text x="110" y="115" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Honolulu / HST</text>
+    </g>
+
+    <!-- Transatlantic / Transcontinental Arc -->
+    <path d="M 260 130 Q 440 60 620 130" fill="none" stroke="#36c7b5" stroke-width="2" stroke-dasharray="4 4" />
+
+    <!-- NYC Skyline Silhouette (Right) -->
+    <g transform="translate(600, 40)">
+      <rect x="20" y="70" width="40" height="90" fill="#1b536e" />
+      <rect x="70" y="40" width="35" height="120" fill="#164d68" />
+      <line x1="87.5" y1="40" x2="87.5" y2="15" stroke="#36c7b5" stroke-width="3" />
+      <text x="55" y="155" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">New York / EST</text>
+    </g>
+
+    <!-- Ocean Baseline -->
+    <rect x="0" y="190" width="800" height="10" fill="#071b26" />
+    <line x1="0" y1="190" x2="800" y2="190" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE MECHANICS SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Mathematical Mechanics</p>
+    <h2 id="time-diff-heading">Understanding the 5-Hour HST to EST Offset</h2>
+    <p>
+      Converting Hawaii Standard Time to Eastern Standard Time requires adding 5 hours during winter standard time:
+    </p>
+    <p style="text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: bold; color: var(--accent); background: var(--panel); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+      EST Time = HST Time + 5 Hours (Winter) <br />
+      EDT Time = HST Time + 6 Hours (Summer)
+    </p>
+    <p>
+      Because EST is ahead of HST, when it is morning in Hawaii, it is already afternoon on the US East Coast. Conversely, when the East Coast workday ends at 5:00 PM EST, Hawaiian workers are enjoying lunch at 12:00 PM Noon HST.
+    </p>
+  </div>
+
+  <!-- SIDE-BY-SIDE GRAPHIC -->
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="-25" y2="25" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">HST (UTC-10)</text>
+      </g>
+
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">ADD 5 HOURS</text>
+      </g>
+
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Addition Formula</h3>
+      <p>Add 5 hours to any HST hour during winter. If the result exceeds 24, subtract 24 to get the EST clock hour and step forward one calendar day.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. The Midday Sync Window</h3>
+      <p>The prime working overlap occurs between 7:00 AM and 12:00 PM HST, which aligns with 12:00 PM to 5:00 PM EST on the East Coast.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Summer Non-DST Shift</h3>
+      <p>Because Hawaii does not adopt DST, when New York switches to EDT (UTC-4) in March, add 6 hours instead of 5 hours.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour HST to EST Conversion Table</h2>
+    <p>Use this reference table to convert any hour in Hawaii Standard Time (HST) to Eastern Standard Time (EST).</p>
+
+    <!-- Timeline Grid Graphic (SVG) -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">24-Hour Timeline: HST vs EST</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="1000" height="120" style="display: block;">
+        <rect x="20" y="45" width="960" height="20" fill="#1b536e" rx="10" />
+        <rect x="20" y="45" width="960" height="20" fill="url(#accentGrad)" rx="10" opacity="0.3" />
+        
+        <g transform="translate(60, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">12 AM HST</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">5 AM EST</text>
+        </g>
+        
+        <g transform="translate(340, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">7 AM HST</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">12 PM EST (Overlap Start)</text>
+        </g>
+
+        <g transform="translate(580, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">12 PM HST</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">5 PM EST (Overlap End)</text>
+        </g>
+
+        <g transform="translate(860, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">7 PM HST</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">12 AM Midnight EST (+1 Day)</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Table Wrap -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Hawaii Standard Time (HST)</th>
+            <th scope="col">Eastern Standard Time (EST)</th>
+            <th scope="col">Calendar Day Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td><strong>{row.hst}</strong></td>
+              <td>{row.est}</td>
+              <td><span class={row.dayNote === "Next day" ? "chart-note warning" : "chart-note"}>{row.dayNote}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="content-section">
+  <h2>Popular HST to EST Time Conversions</h2>
+  <p>Here are quick reference pairs for high-frequency conversion requests between Hawaii and the East Coast.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">HST Time</th>
+          <th scope="col">EST Time</th>
+          <th scope="col">Context / Operational Significance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.hst}</strong></td>
+            <td><strong>{item.est}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DAYLIGHT SAVING TRANSITION INFOGRAPHIC & EXPLANATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="dst-explained">
+  <h2>Hawaii's Non-DST Policy vs US East Coast DST Shifts</h2>
+  <p>
+    Unlike most US states, Hawaii has opted out of Daylight Saving Time under the Uniform Time Act of 1966. This leads to seasonal adjustments when calculating HST to EST/EDT:
+  </p>
+
+  <!-- SVG DST Diagram -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(30, 40)">
+        <rect x="0" y="0" width="640" height="35" rx="6" fill="#12455d" stroke="#2f6278" />
+        <text x="15" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff">Winter (November – March):</text>
+        <text x="230" y="22" font-family="'Manrope', sans-serif" font-size="13" fill="#36c7b5">HST (UTC-10) vs EST (UTC-5)</text>
+        <text x="540" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff">+5 Hours EST</text>
+      </g>
+
+      <g transform="translate(30, 100)">
+        <rect x="0" y="0" width="640" height="40" rx="6" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="15" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5">Summer (March – November):</text>
+        <text x="230" y="25" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff">HST (UTC-10) vs EDT (UTC-4)</text>
+        <text x="540" y="25" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5">+6 Hours EDT</text>
+      </g>
+    </svg>
+  </div>
+
+  <p>
+    During winter (November through March), add 5 hours to HST to find EST. During summer (March through November), add 6 hours to HST to find EDT.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION & MULTI-REGION GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="meeting-planner">
+  <h2>Island-to-Mainland Meeting Planner: HST to EST</h2>
+  <p>
+    Coordinating calls between Hawaii and the US East Coast requires working around the 5-to-6 hour gap. Below are recommended meeting slots.
+  </p>
+
+  <!-- Multi-Region Clock Graphic (SVG) -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(50, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Honolulu / HST</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">7:00 AM – 12:00 PM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Morning Window</text>
+      </g>
+
+      <g transform="translate(245, 70)">
+        <rect x="0" y="0" width="160" height="28" rx="14" fill="#1b536e" stroke="#36c7b5" />
+        <text x="80" y="18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">⚡ Overlap Window</text>
+      </g>
+
+      <g transform="translate(440, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">New York / EST</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">12:00 PM – 5:00 PM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Afternoon Window</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>The Early Bird Hawaiian Sync (7:00 AM HST / 12:00 PM EST)</h3>
+      <p>Hawaiian remote workers start early in the morning to catch East Coast colleagues right at lunch hour.</p>
+    </article>
+    <article class="method-card">
+      <h3>Mid-Morning Hawaii Standup (9:00 AM HST / 2:00 PM EST)</h3>
+      <p>Optimal time for team reviews. Hawaiian staff have had breakfast, while East Coast managers are in mid-afternoon focus time.</p>
+    </article>
+    <article class="method-card">
+      <h3>End of East Coast Workday (12:00 PM HST / 5:00 PM EST)</h3>
+      <p>Hawaiian teams take their lunch break as East Coast teams finalize their daily deliverables and log off.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN & WHERE USED SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Where and When HST and EST are Used</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Hawaii Standard Time (HST) Territory</h3>
+      <p>
+        HST is used exclusively across the state of Hawaii, including Oahu, Maui, Hawaii Island, Kauai, Molokai, and Lanai. It is also observed by the US territory of Johnston Atoll.
+      </p>
+    </article>
+    <article>
+      <h3>Eastern Standard Time (EST) Territory</h3>
+      <p>
+        EST encompasses 23 states in the eastern US, alongside Eastern Canada (Ontario, Quebec) and Caribbean islands such as Jamaica, the Bahamas, and the Cayman Islands.
+      </p>
+    </article>
+    <article>
+      <h3>Defense & Strategic Communications</h3>
+      <p>
+        Military installations such as Joint Base Pearl Harbor-Hickam in Hawaii maintain constant strategic comms with the Department of Defense in Washington D.C., converting HST to EST for briefing schedules.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Common Mistakes When Converting HST to EST</h2>
+  <div class="use-cases">
+    <article>
+      <h3>1. Assuming Hawaii Shifts Clocks</h3>
+      <p>
+        A frequent mistake is assuming Hawaii enters daylight saving time in summer. Hawaii stays at UTC-10 year-round, so the gap changes from 5 hours to 6 hours when mainland East Coast states switch to EDT.
+      </p>
+    </article>
+    <article>
+      <h3>2. Date Boundary Oversights</h3>
+      <p>
+        When converting evening HST times (such as 7:00 PM to 11:00 PM HST), adding 5 hours moves the EST time past midnight into the next calendar day.
+      </p>
+    </article>
+    <article>
+      <h3>3. Confusing HST with HST/HAST in Alaska</h3>
+      <p>
+        While the Aleutian Islands share UTC-10 in winter, Alaska observes DST, whereas Hawaii does not. Always check whether your destination is Hawaii or Alaska.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Real-World Scenarios for HST to EST Conversion</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Remote Work from Hawaii for East Coast Companies</h3>
+      <p>
+        Tech professionals moving to Hawaii for lifestyle reasons work remotely for NYC or Boston firms, adjusting their work hours from 3:00 AM to 11:00 AM HST.
+      </p>
+    </article>
+    <article>
+      <h3>Hospitality & Vacation Logistics</h3>
+      <p>
+        Hotels and resorts in Waikiki or Maui coordinate guest check-ins and flight confirmations for travelers arriving from New York, Atlanta, or Toronto.
+      </p>
+    </article>
+    <article>
+      <h3>Agricultural Export & Coffee Trade</h3>
+      <p>
+        Kona coffee farms and Hawaiian agricultural producers manage sales orders and shipping logistics with East Coast distributors using HST to EST schedules.
+      </p>
+    </article>
+    <article>
+      <h3>Military Operations & Command Briefings</h3>
+      <p>
+        US Pacific Command officers present morning briefings at 7:00 AM HST, which coincide with noon meetings at Pentagon headquarters in Washington D.C.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-tools-heading">
+  <h2 id="related-tools-heading">Related Timezone Converters</h2>
+  <div class="related-grid">
+    <a href="/gmt-to-est/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Pacific Standard Time (UTC-8).</p>
+    </a>
+    <a href="/eet-to-est/" class="related-card">
+      <h3 class="related-card-title">EET to EST</h3>
+      <p class="related-card-text">Convert Eastern European Time (UTC+2) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/gmt-to-cst/" class="related-card">
+      <h3 class="related-card-title">GMT to CST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Central Standard Time (UTC-6).</p>
+    </a>
+    <a href="/gmt-to-bst/" class="related-card">
+      <h3 class="related-card-title">GMT to BST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to British Summer Time (UTC+1).</p>
+    </a>
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Home</h3>
+      <p class="related-card-text">Return to our central timezone conversion hub and dynamic calculator.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary><strong>{faq.q}</strong></summary>
+        <p>{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION SECTION -->
+<section class="content-section">
+  <h2>Conclusion</h2>
+  <p>
+    Converting Hawaii Standard Time (HST) to Eastern Standard Time (EST) is simple when adding the <strong>5-hour offset difference</strong> (or 6 hours in summer). With our real-time converter, dual live clocks, and detailed matrices, coordinating between Hawaii and the US East Coast is effortless. Bookmark this page for fast time conversions every day.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+</style>

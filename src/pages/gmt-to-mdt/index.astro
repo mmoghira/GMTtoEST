@@ -1,0 +1,797 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-mdt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to MDT Converter";
+const seoTitle = "GMT to MDT Converter – Greenwich Mean Time to Mountain Daylight Time";
+const pageDescription = "Convert GMT to MDT instantly. Find the exact time difference between Greenwich Mean Time (UTC+0) and Mountain Daylight Time (UTC-6) with live clocks, conversion table, and meeting planner.";
+
+const context = {
+  from: "GMT",
+  to: "MDT",
+  fromZone: "UTC",
+  toZone: "America/Denver"
+};
+
+const canonical = `${siteUrl}/gmt-to-mdt/`;
+
+// 24-hour conversion table data (GMT → MDT = GMT - 6)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const mdtHour = hour - 6;
+  const mdtNormalized = ((mdtHour % 24) + 24) % 24;
+  const prevDay = mdtHour < 0;
+  const period = mdtNormalized < 12 ? "AM" : "PM";
+  const displayHour = mdtNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    mdt: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous calendar day" : "Same calendar day",
+    status: (mdtNormalized >= 8 && mdtNormalized < 17) ? "Business Hours" : (mdtNormalized >= 17 && mdtNormalized < 22) ? "Evening Hours" : "Night Hours"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", mdt: "6:00 PM MDT (Prev Day)", note: "Evening in Denver, midnight transition in Greenwich" },
+  { gmt: "1:00 AM GMT", mdt: "7:00 PM MDT (Prev Day)", note: "Prime-time evening hours across Rocky Mountain states" },
+  { gmt: "2:00 AM GMT", mdt: "8:00 PM MDT (Prev Day)", note: "Late evening entertainment in Salt Lake City and Calgary" },
+  { gmt: "3:00 AM GMT", mdt: "9:00 PM MDT (Prev Day)", note: "Nighttime hours across North American Mountain Region" },
+  { gmt: "4:00 AM GMT", mdt: "10:00 PM MDT (Prev Day)", note: "Winding down before rest in Mountain Daylight Time" },
+  { gmt: "5:00 AM GMT", mdt: "11:00 PM MDT (Prev Day)", note: "Late night in Denver and Edmonton" },
+  { gmt: "6:00 AM GMT", mdt: "12:00 AM (Midnight) MDT", note: "Midnight transition in Mountain Daylight Time" },
+  { gmt: "7:00 AM GMT", mdt: "1:00 AM MDT", note: "Deep night sleeping hours across Mountain zone" },
+  { gmt: "8:00 AM GMT", mdt: "2:00 AM MDT", note: "Quiet early hours in Denver and Salt Lake City" },
+  { gmt: "9:00 AM GMT", mdt: "3:00 AM MDT", note: "Early pre-dawn in North America" },
+  { gmt: "10:00 AM GMT", mdt: "4:00 AM MDT", note: "Pre-dawn hours in Mountain time zone" },
+  { gmt: "11:00 AM GMT", mdt: "5:00 AM MDT", note: "Dawn breaking in Denver, early risers starting" },
+  { gmt: "12:00 PM (Noon)", mdt: "6:00 AM MDT", note: "Early morning start in Alberta and Colorado" },
+  { gmt: "1:00 PM GMT", mdt: "7:00 AM MDT", note: "Morning commute window in Salt Lake City" },
+  { gmt: "2:00 PM GMT", mdt: "8:00 AM MDT", note: "Denver and Calgary offices opening for business" },
+  { gmt: "3:00 PM GMT", mdt: "9:00 AM MDT", note: "Morning focus hours in Silicon Slopes, mid-afternoon in UK" },
+  { gmt: "4:00 PM GMT", mdt: "10:00 AM MDT", note: "Prime transatlantic collaboration window" },
+  { gmt: "5:00 PM GMT", mdt: "11:00 AM MDT", note: "Mid-morning focus in Mountain Time, end of GMT workday" },
+  { gmt: "6:00 PM GMT", mdt: "12:00 PM (Noon) MDT", note: "Lunch break in Denver, early evening in Greenwich" },
+  { gmt: "7:00 PM GMT", mdt: "1:00 PM MDT", note: "Afternoon work session across Rocky Mountain tech companies" },
+  { gmt: "8:00 PM GMT", mdt: "2:00 PM MDT", note: "Mid-afternoon engineering work in Salt Lake City" },
+  { gmt: "9:00 PM GMT", mdt: "3:00 PM MDT", note: "Late afternoon project syncs in Denver and Calgary" },
+  { gmt: "10:00 PM GMT", mdt: "4:00 PM MDT", note: "Mountain zone offices wrapping up standard business day" },
+  { gmt: "11:00 PM GMT", mdt: "5:00 PM MDT", note: "End of official workday in Mountain Daylight Time" }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is MDT?",
+    a: "MDT stands for Mountain Daylight Time. It is the daylight saving time zone observed in the Mountain Region of North America (including parts of the US and Canada) during summer months, operating at UTC-6 (6 hours behind Coordinated Universal Time)."
+  },
+  {
+    q: "What is the time difference between GMT and MDT?",
+    a: "Mountain Daylight Time (MDT) is exactly 6 hours behind Greenwich Mean Time (GMT). When it is 4:00 PM GMT in Greenwich, it is 10:00 AM MDT in Denver."
+  },
+  {
+    q: "When is MDT active during the year?",
+    a: "In the United States and Canada, Mountain Daylight Time (MDT) starts on the second Sunday of March (when clocks jump forward 1 hour from MST) and ends on the first Sunday of November (when clocks fall back to MST)."
+  },
+  {
+    q: "Is GMT the same as UTC?",
+    a: "For practical scheduling, GMT (Greenwich Mean Time) and UTC (Coordinated Universal Time) represent the same solar time reference offset (+0)."
+  },
+  {
+    q: "Which major North American cities observe MDT?",
+    a: "Major cities observing MDT during summer include Denver (Colorado), Salt Lake City (Utah), Albuquerque (New Mexico), Boise (Idaho), Cheyenne (Wyoming), Calgary (Alberta), and Edmonton (Alberta)."
+  },
+  {
+    q: "Does Arizona observe Mountain Daylight Time (MDT)?",
+    a: "Most of Arizona does NOT observe daylight saving time and stays on Mountain Standard Time (MST, UTC-7) year-round. However, the Navajo Nation in northeastern Arizona does observe MDT (UTC-6)."
+  },
+  {
+    q: "How do I convert GMT to MDT manually?",
+    a: "To convert GMT to MDT, subtract 6 hours from the GMT timestamp. For example: 3:00 PM GMT minus 6 hours = 9:00 AM MDT. If the result is negative, subtract from 24 to find the time on the previous calendar day."
+  },
+  {
+    q: "What is 8:00 PM GMT in MDT?",
+    a: "8:00 PM GMT converts to 2:00 PM MDT on the exact same calendar day."
+  },
+  {
+    q: "What is the difference between MST and MDT?",
+    a: "MST is Mountain Standard Time (UTC-7), used during winter. MDT is Mountain Daylight Time (UTC-6), used during summer daylight saving months."
+  },
+  {
+    q: "What is the primary IANA time zone identifier for MDT?",
+    a: "The primary canonical IANA time zone identifier for US Mountain Time is America/Denver. In Canada, America/Edmonton and America/Calgary are also widely used."
+  },
+  {
+    q: "What is the overlap window for meetings between London (GMT) and Denver (MDT)?",
+    a: "Because MDT is 6 hours behind GMT, the viable business overlap window occurs between 2:00 PM and 5:00 PM GMT, which corresponds to 8:00 AM to 11:00 AM MDT."
+  },
+  {
+    q: "Why do the US and UK change clocks on different dates?",
+    a: "The US begins daylight saving on the second Sunday of March and ends on the first Sunday of November. The UK begins BST on the last Sunday of March and ends on the last Sunday of October. During the brief gap weeks, relative offsets shift."
+  },
+  {
+    q: "How does Calgary and Edmonton handle GMT conversions?",
+    a: "Alberta, Canada observes MDT (UTC-6) during summer, synchronizing identically with Denver, Colorado."
+  },
+  {
+    q: "What is 12:00 AM Midnight GMT in MDT?",
+    a: "12:00 AM GMT corresponds to 6:00 PM MDT on the previous calendar evening."
+  },
+  {
+    q: "How do tech companies in Silicon Slopes (Utah) coordinate with European teams?",
+    a: "Technology firms in Salt Lake City and Provo schedule daily standups between 8:30 AM and 10:00 AM MDT (2:30 PM to 4:00 PM GMT) to catch European colleagues before their workday ends."
+  },
+  {
+    q: "Does Denver's elevation affect time zone rules?",
+    a: "No. Denver's nickname as the 'Mile High City' refers to its atmospheric elevation, but its time zone rules follow standard US federal daylight saving schedules under the America/Denver zone."
+  },
+  {
+    q: "What is the military time designation for UTC-6?",
+    a: "In military and maritime time zone indexing, UTC-6 is designated as Foxtrot Time Zone (F)."
+  },
+  {
+    q: "How do cloud datacenters in the Mountain region handle time logging?",
+    a: "Datacenters located in Cheyenne or Salt Lake City log system telemetry in UTC (GMT) and translate timestamps to America/Denver for administrative analytics."
+  },
+  {
+    q: "What is 10:00 AM GMT in MDT?",
+    a: "10:00 AM GMT minus 6 hours equals 4:00 AM MDT on the same morning."
+  },
+  {
+    q: "Is MDT used in Mexico?",
+    a: "Parts of northern Mexico along the US border (such as Ciudad Juárez, Chihuahua) synchronize with US Mountain Daylight Time (UTC-6) for cross-border trade."
+  },
+  {
+    q: "What happens to aviation flight times between London and Denver?",
+    a: "Nonstop flights between London Heathrow (LHR) and Denver International Airport (DEN) take roughly 9 to 10 hours. Due to the 6-hour backward time shift, a flight departing London at 12:00 PM GMT lands in Denver around 3:30 PM MDT."
+  },
+  {
+    q: "Can this converter tool handle historical date calculations?",
+    a: "Yes. Our converter uses native browser Intl API rules, automatically applying historical daylight saving rules for any requested date."
+  },
+  {
+    q: "What is 5:00 PM MDT in GMT?",
+    a: "5:00 PM MDT plus 6 hours equals 11:00 PM GMT on the same evening."
+  },
+  {
+    q: "How does solar noon in Greenwich compare to solar noon in Denver?",
+    a: "Solar noon in Greenwich occurs around 12:00 PM GMT. Solar noon in Denver occurs around 1:00 PM MDT (which corresponds to 7:00 PM GMT)."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to MDT, Greenwich Mean Time to Mountain Daylight Time, Convert GMT to MDT, MDT Time Zone, Denver Time, Salt Lake City Time, UTC+0 to UTC-6, GMT MDT Difference",
+  image: "/assets/gmt-to-mdt-og.svg",
+  imageAlt: "GMT to MDT Time Converter – Greenwich Mean Time to Mountain Daylight Time",
+  faqs,
+  appDescription: "Free online GMT to MDT converter with live clocks, 24-hour schedules, meeting planner, and US Mountain Daylight Time details.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to MDT",
+  howToDescription: "Step-by-step instructions for converting Greenwich Mean Time to Mountain Daylight Time.",
+  howToSteps: [
+    { name: "Enter GMT Time", text: "Select your desired GMT timestamp using the interactive time picker." },
+    { name: "Subtract Six Hours", text: "Subtract 6 hours to convert from UTC+0 (GMT) to UTC-6 (MDT)." },
+    { name: "Verify Date Rollover", text: "Check if the 6-hour subtraction crosses midnight into the previous calendar day." },
+    { name: "Copy and Share", text: "Copy the converted MDT result for your team schedule or flight itinerary." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to MDT"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to MDT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clocks</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
+    <span>MDT Offset (UTC-6)</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Transatlantic Meeting Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>IANA America/Denver</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About Greenwich Mean Time to Mountain Daylight Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>GMT to MDT Converter</strong>, built for tech professionals, enterprise software teams, aviation dispatchers, and outdoor enthusiasts coordinating across Greenwich Mean Time (UTC+0) and Mountain Daylight Time (UTC-6). MDT represents the summer daylight saving time zone for the Mountain Region of North America, running exactly 6 hours behind Greenwich Mean Time.
+  </p>
+  <p>
+    Greenwich Mean Time (GMT) serves as the primary universal solar reference computed at the Royal Observatory in Greenwich, London. Unadjusted for seasonal daylight shifts, GMT acts as the global benchmark for cloud database telemetry, international flight coordination, financial timestamps, and cross-border API integrations.
+  </p>
+  <p>
+    Mountain Daylight Time (MDT) is active from mid-March to early November across key North American commercial centers such as Denver, Salt Lake City, Calgary, Edmonton, Albuquerque, and Boise. Navigating the 6-hour difference requires careful coordination, particularly when scheduling cross-Atlantic business meetings or managing cloud infrastructure deployments.
+  </p>
+  <p>
+    This page features interactive live clocks, a customizable conversion tool, an hourly 24-hour reference matrix, detailed meeting planning recommendations, and technical timezone database specifications.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & HERO GRAPHIC -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Conversion Tool</p>
+    <h2 id="converter-tool-heading">Convert GMT to Mountain Daylight Time</h2>
+    <p>
+      Select any GMT time to calculate the corresponding Mountain Daylight Time instantly. Our calculator automatically handles date shifts and relative offsets.
+    </p>
+
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M0 40 H600 M0 80 H600 M0 120 H600 M0 160 H600 M0 200 H600" stroke="#12455d" stroke-width="1" />
+        
+        <!-- GMT Node -->
+        <g transform="translate(150, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">GMT</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC+0</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Greenwich Meridian</text>
+        </g>
+        <!-- Arrow + Offset -->
+        <g transform="translate(300, 120)">
+          <line x1="-50" y1="0" x2="50" y2="0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6,4"/>
+          <polygon points="45,-6 55,0 45,6" fill="#36c7b5"/>
+          <rect x="-45" y="-22" width="90" height="24" fill="#1b536e" rx="4"/>
+          <text x="0" y="-6" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">-6 Hours Behind</text>
+        </g>
+        <!-- MDT Node -->
+        <g transform="translate(450, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">MDT</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-6</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Denver / Calgary</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading" style="margin: 2rem 0;">
+  <h2 id="live-clocks-heading" class="sr-only">Live Clocks GMT vs MDT</h2>
+  <div class="clock-card">
+    <span>Current GMT (UTC+0)</span>
+    <strong id="gmtClock">--:--</strong>
+    <em>Greenwich Mean Time Baseline</em>
+  </div>
+  <div class="clock-card">
+    <span>Current MDT (UTC-6)</span>
+    <strong id="toClock">--:--</strong>
+    <em>Mountain Daylight Time</em>
+  </div>
+</section>
+
+<!-- TIME DIFFERENCE & CALCULATION METHODS -->
+<section class="method-section content-section" id="calculation-methods" aria-labelledby="methods-heading">
+  <h2 id="methods-heading">How to Calculate GMT to MDT Time Differences</h2>
+  <p class="method-intro">
+    Converting GMT to MDT requires subtracting 6 hours from the Greenwich timestamp. Because MDT is observed during North American summer daylight saving months, ensure your query date falls between mid-March and early November.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">GMT to MDT Timeline Shift (-6 Hours)</text>
+      <!-- GMT Bar -->
+      <rect x="50" y="65" width="600" height="34" fill="#12455d" rx="4"/>
+      <text x="70" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">GMT: 02:00 PM</text>
+      <text x="350" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">06:00 PM</text>
+      <text x="600" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">10:00 PM</text>
+      <!-- MDT Bar -->
+      <rect x="50" y="125" width="600" height="34" fill="#1b536e" rx="4"/>
+      <text x="70" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">MDT: 08:00 AM</text>
+      <text x="350" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">12:00 PM (Noon)</text>
+      <text x="600" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">04:00 PM</text>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. The -6 Subtraction Rule</h3>
+      <p>Subtract 6 hours from the GMT time. For instance, 3:00 PM GMT minus 6 hours = 9:00 AM MDT. If the result is negative, roll back into the previous calendar day.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Transatlantic Gap Strategy</h3>
+      <p>With a 6-hour gap, European afternoon hours align with North American morning hours, making 2:00 PM to 5:00 PM GMT the ideal meeting window.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Seasonal Transition Rule</h3>
+      <p>MDT operates at UTC-6 during summer. During winter, North America switches to Mountain Standard Time (MST, UTC-7), increasing the gap to 7 hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Arizona Exception Awareness</h3>
+      <p>Most of Arizona remains on MST (UTC-7) year-round and does not observe MDT. Always confirm specific city locations in Arizona.</p>
+    </article>
+  </div>
+</section>
+
+<!-- STEP BY STEP GUIDE -->
+<section class="content-section" id="step-by-step-guide" aria-labelledby="step-heading">
+  <h2 id="step-heading">Step-by-Step Guide for Converting GMT to MDT</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Step 1: Check Target Date Calendar</h3>
+      <p>Confirm your event falls between the second Sunday of March and the first Sunday of November when MDT (UTC-6) is active.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 2: Input Starting GMT Time</h3>
+      <p>Select your starting Greenwich Mean Time (UTC+0) value using our interactive picker tool.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 3: Subtract 6 Hours for MDT</h3>
+      <p>Deduct 6 hours from the GMT clock. For example, 16:00 GMT becomes 10:00 AM MDT in Denver.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 4: Check Previous Day Rollover</h3>
+      <p>If GMT is early morning (e.g., 03:00 AM GMT), subtracting 6 hours lands at 9:00 PM MDT on the previous evening.</p>
+    </article>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE: GMT vs MDT vs MST vs EDT -->
+<section class="table-wrap content-section" id="comparison-table-section" aria-labelledby="comparison-heading">
+  <h2 id="comparison-heading">Timezone Comparison: GMT, MDT, MST, and EDT</h2>
+  <p>Compare how Mountain Daylight Time aligns with neighboring North American and European time standards.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Timezone Acronym</th>
+        <th>Full Name</th>
+        <th>UTC Offset</th>
+        <th>Season Active</th>
+        <th>Primary Cities</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>GMT</strong></td>
+        <td>Greenwich Mean Time</td>
+        <td>UTC+0</td>
+        <td>Year-Round Baseline</td>
+        <td>Greenwich, Accra, Reykjavik</td>
+      </tr>
+      <tr>
+        <td><strong>MDT</strong></td>
+        <td>Mountain Daylight Time</td>
+        <td>UTC-6</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>Denver, Salt Lake City, Calgary</td>
+      </tr>
+      <tr>
+        <td><strong>MST</strong></td>
+        <td>Mountain Standard Time</td>
+        <td>UTC-7</td>
+        <td>Winter (Nov–Mar)</td>
+        <td>Phoenix (year-round), Denver (winter)</td>
+      </tr>
+      <tr>
+        <td><strong>EDT</strong></td>
+        <td>Eastern Daylight Time</td>
+        <td>UTC-4</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>New York, Toronto, Miami</td>
+      </tr>
+      <tr>
+        <td><strong>PDT</strong></td>
+        <td>Pacific Daylight Time</td>
+        <td>UTC-7</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>Los Angeles, Seattle, Vancouver</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="table-wrap content-section" id="conversion-table" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour GMT to MDT Conversion Table</h2>
+  <p>Reference table displaying every hour of Greenwich Mean Time with its corresponding Mountain Daylight Time value and day status.</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>GMT Time (UTC+0)</th>
+        <th>MDT Time (UTC-6)</th>
+        <th>Calendar Day Status</th>
+        <th>Window Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {conversionRows.map((row) => (
+        <tr>
+          <td><strong>{row.gmt}</strong></td>
+          <td><span class="highlight">{row.mdt}</span></td>
+          <td>{row.dayNote}</td>
+          <td>{row.status}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<!-- POPULAR CONVERSIONS -->
+<section class="examples-section content-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key GMT to MDT Time Milestones</h2>
+  <p class="method-intro">Explore how prominent hours in Greenwich align with daily activities and commerce in the Rocky Mountain region.</p>
+  <div class="method-grid">
+    {popularConversions.map((item) => (
+      <article class="method-card">
+        <h3>{item.gmt} = {item.mdt}</h3>
+        <p>{item.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- REGIONAL MAP / DST INFOGRAPHIC -->
+<section class="content-section" id="dst-infographic" aria-labelledby="infographic-heading">
+  <h2 id="infographic-heading">North American Mountain Daylight Time (MDT) Coverage</h2>
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="220" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">Mountain Daylight Time (UTC-6) Coverage Regions</text>
+      
+      <g transform="translate(70, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Colorado & Utah</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-6 (MDT)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Denver / Salt Lake City</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Tech & Financial Hubs</text>
+      </g>
+
+      <g transform="translate(270, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Alberta, Canada</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-6 (MDT)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Calgary / Edmonton</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Energy & Commerce</text>
+      </g>
+
+      <g transform="translate(470, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Idaho & New Mexico</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-6 (MDT)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Boise / Albuquerque</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Aerospace & Research</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER -->
+<section class="method-section content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">GMT to MDT Transatlantic Meeting Planner</h2>
+  <p class="method-intro">
+    Because MDT is 6 hours behind GMT, finding live overlap windows requires scheduling meetings in European afternoons and North American mornings.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <!-- Golden Window Highlight -->
+      <rect x="220" y="40" width="300" height="80" fill="rgba(54, 199, 181, 0.12)" stroke="#36c7b5" stroke-width="1.5" stroke-dasharray="4,4" rx="6"/>
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">Optimal Crossover Window: 14:00 - 17:00 GMT (08:00 - 11:00 MDT)</text>
+      
+      <g transform="translate(100, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">MDT Morning</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">08:00 AM MDT</text>
+      </g>
+      <g transform="translate(350, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Midday Transatlantic</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">03:00 PM GMT = 09:00 AM MDT</text>
+      </g>
+      <g transform="translate(600, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">GMT Close</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">05:00 PM GMT</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Morning Mountain / Afternoon GMT Standup</h3>
+      <p>Schedule team standups at 08:30 AM MDT (02:30 PM GMT). Mountain region teams start their day with clear priorities while GMT teams share midday updates.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Transatlantic Executive Strategy Window</h3>
+      <p>03:30 PM GMT corresponds to 09:30 AM MDT. This 90-minute slot is ideal for executive reviews, board syncs, and client demonstrations.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. European End-of-Day Handover</h3>
+      <p>04:30 PM GMT matches 10:30 AM MDT. European developers hand off open tickets to Mountain region engineering teams for afternoon resolution.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Asynchronous Workflow Models</h3>
+      <p>Outside the 3-hour overlap window, use asynchronous documentation on platforms like Jira, Notion, and Loom to maintain progress without live meetings.</p>
+    </article>
+  </div>
+</section>
+
+<!-- INDUSTRY APPLICATIONS -->
+<section class="content" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Industry Applications & Cross-Border Scenarios</h2>
+  <article>
+    <h3>Silicon Slopes Tech Corridor & Enterprise SaaS</h3>
+    <p>
+      The burgeoning technology hub around Salt Lake City, Provo, and Lehi (Silicon Slopes) houses major SaaS and cybersecurity firms. Syncing product engineering sprints with GMT-aligned European partners relies on accurate MDT conversion.
+    </p>
+  </article>
+  <article>
+    <h3>Energy Sector & Mining Operations in Calgary and Denver</h3>
+    <p>
+      Calgary and Denver represent energy exploration and commodity trading centers. Energy traders and geological survey teams synchronize international oil and natural gas contracts between European exchanges (GMT) and Mountain region trading desks.
+    </p>
+  </article>
+  <article>
+    <h3>Aerospace, Defense & National Laboratories</h3>
+    <p>
+      Facilities like Los Alamos National Laboratory and Sandia National Laboratories in New Mexico, alongside aerospace contractors in Colorado, coordinate defense research and satellite tracking data with European space agencies using GMT/UTC timestamps.
+    </p>
+  </article>
+  <article>
+    <h3>Rocky Mountain Outdoor Tourism & Aviation Flight Hubs</h3>
+    <p>
+      Denver International Airport (DEN) is a major hub connecting European flights to ski resorts across Vail, Aspen, and Banff. Managing flight arrivals and resort transfers depends on seamless GMT-to-MDT conversions.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in GMT to MDT Conversions</h2>
+  <article>
+    <h3>1. Confusing Mountain Standard Time (MST) with MDT</h3>
+    <p>
+      MST is UTC-7 (winter), whereas MDT is UTC-6 (summer). Assuming Denver is always UTC-7 leads to a 1-hour scheduling error during daylight saving months.
+    </p>
+  </article>
+  <article>
+    <h3>2. Ignoring Arizona's Non-DST Policy</h3>
+    <p>
+      Most of Arizona stays on MST (UTC-7) year-round and does not switch to MDT. If you schedule a call with Phoenix assuming it matches Denver during summer, your meeting will be 1 hour off.
+    </p>
+  </article>
+  <article>
+    <h3>3. Transatlantic DST Transition Discrepancies</h3>
+    <p>
+      The US switches to MDT on the second Sunday of March, while the UK switches to BST on the last Sunday of March. During these two weeks, the offset between London and Denver narrows to 5 hours.
+    </p>
+  </article>
+  <article>
+    <h3>4. Date Boundary Oversights on Evening GMT Calls</h3>
+    <p>
+      Converting early morning GMT times (e.g., 02:00 AM GMT) yields 8:00 PM MDT on the previous evening. Failing to note the date shift causes calendar invitation errors.
+    </p>
+  </article>
+</section>
+
+<!-- TECHNICAL TIMEZONE DATABASE SECTION -->
+<section class="content" id="technical-details" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Specifications & IANA Timezone Database Metadata</h2>
+  <p>
+    Software developers building global web applications require exact timezone database keys for proper offset calculations.
+  </p>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Canonical Identifier</h3>
+      <p>The primary IANA database key for US Mountain Time is <code>America/Denver</code>. In Canada, <code>America/Edmonton</code> and <code>America/Calgary</code> are standard aliases.</p>
+    </article>
+    <article class="method-card">
+      <h3>ISO 8601 Offset String</h3>
+      <p>MDT is formatted in ISO 8601 strings as <code>-06:00</code> (e.g., <code>2026-07-30T10:00:00-06:00</code>).</p>
+    </article>
+    <article class="method-card">
+      <h3>POSIX Timezone Specification</h3>
+      <p>The standard POSIX string for US Mountain Time is <code>MST7MDT,M3.2.0,M11.1.0</code>, defining transition rules for March and November.</p>
+    </article>
+    <article class="method-card">
+      <h3>System NTP Synchronization</h3>
+      <p>NTP servers across Colorado and Utah synchronize against NIST atomic clocks located in Boulder, Colorado (WWV/WWVB).</p>
+    </article>
+  </div>
+</section>
+
+<!-- CITIES SECTION -->
+<section class="content" id="cities-section" aria-labelledby="cities-heading">
+  <h2 id="cities-heading">Major Cities Operating Under MDT and GMT</h2>
+  <article>
+    <h3>Mountain Daylight Time (MDT, UTC-6) Cities</h3>
+    <p>
+      <strong>Denver, CO:</strong> Economic centerpiece of the Rocky Mountain region.<br />
+      <strong>Salt Lake City, UT:</strong> Tech and financial hub of Silicon Slopes.<br />
+      <strong>Calgary, AB:</strong> Energy sector and commercial hub of Western Canada.<br />
+      <strong>Edmonton, AB:</strong> Capital of Alberta and northern logistics hub.<br />
+      <strong>Albuquerque, NM:</strong> Center for technology, research, and defense.<br />
+      <strong>Boise, ID:</strong> Rapidly growing Pacific Northwest commercial center.
+    </p>
+  </article>
+  <article>
+    <h3>Greenwich Mean Time (GMT, UTC+0) Locations</h3>
+    <p>
+      <strong>Greenwich / London:</strong> Historical solar reference meridian (winter standard).<br />
+      <strong>Reykjavik:</strong> Capital of Iceland, operating on UTC+0 year-round.<br />
+      <strong>Accra:</strong> Capital of Ghana, maintaining year-round UTC+0 baseline.<br />
+      <strong>Dakar:</strong> Capital of Senegal, operating on UTC+0 year-round.
+    </p>
+  </article>
+</section>
+
+<!-- RELATED CONVERTERS -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-pdt/">GMT to PDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Pacific Daylight Time (UTC-7).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-cdt/">GMT to CDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Central Daylight Time (UTC-5).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-sast/">GMT to SAST Converter</a></div>
+      <div class="related-card-text">Convert GMT to South Africa Standard Time (UTC+2).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-bst/">GMT to BST Converter</a></div>
+      <div class="related-card-text">Convert GMT to British Summer Time (UTC+1).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-eest/">GMT to EEST Converter</a></div>
+      <div class="related-card-text">Convert GMT to Eastern European Summer Time.</div>
+    </article>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">GMT to MDT Frequently Asked Questions</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- CONCLUSION -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: Converting GMT to Mountain Daylight Time</h2>
+  <p>
+    Converting Greenwich Mean Time (GMT) to Mountain Daylight Time (MDT) involves a 6-hour backward shift (MDT = GMT - 6 hours). Active from mid-March to early November, MDT governs business across Denver, Salt Lake City, Calgary, and surrounding states.
+  </p>
+  <p>
+    Use our interactive conversion calculator or review our 24-hour table to plan seamless transatlantic meetings and avoid scheduling mistakes.
+  </p>
+  <p>
+    <strong>Next Step:</strong> Test your timestamps in our <a href="#converter-section">interactive GMT to MDT converter</a> above.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .table-wrap th, .table-wrap td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-wrap th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+</style>

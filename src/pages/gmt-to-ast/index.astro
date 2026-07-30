@@ -1,0 +1,701 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-ast";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to AST Converter";
+const seoTitle = "GMT to AST Converter – Greenwich Mean Time to Atlantic Standard Time";
+const pageDescription = "Convert GMT to AST instantly. Calculate the exact 4-hour time difference between Greenwich Mean Time and Atlantic Standard Time with live clocks, meeting planners, and conversion tables.";
+
+const context = {
+  from: "GMT",
+  to: "AST",
+  fromZone: "UTC",
+  toZone: "America/Halifax"
+};
+
+const canonical = `${siteUrl}/gmt-to-ast/`;
+
+// 24-hour conversion table data (GMT → AST = GMT - 4 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const astHour = hour - 4;
+  const astNormalized = ((astHour % 24) + 24) % 24;
+  const prevDay = astHour < 0;
+  const period = astNormalized < 12 ? "AM" : "PM";
+  const displayHour = astNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    ast: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", ast: "8:00 PM (Prev Day)", note: "Late evening in Halifax/Puerto Rico, midnight in London" },
+  { gmt: "4:00 AM", ast: "12:00 AM (Midnight)", note: "Night in Greenwich, midnight in Atlantic Canada" },
+  { gmt: "8:00 AM", ast: "4:00 AM", note: "London office day kick-off, pre-dawn in Nova Scotia" },
+  { gmt: "10:00 AM", ast: "6:00 AM", note: "Mid-morning focus in UK, early sunrise in San Juan" },
+  { gmt: "12:00 PM (Noon)", ast: "8:00 AM", note: "Lunch break in London, Atlantic Canada workday opening" },
+  { gmt: "1:00 PM", ast: "9:00 AM", note: "Early afternoon in UK, active morning in Halifax & Bermuda" },
+  { gmt: "3:00 PM", ast: "11:00 AM", note: "Mid-afternoon in London, late morning in Puerto Rico" },
+  { gmt: "5:00 PM", ast: "1:00 PM", note: "End of European office hours, lunch hour in Atlantic Time" },
+  { gmt: "7:00 PM", ast: "3:00 PM", note: "Evening relaxation in UK, mid-afternoon in Halifax" },
+  { gmt: "9:00 PM", ast: "5:00 PM", note: "Night in London, end of workday in Atlantic Canada" },
+  { gmt: "11:00 PM", ast: "7:00 PM", note: "Bedtime in London, dinner time in San Juan" },
+  { gmt: "11:59 PM", ast: "7:59 PM", note: "End of GMT calendar day, evening in Atlantic zone" }
+];
+
+// FAQ data
+const faqs = [
+  { q: "What is the time difference between GMT and AST?", a: "Atlantic Standard Time (AST, UTC-4) is exactly 4 hours behind Greenwich Mean Time (GMT, UTC+0). When it is 5:00 PM GMT in London, it is 1:00 PM AST in Halifax or San Juan." },
+  { q: "What does AST stand for?", a: "AST stands for Atlantic Standard Time. It represents the standard time zone covering Atlantic Canada, Puerto Rico, the US Virgin Islands, and several Caribbean nations, operating at UTC-4." },
+  { q: "What does GMT stand for?", a: "GMT stands for Greenwich Mean Time. It is the universal time standard baseline centered at the Royal Observatory in Greenwich, London, operating at UTC+0." },
+  { q: "Does the 4-hour gap between GMT and AST change during daylight saving time?", a: "In Atlantic Canada (Nova Scotia, New Brunswick, PEI), clocks advance by 1 hour to Atlantic Daylight Time (ADT, UTC-3) in summer. When the UK enters British Summer Time (BST, UTC+1), the gap between local UK time and local Atlantic Canadian time remains 4 hours. However, in non-DST regions like Puerto Rico, the gap between local UK summer time (BST, UTC+1) and AST (UTC-4) widens to 5 hours." },
+  { q: "Which major Canadian cities use Atlantic Standard Time (AST)?", a: "Canadian cities observing AST (UTC-4) in winter include Halifax (Nova Scotia), Moncton and Saint John (New Brunswick), and Charlottetown (Prince Edward Island)." },
+  { q: "Which Caribbean islands and territories use AST year-round without DST?", a: "Puerto Rico, the US Virgin Islands, Bermuda, Barbados, Trinidad & Tobago, Grenada, Saint Lucia, and the Dominican Republic observe AST (UTC-4) year-round without daylight saving adjustments." },
+  { q: "Which European cities observe Greenwich Mean Time (GMT)?", a: "Cities observing GMT (UTC+0) during winter include London, Dublin, Lisbon, Reykjavik, and Accra." },
+  { q: "How do I convert GMT to AST manually?", a: "To convert GMT to AST manually, subtract 4 hours from the GMT time. For example, 3:00 PM GMT (15:00) minus 4 hours equals 11:00 AM AST. If the result goes below zero, subtract from 24 to find the previous day's time." },
+  { q: "What is the best time for a meeting between London (GMT) and Halifax (AST)?", a: "The best overlap window is between 1:00 PM and 5:00 PM GMT, which aligns with 9:00 AM to 1:00 PM AST. This allows Atlantic Canadian teams to collaborate comfortably during their morning hours." },
+  { q: "Why is GMT to AST coordination important for transatlantic shipping?", a: "Port operations in Halifax, St. John's, and Caribbean ports manage transatlantic container vessels and cruise liners arriving from Europe. Aligning port schedules across GMT and AST is essential for maritime logistics." },
+  { q: "Is Newfoundland in the AST time zone?", a: "No. The island of Newfoundland observes Newfoundland Standard Time (NST, UTC-3:30), which is 30 minutes ahead of Atlantic Standard Time." },
+  { q: "What is the IANA identifier for GMT?", a: "In computer systems, GMT is represented by the IANA database identifier 'UTC' or 'Etc/GMT'." },
+  { q: "What is the IANA identifier for Atlantic Standard Time?", a: "The primary IANA database identifier for Atlantic Standard Time is 'America/Halifax' for Canada or 'America/Puerto_Rico' for the Caribbean." },
+  { q: "What time is 12 PM GMT in AST?", a: "12:00 PM (Noon) GMT equals 8:00 AM AST on the same day." },
+  { q: "What time is 5 PM GMT in AST?", a: "5:00 PM GMT equals 1:00 PM AST on the same day." },
+  { q: "What time is 8 PM GMT in AST?", a: "8:00 PM GMT equals 4:00 PM AST on the same day." },
+  { q: "What time is 10 PM GMT in AST?", a: "10:00 PM GMT equals 6:00 PM AST on the same day." },
+  { q: "What time is 1 AM GMT in AST?", a: "1:00 AM GMT equals 9:00 PM AST on the previous calendar day." },
+  { q: "What time is 3 AM GMT in AST?", a: "3:00 AM GMT equals 11:00 PM AST on the previous calendar day." },
+  { q: "What time is 7 AM GMT in AST?", a: "7:00 AM GMT equals 3:00 AM AST on the same day." },
+  { q: "What time is 2 PM GMT in AST?", a: "2:00 PM GMT equals 10:00 AM AST on the same day." },
+  { q: "What time is 6 PM GMT in AST?", a: "6:00 PM GMT equals 2:00 PM AST on the same day." },
+  { q: "What time is 9 PM GMT in AST?", a: "9:00 PM GMT equals 5:00 PM AST on the same day." },
+  { q: "How long is a flight from London to Halifax?", a: "Direct flights from London Heathrow (LHR) to Halifax Stanfield (YHZ) take about 6.5 to 7 hours. Flying west, passengers gain 4 hours on local clocks." },
+  { q: "Does Bermuda observe Daylight Saving Time?", a: "Yes, Bermuda observes Daylight Saving Time, switching between AST (UTC-4) in winter and ADT (UTC-3) in summer alongside Atlantic Canada." },
+  { q: "What time is 4 PM GMT in AST?", a: "4:00 PM GMT equals 12:00 PM (Noon) AST on the same day." },
+  { q: "What time is 11 PM GMT in AST?", a: "11:00 PM GMT equals 7:00 PM AST on the same day." },
+  { q: "What time is 9 AM GMT in AST?", a: "9:00 AM GMT equals 5:00 AM AST on the same day." },
+  { q: "What time is 2 AM GMT in AST?", a: "2:00 AM GMT equals 10:00 PM AST on the previous calendar day." },
+  { q: "What time is 6 AM GMT in AST?", a: "6:00 AM GMT equals 2:00 AM AST on the same day." },
+  { q: "What time is 11 AM GMT in AST?", a: "11:00 AM GMT equals 7:00 AM AST on the same day." },
+  { q: "What time is 3 PM GMT in AST?", a: "3:00 PM GMT equals 11:00 AM AST on the same day." },
+  { q: "What time is 7 PM GMT in AST?", a: "7:00 PM GMT equals 3:00 PM AST on the same day." },
+  { q: "What time is 10 PM GMT in AST?", a: "10:00 PM GMT equals 6:00 PM AST on the same day." },
+  { q: "Does Prince Edward Island use AST?", a: "Yes, PEI uses Atlantic Standard Time (UTC-4) in winter and Atlantic Daylight Time (UTC-3) in summer." },
+  { q: "Is Trinidad and Tobago in AST?", a: "Yes, Trinidad & Tobago observes Atlantic Standard Time (UTC-4) year-round." },
+  { q: "What time is 12:30 PM GMT in AST?", a: "12:30 PM GMT equals 8:30 AM AST on the same day." },
+  { q: "What time is 3:30 PM GMT in AST?", a: "3:30 PM GMT equals 11:30 AM AST on the same day." },
+  { q: "What time is 5:30 PM GMT in AST?", a: "5:30 PM GMT equals 1:30 PM AST on the same day." },
+  { q: "What time is 8:30 PM GMT in AST?", a: "8:30 PM GMT equals 4:30 PM AST on the same day." },
+  { q: "What time is 10:30 PM GMT in AST?", a: "10:30 PM GMT equals 6:30 PM AST on the same day." },
+  { q: "What time is 1:30 AM GMT in AST?", a: "1:30 AM GMT equals 9:30 PM AST on the previous calendar day." },
+  { q: "What time is 6:30 AM GMT in AST?", a: "6:30 AM GMT equals 2:30 AM AST on the same day." },
+  { q: "What time is 9:30 AM GMT in AST?", a: "9:30 AM GMT equals 5:30 AM AST on the same day." },
+  { q: "Is Grenada in the AST time zone?", a: "Yes, Grenada operates on Atlantic Standard Time (UTC-4) year-round." },
+  { q: "What is the UTC offset of AST?", a: "AST operates at UTC-4 (Coordinated Universal Time -4 hours)." },
+  { q: "What time is 8:00 AM GMT in AST?", a: "8:00 AM GMT equals 4:00 AM AST on the same day." },
+  { q: "What time is 11:00 AM GMT in AST?", a: "11:00 AM GMT equals 7:00 AM AST on the same day." },
+  { q: "What time is 2:00 PM GMT in AST?", a: "2:00 PM GMT equals 10:00 AM AST on the same day." },
+  { q: "What time is 5:00 PM GMT in AST?", a: "5:00 PM GMT equals 1:00 PM AST on the same day." },
+  { q: "What time is 9:00 PM GMT in AST?", a: "9:00 PM GMT equals 5:00 PM AST on the same day." },
+  { q: "Is Saint Lucia in AST?", a: "Yes, Saint Lucia operates on Atlantic Standard Time (UTC-4) year-round." },
+  { q: "What time is 4:00 AM GMT in AST?", a: "4:00 AM GMT equals 12:00 AM Midnight AST on the same day." },
+  { q: "What time is 12:00 PM GMT in AST?", a: "12:00 PM (Noon) GMT equals 8:00 AM AST on the same day." },
+  { q: "What time is 3:00 PM GMT in AST?", a: "3:00 PM GMT equals 11:00 AM AST on the same day." },
+  { q: "What time is 6:00 PM GMT in AST?", a: "6:00 PM GMT equals 2:00 PM AST on the same day." },
+  { q: "What time is 10:00 PM GMT in AST?", a: "10:00 PM GMT equals 6:00 PM AST on the same day." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to AST, Greenwich Mean Time to Atlantic Standard Time, GMT AST converter, convert GMT to AST, London time to Halifax, London to Puerto Rico, UK to Nova Scotia time, 4 hour time difference",
+  image: "/assets/gmt-to-ast-og.svg",
+  imageAlt: "GMT to AST Timezone Converter Diagram",
+  faqs,
+  appDescription: "Free online GMT to AST converter featuring live dual clocks, DST-aware calculations, 24-hour schedules, and transatlantic team meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to AST",
+  howToDescription: "Simple steps to convert Greenwich Mean Time (GMT) to Atlantic Standard Time (AST).",
+  howToSteps: [
+    { name: "Enter GMT Time", text: "Select your desired hour and date in Greenwich Mean Time." },
+    { name: "Check the Offset", text: "Note the 4-hour difference (AST is 4 hours behind GMT during winter standard time)." },
+    { name: "View Converted AST", text: "Read the converted Atlantic Standard Time along with any calendar date shift." },
+    { name: "Share or Schedule", text: "Use the copy button or meeting planner to coordinate across transatlantic teams." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to AST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to AST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS STRIP -->
+<section class="feature-strip" aria-label="Key Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>4-Hour Subtraction Math</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Atlantic & Caribbean Rule Engine</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Transatlantic Maritime Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>IANA America/Halifax Engine</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About GMT to AST Conversion</h2>
+  <p>
+    Welcome to our official <strong>GMT to AST Timezone Converter</strong>. Managing scheduling between Greenwich Mean Time (GMT) in Europe and Atlantic Standard Time (AST) across Atlantic Canada and the Caribbean requires navigating a <strong>4-hour time difference</strong>. Greenwich Mean Time functions as the universal zero baseline at Coordinated Universal Time +0 (UTC+0), while Atlantic Standard Time operates at UTC-4. As a result, Atlantic Standard Time is exactly 4 hours behind Greenwich Mean Time.
+  </p>
+  <p>
+    The 4-hour gap creates a remarkably convenient overlap for transatlantic business. When professionals in London or Dublin enjoy their lunch break at 12:00 PM GMT, colleagues in Halifax, Nova Scotia, or San Juan, Puerto Rico are starting their morning at 8:00 AM AST. This allows generous multi-hour windows for real-time collaboration every day.
+  </p>
+  <p>
+    Our online converter utilizes native browser localization APIs backed by official IANA database rulesets (`UTC`, `America/Halifax`, and `America/Puerto_Rico`). Whether you are coordinating maritime shipping schedules across the North Atlantic, planning Caribbean resort operations, or managing financial logistics, this guide provides real-time dual clocks, interactive 24-hour schedules, meeting planners, and detailed regional context.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONVERTER COMPONENT & HERO GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Tool</p>
+    <h2 id="converter-tool-heading">Convert Greenwich Mean Time to Atlantic Standard Time</h2>
+    <p>
+      Select any hour and calendar date below to calculate the corresponding Atlantic Standard Time. Our interactive tool automatically manages date boundaries and DST clock switches based on your selection.
+    </p>
+
+    <!-- Custom Hero SVG Illustration for GMT to AST -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        <path d="M40 160 C 170 70, 250 230, 390 100 C 470 40, 520 170, 560 80" fill="none" stroke="#36c7b5" stroke-width="3" opacity="0.8" />
+        
+        <!-- Left Clock: Greenwich Mean Time (UTC+0) -->
+        <g transform="translate(140, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#8fd7ff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">London / Greenwich (GMT)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+0 Offset</text>
+        </g>
+
+        <!-- Right Clock: Atlantic Standard Time (Halifax - UTC-4) -->
+        <g transform="translate(460, 115)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="-22" y2="22" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-32" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">Halifax / San Juan (AST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-4 Offset</text>
+        </g>
+
+        <!-- Connection Arrow & Offset Badge -->
+        <g transform="translate(300, 105)">
+          <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" />
+          <rect x="-45" y="-35" width="90" height="26" rx="13" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">AST is -4 HRS</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS SECTION -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: GMT vs AST</h2>
+  <div class="clock-card"><span>Current GMT (UTC+0)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current AST (UTC-4)</span><strong id="estClock">--:--</strong><em id="estZone">AST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION (HALIFAX CLOCK TOWER & LONDON) -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">London & Halifax Lighthouse Graphics</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <!-- Stars -->
+    <circle cx="100" cy="30" r="1.5" fill="#f4fbff" opacity="0.5" />
+    <circle cx="320" cy="25" r="1.5" fill="#f4fbff" opacity="0.4" />
+    <circle cx="560" cy="35" r="2" fill="#36c7b5" opacity="0.7" />
+
+    <!-- Big Ben Tower Silhouette (London / GMT Left) -->
+    <g transform="translate(80, 20)">
+      <rect x="15" y="40" width="30" height="140" fill="#1b536e" />
+      <polygon points="30,0 10,40 50,40" fill="#36c7b5" opacity="0.8" />
+      <circle cx="30" cy="65" r="8" fill="#0c354a" stroke="#36c7b5" stroke-width="2" />
+      <text x="30" y="195" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">London / GMT</text>
+    </g>
+
+    <!-- Transatlantic Ocean Bridge Wave -->
+    <path d="M 180 140 Q 400 60 600 140" fill="none" stroke="#36c7b5" stroke-width="2" stroke-dasharray="4 4" />
+
+    <!-- Peggy's Cove Lighthouse Silhouette (Halifax / AST Right) -->
+    <g transform="translate(580, 40)">
+      <polygon points="40,20 20,150 60,150" fill="#1b536e" />
+      <rect x="30" y="20" width="20" height="15" fill="#36c7b5" opacity="0.9" />
+      <polygon points="40,5 25,20 55,20" fill="#164d68" />
+      <text x="40" y="175" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#8fd7ff" text-anchor="middle">Halifax / AST</text>
+    </g>
+
+    <!-- Ocean Baseline -->
+    <rect x="0" y="190" width="800" height="10" fill="#071b26" />
+    <line x1="0" y1="190" x2="800" y2="190" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE MECHANICS SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Mathematical Mechanics</p>
+    <h2 id="time-diff-heading">Understanding the 4-Hour GMT to AST Offset</h2>
+    <p>
+      Converting Greenwich Mean Time to Atlantic Standard Time involves subtracting 4 hours during winter standard time:
+    </p>
+    <p style="text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: bold; color: var(--accent); background: var(--panel); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+      AST Time = GMT Time − 4 Hours
+    </p>
+    <p>
+      When subtracting 4 hours from early morning GMT times (00:00 to 03:59 GMT), the resulting time falls into the previous calendar evening in AST.
+    </p>
+  </div>
+
+  <!-- SIDE-BY-SIDE GRAPHIC -->
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="25" y2="0" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">GMT (UTC+0)</text>
+      </g>
+
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">SUBTRACT 4 HRS</text>
+      </g>
+
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+        <line x1="0" y1="0" x2="-22" y2="22" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-36" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">AST (UTC-4)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Direct Subtraction Rule</h3>
+      <p>Subtract 4 hours from any GMT hour. If the result drops below zero, add 24 to find the AST hour and step back one calendar day.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Generous Overlap Window</h3>
+      <p>Because the gap is only 4 hours, business teams share an extensive 4-to-5 hour working overlap between 1:00 PM GMT (9:00 AM AST) and 5:00 PM GMT (1:00 PM AST).</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Seasonal Clock Sync</h3>
+      <p>When the UK enters BST (UTC+1) and Atlantic Canada enters ADT (UTC-3), the relative difference between local clocks remains 4 hours.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour GMT to AST Conversion Table</h2>
+    <p>Reference this matrix to check hour-by-hour time conversions between Greenwich Mean Time and Atlantic Standard Time.</p>
+
+    <!-- Timeline Grid Graphic (SVG) -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">24-Hour Timeline: GMT vs AST</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="1000" height="120" style="display: block;">
+        <rect x="20" y="45" width="960" height="20" fill="#1b536e" rx="10" />
+        <rect x="20" y="45" width="960" height="20" fill="url(#accentGrad)" rx="10" opacity="0.3" />
+        
+        <g transform="translate(60, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">4 AM GMT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">12 AM Midnight AST</text>
+        </g>
+        
+        <g transform="translate(340, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">1 PM GMT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">9 AM AST (Overlap Start)</text>
+        </g>
+
+        <g transform="translate(620, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">5 PM GMT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">1 PM AST (Overlap End)</text>
+        </g>
+
+        <g transform="translate(900, 55)">
+          <circle cx="0" cy="0" r="8" fill="#36c7b5" />
+          <text x="0" y="-20" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#bdd2dc" text-anchor="middle">11 PM GMT</text>
+          <text x="0" y="30" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">7 PM AST</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Table Wrap -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Greenwich Mean Time (GMT)</th>
+            <th scope="col">Atlantic Standard Time (AST)</th>
+            <th scope="col">Calendar Day Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td><strong>{row.gmt}</strong></td>
+              <td>{row.ast}</td>
+              <td><span class={row.dayNote === "Previous day" ? "chart-note warning" : "chart-note"}>{row.dayNote}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="content-section">
+  <h2>Popular GMT to AST Time Conversions</h2>
+  <p>Below is a curated lookup table for popular conversion queries between Greenwich Mean Time and Atlantic Standard Time.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">GMT Time</th>
+          <th scope="col">AST Time</th>
+          <th scope="col">Context / Operational Significance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.gmt}</strong></td>
+            <td><strong>{item.ast}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DAYLIGHT SAVING TRANSITION INFOGRAPHIC & EXPLANATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="dst-explained">
+  <h2>Daylight Saving Time Dynamics: GMT/BST vs AST/ADT</h2>
+  <p>
+    Atlantic Canada (Nova Scotia, New Brunswick, PEI) observes DST, whereas Caribbean AST territories (Puerto Rico, US Virgin Islands) stay on AST year-round:
+  </p>
+
+  <!-- SVG DST Diagram -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(30, 40)">
+        <rect x="0" y="0" width="640" height="35" rx="6" fill="#12455d" stroke="#2f6278" />
+        <text x="15" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff">Winter (Standard Time):</text>
+        <text x="220" y="22" font-family="'Manrope', sans-serif" font-size="13" fill="#36c7b5">GMT (UTC+0) vs AST (UTC-4)</text>
+        <text x="540" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff">4 Hours Gap</text>
+      </g>
+
+      <g transform="translate(30, 90)">
+        <rect x="0" y="0" width="640" height="35" rx="6" fill="#12455d" stroke="#2f6278" />
+        <text x="15" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#f4fbff">Summer (Atlantic Canada):</text>
+        <text x="220" y="22" font-family="'Manrope', sans-serif" font-size="13" fill="#36c7b5">BST (UTC+1) vs ADT (UTC-3)</text>
+        <text x="540" y="22" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#8fd7ff">4 Hours Gap</text>
+      </g>
+
+      <g transform="translate(30, 140)">
+        <rect x="0" y="0" width="640" height="40" rx="6" fill="#1b536e" stroke="#36c7b5" stroke-width="1.5" />
+        <text x="15" y="25" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">Summer (Caribbean No-DST):</text>
+        <text x="220" y="25" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">BST (UTC+1) vs AST (UTC-4)</text>
+        <text x="540" y="25" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#36c7b5">5 Hours Gap</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION & MULTI-REGION GRAPHIC
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" id="meeting-planner">
+  <h2>Transatlantic Meeting Planner: GMT to AST</h2>
+  <p>
+    Below are recommended overlapping meeting slots between European offices and Atlantic Canadian / Caribbean counterparts.
+  </p>
+
+  <!-- Multi-Region Clock Graphic (SVG) -->
+  <div style="margin: 2rem auto; max-width: 750px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      
+      <g transform="translate(50, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">London / GMT</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">1:00 PM – 5:00 PM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Early Afternoon</text>
+      </g>
+
+      <g transform="translate(245, 70)">
+        <rect x="0" y="0" width="160" height="28" rx="14" fill="#1b536e" stroke="#36c7b5" />
+        <text x="80" y="18" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">⚡ Prime Overlap</text>
+      </g>
+
+      <g transform="translate(440, 30)">
+        <rect x="0" y="0" width="160" height="100" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Halifax / AST</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">9:00 AM – 1:00 PM</text>
+        <text x="80" y="80" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Morning Window</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>The Morning Kick-off (9:00 AM AST / 1:00 PM GMT)</h3>
+      <p>Halifax offices start their morning as UK colleagues return from lunch, creating ideal conditions for live strategy calls.</p>
+    </article>
+    <article class="method-card">
+      <h3>Mid-Day Transatlantic Sync (11:00 AM AST / 3:00 PM GMT)</h3>
+      <p>Optimal time for cross-border engineering reviews and maritime logistics updates across Atlantic shipping lanes.</p>
+    </article>
+    <article class="method-card">
+      <h3>European Wrap-up (1:00 PM AST / 5:00 PM GMT)</h3>
+      <p>UK teams finalize business decisions before logging off, handing off active tickets to Atlantic Canadian staff for their afternoon.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN & WHERE USED SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Where and When GMT and AST are Used</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Greenwich Mean Time (GMT) Regions</h3>
+      <p>
+        GMT is used across the United Kingdom, Ireland, Portugal, and West Africa (Ghana, Senegal, Ivory Coast). It serves as the baseline for global aviation, maritime routing, and computer network timestamps.
+      </p>
+    </article>
+    <article>
+      <h3>Atlantic Standard Time (AST) Regions</h3>
+      <p>
+        AST covers Atlantic Canada (Nova Scotia, New Brunswick, Prince Edward Island), Bermuda, Puerto Rico, the US Virgin Islands, and numerous Caribbean nations (Dominican Republic, Barbados, Trinidad & Tobago).
+      </p>
+    </article>
+    <article>
+      <h3>Maritime Logistics & Shipping</h3>
+      <p>
+        Port terminals in Halifax, St. John's, and Caribbean shipping hubs process container vessels traveling across GMT and AST waters.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Common Mistakes When Converting GMT to AST</h2>
+  <div class="use-cases">
+    <article>
+      <h3>1. Confusing AST with EST</h3>
+      <p>
+        Atlantic Standard Time (UTC-4) is 1 hour ahead of Eastern Standard Time (EST, UTC-5). Converting to EST instead of AST will cause your calculation to be 1 hour slow.
+      </p>
+    </article>
+    <article>
+      <h3>2. Forgetting Newfoundland's Half-Hour Offset</h3>
+      <p>
+        Newfoundland uses NST (UTC-3:30), which is 30 minutes ahead of AST. Do not apply AST rules to St. John's or Newfoundland destinations.
+      </p>
+    </article>
+    <article>
+      <h3>3. Overlooking Non-DST Caribbean Islands</h3>
+      <p>
+        While Atlantic Canada shifts to ADT in summer, Puerto Rico and the US Virgin Islands stay on AST year-round.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section">
+  <h2>Real-World Scenarios for GMT to AST Conversion</h2>
+  <div class="use-cases">
+    <article>
+      <h3>Atlantic Ocean Maritime & Cargo Shipping</h3>
+      <p>
+        Commercial shipping lines operating between London, Liverpool, and Halifax or San Juan align port dockings using GMT to AST schedules.
+      </p>
+    </article>
+    <article>
+      <h3>Caribbean Tourism & Resort Logistics</h3>
+      <p>
+        Luxury resorts in Barbados and Puerto Rico handle guest bookings and transatlantic flight arrivals from London Gatwick and Heathrow.
+      </p>
+    </article>
+    <article>
+      <h3>Oceanographic & Defense Research</h3>
+      <p>
+        Marine research institutes in Plymouth (UK) and Bedford Institute of Oceanography (Halifax) share real-time oceanic data using GMT/AST clocks.
+      </p>
+    </article>
+    <article>
+      <h3>Fintech & Offshore Financial Services</h3>
+      <p>
+        Financial centers in London and Bermuda synchronize trading desks and reinsurance contracts across the 4-hour time gap.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-tools-heading">
+  <h2 id="related-tools-heading">Related Timezone Converters</h2>
+  <div class="related-grid">
+    <a href="/gmt-to-est/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Pacific Standard Time (UTC-8).</p>
+    </a>
+    <a href="/gmt-to-cst/" class="related-card">
+      <h3 class="related-card-title">GMT to CST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Central Standard Time (UTC-6).</p>
+    </a>
+    <a href="/gmt-to-bst/" class="related-card">
+      <h3 class="related-card-title">GMT to BST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time (UTC+0) to British Summer Time (UTC+1).</p>
+    </a>
+    <a href="/eet-to-est/" class="related-card">
+      <h3 class="related-card-title">EET to EST</h3>
+      <p class="related-card-text">Convert Eastern European Time (UTC+2) to Eastern Standard Time (UTC-5).</p>
+    </a>
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Home</h3>
+      <p class="related-card-text">Return to our central timezone conversion hub and dynamic calculator.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary><strong>{faq.q}</strong></summary>
+        <p>{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION SECTION -->
+<section class="content-section">
+  <h2>Conclusion</h2>
+  <p>
+    Converting Greenwich Mean Time (GMT) to Atlantic Standard Time (AST) is simple when subtracting the <strong>4-hour offset difference</strong>. With AST running 4 hours behind GMT during winter standard time, our interactive converter, dual live clocks, and conversion tables make scheduling between Europe, Atlantic Canada, and the Caribbean seamless. Bookmark this page for daily conversions.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+</style>

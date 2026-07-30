@@ -1,0 +1,797 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "akdt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "AKDT to EST Converter";
+const seoTitle = "AKDT to EST Converter – Alaska Daylight Time to US Eastern Standard Time";
+const pageDescription = "Convert AKDT to EST instantly. Calculate exact time difference between Alaska Daylight Time (UTC-8) and Eastern Standard Time (UTC-5) with live clocks, conversion table, and meeting planner.";
+
+const context = {
+  from: "AKDT",
+  to: "EST",
+  fromZone: "America/Anchorage",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/akdt-to-est/`;
+
+// 24-hour conversion table data (AKDT → EST = AKDT + 3)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour + 3;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const nextDay = estHour >= 24;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    akdt: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next calendar day" : "Same calendar day",
+    status: (estNormalized >= 8 && estNormalized < 17) ? "Business Hours" : (estNormalized >= 17 && estNormalized < 22) ? "Evening Hours" : "Night Hours"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { akdt: "12:00 AM (Midnight)", est: "3:00 AM EST", note: "Late night in Anchorage and Fairbanks, quiet hours in New York" },
+  { akdt: "1:00 AM AKDT", est: "4:00 AM EST", note: "Quiet night across Alaska, pre-dawn in Eastern US" },
+  { akdt: "2:00 AM AKDT", est: "5:00 AM EST", note: "Deep night sleeping hours in Alaska, early risers in New York" },
+  { akdt: "3:00 AM AKDT", est: "6:00 AM EST", note: "Pre-dawn in Anchorage, morning commute starting in EST" },
+  { akdt: "4:00 AM AKDT", est: "7:00 AM EST", note: "Early aviation operations in Alaska, morning in New York" },
+  { akdt: "5:00 AM AKDT", est: "8:00 AM EST", note: "Dawn breaking in Juneau, US East Coast offices opening" },
+  { akdt: "6:00 AM AKDT", est: "9:00 AM EST", note: "Early risers starting in Anchorage, Wall Street opening bell" },
+  { akdt: "7:00 AM AKDT", est: "10:00 AM EST", note: "Alaskan commute window, mid-morning focus on US East Coast" },
+  { akdt: "8:00 AM AKDT", est: "11:00 AM EST", note: "Anchorage commercial offices opening, peak US overlap begins" },
+  { akdt: "9:00 AM AKDT", est: "12:00 PM (Noon) EST", note: "Morning focus in Alaska, lunchtime in New York and Toronto" },
+  { akdt: "10:00 AM AKDT", est: "1:00 PM EST", note: "Mid-morning focus in Juneau, early afternoon session in US" },
+  { akdt: "11:00 AM AKDT", est: "2:00 PM EST", note: "Late morning in Anchorage, mid-afternoon in Miami and Boston" },
+  { akdt: "12:00 PM (Noon)", est: "3:00 PM EST", note: "Midday lunch break in Alaska, late afternoon in New York" },
+  { akdt: "1:00 PM AKDT", est: "4:00 PM EST", note: "Afternoon work session in Fairbanks, US East Coast wrapping up" },
+  { akdt: "2:00 PM AKDT", est: "5:00 PM EST", note: "End of standard business day on US East Coast" },
+  { akdt: "3:00 PM AKDT", est: "6:00 PM EST", note: "Mid-afternoon focus in Anchorage, evening rush hour in EST" },
+  { akdt: "4:00 PM AKDT", est: "7:00 PM EST", note: "Alaskan offices preparing handovers, dinner time in New York" },
+  { akdt: "5:00 PM AKDT", est: "8:00 PM EST", note: "End of standard AKDT workday, prime-time television in US" },
+  { akdt: "6:00 PM AKDT", est: "9:00 PM EST", note: "Evening relaxation in Anchorage and Juneau" },
+  { akdt: "7:00 PM AKDT", est: "10:00 PM EST", note: "Prime-time broadcasting in Alaska, late evening in EST" },
+  { akdt: "8:00 PM AKDT", est: "11:00 PM EST", note: "Late evening in Alaska, bedtime in Eastern North America" },
+  { akdt: "9:00 PM AKDT", est: "12:00 AM (Midnight) EST", note: "Midnight transition on US East Coast" },
+  { akdt: "10:00 PM AKDT", est: "1:00 AM EST (+1 day)", note: "Late night in Anchorage, early hours of next day in EST" },
+  { akdt: "11:00 PM AKDT", est: "2:00 AM EST (+1 day)", note: "Midnight in Alaska, quiet night in Eastern US" }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is AKDT?",
+    a: "AKDT stands for Alaska Daylight Time. It is the daylight saving time zone observed throughout most of the State of Alaska during summer months, operating at UTC-8 (8 hours behind Coordinated Universal Time)."
+  },
+  {
+    q: "What is EST?",
+    a: "EST stands for Eastern Standard Time. It is the winter time zone used on the East Coast of North America (including New York, Toronto, Miami, and Washington D.C.), operating at UTC-5 (5 hours behind Coordinated Universal Time)."
+  },
+  {
+    q: "What is the exact time difference between AKDT and EST?",
+    a: "Eastern Standard Time (EST) is exactly 3 hours ahead of Alaska Daylight Time (AKDT). For example, when it is 9:00 AM AKDT in Anchorage, it is 12:00 PM (Noon) EST in New York."
+  },
+  {
+    q: "When is AKDT active during the year?",
+    a: "In Alaska, AKDT begins on the second Sunday of March (when clocks jump forward 1 hour from AKST) and ends on the first Sunday of November (when clocks fall back to AKST)."
+  },
+  {
+    q: "Which Alaskan cities observe Alaska Daylight Time (AKDT)?",
+    a: "Major cities observing AKDT include Anchorage, Fairbanks, Juneau, Sitka, Ketchikan, Wasilla, Kenai, and Kodiak."
+  },
+  {
+    q: "Which North American cities observe Eastern Standard Time (EST)?",
+    a: "Major cities observing EST in winter include New York City, Toronto, Montreal, Boston, Philadelphia, Washington D.C., Atlanta, and Miami."
+  },
+  {
+    q: "How do I convert AKDT to EST manually?",
+    a: "To convert AKDT to EST, add 3 hours to the AKDT timestamp. For example: 8:00 AM AKDT + 3 hours = 11:00 AM EST. If the addition exceeds 24:00, move to the next day."
+  },
+  {
+    q: "What is 4:00 PM AKDT in EST?",
+    a: "4:00 PM AKDT converts to 7:00 PM EST on the exact same calendar day."
+  },
+  {
+    q: "What happens when North America switches to Eastern Daylight Time (EDT)?",
+    a: "In summer, both regions observe daylight saving time simultaneously (AKDT at UTC-8 and EDT at UTC-4). The time difference remains 4 hours (EDT is 4 hours ahead of AKDT)."
+  },
+  {
+    q: "What is the primary IANA time zone identifier for AKDT?",
+    a: "The primary canonical IANA time zone identifier for Alaska Time is America/Anchorage. Additional Alaskan aliases include America/Juneau, America/Sitka, and America/Nome."
+  },
+  {
+    q: "What is the primary IANA identifier for EST?",
+    a: "The primary IANA time zone identifier for US Eastern Time is America/New_York."
+  },
+  {
+    q: "What is the best meeting overlap window between Anchorage (AKDT) and New York (EST)?",
+    a: "The optimal domestic meeting window occurs between 8:00 AM and 2:00 PM AKDT, which corresponds to 11:00 AM to 5:00 PM EST."
+  },
+  {
+    q: "How does Ted Stevens Anchorage International Airport (ANC) handle global cargo logistics?",
+    a: "Anchorage is one of the world's busiest air cargo hubs, positioned equidistant between Tokyo, Frankfurt, and New York. Cargo operators log flights in UTC and synchronize domestic ground logistics using AKDT/EST conversions."
+  },
+  {
+    q: "What is 12:00 AM Midnight AKDT in EST?",
+    a: "12:00 AM AKDT corresponds to 3:00 AM EST on the exact same morning."
+  },
+  {
+    q: "Do the Aleutian Islands observe the same time zone as Anchorage?",
+    a: "No. The western Aleutian Islands (west of 169.5° W, including Adak) operate on Hawaii-Aleutian Daylight Time (HDT, UTC-9), which is 1 hour behind Anchorage (AKDT)."
+  },
+  {
+    q: "What is the military time designation for UTC-8 and UTC-5?",
+    a: "UTC-8 is designated as Uniform Time Zone (U), while UTC-5 is designated as Romeo Time Zone (R)."
+  },
+  {
+    q: "How do energy operators at Prudhoe Bay coordinate with US corporate offices?",
+    a: "Petroleum engineers managing Trans-Alaska Pipeline crude extraction sync operational logs between North Slope field stations and East Coast corporate headquarters across the 3-to-4 hour offset."
+  },
+  {
+    q: "What is 10:00 AM AKDT in EST?",
+    a: "10:00 AM AKDT plus 3 hours equals 1:00 PM EST on the same afternoon."
+  },
+  {
+    q: "How does the 'Midnight Sun' impact daily schedules in Alaska during AKDT?",
+    a: "During summer in Fairbanks and Barrow, daylight lasts up to 24 hours. Commerce operates on standard AKDT clock schedules despite continuous solar illumination."
+  },
+  {
+    q: "What is 8:00 PM EST in AKDT?",
+    a: "8:00 PM EST minus 3 hours equals 5:00 PM AKDT on the exact same afternoon."
+  },
+  {
+    q: "How long is a flight between Anchorage (ANC) and New York (JFK)?",
+    a: "Flight time between Anchorage and New York is roughly 7 hours. Traveling eastbound, adding the 3-hour time shift means arriving local time is 10 hours after departure."
+  },
+  {
+    q: "Can this converter handle both summer and winter offsets automatically?",
+    a: "Yes. Our converter uses native browser Intl logic, dynamically applying exact daylight saving rules based on your selected query date."
+  },
+  {
+    q: "What is 2:00 PM AKDT in EST?",
+    a: "2:00 PM AKDT plus 3 hours equals 5:00 PM EST on the same afternoon."
+  },
+  {
+    q: "How does the commercial fishing industry in Kodiak use EST market benchmarks?",
+    a: "Seafood processors in Alaska time daily fish auction pricing against East Coast wholesale seafood markets in New York and Boston."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "AKDT to EST, Alaska Daylight Time to Eastern Standard Time, Convert AKDT to EST, AKDT Time Zone, Anchorage Time, New York Time, UTC-8 to UTC-5, AKDT EST Time Difference",
+  image: "/assets/akdt-to-est-og.svg",
+  imageAlt: "AKDT to EST Time Converter – Alaska Daylight Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online AKDT to EST converter with live clocks, 24-hour schedules, meeting planner, and Anchorage-New York time zone details.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert AKDT to EST",
+  howToDescription: "Step-by-step instructions for converting Alaska Daylight Time to Eastern Standard Time.",
+  howToSteps: [
+    { name: "Enter AKDT Timestamp", text: "Select your desired starting Alaska Daylight Time using our interactive picker." },
+    { name: "Add Three Hours", text: "Add 3 hours to convert from UTC-8 (AKDT) to UTC-5 (EST)." },
+    { name: "Verify Calendar Date", text: "Check if adding 3 hours crosses midnight into the next calendar day." },
+    { name: "Copy and Share", text: "Copy the converted EST result for your flight schedule or domestic meeting invite." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="AKDT to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    AKDT to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clocks</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
+    <span>3-Hour Domestic Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Alaska to NY Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>America/Anchorage to America/New_York</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About Alaska Daylight Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>AKDT to EST Converter</strong>, designed for aviation dispatchers, petroleum engineers, seafood logistics coordinators, and domestic travelers managing schedules across Alaska Daylight Time (UTC-8) and Eastern Standard Time (UTC-5). AKDT represents the summer daylight saving time zone for Alaska.
+  </p>
+  <p>
+    Operating 3 hours behind US Eastern Standard Time, Alaska occupies a vital geographic position for transpacific air cargo logistics, maritime fisheries, and national energy production. Ted Stevens Anchorage International Airport serves as a global air cargo crossroads connecting North America, Asia, and Europe.
+  </p>
+  <p>
+    Eastern Standard Time (EST) governs commerce across the US East Coast in winter (including New York, Toronto, Miami, and Washington D.C.). Coordinating business operations between Anchorage and New York offers an advantageous 6-hour shared business window.
+  </p>
+  <p>
+    Explore our interactive live clocks, dynamic conversion tool, 24-hour reference matrix, domestic meeting planner recommendations, and technical timezone database specifications below.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & HERO GRAPHIC -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Conversion Tool</p>
+    <h2 id="converter-tool-heading">Convert AKDT to Eastern Standard Time</h2>
+    <p>
+      Select any Alaska Daylight Time to calculate the equivalent Eastern Standard Time instantly. Our calculator automatically manages relative offsets and date shifts.
+    </p>
+
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M0 40 H600 M0 80 H600 M0 120 H600 M0 160 H600 M0 200 H600" stroke="#12455d" stroke-width="1" />
+        
+        <!-- AKDT Node -->
+        <g transform="translate(150, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">AKDT</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-8</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Anchorage / Fairbanks</text>
+        </g>
+        <!-- Arrow + Offset -->
+        <g transform="translate(300, 120)">
+          <line x1="-50" y1="0" x2="50" y2="0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6,4"/>
+          <polygon points="45,-6 55,0 45,6" fill="#36c7b5"/>
+          <rect x="-45" y="-22" width="90" height="24" fill="#1b536e" rx="4"/>
+          <text x="0" y="-6" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">+3 Hours Ahead</text>
+        </g>
+        <!-- EST Node -->
+        <g transform="translate(450, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">EST</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading" style="margin: 2rem 0;">
+  <h2 id="live-clocks-heading" class="sr-only">Live Clocks AKDT vs EST</h2>
+  <div class="clock-card">
+    <span>Current AKDT (UTC-8)</span>
+    <strong id="gmtClock">--:--</strong>
+    <em>Alaska Daylight Time</em>
+  </div>
+  <div class="clock-card">
+    <span>Current EST (UTC-5)</span>
+    <strong id="toClock">--:--</strong>
+    <em>Eastern Standard Time</em>
+  </div>
+</section>
+
+<!-- TIME DIFFERENCE & CALCULATION METHODS -->
+<section class="method-section content-section" id="calculation-methods" aria-labelledby="methods-heading">
+  <h2 id="methods-heading">How to Calculate AKDT to EST Time Differences</h2>
+  <p class="method-intro">
+    Calculating the time on the US East Coast from Alaska requires adding 3 hours to the AKDT clock. This straightforward 3-hour domestic shift creates convenient business alignment.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">AKDT to EST Domestic Timeline (+3 Hours)</text>
+      <!-- AKDT Bar -->
+      <rect x="50" y="65" width="600" height="34" fill="#12455d" rx="4"/>
+      <text x="70" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">AKDT: 08:00 AM</text>
+      <text x="350" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">12:00 PM (Noon)</text>
+      <text x="600" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">04:00 PM</text>
+      <!-- EST Bar -->
+      <rect x="50" y="125" width="600" height="34" fill="#1b536e" rx="4"/>
+      <text x="70" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">EST: 11:00 AM</text>
+      <text x="350" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">03:00 PM</text>
+      <text x="600" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">07:00 PM</text>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. The +3 Addition Formula</h3>
+      <p>Add 3 hours to the Alaska time. For example, 08:00 AM AKDT + 3 hours = 11:00 AM EST. If the total exceeds 24:00, roll over into the next day.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Shared Domestic US Overlap</h3>
+      <p>With only a 3-hour gap, Alaskan and East Coast offices enjoy a 6-hour daily overlap from 8:00 AM to 2:00 PM AKDT (11:00 AM to 5:00 PM EST).</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Summer Synchronized Shifts</h3>
+      <p>When North America enters summer daylight saving, Alaska moves to AKDT (UTC-8) and Eastern US moves to EDT (UTC-4), maintaining a 4-hour gap during summer.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Transpacific Air Cargo Alignment</h3>
+      <p>Air cargo couriers in Anchorage align flight departure logs with East Coast distribution hubs in New York and Atlanta using real-time AKDT/EST conversions.</p>
+    </article>
+  </div>
+</section>
+
+<!-- STEP BY STEP GUIDE -->
+<section class="content-section" id="step-by-step-guide" aria-labelledby="step-heading">
+  <h2 id="step-heading">Step-by-Step Guide for Converting AKDT to EST</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Step 1: Obtain the Source AKDT Timestamp</h3>
+      <p>Identify your starting Alaska Daylight Time (UTC-8) value.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 2: Add 3 Hours for EST</h3>
+      <p>Perform the simple mathematical addition of 3 hours. For example, 13:00 AKDT becomes 16:00 EST in New York.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 3: Check Next-Day Boundary Shift</h3>
+      <p>If AKDT time is 10:00 PM or 11:00 PM, adding 3 hours shifts the local EST timestamp past midnight into the next morning.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 4: Verify Target US Region</h3>
+      <p>Confirm that your East Coast contact is operating under Eastern Standard Time (America/New_York).</p>
+    </article>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE: AKDT vs EST vs PST vs GMT -->
+<section class="table-wrap content-section" id="comparison-table-section" aria-labelledby="comparison-heading">
+  <h2 id="comparison-heading">Timezone Comparison: AKDT, EST, PDT, and GMT</h2>
+  <p>Compare how Alaska Daylight Time aligns with neighboring North American and global time standards.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Timezone Acronym</th>
+        <th>Full Name</th>
+        <th>UTC Offset</th>
+        <th>Season Active</th>
+        <th>Primary Cities</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>AKDT</strong></td>
+        <td>Alaska Daylight Time</td>
+        <td>UTC-8</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>Anchorage, Fairbanks, Juneau</td>
+      </tr>
+      <tr>
+        <td><strong>EST</strong></td>
+        <td>Eastern Standard Time</td>
+        <td>UTC-5</td>
+        <td>Winter (Nov–Mar)</td>
+        <td>New York, Toronto, Miami</td>
+      </tr>
+      <tr>
+        <td><strong>PDT</strong></td>
+        <td>Pacific Daylight Time</td>
+        <td>UTC-7</td>
+        <td>Summer (Mar–Nov)</td>
+        <td>Los Angeles, Seattle, Vancouver</td>
+      </tr>
+      <tr>
+        <td><strong>GMT</strong></td>
+        <td>Greenwich Mean Time</td>
+        <td>UTC+0</td>
+        <td>Year-Round Baseline</td>
+        <td>Greenwich, Accra, Reykjavik</td>
+      </tr>
+      <tr>
+        <td><strong>AKST</strong></td>
+        <td>Alaska Standard Time</td>
+        <td>UTC-9</td>
+        <td>Winter (Nov–Mar)</td>
+        <td>Anchorage, Juneau (winter)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="table-wrap content-section" id="conversion-table" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour AKDT to EST Conversion Table</h2>
+  <p>Comprehensive reference matrix displaying every hour of Alaska Daylight Time alongside its corresponding Eastern Standard Time value and day status.</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>AKDT Time (UTC-8)</th>
+        <th>EST Time (UTC-5)</th>
+        <th>Calendar Day Status</th>
+        <th>Window Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {conversionRows.map((row) => (
+        <tr>
+          <td><strong>{row.akdt}</strong></td>
+          <td><span class="highlight">{row.est}</span></td>
+          <td>{row.dayNote}</td>
+          <td>{row.status}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<!-- POPULAR CONVERSIONS -->
+<section class="examples-section content-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key AKDT to EST Time Milestones</h2>
+  <p class="method-intro">Explore how prominent hours in Alaska align with daily activities and commerce in Eastern North America.</p>
+  <div class="method-grid">
+    {popularConversions.map((item) => (
+      <article class="method-card">
+        <h3>{item.akdt} = {item.est}</h3>
+        <p>{item.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- REGIONAL MAP / DST INFOGRAPHIC -->
+<section class="content-section" id="dst-infographic" aria-labelledby="infographic-heading">
+  <h2 id="infographic-heading">Alaska Daylight Time (AKDT) Regional Alignment</h2>
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="220" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">AKDT (UTC-8) Coverage & Domestic US Links</text>
+      
+      <g transform="translate(70, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Southcentral & Railbelt</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-8 (AKDT)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Anchorage / Wasilla</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Air Cargo & Commerce</text>
+      </g>
+
+      <g transform="translate(270, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Interior & Southeast</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-8 (AKDT)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Fairbanks / Juneau / Sitka</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Government & Tourism</text>
+      </g>
+
+      <g transform="translate(470, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">US East Coast</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5 (EST)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Headquarters & Markets</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER -->
+<section class="method-section content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">AKDT to EST Domestic Meeting Planner</h2>
+  <p class="method-intro">
+    Because AKDT is 3 hours behind EST, finding domestic crossover meeting slots between Anchorage and New York is easy and productive.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <!-- Golden Window Highlight -->
+      <rect x="180" y="40" width="340" height="80" fill="rgba(54, 199, 181, 0.12)" stroke="#36c7b5" stroke-width="1.5" stroke-dasharray="4,4" rx="6"/>
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">Optimal Crossover Window: 08:00 - 14:00 AKDT (11:00 - 17:00 EST)</text>
+      
+      <g transform="translate(100, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">AKDT Morning</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">08:00 AM AKDT</text>
+      </g>
+      <g transform="translate(350, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Midday Domestic Sync</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">11:00 AM AKDT = 02:00 PM EST</text>
+      </g>
+      <g transform="translate(600, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST Close</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">05:00 PM EST</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Morning Alaska / Midday US East Standup</h3>
+      <p>Schedule team standups at 08:30 AM AKDT (11:30 AM EST). Alaskan employees open their morning while East Coast colleagues review pre-lunch milestones.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Transcontinental Aviation & Logistics Slot</h3>
+      <p>10:00 AM AKDT corresponds to 01:00 PM EST. Air cargo teams in Anchorage update US distribution hubs on overnight transpacific flight manifests.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Federal Government & Energy Review Slot</h3>
+      <p>11:30 AM AKDT matches 02:30 PM EST. State officials in Juneau and federal agencies in Washington D.C. hold joint briefings.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Afternoon Alaska Independent Focus</h3>
+      <p>After 02:00 PM AKDT (5:00 PM EST), Alaskan teams have 3 hours of quiet, uninterrupted time to execute project tasks after East Coast offices close.</p>
+    </article>
+  </div>
+</section>
+
+<!-- INDUSTRY APPLICATIONS -->
+<section class="content" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Industry Applications & Cross-Border Scenarios</h2>
+  <article>
+    <h3>Transpacific Air Cargo Logistics (Ted Stevens Anchorage Airport)</h3>
+    <p>
+      Anchorage is one of the world's highest-volume air freight hubs. Global air express carriers (FedEx, UPS, Atlas Air) coordinate flight crews and customs clearance across AKDT and EST timestamps.
+    </p>
+  </article>
+  <article>
+    <h3>Seafood Processing & Commercial Maritime Fisheries</h3>
+    <p>
+      Alaska produces over half of total US commercial seafood landings. Fisheries in Kodiak and Dutch Harbor time auction prices and refrigerated container shipping against East Coast seafood markets.
+    </p>
+  </article>
+  <article>
+    <h3>Energy Sector & Trans-Alaska Pipeline Operations</h3>
+    <p>
+      Petroleum engineers managing North Slope crude extraction at Prudhoe Bay synchronize pipeline flow telemetry and safety audits with East Coast corporate headquarters.
+    </p>
+  </article>
+  <article>
+    <h3>Tourism & Cruise Line Management</h3>
+    <p>
+      Over 1.5 million cruise passengers visit Southeast Alaska annually. Shore excursion coordinators in Juneau and Ketchikan align guest bookings with US East Coast travel agencies.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in AKDT to EST Conversions</h2>
+  <article>
+    <h3>1. Confusing Alaska Standard Time (AKST) with AKDT</h3>
+    <p>
+      AKST is UTC-9 (winter), whereas AKDT is UTC-8 (summer). Using winter offsets during summer months introduces a 1-hour scheduling error.
+    </p>
+  </article>
+  <article>
+    <h3>2. Ignoring Western Aleutian Island Differences</h3>
+    <p>
+      The western Aleutian Islands (Adak) operate on Hawaii-Aleutian Time (HDT, UTC-9), which is 1 hour behind Anchorage (AKDT).
+    </p>
+  </article>
+  <article>
+    <h3>3. Conflating EST with EDT</h3>
+    <p>
+      EST is UTC-5 (winter), while EDT is UTC-4 (summer). When both regions observe summer daylight saving (AKDT and EDT), the gap is 4 hours.
+    </p>
+  </article>
+  <article>
+    <h3>4. Date Boundary Errors on Midnight Flight Logs</h3>
+    <p>
+      Converting late-night AKDT timestamps (such as 10:00 PM AKDT) yields 1:00 AM EST on the following day. Always confirm date tags on flight manifests.
+    </p>
+  </article>
+</section>
+
+<!-- TECHNICAL TIMEZONE DATABASE SECTION -->
+<section class="content" id="technical-details" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Specifications & IANA Timezone Database Metadata</h2>
+  <p>
+    Software developers require exact database keys to handle automated timezone calculations across enterprise systems.
+  </p>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Canonical Identifiers</h3>
+      <p>The primary IANA time zone key for Alaska is <code>America/Anchorage</code>. Additional Alaskan aliases include <code>America/Juneau</code> and <code>America/Sitka</code>.</p>
+    </article>
+    <article class="method-card">
+      <h3>ISO 8601 Offset Format</h3>
+      <p>AKDT is formatted in ISO 8601 strings as <code>-08:00</code> (e.g., <code>2026-07-30T10:00:00-08:00</code>).</p>
+    </article>
+    <article class="method-card">
+      <h3>POSIX Timezone Specification</h3>
+      <p>The standard POSIX string for Alaska Time is <code>AKST9AKDT,M3.2.0,M11.1.0</code>, defining March and November daylight transitions.</p>
+    </article>
+    <article class="method-card">
+      <h3>FAA Air Traffic Control Synchronization</h3>
+      <p>Federal Aviation Administration (FAA) control towers across Alaska log all flight data in UTC baseline and translate to local AKDT/EST for regional flight centers.</p>
+    </article>
+  </div>
+</section>
+
+<!-- CITIES SECTION -->
+<section class="content" id="cities-section" aria-labelledby="cities-heading">
+  <h2 id="cities-heading">Major Cities Operating Under AKDT and EST</h2>
+  <article>
+    <h3>Alaska Daylight Time (AKDT, UTC-8) Cities</h3>
+    <p>
+      <strong>Anchorage:</strong> Largest city, commercial capital, and air cargo hub.<br />
+      <strong>Fairbanks:</strong> Interior regional center and scientific research hub.<br />
+      <strong>Juneau:</strong> State capital and Southeast Alaska cruise port.<br />
+      <strong>Sitka & Ketchikan:</strong> Maritime, timber, and tourist hubs.<br />
+      <strong>Kodiak:</strong> Major commercial fishing port.
+    </p>
+  </article>
+  <article>
+    <h3>Eastern Standard Time (EST, UTC-5) Cities</h3>
+    <p>
+      <strong>New York City, NY:</strong> World financial capital and corporate center.<br />
+      <strong>Toronto, ON:</strong> Canada's commercial and banking centerpiece.<br />
+      <strong>Miami, FL:</strong> Major international trade hub.<br />
+      <strong>Boston, MA:</strong> Technology and higher education center.<br />
+      <strong>Washington D.C.:</strong> Capital of the United States.
+    </p>
+  </article>
+</section>
+
+<!-- RELATED CONVERTERS -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-akdt/">GMT to AKDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Alaska Daylight Time (UTC-8).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-mdt/">GMT to MDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Mountain Daylight Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/nzst-to-est/">NZST to EST Converter</a></div>
+      <div class="related-card-text">Convert New Zealand Standard Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/wet-to-est/">WET to EST Converter</a></div>
+      <div class="related-card-text">Convert Western European Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-sast/">GMT to SAST Converter</a></div>
+      <div class="related-card-text">Convert GMT to South Africa Standard Time (UTC+2).</div>
+    </article>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">AKDT to EST Frequently Asked Questions</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- CONCLUSION -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: Converting AKDT to Eastern Standard Time</h2>
+  <p>
+    Converting Alaska Daylight Time (AKDT) to Eastern Standard Time (EST) involves a 3-hour forward shift (EST = AKDT + 3 hours). Active from mid-March to early November, AKDT provides a convenient domestic time gap with US East Coast business centers.
+  </p>
+  <p>
+    Use our interactive conversion calculator or review our 24-hour table to plan seamless domestic meetings and avoid scheduling mistakes.
+  </p>
+  <p>
+    <strong>Next Step:</strong> Test your timestamps in our <a href="#converter-section">interactive AKDT to EST converter</a> above.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .table-wrap th, .table-wrap td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-wrap th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+</style>

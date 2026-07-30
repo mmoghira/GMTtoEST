@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "acdt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "ACDT to EST Converter";
+const seoTitle = "ACDT to EST Converter – Australian Central Daylight Time to Eastern Standard Time";
+const pageDescription = "Convert ACDT to EST quickly and accurately. Calculate the 15.5-hour time difference between South Australia (Adelaide) and North America Eastern Standard Time with live clocks, conversion table, and meeting scheduling tools.";
+
+const context = {
+  from: "ACDT",
+  to: "EST",
+  fromZone: "Australia/Adelaide",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/acdt-to-est/`;
+
+// 24-hour conversion table data (ACDT → EST = ACDT - 15.5 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+function getEstFromAcdt(acdtHour: number) {
+  const totalMinutes = acdtHour * 60 - (15 * 60 + 30);
+  const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+  const estH = Math.floor(normalizedMinutes / 60);
+  const estM = normalizedMinutes % 60;
+  const period = estH < 12 ? "AM" : "PM";
+  const displayH = estH % 12 || 12;
+  const minStr = estM === 0 ? "00" : estM < 10 ? `0${estM}` : `${estM}`;
+  const dayNote = totalMinutes < 0 ? " (-1 day)" : "";
+  return {
+    timeStr: `${displayH}:${minStr} ${period}${dayNote}`,
+    dayTag: totalMinutes < 0 ? "Previous day" : "Same day"
+  };
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estData = getEstFromAcdt(hour);
+  return {
+    acdt: formatHour12(hour),
+    est: estData.timeStr,
+    dayNote: estData.dayTag
+  };
+});
+
+// Popular conversions array
+const popularConversions = [
+  { acdt: "8:00 AM ACDT", est: "4:30 PM EST (Prev Day)", note: "Early morning in Adelaide aligns with end of East Coast US workday" },
+  { acdt: "9:30 AM ACDT", est: "6:00 PM EST (Prev Day)", note: "Adelaide workday opens as New York office hours close" },
+  { acdt: "11:00 AM ACDT", est: "7:30 PM EST (Prev Day)", note: "Mid-morning South Australia syncs with US East Coast evening" },
+  { acdt: "1:00 PM ACDT", est: "9:30 PM EST (Prev Day)", note: "Adelaide afternoon matches North American late evening" },
+  { acdt: "3:30 PM ACDT", est: "12:00 AM EST (Midnight)", note: "Late afternoon in South Australia meets midnight in New York" },
+  { acdt: "5:00 PM ACDT", est: "1:30 AM EST", note: "End of Adelaide office hours corresponds to early hours in EST" },
+  { acdt: "7:00 PM ACDT", est: "3:30 AM EST", note: "Adelaide evening aligns with mid-night in North America" },
+  { acdt: "9:30 PM ACDT", est: "6:00 AM EST", note: "Adelaide late evening coincides with East Coast US early dawn" },
+  { acdt: "11:30 PM ACDT", est: "8:00 AM EST", note: "Adelaide bedtime syncs with morning start in New York & Toronto" },
+  { acdt: "1:30 AM ACDT (+1)", est: "10:00 AM EST", note: "Overnight in South Australia aligns with mid-morning US business" },
+  { acdt: "3:30 AM ACDT (+1)", est: "12:00 PM EST (Noon)", note: "Early morning hours in Adelaide match midday EST lunch hour" },
+  { acdt: "5:30 AM ACDT (+1)", est: "2:00 PM EST", note: "Dawn in Adelaide corresponds to early afternoon on US East Coast" }
+];
+
+// 12 COMPLETELY UNIQUE FAQs
+const faqs = [
+  {
+    q: "What is the exact time difference between ACDT and EST?",
+    a: "Eastern Standard Time (EST) is 15.5 hours behind Australian Central Daylight Time (ACDT). When it is 3:30 PM ACDT in Adelaide, it is exactly 12:00 AM (Midnight) EST in New York."
+  },
+  {
+    q: "Why is there a half-hour fractional offset between ACDT and EST?",
+    a: "South Australia adopted a half-hour standard offset (UTC+9:30 in winter, UTC+10:30 in summer during ACDT) in 1899 to sit precisely halfway between Eastern Australia (UTC+10) and Western Australia (UTC+8). Comparing UTC+10:30 to EST (UTC-5) results in a 15.5-hour gap."
+  },
+  {
+    q: "Does South Australia observe Daylight Saving Time?",
+    a: "Yes. South Australia, including Adelaide and Broken Hill, switches from ACST (UTC+9:30) to ACDT (UTC+10:30) on the first Sunday of October and returns to standard time on the first Sunday of April."
+  },
+  {
+    q: "Does EST observe Daylight Saving Time?",
+    a: "EST (Eastern Standard Time, UTC-5) is the fixed standard time offset used during North American winter. In summer, the US East Coast moves to EDT (Eastern Daylight Time, UTC-4), altering the time difference with Adelaide to 14.5 hours."
+  },
+  {
+    q: "What regions use ACDT?",
+    a: "ACDT is observed in the state of South Australia, the border town of Broken Hill in New South Wales, and Lord Howe Island (which has its own half-hour rules). The Northern Territory remains on ACST (UTC+9:30) year-round without DST."
+  },
+  {
+    q: "What is the best time for a business call between Adelaide and New York?",
+    a: "The most practical overlap window occurs between 8:00 AM and 10:00 AM ACDT in South Australia, which matches 4:30 PM to 6:30 PM EST of the previous day in New York and Toronto."
+  },
+  {
+    q: "How does the date change when converting ACDT to EST?",
+    a: "Because EST is 15.5 hours behind ACDT, any time in Adelaide between 12:00 AM (Midnight) and 3:29 PM ACDT falls into the previous calendar day in North American Eastern Standard Time."
+  },
+  {
+    q: "Is ACDT ahead of or behind EST?",
+    a: "ACDT is 15.5 hours ahead of EST. South Australia experiences daylight and calendar dates long before the East Coast of North America."
+  },
+  {
+    q: "What is the IANA time zone identifier for Adelaide and New York?",
+    a: "Adelaide uses 'Australia/Adelaide' in computer systems and software libraries, while New York and the US East Coast use 'America/New_York'."
+  },
+  {
+    q: "Can I schedule recurring meetings across ACDT and EST without errors?",
+    a: "Because both regions shift clocks for Daylight Saving Time on different calendars (South Australia in October/April, North America in March/November), automated scheduling tools should always reference IANA identifiers rather than static 15.5-hour formulas."
+  },
+  {
+    q: "How do financial markets align between South Australia and New York?",
+    a: "When Adelaide businesses open at 9:00 AM ACDT on Tuesday morning, Wall Street in New York is wrapping up its trading session at 5:30 PM EST on Monday afternoon."
+  },
+  {
+    q: "Why do calendar apps fail on half-hour timezone conversions?",
+    a: "Legacy scheduling software occasionally assumes whole-hour offsets. Systems converting ACDT (UTC+10:30) must properly parse 30-minute increments to avoid shifting appointments by 30 minutes."
+  },
+  {
+    q: "What is the difference between ACDT and Australian Eastern Daylight Time (AEDT)?",
+    a: "ACDT (UTC+10:30) is used in South Australia and Broken Hill, whereas AEDT (UTC+11:00) is used in Sydney, Melbourne, and Canberra. ACDT is exactly 30 minutes behind AEDT during the southern hemisphere summer."
+  },
+  {
+    q: "How does aviation flight scheduling account for ACDT to EST transitions?",
+    a: "Airlines log all international flight manifests in UTC (GMT) to maintain standard operations. Passenger itineraries convert these baseline UTC timestamps into local ACDT and EST departure and arrival times."
+  },
+  {
+    q: "Is Lord Howe Island on ACDT?",
+    a: "No. Lord Howe Island uses Lord Howe Daylight Time (LHDT, UTC+11:00) during summer, which is 30 minutes ahead of ACDT and 16 hours ahead of Eastern Standard Time."
+  },
+  {
+    q: "What is the historical reason behind South Australia's 30-minute offset?",
+    a: "In 1898, South Australia adopted UTC+9:30 after legislative debates to position the state standard time centrally between Melbourne/Sydney (UTC+10) and Perth (UTC+8) for railway and telegraph convenience."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "ACDT to EST, Australian Central Daylight Time to Eastern Standard Time, Adelaide to New York time, ACDT EST converter, Australia South Australia time to US East Coast, 15.5 hour time difference, Adelaide time converter",
+  image: "/assets/acdt-to-est-og.svg",
+  imageAlt: "ACDT to EST Time Zone Converter",
+  faqs,
+  appDescription: "Convert Australian Central Daylight Time (ACDT) to Eastern Standard Time (EST) with real-time accuracy, interactive conversion matrix, half-hour offset calculations, and meeting coordination tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert ACDT to EST",
+  howToDescription: "Simple guide to calculating Eastern Standard Time from Australian Central Daylight Time.",
+  howToSteps: [
+    { name: "Identify the ACDT time", text: "Select your target hour in South Australia (ACDT, UTC+10:30)." },
+    { name: "Subtract 15 hours and 30 minutes", text: "Deduct 15.5 hours to find the corresponding Eastern Standard Time." },
+    { name: "Check the date shift", text: "Times in Adelaide before 3:30 PM ACDT fall on the previous calendar day in EST." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="ACDT to EST"
+  hreflangCodes={["en"]}
+>
+  <!-- Hero Section -->
+  <header class="hero-banner">
+    <div class="hero-content">
+      <span class="eyebrow">Cross-Pacific Fractional Offset Calculator</span>
+      <h1 class="hero-banner-title">ACDT to EST Converter</h1>
+      <p class="hero-subtitle">
+        Accurately translate Australian Central Daylight Time (UTC+10:30) to Eastern Standard Time (UTC-5) with instant half-hour precise calculations.
+      </p>
+    </div>
+  </header>
+
+  <!-- Feature Strip -->
+  <div class="feature-strip">
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>15.5-Hour Precise Gap</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Adelaide & New York</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>30-Min Fractional Alignment</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+
+      <span>DST Rule Validation</span>
+    </div>
+  </div>
+
+  <!-- Introduction Section -->
+  <section class="acdt-intro content-section">
+    <p>
+      Managing time differences across the Pacific Ocean presents unique logistical challenges, particularly when converting between <strong>Australian Central Daylight Time (ACDT)</strong> and North America's <strong>Eastern Standard Time (EST)</strong>. Operating at UTC+10:30, ACDT is one of the world's prominent half-hour fractional time zones. Centered around Adelaide and the state of South Australia, it runs 15.5 hours ahead of Eastern Standard Time (UTC-5), creating a substantial temporal separation that spans calendar dates and business cycles.
+    </p>
+    <p>
+      When it is 9:00 AM on Tuesday morning in Adelaide, professionals in New York, Toronto, and Atlanta are experiencing 5:30 PM on Monday afternoon. Navigating this 15.5-hour delta requires paying strict attention to both the 30-minute fractional variance and the date rollover. Whether you are managing transatlantic financial operations, scheduling executive teleconferences, coordinating defense logistics, or staying connected with family in Australia, our converter provides error-free calculations.
+    </p>
+    <p>
+      This guide outlines the mathematical foundation of the 15.5-hour offset, provides an interactive live converter, features a comprehensive 24-hour lookup table, and offers practical strategies for overlapping work hours between South Australia and Eastern North America.
+    </p>
+  </section>
+
+  <!-- Interactive Converter Section -->
+  <section class="converter-section" id="interactive-converter">
+    <div class="converter-header">
+      <h2>Interactive ACDT to EST Time Converter</h2>
+      <p>Select any hour in ACDT to determine the exact corresponding time in EST instantly.</p>
+    </div>
+    <Converter intent="dynamic" t={t} context={context} />
+  </section>
+
+  <!-- Live Clocks Section -->
+  <section class="clock-grid" aria-labelledby="live-clocks-heading">
+    <h2 id="live-clocks-heading" class="sr-only">Live Clocks: ACDT vs EST</h2>
+    <div class="clock-card">
+      <div class="clock-header">
+        <span class="clock-flag">🇦🇺</span>
+        <span>Current ACDT (Adelaide)</span>
+      </div>
+      <strong id="acdtClock">10:30 AM</strong>
+      <em id="acdtZone">UTC+10:30 • South Australia</em>
+    </div>
+    <div class="clock-card accent-card">
+      <div class="clock-header">
+        <span class="clock-flag">🇺🇸 / 🇨🇦</span>
+        <span>Current EST (New York / Toronto)</span>
+      </div>
+      <strong id="estClock">7:00 PM</strong>
+      <em id="estZone">UTC-5 • Eastern Standard Time</em>
+    </div>
+  </section>
+
+  <!-- Custom Regional SVG Illustration -->
+  <div class="svg-container banner-svg">
+    <svg viewBox="0 0 800 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ACDT to EST geographic visual timeline map">
+      <rect width="800" height="200" fill="#0c354a" rx="12"/>
+      <!-- South Australia Node -->
+      <g transform="translate(100, 60)">
+        <circle cx="50" cy="40" r="34" fill="#1b536e" stroke="#36c7b5" stroke-width="3"/>
+        <text x="50" y="45" fill="#f4fbff" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">ACDT</text>
+        <text x="50" y="95" fill="#8fd7ff" font-family="Manrope, sans-serif" font-size="12" text-anchor="middle">Adelaide (UTC+10:30)</text>
+      </g>
+      <!-- Trans-Pacific Connection Path -->
+      <path d="M 200 100 Q 400 20 600 100" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="8 4"/>
+      <g transform="translate(370, 35)">
+        <rect x="0" y="0" width="110" height="28" fill="#12455d" rx="14" stroke="#2f6278" stroke-width="1"/>
+        <text x="55" y="18" fill="#36c7b5" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="12" text-anchor="middle">15.5 HR GAP</text>
+      </g>
+      <!-- US East Coast Node -->
+      <g transform="translate(550, 60)">
+        <circle cx="50" cy="40" r="34" fill="#1b536e" stroke="#8fd7ff" stroke-width="3"/>
+        <text x="50" y="45" fill="#f4fbff" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">EST</text>
+        <text x="50" y="95" fill="#8fd7ff" font-family="Manrope, sans-serif" font-size="12" text-anchor="middle">New York (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Time Difference Breakdown -->
+  <section class="method-section content-section">
+    <h2>Understanding the 15.5-Hour Time Difference</h2>
+    <p class="method-intro">
+      Converting Australian Central Daylight Time to Eastern Standard Time involves accounting for both a multi-hour offset and a 30-minute fractional shift.
+    </p>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        </div>
+        <h3>Mathematical Formula</h3>
+        <p class="formula-box">EST = ACDT - 15 hours - 30 minutes</p>
+        <p>To convert any local ACDT timestamp to EST, subtract 15 full hours and an additional 30 minutes. If the result goes below zero, adjust to the previous calendar day.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        </div>
+        <h3>UTC Base Offsets</h3>
+        <p>ACDT operates at <strong>UTC+10:30</strong> (Coordinated Universal Time plus 10 hours 30 minutes). EST operates at <strong>UTC-5</strong>. The mathematical difference is (+10.5) - (-5) = 15.5 hours.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <h3>Date Shift Rules</h3>
+        <p>Because EST is 15.5 hours behind ACDT, times in Adelaide between <strong>12:00 AM and 3:29 PM ACDT</strong> correspond to the <strong>previous day</strong> in EST. Times after 3:30 PM ACDT fall on the same day.</p>
+      </div>
+
+      <div class="method-card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3>Quick Mental Calculation</h3>
+        <p>Subtract 16 hours from ACDT time and then add 30 minutes back. For example: 10:00 AM ACDT minus 16 hours = 6:00 PM (prev day) + 30 mins = <strong>6:30 PM EST</strong> (prev day).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24-Hour Conversion Table -->
+  <section class="table-section content-section">
+    <h2>24-Hour ACDT to EST Conversion Chart</h2>
+    <p>Use this reference table to convert any hour of the day from South Australia time to Eastern Standard Time.</p>
+
+    <!-- Timeline Graphic SVG -->
+    <div class="svg-container timeline-svg">
+      <svg viewBox="0 0 800 80" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="80" fill="#0c354a" rx="8"/>
+        <line x1="50" y1="40" x2="750" y2="40" stroke="#2f6278" stroke-width="4"/>
+        <!-- Nodes -->
+        <circle cx="100" cy="40" r="10" fill="#36c7b5"/>
+        <text x="100" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">8:00 AM ACDT</text>
+        <text x="100" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">4:30 PM EST (-1d)</text>
+
+        <circle cx="400" cy="40" r="10" fill="#36c7b5"/>
+        <text x="400" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">3:30 PM ACDT</text>
+        <text x="400" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">12:00 AM EST (Midnight)</text>
+
+        <circle cx="700" cy="40" r="10" fill="#36c7b5"/>
+        <text x="700" y="65" fill="#f4fbff" font-size="11" text-anchor="middle">11:30 PM ACDT</text>
+        <text x="700" y="25" fill="#8fd7ff" font-size="11" text-anchor="middle">8:00 AM EST (Same day)</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table class="conversion-table">
+        <thead>
+          <tr>
+            <th>ACDT Time (Adelaide)</th>
+            <th>EST Time (New York / Toronto)</th>
+            <th>Calendar Day Difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td><strong>{row.acdt}</strong></td>
+              <td><span class="converted-time">{row.est}</span></td>
+              <td><span class={`day-badge ${row.dayNote === "Previous day" ? "prev-day" : "same-day"}`}>{row.dayNote}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Popular Conversions Table -->
+  <section class="examples-section content-section">
+    <h2>Key Business & Travel Time Alignments</h2>
+    <p>Commonly referenced time pairs for cross-Pacific communication between South Australia and Eastern North America.</p>
+    <div class="table-wrap">
+      <table class="conversion-table">
+        <thead>
+          <tr>
+            <th>ACDT Benchmark</th>
+            <th>EST Equivalent</th>
+            <th>Operational Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((item) => (
+            <tr>
+              <td><strong>{item.acdt}</strong></td>
+              <td><span class="converted-time">{item.est}</span></td>
+              <td>{item.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Daylight Saving Time Infographic SVG -->
+  <section class="dst-section content-section">
+    <h2>Daylight Saving Time Dynamics: South Australia vs EST</h2>
+    <p>
+      ACDT is active from October through April in South Australia. Meanwhile, Eastern Standard Time (EST, UTC-5) is observed during North American winter (November to March). Understanding these seasonal transitions is essential to avoiding scheduling mismatches.
+    </p>
+    <div class="svg-container dst-svg">
+      <svg viewBox="0 0 800 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="180" fill="#0c354a" rx="10"/>
+        <!-- Australian Summer / US Winter -->
+        <rect x="40" y="30" width="340" height="120" fill="#12455d" rx="8" stroke="#2f6278" stroke-width="1"/>
+        <text x="210" y="55" fill="#36c7b5" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">OCTOBER – MARCH</text>
+        <text x="210" y="85" fill="#f4fbff" font-size="13" text-anchor="middle">South Australia: ACDT (UTC+10:30)</text>
+        <text x="210" y="105" fill="#f4fbff" font-size="13" text-anchor="middle">US East Coast: EST (UTC-5)</text>
+        <text x="210" y="135" fill="#8fd7ff" font-weight="700" font-size="13" text-anchor="middle">Difference: 15.5 Hours</text>
+
+        <!-- Australian Winter / US Summer -->
+        <rect x="420" y="30" width="340" height="120" fill="#12455d" rx="8" stroke="#2f6278" stroke-width="1"/>
+        <text x="590" y="55" fill="#36c7b5" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="14" text-anchor="middle">MARCH – OCTOBER</text>
+        <text x="590" y="85" fill="#f4fbff" font-size="13" text-anchor="middle">South Australia: ACST (UTC+9:30)</text>
+        <text x="590" y="105" fill="#f4fbff" font-size="13" text-anchor="middle">US East Coast: EDT (UTC-4)</text>
+        <text x="590" y="135" fill="#8fd7ff" font-weight="700" font-size="13" text-anchor="middle">Difference: 13.5 Hours</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Meeting Planner Section -->
+  <section class="planner-section content-section">
+    <h2>Optimal Meeting Windows: Adelaide to East Coast US</h2>
+    <p>Finding a convenient meeting window across a 15.5-hour gap requires selecting overlap hours where both parties are active.</p>
+
+    <!-- Multi-Region Clock SVG -->
+    <div class="svg-container planner-svg">
+      <svg viewBox="0 0 800 140" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="140" fill="#0c354a" rx="10"/>
+        <g transform="translate(60, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Morning Sync</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">8:30 AM ACDT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">5:00 PM EST (Prev Day)</text>
+        </g>
+        <g transform="translate(300, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Mid-Morning Window</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">9:30 AM ACDT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">6:00 PM EST (Prev Day)</text>
+        </g>
+        <g transform="translate(540, 20)">
+          <rect width="200" height="100" fill="#1b536e" rx="8"/>
+          <text x="100" y="35" fill="#36c7b5" font-weight="700" font-size="13" text-anchor="middle">Late Evening Sync</text>
+          <text x="100" y="60" fill="#f4fbff" font-size="12" text-anchor="middle">11:30 PM ACDT</text>
+          <text x="100" y="80" fill="#8fd7ff" font-size="12" text-anchor="middle">8:00 AM EST (Same Day)</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <h3>Option A: Adelaide Morning / US Late Afternoon</h3>
+        <p><strong>8:30 AM – 10:00 AM ACDT</strong> corresponds to <strong>5:00 PM – 6:30 PM EST</strong> of the previous day. This window allows Adelaide teams to start their workday while North American colleagues finalize their evening tasks.</p>
+      </div>
+
+      <div class="method-card">
+        <h3>Option B: Adelaide Night / US Morning</h3>
+        <p><strong>11:30 PM – 1:00 AM ACDT</strong> corresponds to <strong>8:00 AM – 9:30 AM EST</strong> on the same calendar day. Ideal for late-night check-ins in Australia coinciding with breakfast hours in New York.</p>
+      </div>
+
+      <div class="method-card">
+        <h3>Option C: Asynchronous Collaboration</h3>
+        <p>Due to the 15.5-hour gap, structured handover notes recorded at the end of the Adelaide business day (5:00 PM ACDT) arrive in New York at 1:30 AM EST, ready for review when North America wakes up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- When and Where Used Section -->
+  <section class="use-cases content-section">
+    <h2>Geographic & Industry Applications of ACDT & EST</h2>
+
+    <article class="use-case-card">
+      <h3>South Australian Commerce & Defense Hubs</h3>
+      <p>
+        ACDT is used across South Australia (Adelaide), the mining district of Broken Hill, and naval defense corridors along the Spencer Gulf. Companies collaborating with North American defense contractors, medical research institutions, and wine exporters in the Barossa Valley regularly rely on precise ACDT-to-EST scheduling.
+      </p>
+    </article>
+
+    <article class="use-case-card">
+      <h3>North American Eastern Business Corridor</h3>
+      <p>
+        EST covers financial capitals, political centers, and major media networks across the US East Coast and Eastern Canada—including New York City, Washington D.C., Boston, Toronto, and Montreal. When trading or communicating across the equator, tracking the half-hour offset prevents costly delays.
+      </p>
+    </article>
+
+    <article class="use-case-card">
+      <h3>Cross-Pacific Logistics & Mining Supply Chains</h3>
+      <p>
+        Mining projects headquartered in South Australia with corporate investment offices on Wall Street must manage daily reporting cycles. A half-hour discrepancy in flight departure logs or dispatch schedules can lead to operational friction between Adelaide and North American hubs.
+      </p>
+    </article>
+  </section>
+
+  <!-- Common Mistakes Section -->
+  <section class="mistakes-section content-section">
+    <h2>Common Mistakes When Converting ACDT to EST</h2>
+
+    <article class="mistake-card">
+      <h3>1. Forgetting the 30-Minute Fractional Offset</h3>
+      <p>
+        The most frequent mistake is assuming South Australia follows a whole-hour offset like Eastern Australia (AEST, UTC+10). Treating ACDT as UTC+10 results in a 30-minute calculation error on every appointment.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>2. Misinterpreting the Calendar Day Rollover</h3>
+      <p>
+        Because EST is 15.5 hours behind ACDT, morning meetings scheduled on Tuesday in Adelaide take place on Monday afternoon in North America. Failing to double-check the calendar date leads to missed call appointments.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>3. Confusing ACDT with ACST</h3>
+      <p>
+        During the Australian winter (April to October), South Australia reverts to ACST (UTC+9:30). Using ACDT formulas year-round causes a 1-hour error during the southern hemisphere winter months.
+      </p>
+    </article>
+
+    <article class="mistake-card">
+      <h3>4. Misaligning Opposing Daylight Saving Calendars</h3>
+      <p>
+        Australia enters DST in October while North America leaves DST in November. During transition weeks, the offset changes dynamically between 13.5, 14.5, and 15.5 hours. Always verify exact dates using IANA timezone standards.
+      </p>
+    </article>
+  </section>
+
+  <!-- Real-World Use Cases Section -->
+  <section class="real-world-section content-section">
+    <h2>Real-World Scenarios & Practical Examples</h2>
+
+    <div class="use-case-grid">
+      <div class="use-case-box">
+        <h3>Transatlantic Academic Research</h3>
+        <p>
+          Researchers at the University of Adelaide partnering with Ivy League universities in Massachusetts schedule joint seminars at 9:00 AM ACDT Tuesday, matching 5:30 PM EST Monday in Boston.
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Wine & Produce Export Logistics</h3>
+        <p>
+          Barossa Valley wineries dispatching shipments to North American importers coordinate Customs clearance documentation so that morning dispatches in Adelaide arrive in East Coast ports during normal business hours.
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Global Software Development Handovers</h3>
+        <p>
+          Engineering teams in Adelaide perform code reviews at 4:30 PM ACDT, leaving tickets updated for New York engineers arriving at work at 1:00 AM EST, ensuring smooth 24-hour development pipelines.
+        </p>
+      </div>
+
+      <div class="use-case-box">
+        <h3>Financial Market Briefings</h3>
+        <p>
+          Institutional investors in South Australia review US stock market close results at 7:30 AM ACDT, which corresponds to 4:00 PM EST market close bell in New York of the previous afternoon.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Converters Grid -->
+  <section class="related-section content-section">
+    <h2>Related Time Zone Converters</h2>
+    <p>Explore converters for other Australian and international time zone pairings.</p>
+    <div class="related-grid">
+      <a href="/gmt-to-acdt/" class="related-card">
+        <span class="related-card-title">GMT to ACDT</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to South Australia Daylight Time</span>
+      </a>
+      <a href="/gmt-to-aest/" class="related-card">
+        <span class="related-card-title">GMT to AEST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Australian Eastern Standard Time</span>
+      </a>
+      <a href="/aest-to-est/" class="related-card">
+        <span class="related-card-title">AEST to EST</span>
+        <span class="related-card-text">Convert Australian Eastern Time to US Eastern Standard Time</span>
+      </a>
+      <a href="/gmt-to-est/" class="related-card">
+        <span class="related-card-title">GMT to EST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to North American Eastern Standard Time</span>
+      </a>
+      <a href="/gmt-to-awst/" class="related-card">
+        <span class="related-card-title">GMT to AWST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to Australian Western Standard Time</span>
+      </a>
+      <a href="/gmt-to-bst/" class="related-card">
+        <span class="related-card-title">GMT to BST</span>
+        <span class="related-card-text">Convert Greenwich Mean Time to British Summer Time</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion Section -->
+  <section class="faq content-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      {faqs.map((faq) => (
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>{faq.q}</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="faq-answer">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Conclusion Section -->
+  <section class="conclusion-section content-section">
+    <h2>Mastering ACDT to EST Conversions</h2>
+    <p>
+      Bridging the 15.5-hour time difference between South Australia and the East Coast of North America requires calculating both hours and minutes while keeping track of date boundaries. By using our interactive converter, reviewing the 24-hour conversion chart, and establishing clear meeting windows, cross-Pacific communication becomes seamless and reliable.
+    </p>
+    <div class="method-grid">
+      <div class="method-card">
+        <h3>Remember the 15.5-Hour Gap</h3>
+        <p>EST is 15.5 hours behind ACDT. Subtract 15 hours and 30 minutes to adjust your clock accurately.</p>
+      </div>
+      <div class="method-card">
+        <h3>Watch the Date Boundary</h3>
+        <p>Times in Adelaide prior to 3:30 PM ACDT correspond to the previous calendar day in Eastern Standard Time.</p>
+      </div>
+      <div class="method-card">
+        <h3>Plan Meetings Efficiently</h3>
+        <p>Target 8:30 AM – 10:00 AM ACDT for smooth overlap with 5:00 PM – 6:30 PM EST of the previous evening.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+
+  .converter-section { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .converter-header { text-align: center; margin-bottom: 1.5rem; }
+  .converter-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; color: var(--text); }
+  .converter-header p { color: var(--muted); font-size: 1rem; }
+
+  .clock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .clock-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; }
+  .clock-card.accent-card { border-color: var(--accent); }
+  .clock-header { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; color: var(--muted); font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .clock-card strong { display: block; font-size: 2.2rem; font-family: 'Space Grotesk', sans-serif; color: var(--text); margin: 0.4rem 0; }
+  .clock-card em { font-style: normal; font-size: 0.85rem; color: var(--accent); }
+
+  .svg-container { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .banner-svg svg, .timeline-svg svg, .dst-svg svg, .planner-svg svg { width: 100%; height: auto; display: block; border-radius: 10px; }
+
+  .content-section { max-width: 860px; margin: 2.5rem auto; padding: 0 1.5rem; }
+  .content-section h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; color: var(--text); margin-bottom: 1rem; }
+  .content-section p { font-size: 1.05rem; line-height: 1.7; color: var(--muted); margin-bottom: 1.2rem; }
+
+  .method-intro { font-size: 1.1rem; color: var(--text); }
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .method-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+  .method-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; color: var(--text); margin-bottom: 0.5rem; }
+  .method-card p { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin: 0; }
+  .card-icon { color: var(--accent); margin-bottom: 0.75rem; }
+  .formula-box { background: rgba(54, 199, 181, 0.1); border-left: 3px solid var(--accent); padding: 0.5rem 0.75rem; font-family: monospace; font-weight: bold; color: var(--text) !important; margin-bottom: 0.75rem !important; }
+
+  .table-wrap { overflow-x: auto; margin-top: 1.5rem; border: 1px solid var(--line); border-radius: 10px; }
+  .conversion-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+  .conversion-table th { background: rgba(255, 255, 255, 0.05); color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 0.85rem 1rem; border-bottom: 1px solid var(--line); }
+  .conversion-table td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: var(--muted); }
+  .conversion-table tr:last-child td { border-bottom: none; }
+  .converted-time { color: var(--accent); font-weight: 600; }
+  .day-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+  .day-badge.prev-day { background: rgba(235, 87, 87, 0.15); color: #eb5757; }
+  .day-badge.same-day { background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+
+  .use-case-card, .mistake-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+  .use-case-card h3, .mistake-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .use-case-card p, .mistake-card p { font-size: 0.98rem; color: var(--muted); line-height: 1.65; margin: 0; }
+
+  .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .use-case-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+  .use-case-box h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+  .use-case-box p { font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+  .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .related-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; text-decoration: none; transition: border-color 0.2s; }
+  .related-card:hover { border-color: var(--accent); }
+  .related-card-title { display: block; font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .related-card-text { font-size: 0.85rem; color: var(--muted); }
+
+  .faq-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .faq-item { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; }
+  .faq-question { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--text); list-style: none; }
+  .faq-question::-webkit-details-marker { display: none; }
+  .faq-icon { color: var(--accent); transition: transform 0.2s; }
+  .faq-item[open] .faq-icon { transform: rotate(180deg); }
+  .faq-answer { margin-top: 0.75rem; font-size: 0.98rem; color: var(--muted); line-height: 1.65; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>

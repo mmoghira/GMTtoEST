@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-sst";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to SST Converter";
+const seoTitle = "GMT to SST Converter – Greenwich Mean Time to Samoa Standard Time";
+const pageDescription = "Convert GMT to SST instantly. Calculate the exact 11-hour time difference between Greenwich Mean Time (UTC+0) and Samoa Standard Time (UTC-11) with live clocks and conversion charts.";
+
+const context = {
+  from: "GMT",
+  to: "SST",
+  fromZone: "UTC",
+  toZone: "Pacific/Pago_Pago"
+};
+
+const canonical = `${siteUrl}/gmt-to-sst/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA & HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+// GMT → SST: SST is 11 hours behind GMT
+// ═══════════════════════════════════════════════════════════════════════════
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const sstHour = hour - 11;
+  const sstNormalized = ((sstHour % 24) + 24) % 24;
+  const prevDay = sstHour < 0;
+  const period = sstNormalized < 12 ? "AM" : "PM";
+  const displayHour = sstNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    sst: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day in American Samoa" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight) GMT", sst: "1:00 PM SST (Prev Day)", note: "Midday business hours in Pago Pago while GMT begins new day" },
+  { gmt: "2:00 AM GMT", sst: "3:00 PM SST (Prev Day)", note: "Afternoon shift in American Samoa during European night" },
+  { gmt: "5:00 AM GMT", sst: "6:00 PM SST (Prev Day)", note: "American Samoa evening wrap-up as Europe wakes up" },
+  { gmt: "8:00 AM GMT", sst: "9:00 PM SST (Prev Day)", note: "Late evening in Pago Pago during London morning start" },
+  { gmt: "11:00 AM GMT", sst: "12:00 AM (Midnight) SST", note: "Midnight in American Samoa; late morning in London" },
+  { gmt: "12:00 PM (Noon) GMT", sst: "1:00 AM SST", note: "Early hours in American Samoa during London midday" },
+  { gmt: "3:00 PM GMT", sst: "4:00 AM SST", note: "Pre-dawn hours in Pago Pago during London afternoon" },
+  { gmt: "5:00 PM GMT", sst: "6:00 AM SST", note: "Dawn in American Samoa as London market day closes" },
+  { gmt: "7:00 PM GMT", sst: "8:00 AM SST", note: "Pago Pago office start overlap with UK evening" },
+  { gmt: "9:00 PM GMT", sst: "10:00 AM SST", note: "Mid-morning focus in American Samoa during late UK night" },
+  { gmt: "11:00 PM GMT", sst: "12:00 PM (Noon) SST", note: "Lunch hour in Pago Pago as GMT day completes" },
+  { gmt: "11:59 PM GMT", sst: "12:59 PM SST", note: "End of GMT calendar date" },
+];
+
+// FAQ data (24 detailed FAQs)
+const faqs = [
+  { q: "What is Samoa Standard Time (SST)?", a: "Samoa Standard Time (SST) is a time zone located in the South Pacific Ocean. It operates at UTC-11 (eleven hours behind Coordinated Universal Time). It is officially observed in American Samoa (including Pago Pago) and the Midway Islands." },
+  { q: "What is Greenwich Mean Time (GMT)?", a: "Greenwich Mean Time (GMT) is the standard time reference running at UTC+0 along the Prime Meridian (0° longitude) in Greenwich, London." },
+  { q: "How many hours is SST behind GMT?", a: "Samoa Standard Time (SST) is exactly 11 hours behind Greenwich Mean Time (GMT). To convert GMT to SST, subtract 11 hours from the GMT clock time." },
+  { q: "Does Samoa Standard Time (SST) observe Daylight Saving Time?", a: "No. American Samoa and other territories on SST do not observe Daylight Saving Time. SST remains permanently at UTC-11 throughout the entire year." },
+  { q: "Why is American Samoa on UTC-11 while independent Samoa is on UTC+13?", a: "In December 2011, the independent nation of Samoa skipped a calendar day to jump across the International Date Line to UTC+13 to align its business hours with Australia and New Zealand. American Samoa chose to remain on the eastern side of the date line at UTC-11 to preserve economic ties with the United States mainland." },
+  { q: "Which territories and islands observe SST (UTC-11)?", a: "SST is observed in American Samoa (Tutuila, Manu'a Islands, Rose Atoll, Swains Island), the Midway Atoll, and unorganized US island territories like Jarvls Island and Palmyra Atoll." },
+  { q: "What is the best overlap time for a business call between London and Pago Pago?", a: "The best overlap window is between 7:00 PM GMT and 9:00 PM GMT. In Pago Pago (SST), this corresponds to 8:00 AM SST to 10:00 AM SST, allowing American Samoa offices to start their morning while London wraps up its evening." },
+  { q: "How does the date shift work when converting GMT morning to SST?", a: "Because SST is 11 hours behind GMT, any GMT timestamp between 12:00 AM Midnight and 10:59 AM GMT corresponds to the previous calendar afternoon or evening in Samoa Standard Time." },
+  { q: "What is the IANA time zone identifier for Samoa Standard Time?", a: "The official IANA database key for Samoa Standard Time is Pacific/Pago_Pago." },
+  { q: "Is American Samoa one of the last places on Earth to enter a new calendar year?", a: "Yes. Located just east of the International Date Line at UTC-11, American Samoa is among the very last inhabited places on Earth to celebrate New Year's Eve and enter a new date." },
+  { q: "How do container shipping lines navigate the 11-hour gap between London and Pago Pago?", a: "Maritime freight shipping between Europe and South Pacific tuna packing ports in Pago Pago uses UTC timestamps for vessel telemetry, converting arrival logs into local SST." },
+  { q: "How do I manually calculate GMT to SST?", a: "Subtract 11 hours from the GMT time. If the result is negative, add 24 hours and roll back to the previous calendar day. Example: 4:00 AM GMT Tuesday minus 11 hours = 5:00 PM SST Monday." },
+  { q: "Does the independent country of Samoa use SST?", a: "No. Despite the name, independent Samoa uses West Samoa Time (WST, UTC+13). Only American Samoa (a US territory) uses Samoa Standard Time (SST, UTC-11). The two neighboring island groups are 24 hours apart in clock date despite being separated by less than 100 miles of ocean!" },
+  { q: "What is the time difference between London (GMT) and Pago Pago (SST) in summer?", a: "During the UK summer (BST, UTC+1), London moves to UTC+1 while American Samoa stays at UTC-11. The time gap between London and Pago Pago increases to 12 hours." },
+  { q: "How do US Federal agencies manage communications with American Samoa?", a: "Federal agencies in Washington D.C. (EST, UTC-5) communicate with Pago Pago (SST, UTC-11), which is 6 hours behind US Eastern time." },
+  { q: "What are the main economic industries in American Samoa on SST?", a: "Key economic drivers include tuna canning and processing, international marine fisheries, tourism, US federal administration, and local government operations." },
+  { q: "How accurate is our GMT to SST converter?", a: "Our converter uses standard IANA time zone database definitions via native browser engine APIs, ensuring 100% precision without manual adjustment." },
+  { q: "What is the offset difference between Greenwich and Midway Atoll?", a: "Midway Atoll operates on UTC-11 year-round, making it exactly 11 hours behind GMT year-round." },
+  { q: "How do flight schedules between Honolulu and Pago Pago account for SST?", a: "Honolulu operates on Hawaii Standard Time (HST, UTC-10). Pago Pago operates on SST (UTC-11). American Samoa is 1 hour behind Hawaii." },
+  { q: "What is the distance between Greenwich and Pago Pago?", a: "Pago Pago is located approximately 9,600 miles (15,400 km) southwest of London across the Atlantic Ocean, North America, and the South Pacific Ocean." },
+  { q: "Why doesn't American Samoa adopt Daylight Saving Time?", a: "Located near latitude 14° South, American Samoa experiences virtually uniform daylight hours year-round, making seasonal daylight saving shifts unnecessary." },
+  { q: "What happens to electronic banking transfers sent from London to Pago Pago?", a: "Wire transfers initiated during London banking hours (e.g. 2:00 PM GMT) reach American Samoa during early morning hours (3:00 AM SST) for processing when Pago Pago banks open." },
+  { q: "What is the capital city of American Samoa and its timezone?", a: "Pago Pago is the capital and main harbor of American Samoa, operating permanently on Samoa Standard Time (SST, UTC-11)." },
+  { q: "How do scientific marine research ships operate around Swains Island and Rose Atoll?", a: "Oceanographic vessels log underwater sensor data and bathymetric mapping in UTC, rendering local environmental reports in SST." },
+  { q: "What is the offset difference between London and Pago Pago during UK winter?", a: "During UK winter (GMT, UTC+0), London is 11 hours ahead of Pago Pago (SST, UTC-11)." },
+  { q: "What is the offset difference between London and Pago Pago during UK summer?", a: "During UK summer (BST, UTC+1), London is 12 hours ahead of Pago Pago (SST, UTC-11)." },
+  { q: "Does American Samoa observe daylight saving time?", a: "No. American Samoa stays at UTC-11 year-round without daylight saving adjustments." },
+  { q: "How do weather forecasting models present atmospheric data in American Samoa?", a: "National Weather Service offices in Pago Pago receive international GFS models in UTC and publish tropical cyclone warnings in local SST." },
+  { q: "What is the offset difference between Pago Pago and Tokyo?", a: "Pago Pago operates on SST (UTC-11) and Tokyo operates on JST (UTC+9). Tokyo is 20 hours ahead of Pago Pago (or Pago Pago is 4 hours ahead on the previous date)." },
+  { q: "What is the offset difference between Pago Pago and Sydney (AEST)?", a: "Pago Pago is on SST (UTC-11) and Sydney is on AEST (UTC+10) or AEDT (UTC+11). Sydney is 21 to 22 hours ahead of Pago Pago across the date line." },
+  { q: "How do sports broadcasts from American Samoa schedule air times for US viewers?", a: "High school and territorial sports events in Pago Pago airing at 7:00 PM SST air at 1:00 AM EST on the US East Coast." },
+  { q: "What is the official currency of American Samoa?", a: "American Samoa uses the US Dollar ($ USD), but operates on Samoa Standard Time (SST, UTC-11)." },
+  { q: "How does our GMT to SST converter parse Pacific/Pago_Pago timestamps?", a: "Our converter leverages standard IANA timezone database rules to map Pacific/Pago_Pago (-11:00), ensuring accurate offset conversions for all historical and future timestamps." },
+  { q: "What is the main island in American Samoa?", a: "Tutuila is the main and most populous island in American Samoa, home to the capital Pago Pago, operating on SST (UTC-11)." },
+  { q: "What are the Manu'a Islands and what timezone do they use?", a: "The Manu'a Islands (Taʻu, Ofu, and Olosega) are part of American Samoa and operate on Samoa Standard Time (SST, UTC-11)." },
+  { q: "What is the capital of American Samoa?", a: "Pago Pago is the territorial capital of American Samoa, operating on SST (UTC-11) year-round." },
+  { q: "What is the largest harbor in American Samoa?", a: "Pago Pago Harbor is the deepest natural harbor in the South Pacific, serving international shipping on SST." },
+  { q: "What time zone is Midway Atoll in?", a: "Midway Atoll operates on Samoa Standard Time (SST, UTC-11) year-round." },
+  { q: "What time zone is Jarvis Island in?", a: "Jarvis Island operates on Samoa Standard Time (SST, UTC-11) year-round." },
+  { q: "What time zone is Palmyra Atoll in?", a: "Palmyra Atoll operates on Samoa Standard Time (SST, UTC-11) year-round." },
+  { q: "What is Swains Island and its timezone?", a: "Swains Island is an atoll in Tokelau chain governed as part of American Samoa, operating on SST (UTC-11)." },
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to SST, GMT to SST Converter, Greenwich Mean Time to Samoa Standard Time, Convert GMT to SST, London to Pago Pago time, GMT to American Samoa, SST timezone offset, Pacific timezone converter",
+  image: "/assets/gmt-to-sst-og.svg",
+  imageAlt: "GMT to SST Converter – Convert Greenwich Mean Time to Samoa Standard Time",
+  faqs,
+  appDescription: "Free online GMT to SST converter featuring live clocks, 11-hour offset calculations, 24-hour schedules, and South Pacific meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to SST",
+  howToDescription: "Simple steps to convert Greenwich Mean Time to Samoa Standard Time.",
+  howToSteps: [
+    { name: "Input GMT Time", text: "Select your desired Greenwich Mean Time in the converter tool." },
+    { name: "Subtract 11 Hours", text: "The tool automatically subtracts 11 hours to calculate Samoa Standard Time (SST)." },
+    { name: "Check Date Rollback", text: "For GMT morning times (before 11:00 AM), note that the calculated SST time falls on the previous calendar day." },
+    { name: "Verify London Summer Time", text: "If converting during British summer (March to October), note that the UK shifts to BST (UTC+1), increasing the gap to 12 hours." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to SST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to SST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS (CUSTOM SVG) -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>11-Hour Time Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>International Date Line</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Pacific Business Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span>Greenwich to American Samoa</span>
+  </div>
+</section>
+
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About Greenwich Mean Time to Samoa Standard Time Conversion</h2>
+  <p>
+    Welcome to our premier <strong>GMT to SST Converter</strong>. This specialized online utility provides instant time calculations between <strong>Greenwich Mean Time (GMT, UTC+0)</strong> and <strong>Samoa Standard Time (SST, UTC-11)</strong>. Under standard winter offset rules, Samoa Standard Time is exactly <strong>11 hours behind Greenwich Mean Time</strong>. When it is 8:00 PM in London, it is 9:00 AM in Pago Pago, American Samoa.
+  </p>
+  <p>
+    <strong>Greenwich Mean Time (GMT)</strong> serves as the world's historical time baseline calculated along the Prime Meridian (0° longitude) at the Royal Observatory in Greenwich, London. Running at UTC+0, GMT remains fixed throughout the year, serving as the benchmark for global navigation, aviation, and server logging.
+  </p>
+  <p>
+    Located near the International Date Line in the South Pacific Ocean, <strong>Samoa Standard Time (SST)</strong> operates at UTC-11. SST is officially observed in the US territory of American Samoa (including the island capital of Pago Pago, Tutuila, and the Manu'a Islands) and Midway Atoll. Because American Samoa sits just east of the date line, it is among the very last inhabited places on Earth to complete each calendar day.
+  </p>
+  <p>
+    Whether you are a <strong>maritime logistics manager</strong> tracking container vessels in the South Pacific, a <strong>federal government administrator</strong> coordinating programs between London, Washington D.C., and Pago Pago, a <strong>tuna fisheries exporter</strong>, or a <strong>traveler</strong> booking island flights, our converter eliminates time zone confusion.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE INTERACTIVE CONVERTER TOOL & HERO ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-tool-heading">Convert GMT to Samoa Standard Time</h2>
+    <p>
+      Select any hour to instantly calculate the corresponding Samoa Standard Time. Our converter handles 11-hour subtraction and date shifts automatically.
+    </p>
+
+    <!-- Custom Hero Illustration (SVG) -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        <path d="M50 170 C 200 60, 350 200, 550 110" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+
+        <!-- Left Clock: Greenwich (GMT) -->
+        <g transform="translate(140, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="0" y2="-28" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#36c7b5" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#f4fbff" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+0 Baseline</text>
+        </g>
+
+        <!-- Offset Arrow Badge -->
+        <g transform="translate(300, 110)">
+          <rect x="-50" y="-20" width="100" height="32" rx="16" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+          <text x="0" y="2" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">SST is -11 Hrs</text>
+        </g>
+
+        <!-- Right Clock: Samoa Standard Time (SST) -->
+        <g transform="translate(460, 120)">
+          <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <line x1="0" y1="0" x2="-22" y2="0" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-30" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">Samoa (SST)</text>
+          <text x="0" y="88" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC-11 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: GMT vs Samoa Standard Time</h2>
+  <div class="clock-card"><span>Current GMT (UTC+0)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current SST (UTC-11)</span><strong id="estClock">--:--</strong><em id="estZone">SST</em></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     GREENWICH & PAGO PAGO VISUAL ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Greenwich Observatory & Pago Pago Palm Harbor Visual Graphic</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <!-- Greenwich Observatory Silhouette (Left) -->
+      <g transform="translate(110, 110)">
+        <path d="M-50 40 L-50 -10 L0 -35 L50 -10 L50 40 Z" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <circle cx="0" cy="-35" r="10" fill="#36c7b5" opacity="0.8" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Greenwich (GMT)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">0° Longitude Baseline</text>
+      </g>
+
+      <!-- Center offset badge -->
+      <g transform="translate(350, 100)">
+        <circle cx="0" cy="-10" r="35" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-14" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold" fill="#36c7b5" text-anchor="middle">11 HOURS</text>
+        <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#f4fbff" text-anchor="middle">BEHIND</text>
+        <path d="M-40 25 L40 25" stroke="#36c7b5" stroke-width="2" marker-end="url(#arrow)" />
+      </g>
+
+      <!-- Pago Pago Tropical Palm Silhouette (Right) -->
+      <g transform="translate(590, 110)">
+        <path d="M-5 40 Q 5 0, 15 -30" stroke="#12455d" stroke-width="6" fill="none" />
+        <path d="M15 -30 C 0 -45, -25 -40, -40 -30" stroke="#36c7b5" stroke-width="3" fill="none" />
+        <path d="M15 -30 C 30 -50, 50 -35, 45 -20" stroke="#36c7b5" stroke-width="3" fill="none" />
+        <path d="M15 -30 C 15 -55, -5 -60, -10 -45" stroke="#36c7b5" stroke-width="3" fill="none" />
+        <text x="0" y="60" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Pago Pago (SST)</text>
+        <text x="0" y="78" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">American Samoa • UTC-11</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE & METHOD CARDS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section content-section" aria-labelledby="method-heading">
+  <h2 id="method-heading">How to Convert GMT to Samoa Standard Time</h2>
+  <p class="method-intro">
+    Calculating time between Greenwich Mean Time and Samoa Standard Time involves subtracting 11 hours.
+  </p>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Method 1</p>
+      <h3>Direct 11-Hour Subtraction</h3>
+      <p>
+        Subtract 11 hours from your GMT clock. Example: 8:00 PM GMT in London minus 11 hours equals 9:00 AM SST in Pago Pago.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 2</p>
+      <h3>Previous Day Calendar Rule</h3>
+      <p>
+        Any GMT timestamp prior to 11:00 AM converts to the previous calendar afternoon or evening in SST (e.g. 5:00 AM GMT Tuesday = 6:00 PM SST Monday).
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 3</p>
+      <h3>UK Summer Adjustment (BST)</h3>
+      <p>
+        When the UK switches to British Summer Time (BST, UTC+1) from March to October, the gap between London and Pago Pago increases to 12 hours.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour GMT to SST Conversion Table</h2>
+  <p>
+    Below is a complete hour-by-hour reference table mapping Greenwich Mean Time (GMT) to Samoa Standard Time (SST).
+  </p>
+
+  <!-- Timeline SVG -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1rem; border-radius: 8px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 60" width="100%" height="auto">
+      <rect width="600" height="60" fill="#0c354a" rx="6" />
+      <line x1="30" y1="30" x2="570" y2="30" stroke="#2f6278" stroke-width="3" />
+      <circle cx="30" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="165" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="300" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="435" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="570" cy="30" r="5" fill="#36c7b5" />
+      <text x="30" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">00:00 GMT (13:00 SST -1d)</text>
+      <text x="165" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">11:00 GMT (00:00 SST)</text>
+      <text x="300" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">16:00 GMT (05:00 SST)</text>
+      <text x="435" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">20:00 GMT (09:00 SST)</text>
+      <text x="570" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">23:00 GMT (12:00 SST)</text>
+      <text x="300" y="18" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">24-Hour Timeline: 11-Hour Constant Shift</text>
+    </svg>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Greenwich Mean Time (GMT)</th>
+          <th>Samoa Standard Time (SST)</th>
+          <th>Status / Day Shift</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.gmt}</strong></td>
+            <td><strong style="color: var(--accent);">{row.sst}</strong></td>
+            <td><span class="badge">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key Timestamps & Operational Milestones</h2>
+  <p>
+    Review standard daily operational checkpoints between Greenwich Mean Time and American Samoa.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>GMT Time</th>
+          <th>SST Equivalent</th>
+          <th>Operational Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.gmt}</strong></td>
+            <td><strong style="color: var(--accent);">{item.sst}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DST INFOGRAPHIC SVG
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin: 3rem 0;">
+  <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">Non-Shifting Pacific Standard (Static UTC-11 Offset)</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 180" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="180" fill="#0c354a" rx="8" />
+      <rect x="30" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+      <text x="165" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">GMT (WINTER)</text>
+      <text x="165" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">GMT = UTC+0 | SST = UTC-11</text>
+      <text x="165" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">11 Hours Difference</text>
+      <text x="165" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(Standard winter offset)</text>
+
+      <rect x="350" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+      <text x="485" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">UK BST (SUMMER)</text>
+      <text x="485" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">BST = UTC+1 | SST = UTC-11</text>
+      <text x="485" y="110" font-family="'Manrope', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">12 Hours Difference</text>
+      <text x="485" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(UK advances 1 hour in summer)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">GMT & SST Business Meeting Planner</h2>
+  <p>
+    Scheduling calls between London and American Samoa requires navigating an 11-hour time gap. Below are optimal recommended overlap windows.
+  </p>
+
+  <!-- Multi-region SVG graphic -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">19:00 GMT</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">London Evening</text>
+      </g>
+
+      <g transform="translate(325, 80)">
+        <path d="M-40 0 L40 0" stroke="#36c7b5" stroke-width="3" marker-end="url(#arrow)" />
+        <rect x="-45" y="-18" width="90" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-2" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="bold" fill="#36c7b5" text-anchor="middle">OPTIMAL</text>
+      </g>
+
+      <g transform="translate(530, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">08:00 SST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Pago Pago Morning</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Optimal Slot</p>
+      <h3>7:00 PM GMT = 8:00 AM SST</h3>
+      <p>
+        The primary meeting window. Staff in Pago Pago start their morning at 8:00 AM SST while London team members wrap up their evening at 7:00 PM GMT.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Secondary Slot</p>
+      <h3>8:00 PM GMT = 9:00 AM SST</h3>
+      <p>
+        Great for mid-morning Pago Pago check-ins prior to European late-night shutdown.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Midday Samoa Slot</p>
+      <h3>11:00 PM GMT = 12:00 PM SST</h3>
+      <p>
+        Used for urgent end-of-day updates submitted from European IT teams to on-duty Pacific island administrators.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN AND WHERE USED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="where-used-heading">
+  <h2 id="where-used-heading">Where GMT & SST Are Used Worldwide</h2>
+  
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">1. American Samoa Territorial Governance (SST)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Samoa Standard Time (UTC-11) is the official time zone of American Samoa, an unincorporated US territory comprising Tutuila, Ofu, Olosega, Taʻu, Rose Atoll, and Swains Island.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">2. Maritime Freight & Commercial Tuna Fisheries</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Pago Pago Harbor hosts one of the deepest natural harbors in the South Pacific, serving as a major hub for international tuna purse seiners and canning operations shipping seafood globally.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">3. US Federal Island Territories (Midway Atoll)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Midway Atoll National Wildlife Refuge, along with unorganized US islands like Jarvis Island and Palmyra Atoll, operates on UTC-11 for environmental monitoring and wildlife protection logs.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">4. Global Universal Time Reference (GMT)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Greenwich Mean Time (UTC+0) serves as the international solar baseline for maritime navigation, aviation flight plans, and global web server architectures.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">5. National Park Service Management (American Samoa)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      The National Park of American Samoa, the only US National Park south of the equator, coordinates ecological preservation guidelines and ranger patrol logs in SST.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">6. US Coast Guard & Pacific Search and Rescue</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Coast Guard Sector Honolulu and regional maritime search and rescue operations log distress beacons in UTC, converting operational timelines to local SST for ground team deployment.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Mistakes When Converting GMT to SST</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 1: Confusing American Samoa (SST, UTC-11) with Independent Samoa (WST, UTC+13)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Independent Samoa operates on West Samoa Time (UTC+13) on the western side of the International Date Line. American Samoa operates on SST (UTC-11) on the eastern side. They are 24 hours apart in clock date!
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 2: Forgetting British Summer Time (BST) Shifts</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      GMT stays at UTC+0. However, during UK summer (late March to late October), London shifts to BST (UTC+1), expanding the time difference between London and Pago Pago from 11 hours to 12 hours.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 3: Date Boundary Miscalculations</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Converting GMT morning timestamps (before 11:00 AM GMT) rolls back to the previous day in SST. For example, 4:00 AM GMT on Thursday morning is 5:00 PM SST on Wednesday afternoon.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World Business & Maritime Scenarios</h2>
+  
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>South Pacific Marine Research</h3>
+      <p>
+        Marine biologists in London log coral reef water temperature sensors off Rose Atoll, mapping UTC measurements to local SST.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Federal Disaster & Emergency Relief Sync</h3>
+      <p>
+        US FEMA officials in Washington D.C. coordinate typhoon response protocols with Pago Pago emergency management directors.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Tuna Industry Logistics</h3>
+      <p>
+        Commercial fishing vessel captains update catch logs in UTC, transmitting arrival estimates to Pago Pago processing plants in SST.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Eco-Tourism & Flight Operations</h3>
+      <p>
+        Travel agencies booking island hopper flights between Hawaii and Pago Pago sync flight itineraries across Pacific time zone boundaries.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Subsea Cable Maintenance</h3>
+      <p>
+        Engineers maintaining South Pacific undersea fiber optic cables link diagnostic telemetry back to network operations centers in UTC.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Tropical Cyclone Tracking</h3>
+      <p>
+        Meteorological stations in the South Pacific record storm tracking coordinates in UTC and publish emergency bulletins in SST.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-utc/" class="related-card">
+      <h3 class="related-card-title">GMT to UTC Converter</h3>
+      <p class="related-card-text">Compare Greenwich Mean Time and Coordinated Universal Time (0-hour offset).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST Converter</h3>
+      <p class="related-card-text">Convert GMT to Pacific Standard Time (8-hour offset).</p>
+    </a>
+    <a href="/gmt-to-aest/" class="related-card">
+      <h3 class="related-card-title">GMT to AEST Converter</h3>
+      <p class="related-card-text">Convert GMT to Australian Eastern Standard Time (10-hour offset).</p>
+    </a>
+    <a href="/ist-to-est/" class="related-card">
+      <h3 class="related-card-title">IST to EST Converter</h3>
+      <p class="related-card-text">Convert India Standard Time to US Eastern Standard Time (10.5-hour offset).</p>
+    </a>
+    <a href="/cat-to-est/" class="related-card">
+      <h3 class="related-card-title">CAT to EST Converter</h3>
+      <p class="related-card-text">Convert Central Africa Time to US Eastern Standard Time (7-hour offset).</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  {faqs.map((faq) => (
+    <details class="faq-item">
+      <summary class="faq-question"><strong>{faq.q}</strong></summary>
+      <p class="faq-answer">{faq.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin-top: 3rem; text-align: center;">
+  <h2 style="font-family: 'Space Grotesk', sans-serif; color: var(--text);">Seamless GMT to SST Calculations</h2>
+  <p style="color: var(--muted); max-width: 750px; margin: 1rem auto; line-height: 1.7;">
+    Whether you are coordinating South Pacific marine logistics, managing federal territory communications, or planning international travel, our GMT to SST converter delivers instant, accurate results. Bookmark this tool for fast time conversions.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+  .faq-item { margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .faq-question { cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .faq-answer { margin-top: 0.75rem; color: var(--muted); line-height: 1.6; }
+</style>

@@ -1,0 +1,719 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "wit-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "WIT to EST Converter";
+const seoTitle = "WIT to EST Converter – Eastern Indonesia Time to Eastern Standard Time";
+const pageDescription = "Convert WIT to EST instantly. Calculate the exact 14-hour time difference between Eastern Indonesia Time (Waktu Indonesia Timur, UTC+9) and Eastern Standard Time (UTC-5) with live clocks and charts.";
+
+const context = {
+  from: "WIT",
+  to: "EST",
+  fromZone: "Asia/Jayapura",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/wit-to-est/`;
+
+// 24-hour conversion table data (WIT → EST = WIT - 14 hours)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 14;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    wit: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { wit: "8:00 AM WIT", est: "6:00 PM EST (-1 day)", note: "Morning in Jayapura/Ambon aligns with early evening in New York on the prior calendar date" },
+  { wit: "10:00 AM WIT", est: "8:00 PM EST (-1 day)", note: "Mid-morning focus in Eastern Indonesia corresponds to late evening on US East Coast" },
+  { wit: "12:00 PM (Noon) WIT", est: "10:00 PM EST (-1 day)", note: "Lunch hour in Papua matches bedtime hours across New York and Toronto" },
+  { wit: "2:00 PM WIT", est: "12:00 AM Midnight EST", note: "Early afternoon in WIT lands at midnight transitioning to the next day in Eastern US" },
+  { wit: "5:00 PM WIT", est: "3:00 AM EST", note: "End of WIT workday corresponds to overnight pre-dawn hours in North America" },
+  { wit: "7:00 PM WIT", est: "5:00 AM EST", note: "Evening in Eastern Indonesia aligns with early morning wake-ups in Miami/NYC" },
+  { wit: "9:00 PM WIT", est: "7:00 AM EST", note: "Prime overlap window: Evening in WIT matches US East Coast office opening" },
+  { wit: "10:00 PM WIT", est: "8:00 AM EST", note: "Late evening in Jayapura/Sorong aligns with active 8 AM work start in Eastern US" },
+  { wit: "11:00 PM WIT", est: "9:00 AM EST", note: "Bedtime in Eastern Indonesia matches core 9 AM business opening across Eastern North America" },
+  { wit: "12:00 AM Midnight WIT", est: "10:00 AM EST", note: "Midnight in Jayapura coincides with mid-morning business productivity in New York" }
+];
+
+// Comprehensive FAQ dataset (25 entries)
+const faqs = [
+  { q: "What does WIT stand for?", a: "WIT stands for Waktu Indonesia Timur (Eastern Indonesia Time). It is the official time zone governing Eastern Indonesia, including Papua, West Papua, Maluku, and North Maluku, operating at UTC+9." },
+  { q: "What does EST stand for?", a: "EST stands for Eastern Standard Time. It is standard winter time in eastern North America (including New York, Washington D.C., Toronto, and Miami), operating at UTC-5." },
+  { q: "How many hours is EST behind WIT?", a: "Eastern Standard Time (EST, UTC-5) is exactly 14 hours behind Eastern Indonesia Time (WIT, UTC+9). When it is 9:00 PM WIT in Jayapura, it is 7:00 AM EST in New York on the same calendar day." },
+  { q: "Does Eastern Indonesia observe Daylight Saving Time?", a: "No. Indonesia does not observe Daylight Saving Time in any of its provinces. WIT remains fixed at UTC+9 throughout the entire calendar year." },
+  { q: "Which major Indonesian cities and provinces observe WIT?", a: "WIT covers Jayapura, Sorong, Ambon, Ternate, Manokwari, Merauke, and Biak across the provinces of Papua, Central Papua, Highland Papua, South Papua, Southwest Papua, West Papua, Maluku, and North Maluku." },
+  { q: "How many time zones does Indonesia have?", a: "Indonesia is divided into three time zones: WIB (Western Indonesia Time, UTC+7), WITA (Central Indonesia Time, UTC+8), and WIT (Eastern Indonesia Time, UTC+9)." },
+  { q: "How do I calculate WIT to EST manually?", a: "To convert WIT to EST, subtract 14 hours from the WIT timestamp. For example, 10:00 PM WIT minus 14 hours equals 8:00 AM EST." },
+  { q: "What is the optimal time for a business call between Jayapura and New York during WIT/EST?", a: "The best overlap window occurs between 9:00 PM and 11:00 PM WIT, which corresponds to 7:00 AM to 9:00 AM EST in Eastern North America." },
+  { q: "When New York switches to Eastern Daylight Time (EDT, UTC-4), what is the difference?", a: "When New York is in EDT (UTC-4) and Jayapura is in WIT (UTC+9), the time difference decreases from 14 hours to 13 hours." },
+  { q: "What is 12:00 PM (Noon) WIT in EST?", a: "12:00 PM (Noon) WIT is equal to 10:00 PM EST on the <em>previous calendar day</em> (-1 day)." },
+  { q: "What is 9:00 AM EST in WIT?", a: "9:00 AM EST is equal to 11:00 PM WIT on the exact same calendar day." },
+  { q: "What is the primary IANA database key for WIT?", a: "The primary standardized IANA database key for Eastern Indonesia Time is 'Asia/Jayapura'." },
+  { q: "How does WIT compare to Japan Standard Time (JST) and Korea Standard Time (KST)?", a: "WIT (UTC+9), JST (UTC+9), and KST (UTC+9) operate at the exact same clock offset with zero time difference." },
+  { q: "How does WIT compare to Jakarta time (WIB)?", a: "WIT (UTC+9) is 2 hours ahead of WIB (Western Indonesia Time, UTC+7, used in Jakarta and Sumatra)." },
+  { q: "Does the 14-hour difference cause significant calendar date shifts?", a: "Yes. Any WIT time between 12:00 AM Midnight WIT and 1:59 PM WIT corresponds to the <em>previous calendar day</em> in Eastern Standard Time." },
+  { q: "Why is Eastern Indonesia strategically important for international trade?", a: "Eastern Indonesia holds vast nickel reserves, agricultural resources, marine biodiversity, and expanding maritime shipping corridors connecting Asia to global markets." },
+  { q: "How should software applications handle WIT to EST data logging?", a: "Applications should store all timestamps in UTC (`2026-07-30T12:00:00Z`) and apply `Asia/Jayapura` or `America/New_York` keys dynamically." },
+  { q: "What is 8:00 AM WIT in EST?", a: "8:00 AM WIT is equal to 6:00 PM EST on the previous calendar day (-1 day)." },
+  { q: "What is 5:00 PM WIT in EST?", a: "5:00 PM WIT is equal to 3:00 AM EST on the exact same calendar day." },
+  { q: "What is 9:00 PM WIT in EST?", a: "9:00 PM WIT is equal to 7:00 AM EST on the exact same calendar day." },
+  { q: "What is 10:00 PM WIT in EST?", a: "10:00 PM WIT is equal to 8:00 AM EST on the exact same calendar day." },
+  { q: "Why is an automated WIT to EST converter recommended over mental math?", a: "Subtracting 14 hours crosses both 12-hour clock rotations and calendar date boundaries simultaneously. An automated converter guarantees accuracy." },
+  { q: "What is 6:00 AM WIT in EST?", a: "6:00 AM WIT is equal to 4:00 PM EST on the previous calendar day (-1 day)." },
+  { q: "What is 11:00 PM WIT in EST?", a: "11:00 PM WIT is equal to 9:00 AM EST on the exact same calendar day." },
+  { q: "What flight routing connects Eastern Indonesia and the US East Coast?", a: "Flights route from Jayapura (DJJ) or Ambon (AMQ) via Jakarta (CGK) or Singapore (SIN) to North America, taking 26 to 30 total travel hours." }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "WIT to EST, Eastern Indonesia Time to Eastern Standard Time, Jayapura to New York time, convert WIT to EST, Indonesia time converter, 14 hour time difference",
+  image: "/assets/wit-to-est-og.svg",
+  imageAlt: "WIT to EST Time Zone Converter illustration featuring Jayapura and New York clocks",
+  faqs,
+  appDescription: "Free online WIT to EST converter. Convert Eastern Indonesia Time (UTC+9) to Eastern Standard Time (UTC-5) with live clocks and scheduling tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert WIT to EST",
+  howToDescription: "Simple steps for calculating Eastern Standard Time from Eastern Indonesia Time.",
+  howToSteps: [
+    { name: "Input WIT Time", text: "Select your desired hour and minute in Eastern Indonesia Time (Waktu Indonesia Timur)." },
+    { name: "Subtract 14 Hours", text: "Account for the 14-hour time gap across global hemispheres." },
+    { name: "Verify Calendar Date", text: "Check whether morning WIT hours land on the prior calendar date in EST." },
+    { name: "Plan Meetings", text: "Use the built-in overlap matrix to align Jayapura evening hours with New York morning hours." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="WIT to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- HERO BANNER -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    WIT to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>14-Hour Time Difference</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    <span>Jayapura to New York</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>No DST in Indonesia</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Transpacific Commerce</span>
+  </div>
+</section>
+
+<!-- INTRO SECTION -->
+<section class="acdt-intro content-section" aria-labelledby="wit-est-intro-heading">
+  <h2 id="wit-est-intro-heading" class="sr-only">About Eastern Indonesia Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our official <strong>WIT to EST Time Zone Converter</strong>. Converting time between Eastern Indonesia Time (WIT / Waktu Indonesia Timur, UTC+9) and Eastern Standard Time (EST, UTC-5) involves spanning a major <strong>14-hour time difference across global hemispheres</strong>. WIT is the official time zone governing Eastern Indonesia, including Papua, West Papua, Maluku, North Maluku, Jayapura, Sorong, Ambon, and Ternate. Meanwhile, EST governs the eastern seaboard of North America during standard winter months, including New York City, Washington D.C., Toronto, Boston, and Miami.
+  </p>
+  <p>
+    Spanning 14 hours means that when it is morning or afternoon in Jayapura or Ambon, Eastern North America is in the evening or overnight hours of the <em>previous calendar date</em>. For instance, 12:00 PM (Noon) WIT on Tuesday in Papua corresponds to 10:00 PM EST on Monday night in New York.
+  </p>
+  <p>
+    The primary operational window for live communication between Eastern Indonesia and the US East Coast occurs during the late evening in WIT (9:00 PM to 11:00 PM WIT), which aligns with the opening of the business day in New York (7:00 AM to 9:00 AM EST).
+  </p>
+  <p>
+    Our online conversion utility handles these hemispheric calculations automatically, preventing calendar date errors. Whether you are managing nickel mining investments in Maluku, marine conservation projects in Raja Ampat, logistics lines, or remote software partnerships, this page provides complete precision.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & SVG HERO -->
+<section class="hero" id="converter-section" aria-labelledby="converter-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Timezone Utility</p>
+    <h2 id="converter-heading">Convert WIT to Eastern Standard Time</h2>
+    <p>
+      Use the dynamic converter below to transform any Eastern Indonesia Time timestamp into Eastern Standard Time. Select any date to view exact clock alignments.
+    </p>
+
+    <!-- Custom Visual SVG: Jayapura Coastal Palms & New York Skyline -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M 50 180 Q 300 60 550 180" fill="none" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6 4" opacity="0.6" />
+        
+        <!-- Jayapura Node -->
+        <g transform="translate(100, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <line x1="0" y1="0" x2="20" y2="12" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#36c7b5" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">Jayapura (WIT)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC+9 Fixed</text>
+        </g>
+
+        <!-- Time Gap Arrow -->
+        <g transform="translate(300, 110)">
+          <rect x="-55" y="-18" width="110" height="36" rx="18" fill="#1b536e" stroke="#2f6278" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">-14 HOURS</text>
+        </g>
+
+        <!-- New York Node -->
+        <g transform="translate(500, 140)">
+          <circle cx="0" cy="0" r="42" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+          <line x1="0" y1="0" x2="-16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+          <line x1="0" y1="0" x2="0" y2="-24" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+          <circle cx="0" cy="0" r="4" fill="#8fd7ff" />
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Clocks: WIT vs EST</h2>
+  <div class="clock-card"><span>Current Jayapura / WIT (UTC+9)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current New York / EST (UTC-5)</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+</section>
+
+<!-- REGIONAL SKYLINE ILLUSTRATION -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Jayapura Tropical Coast & New York Skyline Graphic</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="auto" style="display: block; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #0c354a 0%, #12455d 100%); border-radius: 12px; border: 1px solid var(--line);">
+    <circle cx="120" cy="40" r="1.5" fill="#f4fbff" opacity="0.5" />
+    <circle cx="280" cy="30" r="2" fill="#36c7b5" opacity="0.7" />
+    <circle cx="650" cy="45" r="1.5" fill="#8fd7ff" opacity="0.6" />
+
+    <!-- Jayapura Youtefa Bridge / Coastal Hill Motif -->
+    <path d="M 50 185 Q 180 100 300 185 Z" fill="#164d68" opacity="0.8" />
+    <path d="M 120 140 Q 200 80 280 140" fill="none" stroke="#36c7b5" stroke-width="3" />
+
+    <!-- New York Skyline Motif -->
+    <g transform="translate(620, 40)">
+      <rect x="20" y="30" width="30" height="120" fill="#1b536e" />
+      <rect x="30" y="10" width="10" height="20" fill="#164d68" />
+      <line x1="35" y1="0" x2="35" y2="10" stroke="#36c7b5" stroke-width="2" />
+    </g>
+
+    <rect x="0" y="185" width="800" height="15" fill="#071b26" />
+    <line x1="0" y1="185" x2="800" y2="185" stroke="#36c7b5" stroke-width="2" />
+  </svg>
+</section>
+
+<!-- TIME DIFFERENCE MECHANICS -->
+<section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Time Difference Mechanics</p>
+    <h2 id="time-diff-heading">Analyzing the 14-Hour Gap: WIT vs EST</h2>
+    <p>
+      The time difference between Eastern Indonesia Time (WIT, UTC+9) and Eastern Standard Time (EST, UTC-5) is <strong>14 hours</strong>. Calculating the difference: (+9) - (-5) = 14 hours total separation.
+    </p>
+    <p>
+      When it is 12:00 PM (Noon) in Jayapura or Ambon, local time in New York or Miami is 10:00 PM on the <em>previous calendar day</em>. When it is 9:00 PM WIT in Eastern Indonesia, it corresponds to 7:00 AM EST in Eastern North America on the same day.
+    </p>
+  </div>
+
+  <div style="margin: 2rem auto; max-width: 700px; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="auto" style="display: block;">
+      <rect width="600" height="180" fill="#0c354a" rx="8" />
+      <g transform="translate(120, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+        <line x1="0" y1="0" x2="20" y2="12" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#36c7b5" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">WIT (UTC+9)</text>
+      </g>
+      <g transform="translate(300, 90)">
+        <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
+        <rect x="-50" y="-30" width="100" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-14 HOURS</text>
+      </g>
+      <g transform="translate(480, 90)">
+        <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
+        <line x1="0" y1="0" x2="-20" y2="20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
+        <line x1="0" y1="0" x2="0" y2="-30" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST (UTC-5)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>14-Hour Offset Separation</h3>
+      <p>WIT runs at UTC+9 year-round, while EST runs at UTC-5. The 14-hour gap means morning in Jayapura corresponds to the prior evening in New York.</p>
+    </article>
+    <article class="method-card">
+      <h3>Daylight Shift Dynamics</h3>
+      <p>When New York switches to Eastern Daylight Time (EDT, UTC-4) in summer, the offset decreases from 14 hours to 13 hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>WIT Evening / US Morning Window</h3>
+      <p>The optimal window for live calls spans 9:00 PM – 11:00 PM WIT, matching 7:00 AM – 9:00 AM EST in Eastern North America.</p>
+    </article>
+  </div>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">Complete 24-Hour WIT to EST Conversion Table</h2>
+    <p>This reference grid maps every hour of Eastern Indonesia Time (WIT) directly to Eastern Standard Time (EST).</p>
+
+    <!-- Timeline Graphic -->
+    <div style="margin: 2rem auto; overflow-x: auto; background: var(--panel); padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px;">
+      <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">WIT to EST Timeline Mapping</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 100" width="900" height="100" style="display: block;">
+        <rect x="20" y="40" width="860" height="16" fill="#1b536e" rx="8" />
+        <g transform="translate(60, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">8 AM WIT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">6 PM EST (-1)</text>
+        </g>
+        <g transform="translate(280, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">2 PM WIT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">12 AM EST</text>
+        </g>
+        <g transform="translate(500, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">7 PM WIT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">5 AM EST</text>
+        </g>
+        <g transform="translate(720, 48)">
+          <circle cx="0" cy="0" r="7" fill="#36c7b5" />
+          <text x="0" y="-18" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="bold" fill="#bdd2dc" text-anchor="middle">11 PM WIT</text>
+          <text x="0" y="26" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">9 AM EST</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="WIT to EST conversion table">
+        <caption class="sr-only">24-hour hour-by-hour WIT to EST conversion chart</caption>
+        <thead>
+          <tr><th>WIT Time (UTC+9)</th><th>EST Equivalent (UTC-5)</th><th>Day Offset</th></tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr>
+              <td>{row.wit}</td>
+              <td>{row.est}</td>
+              <td>{row.dayNote}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Note: WIT hours between 12:00 AM Midnight and 1:59 PM (13:59) fall on the previous calendar day (-1 day) in Eastern Standard Time.</p>
+  </div>
+</section>
+
+<!-- POPULAR CONVERSIONS TABLE -->
+<section class="examples-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <div>
+    <h2 id="popular-heading">Common WIT to EST Schedule Comparisons</h2>
+    <p>Below are frequently referenced schedule points for cross-hemispheric business coordination between Eastern Indonesia and Eastern North America.</p>
+    <div class="table-wrap">
+      <table aria-label="Popular WIT to EST time conversions">
+        <caption class="sr-only">Selected popular WIT to EST times with context notes</caption>
+        <thead>
+          <tr><th>WIT Time</th><th>EST Equivalent</th><th>Context & Scenario</th></tr>
+        </thead>
+        <tbody>
+          {popularConversions.map((row) => (
+            <tr>
+              <td>{row.wit}</td>
+              <td>{row.est}</td>
+              <td>{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- DST INFOGRAPHIC SVG SECTION -->
+<section class="content-section" id="dst-infographic" aria-labelledby="dst-info-heading">
+  <h2 id="dst-info-heading">Hemispheric Offset Shifts: WIT vs EST / EDT</h2>
+  <p>
+    Because Indonesia stays permanently on UTC+9, the gap to New York alternates between 14 hours (during US winter EST) and 13 hours (during US summer EDT).
+  </p>
+
+  <div style="margin: 2rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-align: center;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block; margin: 0 auto;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <rect x="40" y="75" width="620" height="14" fill="#1b536e" rx="7" />
+      <rect x="40" y="75" width="160" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="120" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Nov - Mar: WIT vs EST (14h)</text>
+      <rect x="200" y="75" width="340" height="14" fill="#8fd7ff" opacity="0.9" rx="4" />
+      <text x="370" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Mar - Nov: WIT vs EDT (13h)</text>
+      <rect x="540" y="75" width="120" height="14" fill="#36c7b5" opacity="0.8" rx="4" />
+      <text x="600" y="55" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">Nov - Dec: (14h)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER MATRIX -->
+<section class="content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">WIT to EST Cross-Border Meeting Planner</h2>
+  <p>
+    Scheduling calls across a 14-hour gap requires utilizing WIT evening hours alongside New York morning hours.
+  </p>
+
+  <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;">
+    <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent);">Recommended Meeting Slots</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">WIT Evening / US East Morning</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>9:00 PM - 11:00 PM WIT</strong> equals <strong>7:00 AM - 9:00 AM EST</strong>. Prime window for executive syncs and daily project reviews.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">WIT Morning / US East Evening (Prior Day)</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);"><strong>8:00 AM - 9:30 AM WIT</strong> equals <strong>6:00 PM - 7:30 PM EST (-1 day)</strong>. Alternative window for flexible teams.</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
+        <h4 style="margin:0 0 0.5rem; color:#f4fbff;">Asynchronous Workflows</h4>
+        <p style="margin:0; font-size:0.95rem; color:var(--muted);">Teams in Jayapura finish daily reports by 5:00 PM WIT, ready for US East Coast morning teams to review at 3:00 AM/7:00 AM EST.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEN / WHERE USED -->
+<section class="content-section" id="when-where-used" aria-labelledby="usage-heading">
+  <h2 id="usage-heading">Where WIT and EST Are Observed</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Eastern Indonesia Time (WIT) Territory</h3>
+    <p>
+      WIT (UTC+9) governs all eastern provinces of Indonesia, including Papua, West Papua, Central Papua, Highland Papua, South Papua, Southwest Papua, Maluku, and North Maluku.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3>Eastern Standard Time (EST) Territory</h3>
+    <p>
+      EST (UTC-5) covers eastern US states (New York, Florida, Pennsylvania, Massachusetts) and eastern Canadian provinces (Ontario, Quebec) during standard winter months.
+    </p>
+  </article>
+
+  <article>
+    <h3>Resource & Maritime Economic Links</h3>
+    <p>
+      Eastern Indonesia is famous for world-class nickel mining, marine fisheries in Raja Ampat, and spice island trade corridors, connecting international trade with US financial capital.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content-section" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in WIT to EST Conversions</h2>
+  
+  <ul style="line-height: 1.8; color: var(--muted);">
+    <li><strong style="color: var(--text);">Confusing WIT with WIB or WITA:</strong> WIT is UTC+9 (Papua/Maluku), whereas WIB is UTC+7 (Jakarta) and WITA is UTC+8 (Bali). Do not use Jakarta time for Jayapura!</li>
+    <li><strong style="color: var(--text);">Calendar Date Shift Mismatches:</strong> 10:00 AM WIT on Tuesday maps to 8:00 PM EST on <em>Monday evening</em>. Always verify calendar dates.</li>
+    <li><strong style="color: var(--text);">Assuming Indonesia Shifts Clocks:</strong> Indonesia does NOT observe Daylight Saving Time. Do not add seasonal shifts for Jayapura.</li>
+  </ul>
+</section>
+
+<!-- REAL-WORLD USE CASES -->
+<section class="use-cases content-section" id="use-cases" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World WIT to EST Scenarios</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Nickel & Mining Investments</h3>
+      <p>Mining operations in Maluku log daily extraction reports at 9:00 PM WIT, aligning with New York analyst briefings at 7:00 AM EST.</p>
+    </article>
+    <article class="method-card">
+      <h3>Eco-Tourism & Marine Research</h3>
+      <p>Dive resort managers in Raja Ampat coordinate guest bookings with US East Coast travel agencies during the 10:00 PM WIT (8:00 AM EST) window.</p>
+    </article>
+    <article class="method-card">
+      <h3>Maritime Cargo Telemetry</h3>
+      <p>Cargo ships navigating the Halmahera Sea transmit container telemetry to US logistics dispatchers using 14-hour offset logic.</p>
+    </article>
+    <article class="method-card">
+      <h3>NGO & Conservation Syncs</h3>
+      <p>Environmental conservation groups in Jayapura connect with Washington D.C. headquarters at 9:30 PM WIT (7:30 AM EST).</p>
+    </article>
+  </div>
+</section>
+
+<!-- TECHNICAL DATABASE INTEGRATION -->
+<section class="content-section" id="tech-integration" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Integration & Database Standards</h2>
+  <p>
+    When engineering multi-region software systems connecting Eastern Indonesia and Eastern North America, developers should store timestamps in UTC and resolve local timezone offsets via IANA rules:
+  </p>
+  <ul style="color: var(--muted); line-height: 1.8; margin-top: 1rem;">
+    <li><code>Asia/Jayapura</code> – Manages fixed UTC+9 rules for Eastern Indonesia.</li>
+    <li><code>America/New_York</code> – Manages EST/EDT transitions for US Eastern time.</li>
+  </ul>
+</section>
+
+<!-- RELATED CONVERTERS GRID -->
+<section class="other-tools content-section" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading" class="eyebrow">Explore Related Time Converters</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Eastern Standard Time (5-hour difference).</p>
+    </a>
+    <a href="/gmt-to-kst/" class="related-card">
+      <h3 class="related-card-title">GMT to KST</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Korea Standard Time (UTC+9).</p>
+    </a>
+    <a href="/awst-to-est/" class="related-card">
+      <h3 class="related-card-title">AWST to EST</h3>
+      <p class="related-card-text">Convert Australian Western Standard Time (Perth) to Eastern Standard Time.</p>
+    </a>
+    <a href="/bst-to-est/" class="related-card">
+      <h3 class="related-card-title">BST to EST</h3>
+      <p class="related-card-text">Convert British Summer Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/cet-to-est/" class="related-card">
+      <h3 class="related-card-title">CET to EST</h3>
+      <p class="related-card-text">Convert Central European Time to Eastern Standard Time.</p>
+    </a>
+    <a href="/gmt-to-ndt/" class="related-card">
+      <h3 class="related-card-title">GMT to NDT</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Newfoundland Daylight Time (2.5-hour offset).</p>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq content-section" id="faqs" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  <div class="faq-list">
+    {faqs.map((faq) => (
+      <details class="faq-item">
+        <summary class="faq-question"><strong>{faq.q}</strong></summary>
+        <p class="faq-answer">{faq.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="content-section" id="conclusion" aria-labelledby="conclusion-heading">
+  <h2 id="conclusion-heading">Master Your WIT to EST Schedule</h2>
+  <p>
+    Converting time between Eastern Indonesia Time and Eastern Standard Time is simple when factoring in the 14-hour difference. Use our interactive converter and 24-hour tables for seamless cross-hemisphere planning.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .faq-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .faq-question {
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text);
+    outline: none;
+  }
+  .faq-answer {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  td {
+    color: var(--muted);
+  }
+  .chart-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .related-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .related-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .related-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 0.5rem;
+  }
+  .related-card-text {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .clock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .clock-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .clock-card span {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .clock-card strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+  }
+  .clock-card em {
+    font-style: normal;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+  }
+</style>

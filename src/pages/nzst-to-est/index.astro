@@ -1,0 +1,797 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "nzst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "NZST to EST Converter";
+const seoTitle = "NZST to EST Converter – New Zealand Standard Time to US Eastern Standard Time";
+const pageDescription = "Convert NZST to EST instantly. Calculate exact time difference between New Zealand Standard Time (UTC+12) and Eastern Standard Time (UTC-5) with live clocks, conversion table, and meeting planner.";
+
+const context = {
+  from: "NZST",
+  to: "EST",
+  fromZone: "Pacific/Auckland",
+  toZone: "America/New_York"
+};
+
+const canonical = `${siteUrl}/nzst-to-est/`;
+
+// 24-hour conversion table data (NZST → EST = NZST - 17)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 17;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  const period = estNormalized < 12 ? "AM" : "PM";
+  const displayHour = estNormalized % 12 || 12;
+  return {
+    nzst: formatHour12(hour),
+    est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous calendar day" : "Same calendar day",
+    status: (estNormalized >= 8 && estNormalized < 17) ? "Business Hours" : (estNormalized >= 17 && estNormalized < 22) ? "Evening Hours" : "Night Hours"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { nzst: "12:00 AM (Midnight)", est: "7:00 AM EST (Prev Day)", note: "Midnight in Auckland, morning commute in New York and Toronto" },
+  { nzst: "1:00 AM NZST", est: "8:00 AM EST (Prev Day)", note: "Late night in New Zealand, US East Coast offices opening" },
+  { nzst: "2:00 AM NZST", est: "9:00 AM EST (Prev Day)", note: "Deep night in Wellington, morning focus hours on Wall Street" },
+  { nzst: "3:00 AM NZST", est: "10:00 AM EST (Prev Day)", note: "Quiet hours across New Zealand, active morning in US" },
+  { nzst: "4:00 AM NZST", est: "11:00 AM EST (Prev Day)", note: "Pre-dawn in Christchurch, late morning in Eastern North America" },
+  { nzst: "5:00 AM NZST", est: "12:00 PM (Noon) EST (Prev Day)", note: "Early morning in NZ, lunchtime in New York" },
+  { nzst: "6:00 AM NZST", est: "1:00 PM EST (Prev Day)", note: "Dawn in Auckland, early afternoon in Toronto and Miami" },
+  { nzst: "7:00 AM NZST", est: "2:00 PM EST (Prev Day)", note: "Morning commute window in New Zealand" },
+  { nzst: "8:00 AM NZST", est: "3:00 PM EST (Prev Day)", note: "New Zealand commercial offices opening, late afternoon in US" },
+  { nzst: "9:00 AM NZST", est: "4:00 PM EST (Prev Day)", note: "Prime 2-hour Pacific crossover window begins" },
+  { nzst: "10:00 AM NZST", est: "5:00 PM EST (Prev Day)", note: "Mid-morning focus in Auckland, US offices wrapping up workday" },
+  { nzst: "11:00 AM NZST", est: "6:00 PM EST (Prev Day)", note: "Afternoon sessions starting in NZ, evening in New York" },
+  { nzst: "12:00 PM (Noon)", est: "7:00 PM EST (Prev Day)", note: "Midday lunch break in New Zealand, prime-time evening in US" },
+  { nzst: "1:00 PM NZST", est: "8:00 PM EST (Prev Day)", note: "Early afternoon in Wellington, late evening television in US" },
+  { nzst: "2:00 PM NZST", est: "9:00 PM EST (Prev Day)", note: "Mid-afternoon focus in Christchurch, late evening in Toronto" },
+  { nzst: "3:00 PM NZST", est: "10:00 PM EST (Prev Day)", note: "Afternoon work session in Auckland, bedtime in America" },
+  { nzst: "4:00 PM NZST", est: "11:00 PM EST (Prev Day)", note: "Late afternoon in New Zealand, quiet night hours in US" },
+  { nzst: "5:00 PM NZST", est: "12:00 AM (Midnight) EST", note: "End of standard workday in NZ, midnight transition in EST" },
+  { nzst: "6:00 PM NZST", est: "1:00 AM EST", note: "Evening rush hour in Auckland, deep night in New York" },
+  { nzst: "7:00 PM NZST", est: "2:00 AM EST", note: "Dinner and relaxation in New Zealand, quiet hours in US" },
+  { nzst: "8:00 PM NZST", est: "3:00 AM EST", note: "Prime-time broadcasting in NZ, early pre-dawn in EST" },
+  { nzst: "9:00 PM NZST", est: "4:00 AM EST", note: "Late evening in Wellington, early risers in US" },
+  { nzst: "10:00 PM NZST", est: "5:00 AM EST", note: "Bedtime in Auckland, morning commute starting in New York" },
+  { nzst: "11:00 PM NZST", est: "6:00 AM EST", note: "Late night in NZ, dawn breaking in Toronto" }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is NZST?",
+    a: "NZST stands for New Zealand Standard Time. It is the standard winter time zone observed across New Zealand (including North Island, South Island, and Stewart Island), operating at UTC+12 (12 hours ahead of Coordinated Universal Time)."
+  },
+  {
+    q: "What is EST?",
+    a: "EST stands for Eastern Standard Time. It is the winter time zone used on the East Coast of North America (including New York, Toronto, Miami, and Boston), operating at UTC-5 (5 hours behind Coordinated Universal Time)."
+  },
+  {
+    q: "What is the exact time difference between NZST and EST?",
+    a: "Eastern Standard Time (EST) is exactly 17 hours behind New Zealand Standard Time (NZST). Alternatively, NZST is 17 hours ahead of EST. For example, 10:00 AM NZST on Tuesday corresponds to 5:00 PM EST on Monday."
+  },
+  {
+    q: "Do NZST and EST cross the International Date Line?",
+    a: "Yes. Because NZST (UTC+12) and EST (UTC-5) span opposite sides of the International Date Line, local dates differ by a full calendar day during standard business hours."
+  },
+  {
+    q: "When is New Zealand Standard Time (NZST) active?",
+    a: "In New Zealand, NZST begins on the first Sunday of April (when clocks fall back from NZDT) and ends on the last Sunday of September (when clocks jump forward to NZDT)."
+  },
+  {
+    q: "Which major New Zealand cities observe NZST?",
+    a: "Major cities observing NZST include Auckland, Wellington, Christchurch, Hamilton, Tauranga, Dunedin, Palmerston North, and Nelson."
+  },
+  {
+    q: "How do I convert NZST to EST manually?",
+    a: "To convert NZST to EST, subtract 17 hours from the NZST timestamp and roll back 1 calendar day. For example: 9:00 AM NZST (Tuesday) minus 17 hours = 4:00 PM EST (Monday)."
+  },
+  {
+    q: "What is 10:00 AM NZST in EST?",
+    a: "10:00 AM NZST converts to 5:00 PM EST on the previous calendar afternoon."
+  },
+  {
+    q: "What happens when New Zealand switches to NZDT and the US switches to EDT?",
+    a: "In Southern Hemisphere summer, NZ shifts to NZDT (UTC+13) and the US shifts to EDT (UTC-4). The net time difference between Auckland and New York becomes 17 hours (NZDT is 17 hours ahead of EDT)."
+  },
+  {
+    q: "What is the primary IANA time zone identifier for NZST?",
+    a: "The primary canonical IANA time zone identifier for New Zealand is Pacific/Auckland. For the Chatham Islands, Pacific/Chatham (UTC+12:45) is used."
+  },
+  {
+    q: "What is the primary IANA identifier for EST?",
+    a: "The primary IANA time zone identifier for US Eastern Time is America/New_York."
+  },
+  {
+    q: "What is the best meeting overlap window between New Zealand (NZST) and New York (EST)?",
+    a: "The most viable meeting window occurs between 9:00 AM and 11:00 AM NZST, which corresponds to 4:00 PM to 6:00 PM EST on the previous calendar afternoon."
+  },
+  {
+    q: "How do film and VFX studios (like Wētā FX in Wellington) collaborate with Hollywood?",
+    a: "Digital production assets are rendered overnight in New Zealand and handed off to US West and East Coast producers during the late afternoon crossover window."
+  },
+  {
+    q: "What is 12:00 AM Midnight NZST in EST?",
+    a: "12:00 AM NZST corresponds to 7:00 AM EST on the previous calendar morning."
+  },
+  {
+    q: "What is the military time designation for UTC+12 and UTC-5?",
+    a: "UTC+12 is designated as Mike Time Zone (M), while UTC-5 is designated as Romeo Time Zone (R)."
+  },
+  {
+    q: "How do agritech and dairy exporters (Fonterra) manage transpacific logistics?",
+    a: "Logistics managers schedule global shipment releases during early morning Auckland hours to catch US East Coast distribution centers before their business day ends."
+  },
+  {
+    q: "What is 8:00 AM NZST in EST?",
+    a: "8:00 AM NZST minus 17 hours equals 3:00 PM EST on the previous afternoon."
+  },
+  {
+    q: "Do the Chatham Islands follow standard NZST rules?",
+    a: "No. The Chatham Islands operate on Chatham Standard Time (CHAST, UTC+12:45), which is 45 minutes ahead of mainland New Zealand."
+  },
+  {
+    q: "What is 5:00 PM EST in NZST?",
+    a: "5:00 PM EST plus 17 hours equals 10:00 AM NZST on the following calendar morning."
+  },
+  {
+    q: "How long is a nonstop flight between Auckland (AKL) and New York (JFK)?",
+    a: "Nonstop flights between Auckland and JFK take approximately 16 hours. Departing Auckland at 8:00 PM NZST arrives in New York around 4:00 PM EST on the same day due to crossing the International Date Line."
+  },
+  {
+    q: "Can this converter handle both summer and winter offsets automatically?",
+    a: "Yes. Our converter uses native browser Intl logic, dynamically applying exact daylight saving rules for any queried date."
+  },
+  {
+    q: "What is 2:00 PM NZST in EST?",
+    a: "2:00 PM NZST minus 17 hours equals 9:00 PM EST on the previous calendar evening."
+  },
+  {
+    q: "Why is New Zealand often called 'the first country to see the sun'?",
+    a: "Located immediately west of the International Date Line at UTC+12, major commercial centers in New Zealand are among the first in the world to start each new calendar day."
+  },
+  {
+    q: "What is 6:00 PM NZST in EST?",
+    a: "6:00 PM NZST minus 17 hours equals 1:00 AM EST on the previous calendar morning."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "NZST to EST, New Zealand Standard Time to Eastern Standard Time, Convert NZST to EST, NZST Time Zone, Auckland Time, New York Time, UTC+12 to UTC-5, NZST EST Time Difference",
+  image: "/assets/nzst-to-est-og.svg",
+  imageAlt: "NZST to EST Time Converter – New Zealand Standard Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online NZST to EST converter with live clocks, 24-hour schedules, meeting planner, and Auckland-New York time zone details.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert NZST to EST",
+  howToDescription: "Step-by-step instructions for converting New Zealand Standard Time to Eastern Standard Time.",
+  howToSteps: [
+    { name: "Enter NZST Timestamp", text: "Select your desired starting New Zealand Standard Time using our interactive picker." },
+    { name: "Subtract 17 Hours", text: "Subtract 17 hours to convert from UTC+12 (NZST) to UTC-5 (EST)." },
+    { name: "Roll Back Calendar Date", text: "Roll back 1 calendar day to account for crossing the International Date Line." },
+    { name: "Copy and Share", text: "Copy the converted EST result for your team invitation or flight itinerary." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="NZST to EST"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    NZST to EST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Real-Time Clocks</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
+    <span>17-Hour Transpacific Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Date Line Cross-Sync</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+    </svg>
+    <span>Pacific/Auckland to America/New_York</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About New Zealand Standard Time to Eastern Standard Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>NZST to EST Converter</strong>, engineered for digital creators, agritech executives, film production houses, and international travelers managing activities across New Zealand Standard Time (UTC+12) and North American Eastern Standard Time (UTC-5). NZST represents the winter standard time zone for New Zealand, operating at a prominent UTC+12 offset.
+  </p>
+  <p>
+    Spanning opposite sides of the International Date Line, New Zealand and the East Coast of North America have a substantial 17-hour time difference. When morning breaks in Auckland or Wellington, Eastern North America is wrapping up the previous afternoon.
+  </p>
+  <p>
+    Eastern Standard Time (EST) governs winter commercial activity across major North American hubs including New York, Toronto, Miami, and Boston. Successfully coordinating cross-Pacific schedules requires accounting for both the 17-hour offset and the 1-day calendar shift.
+  </p>
+  <p>
+    Explore our interactive live clocks, dynamic conversion tool, 24-hour reference matrix, cross-Pacific meeting planner recommendations, and technical timezone database specifications below.
+  </p>
+</section>
+
+<!-- INTERACTIVE CONVERTER & HERO GRAPHIC -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Interactive Conversion Tool</p>
+    <h2 id="converter-tool-heading">Convert NZST to Eastern Standard Time</h2>
+    <p>
+      Select any New Zealand Standard Time to calculate the corresponding Eastern Standard Time instantly. Our calculator automatically handles date shifts across the International Date Line.
+    </p>
+
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="240" fill="#0c354a" rx="8" />
+        <path d="M0 40 H600 M0 80 H600 M0 120 H600 M0 160 H600 M0 200 H600" stroke="#12455d" stroke-width="1" />
+        
+        <!-- NZST Node -->
+        <g transform="translate(150, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">NZST</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">UTC+12</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Auckland / Wellington</text>
+        </g>
+        <!-- Arrow + Offset -->
+        <g transform="translate(300, 120)">
+          <line x1="-50" y1="0" x2="50" y2="0" stroke="#36c7b5" stroke-width="3" stroke-dasharray="6,4"/>
+          <polygon points="45,-6 55,0 45,6" fill="#36c7b5"/>
+          <rect x="-45" y="-22" width="90" height="24" fill="#1b536e" rx="4"/>
+          <text x="0" y="-6" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">-17 Hours Behind</text>
+        </g>
+        <!-- EST Node -->
+        <g transform="translate(450, 120)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3"/>
+          <text x="0" y="-10" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="18" fill="#f4fbff" text-anchor="middle">EST</text>
+          <text x="0" y="15" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5</text>
+          <text x="0" y="32" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- LIVE CLOCKS -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading" style="margin: 2rem 0;">
+  <h2 id="live-clocks-heading" class="sr-only">Live Clocks NZST vs EST</h2>
+  <div class="clock-card">
+    <span>Current NZST (UTC+12)</span>
+    <strong id="gmtClock">--:--</strong>
+    <em>New Zealand Standard Time</em>
+  </div>
+  <div class="clock-card">
+    <span>Current EST (UTC-5)</span>
+    <strong id="toClock">--:--</strong>
+    <em>Eastern Standard Time</em>
+  </div>
+</section>
+
+<!-- TIME DIFFERENCE & CALCULATION METHODS -->
+<section class="method-section content-section" id="calculation-methods" aria-labelledby="methods-heading">
+  <h2 id="methods-heading">How to Calculate NZST to EST Time Differences</h2>
+  <p class="method-intro">
+    Converting NZST to EST requires subtracting 17 hours from the New Zealand time and stepping back 1 calendar day. A quick mental calculation is to add 7 hours and move to the previous day.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">NZST to EST Date Line Shift (-17 Hours)</text>
+      <!-- NZST Bar -->
+      <rect x="50" y="65" width="600" height="34" fill="#12455d" rx="4"/>
+      <text x="70" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">NZST (Tue): 09:00 AM</text>
+      <text x="350" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">01:00 PM</text>
+      <text x="600" y="87" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff">05:00 PM</text>
+      <!-- EST Bar -->
+      <rect x="50" y="125" width="600" height="34" fill="#1b536e" rx="4"/>
+      <text x="70" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">EST (Mon): 04:00 PM</text>
+      <text x="350" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">08:00 PM</text>
+      <text x="600" y="147" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5">12:00 AM (Tue)</text>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. The +7 Hours / Prev Day Shortcut</h3>
+      <p>Instead of subtracting 17 hours, add 7 hours to the clock face and change the day to yesterday. For example: 09:00 AM Tuesday + 7 hours = 4:00 PM Monday EST.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. International Date Line Rule</h3>
+      <p>Because NZST is at UTC+12 and EST is at UTC-5, crossing the Pacific shifts the calendar date backward by 1 day when traveling from NZ to US.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Summer NZDT/EDT Synchronization</h3>
+      <p>In Southern Hemisphere summer, NZ moves to NZDT (UTC+13) while North America moves to EDT (UTC-4). The net difference remains 17 hours.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Afternoon US / Morning NZ Crossover</h3>
+      <p>The primary business window occurs between 9:00 AM and 11:00 AM NZST, which maps to 4:00 PM to 6:00 PM EST on the previous afternoon.</p>
+    </article>
+  </div>
+</section>
+
+<!-- STEP BY STEP GUIDE -->
+<section class="content-section" id="step-by-step-guide" aria-labelledby="step-heading">
+  <h2 id="step-heading">Step-by-Step Guide for Converting NZST to EST</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Step 1: Obtain the Source NZST Timestamp</h3>
+      <p>Identify your starting New Zealand Standard Time (UTC+12) value.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 2: Apply the 17-Hour Subtraction</h3>
+      <p>Deduct 17 hours from the NZST timestamp. For example, 10:00 AM NZST becomes 17:00 (5:00 PM) EST.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 3: Shift Calendar Date to Yesterday</h3>
+      <p>Move the date back by 1 calendar day. A Tuesday morning call in Auckland occurs on Monday afternoon in New York.</p>
+    </article>
+    <article class="method-card">
+      <h3>Step 4: Confirm US Target Zone</h3>
+      <p>Verify that your target North American city operates under Eastern Standard Time (America/New_York or America/Toronto).</p>
+    </article>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE: NZST vs EST vs AEST vs GMT -->
+<section class="table-wrap content-section" id="comparison-table-section" aria-labelledby="comparison-heading">
+  <h2 id="comparison-heading">Timezone Comparison: NZST, EST, AEST, and GMT</h2>
+  <p>Compare how New Zealand Standard Time aligns with neighboring Pacific and Atlantic time standards.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Timezone Acronym</th>
+        <th>Full Name</th>
+        <th>UTC Offset</th>
+        <th>Season Active</th>
+        <th>Primary Cities</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>NZST</strong></td>
+        <td>New Zealand Standard Time</td>
+        <td>UTC+12</td>
+        <td>Winter (Apr–Sep)</td>
+        <td>Auckland, Wellington, Christchurch</td>
+      </tr>
+      <tr>
+        <td><strong>EST</strong></td>
+        <td>Eastern Standard Time</td>
+        <td>UTC-5</td>
+        <td>Winter (Nov–Mar)</td>
+        <td>New York, Toronto, Miami</td>
+      </tr>
+      <tr>
+        <td><strong>AEST</strong></td>
+        <td>Australian Eastern Standard Time</td>
+        <td>UTC+10</td>
+        <td>Winter (Apr–Oct)</td>
+        <td>Sydney, Melbourne, Brisbane</td>
+      </tr>
+      <tr>
+        <td><strong>GMT</strong></td>
+        <td>Greenwich Mean Time</td>
+        <td>UTC+0</td>
+        <td>Year-Round Baseline</td>
+        <td>Greenwich, Accra, Reykjavik</td>
+      </tr>
+      <tr>
+        <td><strong>NZDT</strong></td>
+        <td>New Zealand Daylight Time</td>
+        <td>UTC+13</td>
+        <td>Summer (Sep–Apr)</td>
+        <td>Auckland, Wellington (summer)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="table-wrap content-section" id="conversion-table" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour NZST to EST Conversion Table</h2>
+  <p>Comprehensive reference matrix displaying every hour of New Zealand Standard Time alongside its corresponding Eastern Standard Time value and day status.</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>NZST Time (UTC+12)</th>
+        <th>EST Time (UTC-5)</th>
+        <th>Calendar Day Status</th>
+        <th>Window Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {conversionRows.map((row) => (
+        <tr>
+          <td><strong>{row.nzst}</strong></td>
+          <td><span class="highlight">{row.est}</span></td>
+          <td>{row.dayNote}</td>
+          <td>{row.status}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<!-- POPULAR CONVERSIONS -->
+<section class="examples-section content-section" id="popular-conversions" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key NZST to EST Time Milestones</h2>
+  <p class="method-intro">Explore how prominent hours in New Zealand align with daily activities and commerce in Eastern North America.</p>
+  <div class="method-grid">
+    {popularConversions.map((item) => (
+      <article class="method-card">
+        <h3>{item.nzst} = {item.est}</h3>
+        <p>{item.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- REGIONAL MAP / DST INFOGRAPHIC -->
+<section class="content-section" id="dst-infographic" aria-labelledby="infographic-heading">
+  <h2 id="infographic-heading">New Zealand Standard Time (NZST) Geographic Scope</h2>
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="220" fill="#0c354a" rx="8" />
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#8fd7ff" text-anchor="middle">NZST (UTC+12) Coverage & Transpacific Alignment</text>
+      
+      <g transform="translate(70, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">North Island</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+12 (NZST)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Auckland / Wellington</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Commerce & Film Hubs</text>
+      </g>
+
+      <g transform="translate(270, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">South Island</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC+12 (NZST)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Christchurch / Dunedin</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Agritech & Research</text>
+      </g>
+
+      <g transform="translate(470, 70)">
+        <rect x="0" y="0" width="160" height="110" fill="#12455d" stroke="#2f6278" rx="6"/>
+        <text x="80" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">US East Coast</text>
+        <text x="80" y="55" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">UTC-5 (EST)</text>
+        <text x="80" y="78" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">New York / Toronto</text>
+        <text x="80" y="94" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">Media & Enterprise</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- MEETING PLANNER -->
+<section class="method-section content-section" id="meeting-planner" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">NZST to EST Transpacific Meeting Planner</h2>
+  <p class="method-intro">
+    Because NZST is 17 hours ahead of EST, real-time conference calls must align morning hours in New Zealand with afternoon hours on the US East Coast.
+  </p>
+
+  <div class="custom-svg-container" style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 160" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="160" fill="#0c354a" rx="8" />
+      <!-- Golden Window Highlight -->
+      <rect x="200" y="40" width="320" height="80" fill="rgba(54, 199, 181, 0.12)" stroke="#36c7b5" stroke-width="1.5" stroke-dasharray="4,4" rx="6"/>
+      <text x="350" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">Optimal Crossover Window: 09:00 - 11:00 NZST (16:00 - 18:00 EST Prev Day)</text>
+      
+      <g transform="translate(100, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">NZST Morning</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">09:00 AM NZST (Tue)</text>
+      </g>
+      <g transform="translate(350, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Transpacific Sync</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">10:00 AM NZST = 05:00 PM EST (Mon)</text>
+      </g>
+      <g transform="translate(600, 80)">
+        <text x="0" y="0" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST Close</text>
+        <text x="0" y="20" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">06:00 PM EST (Mon)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. Tuesday Morning NZ / Monday Afternoon US Sync</h3>
+      <p>Schedule meetings at 09:30 AM NZST Tuesday (04:30 PM EST Monday). New Zealand participants start their week fresh while US colleagues complete daily deliverables.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. VFX & Media Daily Handover Window</h3>
+      <p>Film rendering pipelines at Wētā FX (Wellington) process files overnight in New Zealand and deliver completed assets to Hollywood/NYC producers by 10:00 AM NZST (05:00 PM EST).</p>
+    </article>
+    <article class="method-card">
+      <h3>3. Follow-the-Sun Engineering Model</h3>
+      <p>Software bugs logged late Monday afternoon in New York are picked up Tuesday morning in Auckland, ensuring 24-hour continuous resolution.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Executive Asynchronous Briefings</h3>
+      <p>Use pre-recorded video updates and shared dashboards to maintain alignment across the 17-hour gap without late-night call burnout.</p>
+    </article>
+  </div>
+</section>
+
+<!-- INDUSTRY APPLICATIONS -->
+<section class="content" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Industry Applications & Cross-Border Scenarios</h2>
+  <article>
+    <h3>Film Production & Visual Effects (Wellington & Los Angeles/NYC)</h3>
+    <p>
+      Wellington ("Wellywood") is a world capital for digital visual effects and post-production. Transpacific file transfers and project reviews with US production houses rely on precise NZST-to-EST conversion.
+    </p>
+  </article>
+  <article>
+    <h3>Agritech, Dairy Exports & Global Supply Chain</h3>
+    <p>
+      New Zealand is the world's largest dairy exporter (Fonterra). Agricultural export desks in Auckland coordinate shipping container logistics and market prices with US East Coast commodity brokers.
+    </p>
+  </article>
+  <article>
+    <h3>Enterprise Software & SaaS Startups (Auckland & Silicon Valley/NYC)</h3>
+    <p>
+      New Zealand SaaS companies (such as Xero and Pushpay) operate global support centers. Routing customer tickets across NZST and EST time zones requires accurate automated timezone conversions.
+    </p>
+  </article>
+  <article>
+    <h3>Transpacific Aviation & Tourism Logistics</h3>
+    <p>
+      Nonstop long-haul flights from Auckland (AKL) to New York (JFK) cross the International Date Line. Airline dispatchers and travelers calculate departure and arrival schedules across the 17-hour shift.
+    </p>
+  </article>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="content" id="common-mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Pitfalls in NZST to EST Conversions</h2>
+  <article>
+    <h3>1. Forgetting the Calendar Day Shift</h3>
+    <p>
+      The single biggest error is ignoring the International Date Line. A call scheduled for Tuesday morning in New Zealand occurs on Monday afternoon in North America. Always confirm the calendar day.
+    </p>
+  </article>
+  <article>
+    <h3>2. Confusing NZST with NZDT</h3>
+    <p>
+      NZST is UTC+12 (winter), while NZDT is UTC+13 (summer). Using winter offsets during summer months introduces a 1-hour error into event schedules.
+    </p>
+  </article>
+  <article>
+    <h3>3. Conflating EST with EDT</h3>
+    <p>
+      EST is UTC-5 (winter), while EDT is UTC-4 (summer). Always check if North America is currently observing EST or EDT on your query date.
+    </p>
+  </article>
+  <article>
+    <h3>4. Chatham Islands Offset Oversights</h3>
+    <p>
+      The Chatham Islands operate on Chatham Time (CHAST, UTC+12:45), which is 45 minutes ahead of mainland New Zealand.
+    </p>
+  </article>
+</section>
+
+<!-- TECHNICAL TIMEZONE DATABASE SECTION -->
+<section class="content" id="technical-details" aria-labelledby="tech-heading">
+  <h2 id="tech-heading">Technical Specifications & IANA Timezone Database Metadata</h2>
+  <p>
+    Software developers require canonical IANA database keys to calculate timestamp arithmetic correctly across transpacific applications.
+  </p>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>Canonical Identifiers</h3>
+      <p>The primary IANA time zone key for New Zealand is <code>Pacific/Auckland</code>. The Chatham Islands key is <code>Pacific/Chatham</code>.</p>
+    </article>
+    <article class="method-card">
+      <h3>ISO 8601 Offset Format</h3>
+      <p>NZST is formatted in ISO 8601 strings as <code>+12:00</code> (e.g., <code>2026-07-30T10:00:00+12:00</code>).</p>
+    </article>
+    <article class="method-card">
+      <h3>POSIX Timezone Specification</h3>
+      <p>The standard POSIX string for New Zealand Time is <code>NZST-12NZDT,M9.5.0,M4.1.0/3</code>, defining exact transition rules.</p>
+    </article>
+    <article class="method-card">
+      <h3>NTP Atomic Clock Synchronization</h3>
+      <p>Network Time Protocol (NTP) servers in New Zealand synchronize against atomic frequency standards maintained by the Measurement Standards Laboratory of New Zealand (MSL).</p>
+    </article>
+  </div>
+</section>
+
+<!-- CITIES SECTION -->
+<section class="content" id="cities-section" aria-labelledby="cities-heading">
+  <h2 id="cities-heading">Major Cities Operating Under NZST and EST</h2>
+  <article>
+    <h3>New Zealand Standard Time (NZST, UTC+12) Cities</h3>
+    <p>
+      <strong>Auckland:</strong> Largest city, financial center, and international transport hub.<br />
+      <strong>Wellington:</strong> National capital and premier creative/film hub.<br />
+      <strong>Christchurch:</strong> Largest South Island commercial and Antarctic gateway city.<br />
+      <strong>Hamilton & Tauranga:</strong> Agritech and major North Island port centers.<br />
+      <strong>Dunedin:</strong> Higher education and biotechnology research center.
+    </p>
+  </article>
+  <article>
+    <h3>Eastern Standard Time (EST, UTC-5) Cities</h3>
+    <p>
+      <strong>New York City, NY:</strong> Global economic capital and media hub.<br />
+      <strong>Toronto, ON:</strong> Canada's commercial and financial centerpiece.<br />
+      <strong>Miami, FL:</strong> Major Latin American and Caribbean trade hub.<br />
+      <strong>Boston, MA:</strong> Higher education and biotechnology capital.<br />
+      <strong>Washington D.C.:</strong> Capital of the United States.
+    </p>
+  </article>
+</section>
+
+<!-- RELATED CONVERTERS -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-nzst/">GMT to NZST Converter</a></div>
+      <div class="related-card-text">Convert GMT to New Zealand Standard Time (UTC+12).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/aest-to-est/">AEST to EST Converter</a></div>
+      <div class="related-card-text">Convert Australian Eastern Standard Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/msk-to-est/">MSK to EST Converter</a></div>
+      <div class="related-card-text">Convert Moscow Standard Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/wet-to-est/">WET to EST Converter</a></div>
+      <div class="related-card-text">Convert Western European Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-mdt/">GMT to MDT Converter</a></div>
+      <div class="related-card-text">Convert GMT to Mountain Daylight Time.</div>
+    </article>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">NZST to EST Frequently Asked Questions</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- CONCLUSION -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: Converting NZST to Eastern Standard Time</h2>
+  <p>
+    Converting New Zealand Standard Time (NZST) to Eastern Standard Time (EST) involves a 17-hour backward shift and a 1-day date reduction (EST = NZST - 17 hours - 1 day). Operating across opposite sides of the International Date Line, these two regions require clear calendar tracking.
+  </p>
+  <p>
+    Use our interactive conversion calculator or review our 24-hour table to plan seamless transpacific meetings and avoid scheduling errors.
+  </p>
+  <p>
+    <strong>Next Step:</strong> Test your timestamps in our <a href="#converter-section">interactive NZST to EST converter</a> above.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .table-wrap th, .table-wrap td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-wrap th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+</style>

@@ -72,7 +72,21 @@ export default defineConfig({
         
         // Exclude dynamic timezone converter pages that redirect to the homepage,
         // while keeping activated converter landing pages indexable.
-        if (!["/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/", "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/"].includes(cleanPath)) {
+        const activatedConverterPaths = new Set([
+          "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/",
+          "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
+          "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/",
+          "/gmt-to-akdt/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-pdt/", "/wita-to-est/",
+          "/eet-to-est/", "/gmt-to-pst/", "/hst-to-est/", "/idt-to-est/", "/pkt-to-est/",
+          "/gmt-to-ast/", "/gmt-to-cst/", "/gmt-to-utc/", "/cat-to-est/", "/ist-to-est/",
+          "/mest-to-est/", "/gmt-to-sst/", "/acst-to-est/", "/gmt-to-acst/", "/west-to-est/",
+          "/gmt-to-kst/", "/bst-to-est/", "/cet-to-est/", "/gmt-to-ndt/", "/awst-to-est/",
+          "/wit-to-est/", "/gmt-to-sast/", "/gmt-to-mdt/", "/gmt-to-eest/", "/wet-to-est/",
+          "/msk-to-est/", "/nzst-to-est/", "/akdt-to-est/", "/wat-to-est/", "/acdt-to-est/",
+          "/cest-to-est/", "/gmt-to-chst/", "/gmt-to-west/", "/gmt-to-wet/", "/gmt-to-wit/",
+          "/gmt-to-cest/", "/mdt-to-est/"
+        ]);
+        if (!activatedConverterPaths.has(cleanPath)) {
           const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
           const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
           

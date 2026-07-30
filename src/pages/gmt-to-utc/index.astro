@@ -1,0 +1,700 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-utc";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to UTC Converter";
+const seoTitle = "GMT to UTC Converter – Greenwich Mean Time to Coordinated Universal Time";
+const pageDescription = "Convert GMT to UTC instantly. Understand the 0-hour offset difference between Greenwich Mean Time and Coordinated Universal Time, leap seconds, atomic standards, and server time logs.";
+
+const context = {
+  from: "GMT",
+  to: "UTC",
+  fromZone: "UTC",
+  toZone: "UTC"
+};
+
+const canonical = `${siteUrl}/gmt-to-utc/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA & HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  return {
+    gmt: formatHour12(hour),
+    utc: formatHour12(hour),
+    dayNote: "Identical Time (0h Offset)"
+  };
+});
+
+// Popular conversions
+const popularConversions = [
+  { gmt: "12:00 AM (Midnight)", utc: "12:00 AM UTC", note: "Start of global civil calendar day across universal datacenters" },
+  { gmt: "1:00 AM", utc: "1:00 AM UTC", note: "Routine database cron job & log truncation window" },
+  { gmt: "2:00 AM", utc: "2:00 AM UTC", note: "Standard UTC automated backup & system update window" },
+  { gmt: "4:00 AM", utc: "4:00 AM UTC", note: "Early morning Asian market closing and European pre-market prep" },
+  { gmt: "6:00 AM", utc: "6:00 AM UTC", note: "Early morning synchronization across European cloud infrastructure" },
+  { gmt: "8:00 AM", utc: "8:00 AM UTC", note: "London financial markets opening prep and equity desk morning calls" },
+  { gmt: "10:00 AM", utc: "10:00 AM UTC", note: "Mid-morning European corporate transactions & interbank settlement" },
+  { gmt: "12:00 PM (Noon)", utc: "12:00 PM UTC", note: "Solar noon baseline reference along the Prime Meridian (0° longitude)" },
+  { gmt: "2:00 PM", utc: "2:00 PM UTC", note: "Overlapping operational hours between Western Europe and US East Coast" },
+  { gmt: "4:00 PM", utc: "4:00 PM UTC", note: "London equity market close and European settlement batch processing" },
+  { gmt: "6:00 PM", utc: "6:00 PM UTC", note: "Evening system health check and database index maintenance" },
+  { gmt: "8:00 PM", utc: "8:00 PM UTC", note: "Transatlantic evening operations window and US market closing sequence" },
+  { gmt: "10:00 PM", utc: "10:00 PM UTC", note: "Late evening transition to Asian Pacific market pre-open and dispatch" },
+];
+
+// FAQ data (18 detailed FAQs)
+const faqs = [
+  { q: "Is GMT the same as UTC?", a: "For almost all practical civil purposes, GMT (Greenwich Mean Time) and UTC (Coordinated Universal Time) display the exact same clock time (0 hours difference). However, they are defined differently: GMT is a time zone based on Earth's rotation (astronomical solar time at the Royal Observatory in Greenwich), whereas UTC is an atomic time standard maintained by atomic clocks accurate to nanoseconds." },
+  { q: "What is the time difference between GMT and UTC?", a: "There is exactly 0 hours time difference between GMT and UTC. 12:00 PM GMT is equal to 12:00 PM UTC. Neither standard observes Daylight Saving Time (DST) independently; GMT standard time and UTC standard time remain fixed at UTC+0 year-round." },
+  { q: "Why do software systems prefer UTC over GMT?", a: "Software engineers and database administrators prefer UTC because UTC relies on International Atomic Time (TAI) and precise atomic standards, making it immune to rotational fluctuations. UTC is the official international standard for digital systems, server logs, API timestamps, and network protocols like NTP (Network Time Protocol)." },
+  { q: "Does GMT change with Daylight Saving Time?", a: "No. Greenwich Mean Time (GMT) itself stays at UTC+0 all year long. During the summer, the United Kingdom switches its civil clocks to British Summer Time (BST, UTC+1), leaving GMT behind. Many people mistakenly refer to UK summer time as GMT, but GMT itself never shifts." },
+  { q: "What are leap seconds and how do they affect GMT and UTC?", a: "Earth's rotation gradually slows down due to tidal friction. GMT is tied to Earth's physical spin, while UTC is measured by flawless atomic clocks. To keep UTC within 0.9 seconds of solar GMT (UT1), international timekeepers periodically add a 'leap second' to UTC. However, international bodies plan to phase out leap seconds by 2035." },
+  { q: "Is UTC a time zone or a standard?", a: "UTC is an international time standard, not technically a regional time zone. It serves as the single reference point from which all local time zones around the world are calculated (e.g., EST is UTC-5, JST is UTC+9)." },
+  { q: "Why is Coordinated Universal Time abbreviated as UTC instead of CUT?", a: "The abbreviation UTC was adopted as a compromise between English speakers who wanted CUT ('Coordinated Universal Time') and French speakers who wanted TUC ('Temps Universel Coordonné'). The International Telecommunication Union (ITU) officially selected UTC as the universal acronym." },
+  { q: "Which countries officially use GMT as their national time zone?", a: "Several nations use GMT (UTC+0) as their standard winter or year-round time zone, including the United Kingdom, Ireland, Iceland, Portugal, Senegal, Ghana, Ivory Coast, Mali, Mauritania, and Burkina Faso. In Iceland and West Africa, GMT is observed all year without seasonal clock changes." },
+  { q: "How do aviation and maritime industries use GMT and UTC?", a: "Aviation and maritime operations rely on UTC (historically called GMT or 'Zulu Time', denoted by 'Z'). Flight plans, air traffic control logs, weather reports (METARs), and nautical navigation logs across all ocean vessels operate on UTC to prevent timezone confusion across borders." },
+  { q: "Can I use GMT and UTC interchangeably in casual communication?", a: "Yes. In everyday conversation, business scheduling, and general calendar invites, GMT and UTC refer to the exact same time value. A meeting scheduled for 3:00 PM GMT will take place at 3:00 PM UTC." },
+  { q: "How does Greenwich Mean Time relate to the Prime Meridian?", a: "GMT is historically calculated based on the Prime Meridian (0° longitude), which passes through the Royal Observatory in Greenwich, London, England. This line divides the Eastern and Western Hemispheres and serves as the zero point for longitude coordinates worldwide." },
+  { q: "How accurate is this GMT to UTC conversion tool?", a: "Our converter uses standard IANA Time Zone Database algorithms and native browser timing capabilities. Because GMT and UTC share an identical zero-offset reference (UTC+0), conversions are 100% accurate without any offset adjustment required." },
+  { q: "What is the difference between UTC and TAI (International Atomic Time)?", a: "TAI is a pure atomic time scale that ticks at a constant rate without leap seconds. UTC is synchronized with TAI but includes leap second adjustments to remain within 0.9 seconds of solar time (UT1). Currently, TAI is exactly 37 seconds ahead of UTC." },
+  { q: "What is Unix timestamp format and how does it relate to UTC?", a: "Unix time (or POSIX time) counts the total number of seconds elapsed since 00:00:00 UTC on January 1, 1970 (the Unix Epoch). Because Unix time is explicitly tied to UTC, it provides a universal numerical format for computer code." },
+  { q: "How does Network Time Protocol (NTP) keep clocks synced in UTC?", a: "NTP syncs server clocks across the internet by querying primary stratum-1 atomic reference servers. NTP accounts for network latency and packet jitter, keeping modern servers aligned with UTC to within a few milliseconds." },
+  { q: "Do satellites use UTC or GPS time?", a: "GPS satellites run on GPS Time, which was synchronized with UTC in 1980. However, GPS Time does not include leap seconds. GPS receivers convert GPS Time to UTC automatically by subtracting the leap second offset (currently 18 seconds)." },
+  { q: "What is UT1 and how does it differ from GMT and UTC?", a: "UT1 is the precise astronomical measure of Earth's rotation relative to distant quasars. GMT is the traditional astronomical precursor to UT1. UTC is kept artificially close to UT1 through leap seconds." },
+  { q: "Why do some calendar tools show both GMT and UTC choices?", a: "Software interfaces offer both GMT and UTC options to accommodate user preference. While technical users choose UTC, users in the UK or Africa often select GMT out of regional familiarity." },
+  { q: "Is GMT ever used in ISO 8601 string definitions?", a: "ISO 8601 explicitly mandates UTC representations using the 'Z' designator or numeric offset '+00:00'. GMT is not a valid ISO 8601 designator, although HTTP headers traditionally use GMT formatting (e.g., Date: Wed, 21 Oct 2026 07:28:00 GMT)." },
+  { q: "How do atomic clocks maintain UTC accuracy?", a: "UTC is calculated by combining data from over 400 atomic clocks worldwide, primarily cesium beam frequency standards and hydrogen masers, managed by the International Bureau of Weights and Measures (BIPM) in Sèvres, France." },
+  { q: "What is UTC offset notation (+00:00 vs Z)?", a: "In standard notation, UTC+00:00, UTC+0, and 'Z' (Zulu time) all designate the zero-offset baseline. In ISO 8601, 14:00:00Z and 14:00:00+00:00 are functionally identical." },
+  { q: "Does leap second smearing affect GMT?", a: "Leap second smearing is a software technique applied by cloud providers (such as Google and Amazon) to stretch or shrink clock ticks over a 24-hour period. GMT solar time is unaffected, as smearing is an IT system adaptation for UTC." },
+  { q: "Why is GMT still displayed on traditional wall clocks in Greenwich?", a: "The Shepherd Gate Clock at the Royal Observatory Greenwich displays Greenwich Mean Time continuously as a historic artifact and public reference for 24-hour astronomical solar time." },
+  { q: "What role does the Bureau International des Poids et Mesures (BIPM) play?", a: "The BIPM in France collects atomic clock measurements from dozens of national metrology laboratories to compute International Atomic Time (TAI) and publish UTC monthly updates." },
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to UTC, GMT to UTC Converter, Greenwich Mean Time to UTC, GMT vs UTC, GMT UTC time difference, Zulu time to UTC, 0 offset timezone converter, GMT solar time vs UTC atomic time",
+  image: "/assets/gmt-to-utc-og.svg",
+  imageAlt: "GMT to UTC Converter – Convert Greenwich Mean Time to Coordinated Universal Time",
+  faqs,
+  appDescription: "Free online GMT to UTC converter with real-time zero-offset clocks, technical comparison guides, 24-hour table, and leap second explanations.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to UTC",
+  howToDescription: "Quick guide on converting Greenwich Mean Time to Coordinated Universal Time.",
+  howToSteps: [
+    { name: "Understand the zero offset", text: "GMT and UTC share the exact same time value (UTC+0). No mathematical addition or subtraction is required." },
+    { name: "Input your GMT timestamp", text: "Select your desired GMT time in the converter tool." },
+    { name: "View matching UTC time", text: "The calculated UTC time matches your GMT input exactly (1:1 conversion)." },
+    { name: "Verify seasonal rules", text: "Ensure your location is on standard GMT (UTC+0) and not currently observing British Summer Time (BST, UTC+1) or Western European Summer Time (WEST, UTC+1)." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to UTC"
+  hreflangCodes={["en"]}
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & INTRODUCTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    GMT to UTC <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- FEATURE ICONS (CUSTOM SVG) -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>0-Hour Offset (1:1 Ratio)</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Atomic Time Standard</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Server & API Log Baseline</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span>Global Prime Meridian Baseline</span>
+  </div>
+</section>
+
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading" class="sr-only">About GMT to UTC Time Standard Conversion</h2>
+  <p>
+    Welcome to the ultimate guide and conversion tool for <strong>Greenwich Mean Time (GMT) to Coordinated Universal Time (UTC)</strong>. If you are comparing GMT and UTC, you might be surprised to learn that <strong>they display identical civil clock times</strong>. Both standards run at UTC+0 with zero hours of offset difference between them. When it is 08:00 AM GMT, it is precisely 08:00 AM UTC. However, while their clock readings match in daily life, their underlying definitions, scientific foundations, and technical applications differ in profound ways.
+  </p>
+  <p>
+    <strong>Greenwich Mean Time (GMT)</strong> is a solar-based time reference rooted in astronomical history. Standardized in 1884 at the International Meridian Conference in Washington, D.C., GMT marks the mean solar time along the Prime Meridian (0° longitude) passing through the Royal Observatory in Greenwich, London. For nearly a century, GMT served as the world's primary civil time baseline. However, because Earth's rotation experiences microscopic speed fluctuations due to tidal friction, atmospheric winds, and core fluid motion, solar time isn't perfectly uniform across decades.
+  </p>
+  <p>
+    To create an unshakeable timekeeping standard for modern telecommunications, aerospace navigation, satellite communications, and computer server networks, international timekeeping authorities introduced <strong>Coordinated Universal Time (UTC)</strong> in 1960. UTC is regulated by hundreds of ultra-precise cesium atomic clocks located in national metrology laboratories worldwide (International Atomic Time, or TAI). To keep UTC synchronized with Earth's physical spin (solar GMT), occasional <em>leap seconds</em> are introduced when needed. Today, UTC forms the absolute global foundation from which all UTC-offset time zones (such as EST, PST, CET, or JST) are derived.
+  </p>
+  <p>
+    Whether you are a <strong>DevOps engineer</strong> verifying database server timestamps, an <strong>airline pilot</strong> filing a transcontinental flight plan in Zulu time, a <strong>financial analyst</strong> auditing stock exchange trades, or a <strong>student</strong> learning about global time systems, this page provides complete clarity on the relationship between GMT and UTC.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE INTERACTIVE CONVERTER TOOL & HERO ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="converter-section" aria-labelledby="converter-tool-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Zero-Offset Converter Tool</p>
+    <h2 id="converter-tool-heading">Convert GMT to Coordinated Universal Time (UTC)</h2>
+    <p>
+      Select any time to confirm the exact 1:1 match between GMT and UTC. Use our interactive tool below to adjust hours, minutes, and dates.
+    </p>
+
+    <!-- Custom Hero Illustration (SVG) -->
+    <div class="custom-svg-container" style="margin-top: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="auto" style="display: block;">
+        <rect width="600" height="250" fill="#0c354a" rx="8" />
+        
+        <!-- Center Equality Beam -->
+        <line x1="100" y1="125" x2="500" y2="125" stroke="#36c7b5" stroke-width="4" stroke-dasharray="8 6" opacity="0.6" />
+
+        <!-- Left Circle: GMT Solar -->
+        <g transform="translate(160, 125)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3" />
+          <circle cx="0" cy="0" r="42" fill="none" stroke="#8fd7ff" stroke-width="1" stroke-dasharray="4 3" />
+          <!-- Solar sun symbol in center -->
+          <circle cx="0" cy="0" r="10" fill="#36c7b5" />
+          <line x1="0" y1="-18" x2="0" y2="-12" stroke="#36c7b5" stroke-width="2" />
+          <line x1="0" y1="12" x2="0" y2="18" stroke="#36c7b5" stroke-width="2" />
+          <line x1="-18" y1="0" x2="-12" y2="0" stroke="#36c7b5" stroke-width="2" />
+          <line x1="12" y1="0" x2="18" y2="0" stroke="#36c7b5" stroke-width="2" />
+          <text x="0" y="78" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#f4fbff" text-anchor="middle">GMT (Greenwich)</text>
+          <text x="0" y="96" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">Solar Astronomical Ref</text>
+        </g>
+
+        <!-- Equals Badge -->
+        <g transform="translate(300, 125)">
+          <circle cx="0" cy="0" r="28" fill="#36c7b5" />
+          <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="24" fill="#0c354a" text-anchor="middle">=</text>
+          <rect x="-40" y="-45" width="80" height="20" rx="10" fill="#12455d" stroke="#36c7b5" stroke-width="1" />
+          <text x="0" y="-31" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="11" fill="#36c7b5" text-anchor="middle">0h OFFSET</text>
+        </g>
+
+        <!-- Right Circle: UTC Atomic -->
+        <g transform="translate(440, 125)">
+          <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#36c7b5" stroke-width="3" />
+          <!-- Atom Orbit Lines -->
+          <ellipse cx="0" cy="0" rx="35" ry="14" fill="none" stroke="#8fd7ff" stroke-width="1.5" transform="rotate(30)" />
+          <ellipse cx="0" cy="0" rx="35" ry="14" fill="none" stroke="#8fd7ff" stroke-width="1.5" transform="rotate(-30)" />
+          <circle cx="0" cy="0" r="6" fill="#f4fbff" />
+          <text x="0" y="78" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="15" fill="#f4fbff" text-anchor="middle">UTC (Coordinated)</text>
+          <text x="0" y="96" font-family="'Manrope', sans-serif" font-size="12" fill="#36c7b5" text-anchor="middle">Atomic Time Standard</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <Converter intent="dynamic" t={t} context={context} />
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CLOCKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="clock-grid" aria-labelledby="live-clocks-heading">
+  <h2 id="live-clocks-heading">Live Standard Clocks: GMT vs UTC</h2>
+  <div class="clock-card"><span>Current GMT (UTC+0)</span><strong id="gmtClock">--:--</strong></div>
+  <div class="clock-card"><span>Current UTC (UTC+0)</span><strong id="estClock">--:--</strong><em id="estZone">UTC</em></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ATOMIC VS SOLAR GRAPHIC ILLUSTRATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="skyline-container content-section" style="text-align: center; margin: 3rem 0;">
+  <h3 class="sr-only">Greenwich Solar Observatory & Cesium Atomic Clock Graphic</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" width="100%" height="auto" style="display: block;">
+      <rect width="700" height="200" fill="#0c354a" rx="8" />
+      
+      <!-- Left side: Greenwich Observatory graphic -->
+      <g transform="translate(120, 100)">
+        <path d="M-60 40 L-60 -10 L0 -40 L60 -10 L60 40 Z" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <circle cx="0" cy="-40" r="14" fill="#36c7b5" opacity="0.8" />
+        <line x1="0" y1="-65" x2="0" y2="-15" stroke="#f4fbff" stroke-width="3" />
+        <text x="0" y="65" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Greenwich Observatory</text>
+        <text x="0" y="82" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">0° Longitude Line</text>
+      </g>
+
+      <!-- Center comparison badge -->
+      <g transform="translate(350, 100)">
+        <rect x="-80" y="-30" width="160" height="60" rx="8" fill="#1b536e" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-5" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">SYNCHRONIZED</text>
+        <text x="0" y="16" font-family="'Manrope', sans-serif" font-size="12" fill="#f4fbff" text-anchor="middle">0.000 Seconds Difference</text>
+      </g>
+
+      <!-- Right side: Atomic Clock symbol -->
+      <g transform="translate(580, 100)">
+        <rect x="-50" y="-45" width="100" height="90" rx="8" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="-15" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="bold" fill="#36c7b5" text-anchor="middle">Cs-133</text>
+        <text x="0" y="10" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">9,192,631,770 Hz</text>
+        <text x="0" y="28" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">Atomic Resonance</text>
+        <text x="0" y="65" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#f4fbff" text-anchor="middle">Atomic UTC Clock</text>
+        <text x="0" y="82" font-family="'Manrope', sans-serif" font-size="12" fill="#8fd7ff" text-anchor="middle">International Bureau (BIPM)</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE & METHOD CARDS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section content-section" aria-labelledby="method-heading">
+  <h2 id="method-heading">Understanding the GMT vs UTC Relationship</h2>
+  <p class="method-intro">
+    Although GMT and UTC produce identical clock readings for everyday scheduling, understanding their structural background prevents confusion when writing server scripts, reading aviation charts, or configuring network hardware.
+  </p>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Method 1</p>
+      <h3>The Direct 1:1 Equality</h3>
+      <p>
+        To convert any GMT timestamp to UTC, no calculation is required. <strong>GMT = UTC</strong>. If your schedule specifies 14:00 GMT, your target UTC time is also 14:00 UTC.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 2</p>
+      <h3>Server Code & ISO-8601 Format</h3>
+      <p>
+        In software programming (JavaScript, Python, Go, Java), UTC is represented by the letter <code>Z</code> (standing for Zulu, or zero offset). A timestamp of <code>2026-07-30T12:00:00Z</code> represents 12:00 PM UTC, which is equal to 12:00 PM GMT.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Method 3</p>
+      <h3>Navigational & Aviation Contexts</h3>
+      <p>
+        In marine charts and flight logs, GMT was historically used for solar longitude navigation. Modern aviation has fully transitioned to UTC (Zulu time), though air traffic controllers still frequently refer to UTC as GMT in verbal communications.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour GMT to UTC Conversion Table</h2>
+  <p>
+    Below is a complete hour-by-hour reference table showing GMT times alongside their matching UTC equivalents across a full 24-hour cycle.
+  </p>
+
+  <!-- Timeline SVG -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1rem; border-radius: 8px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 60" width="100%" height="auto">
+      <rect width="600" height="60" fill="#0c354a" rx="6" />
+      <line x1="30" y1="30" x2="570" y2="30" stroke="#2f6278" stroke-width="3" />
+      <!-- Hourly markers -->
+      <circle cx="30" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="165" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="300" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="435" cy="30" r="5" fill="#36c7b5" />
+      <circle cx="570" cy="30" r="5" fill="#36c7b5" />
+      <text x="30" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">00:00 (Midnight)</text>
+      <text x="165" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">06:00 AM</text>
+      <text x="300" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#36c7b5" text-anchor="middle">12:00 PM (Noon)</text>
+      <text x="435" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">06:00 PM</text>
+      <text x="570" y="50" font-family="'Space Grotesk', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">23:59 PM</text>
+      <text x="300" y="18" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">Identical Timeline Across All 24 Hours (0h Delta)</text>
+    </svg>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Greenwich Mean Time (GMT)</th>
+          <th>Coordinated Universal Time (UTC)</th>
+          <th>Status / Operational Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.gmt}</strong></td>
+            <td><strong style="color: var(--accent);">{row.utc}</strong></td>
+            <td><span class="badge">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section content-section" aria-labelledby="popular-heading">
+  <h2 id="popular-heading">Key Timestamps & Strategic Milestones</h2>
+  <p>
+    Review standard daily timestamps commonly referenced in international aviation, web API integration, and corporate business logs.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>GMT Time</th>
+          <th>UTC Equivalent</th>
+          <th>Context & Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        {popularConversions.map((item) => (
+          <tr>
+            <td><strong>{item.gmt}</strong></td>
+            <td><strong style="color: var(--accent);">{item.utc}</strong></td>
+            <td>{item.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DST INFOGRAPHIC SVG
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin: 3rem 0;">
+  <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">Non-Shifting Standard: Zero Seasonal Changes</h3>
+  <div style="border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 180" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="180" fill="#0c354a" rx="8" />
+      <rect x="30" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+      <text x="165" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">SPRING (MARCH)</text>
+      <text x="165" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">GMT remains at UTC+0</text>
+      <text x="165" y="110" font-family="'Manrope', sans-serif" font-size="13" fill="#8fd7ff" text-anchor="middle">UTC remains at UTC+0</text>
+      <text x="165" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(No clock forward adjustment)</text>
+
+      <rect x="350" y="30" width="270" height="120" rx="8" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+      <text x="485" y="55" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold" fill="#36c7b5" text-anchor="middle">AUTUMN (OCTOBER)</text>
+      <text x="485" y="85" font-family="'Manrope', sans-serif" font-size="13" fill="#f4fbff" text-anchor="middle">GMT remains at UTC+0</text>
+      <text x="485" y="110" font-family="'Manrope', sans-serif" font-size="13" fill="#8fd7ff" text-anchor="middle">UTC remains at UTC+0</text>
+      <text x="485" y="130" font-family="'Manrope', sans-serif" font-size="11" fill="#bdd2dc" text-anchor="middle">(No clock back adjustment)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MEETING PLANNER SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="planner-heading">
+  <h2 id="planner-heading">GMT & UTC Global Synchronization Planner</h2>
+  <p>
+    When coordinating events across international teams, setting UTC as your master baseline simplifies all time zone translations. Here is how standard operating hours map to global hubs relative to GMT/UTC.
+  </p>
+
+  <!-- Multi-region SVG graphic -->
+  <div style="margin: 1.5rem 0; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="auto" style="display: block;">
+      <rect width="650" height="160" fill="#0c354a" rx="8" />
+      <g transform="translate(100, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#36c7b5" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">12:00 UTC</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">London / GMT Baseline</text>
+      </g>
+
+      <g transform="translate(270, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">07:00 EST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New York (UTC-5)</text>
+      </g>
+
+      <g transform="translate(440, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">17:30 IST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">New Delhi (UTC+5:30)</text>
+      </g>
+
+      <g transform="translate(580, 80)">
+        <circle cx="0" cy="0" r="35" fill="#12455d" stroke="#2f6278" stroke-width="2" />
+        <text x="0" y="5" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="bold" fill="#f4fbff" text-anchor="middle">21:00 JST</text>
+        <text x="0" y="52" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">Tokyo (UTC+9)</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <p class="eyebrow">Optimal Overlap Window 1</p>
+      <h3>12:00 PM GMT / UTC</h3>
+      <p>
+        Ideal for connecting Western European teams (midday) with US East Coast teams (07:00 AM EST morning check-in) and Indian teams (05:30 PM IST end-of-day handoff).
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Optimal Overlap Window 2</p>
+      <h3>03:00 PM GMT / UTC</h3>
+      <p>
+        Perfect for transatlantic collaboration between European offices (15:00 UTC) and North American offices (10:00 AM EST / 07:00 AM PST).
+      </p>
+    </div>
+
+    <div class="method-card">
+      <p class="eyebrow">Optimal Overlap Window 3</p>
+      <h3>08:00 AM GMT / UTC</h3>
+      <p>
+        Excellent window for bridging European market openings with Asian afternoon business hours (13:30 IST / 17:00 JST).
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     WHEN AND WHERE USED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="where-used-heading">
+  <h2 id="where-used-heading">Where GMT & UTC Are Used Worldwide</h2>
+  
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">1. Web Servers, Cloud Datacenters & API Endpoints</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Modern software architectures almost universally operate on UTC. Cloud service providers such as AWS, Google Cloud, and Microsoft Azure set their internal server clocks to UTC. Using UTC for database records and timestamp logging ensures that transaction order remains perfectly consistent, regardless of where clients or physical server hardware are located.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">2. Aviation, Marine Navigation & Military ("Zulu Time")</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      In global aviation and maritime operations, standardization is critical for safety. Commercial flight plans, meteorological reports, and naval communications run on UTC, referred to in military and aviation terminology as "Zulu Time" (designated by the letter Z). Pilots flying from London to Tokyo or New York to Dubai log all actions in UTC.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">3. Greenwich Solar Baseline & Legal Timekeeping</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      While UTC is the scientific standard, GMT remains the official legal standard in several countries across Western Europe and West Africa (such as Iceland, Senegal, Ghana, and the UK in winter). In legal contracts, broadcasting schedules, and daily conversation in these regions, "GMT" is used as the civil name for offset UTC+0.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">4. Telecommunications & Fiber-Optic Sync</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Global telecommunication switches and undersea fiber optic repeaters synchronize bit rates against atomic UTC standards. Precise nanosecond synchronization prevents data corruption during high-capacity packet switching across oceans.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">5. Global Navigation Satellite Systems (GNSS)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Global positioning systems including GPS (US), Galileo (Europe), GLONASS (Russia), and BeiDou (China) rely on internal atomic time standards synchronized back to UTC. Position triangulation requires sub-nanosecond clock alignment between orbiting satellites and ground receivers.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-bottom: 0.5rem;">6. Financial Clearinghouses & Interbank Messaging (SWIFT)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      International wire transfers and monetary settlements processed via SWIFT and Fedwire rely on UTC timestamping to guarantee legal proof of transaction execution times across international banking days.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMMON MISTAKES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading">Common Mistakes When Converting GMT to UTC</h2>
+  
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 1: Confusing GMT with British Summer Time (BST)</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      The most frequent error occurs during summer months in the UK. Many people assume London is always on "GMT". However, from late March to late October, the UK switches to BST (UTC+1). If you treat UK summer time as GMT, your UTC calculations will be off by exactly one hour.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 2: Subtracting or Adding Hours for GMT to UTC</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      Because GMT and UTC represent identical civil hours (UTC+0), some users attempt to apply an offset calculation when none is needed. Remember: 05:00 GMT is 05:00 UTC. There is zero time difference.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 3: Misinterpreting Leap Seconds in Application Code</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      While UTC incorporates leap seconds to stay aligned with solar GMT, most modern computer systems handle leap seconds by "smearing" them across several hours rather than inserting a 61st second (23:59:60). Software developers should rely on system NTP clocks rather than hardcoding leap second logic.
+    </p>
+  </article>
+
+  <article style="margin-bottom: 1.5rem;">
+    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: var(--text);">Mistake 4: Ignoring Timezone Offsets in Query Strings</h3>
+    <p style="color: var(--muted); line-height: 1.7;">
+      When submitting date parameters to web APIs, omitting the timezone designator (such as <code>Z</code> or <code>+00:00</code>) causes server parsers to assume local server time, leading to silent databasing errors.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     REAL-WORLD USE CASES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" aria-labelledby="use-cases-heading">
+  <h2 id="use-cases-heading">Real-World Technical & Commercial Scenarios</h2>
+  
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Database Timestamping</h3>
+      <p>
+        Storing all SQL database records in UTC avoids timezone conversion bugs when querying data across multiple international branches. GMT values map 1:1 to UTC fields.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Global Stock Exchange Logging</h3>
+      <p>
+        Financial clearinghouses log high-frequency trade transactions using UTC timestamps to establish strict linear ordering across London, Frankfurt, and Wall Street.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Astronomical Data Collection</h3>
+      <p>
+        Observatories measure celestial coordinates against universal solar time (GMT/UT1) and record digital telescope sensors against atomic UTC standards.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Cross-Border E-Commerce</h3>
+      <p>
+        International promotion launch times (e.g., Black Friday sales starting at 00:00 UTC) provide a uniform reference for customers in all time zones.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Cybersecurity Incident Analysis</h3>
+      <p>
+        SIEM security systems collect syslog events from routers and firewalls in UTC to reconstruct attack vectors in exact chronological sequence.
+      </p>
+    </div>
+
+    <div class="method-card">
+      <h3>Spacecraft Telemetry Tracking</h3>
+      <p>
+        Ground stations tracking deep space probes calculate telemetry signals using UTC atomic references to determine light travel delays across interplanetary distances.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS GRID
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools content-section" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-bst/" class="related-card">
+      <h3 class="related-card-title">GMT to BST Converter</h3>
+      <p class="related-card-text">Convert GMT to British Summer Time (1-hour daylight offset).</p>
+    </a>
+    <a href="/gmt-to-ist/" class="related-card">
+      <h3 class="related-card-title">GMT to IST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to India Standard Time (5.5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-pst/" class="related-card">
+      <h3 class="related-card-title">GMT to PST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to Pacific Standard Time (8-hour offset).</p>
+    </a>
+    <a href="/gmt-to-aest/" class="related-card">
+      <h3 class="related-card-title">GMT to AEST Converter</h3>
+      <p class="related-card-text">Convert GMT to Australian Eastern Standard Time (10-hour offset).</p>
+    </a>
+    <a href="/gmt-vs-utc/" class="related-card">
+      <h3 class="related-card-title">GMT vs UTC In-Depth Comparison</h3>
+      <p class="related-card-text">Detailed technical breakdown of solar time vs atomic time standards.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FREQUENTLY ASKED QUESTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq content-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions</h2>
+  {faqs.map((faq) => (
+    <details class="faq-item">
+      <summary class="faq-question"><strong>{faq.q}</strong></summary>
+      <p class="faq-answer">{faq.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content-section" style="margin-top: 3rem; text-align: center;">
+  <h2 style="font-family: 'Space Grotesk', sans-serif; color: var(--text);">Seamlessly Synchronize GMT & UTC Timestamps</h2>
+  <p style="color: var(--muted); max-width: 750px; margin: 1rem auto; line-height: 1.7;">
+    Whether you are scheduling cross-border team calls, auditing database logs, or filing aviation plans, our GMT to UTC converter provides instant, 100% accurate results. Bookmark this tool for rapid access to zero-offset conversions and global timing standards.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; background: rgba(54, 199, 181, 0.15); color: var(--accent); }
+  .faq-item { margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .faq-question { cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .faq-answer { margin-top: 0.75rem; color: var(--muted); line-height: 1.6; }
+</style>
