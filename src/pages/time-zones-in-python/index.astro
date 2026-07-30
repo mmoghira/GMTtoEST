@@ -1,0 +1,470 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "time-zones-in-python";
+const seoTitle = "Time Zones in Python: Modern datetime & zoneinfo Guide (2026)";
+const pageDescription = "Master Python time zone management. Learn native zoneinfo, datetime, tzdata, pytz migration, Django/FastAPI UTC database storage, and ISO 8601 parsing.";
+
+const pubDate = "2026-07-30T14:00:00+05:00";
+const updatedDate = "2026-07-30T14:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "time zones in python, python zoneinfo, python datetime timezone, pytz vs zoneinfo, python timezone conversion, python utc datetime, django timezone settings, fastapi timezone",
+  image: "/assets/python-timezone-guide.svg",
+  imageAlt: "Python zoneinfo and datetime Architecture Diagram",
+  pubDate,
+  updatedDate,
+  author: "Jackie Bruce",
+  faqs: [
+    {
+      q: "Why is `pytz` deprecated in Python 3.9+ and what replaces it?",
+      a: "`pytz` is deprecated because it uses custom offset calculation logic that breaks standard Python `datetime` constructor calls (e.g., `datetime(2026, 7, 30, tzinfo=pytz.timezone('America/New_York'))` causes LMT offset bugs). Python 3.9 introduced the built-in `zoneinfo` module, which conforms directly to standard `datetime` methods using the system's IANA Time Zone Database."
+    },
+    {
+      q: "How do I get the current UTC datetime in modern Python?",
+      a: "In Python 3.11+, use `datetime.now(timezone.utc)`. Avoid `datetime.utcnow()`, which has been officially deprecated because it returns a naive datetime object lacking explicit timezone metadata."
+    },
+    {
+      q: "What is the difference between a naive and an aware datetime object in Python?",
+      a: "A naive datetime object lacks timezone information (`tzinfo=None`) and represents unanchored wall-clock numbers. An aware datetime object contains an explicit `tzinfo` instance (such as `ZoneInfo('America/New_York')` or `timezone.utc`), providing absolute chronological precision."
+    },
+    {
+      q: "How do I convert a datetime from UTC to Eastern Time (EST/EDT) in Python?",
+      a: "Use the `.astimezone()` method: `utc_dt = datetime.now(timezone.utc); est_dt = utc_dt.astimezone(ZoneInfo('America/New_York'))`."
+    },
+    {
+      q: "What is the `tzdata` PyPI package and when is it required?",
+      a: "`tzdata` provides a fallback IANA Time Zone Database for operating systems (such as Windows) that do not ship native system zoneinfo databases."
+    },
+    {
+      q: "How do I parse an ISO 8601 string into a timezone-aware datetime in Python?",
+      a: "Use native `datetime.fromisoformat('2026-07-30T14:00:00-04:00')`. In Python 3.11+, `fromisoformat()` parses almost all valid ISO 8601 and RFC 3339 strings, including trailing 'Z'."
+    },
+    {
+      q: "How does Django handle time zones in models and settings?",
+      a: "Django manages time zones via `USE_TZ = True` and `TIME_ZONE = 'UTC'` in `settings.py`. Database columns store UTC timestamps, while template filters or forms format values into user time zones using `django.utils.timezone`."
+    },
+    {
+      q: "How do I calculate time differences (deltas) across Daylight Saving transitions in Python?",
+      a: "Subtracting two timezone-aware `datetime` objects configured with `ZoneInfo` accurately calculates absolute elapsed time in `timedelta`, automatically taking 23-hour or 25-hour DST shift days into account."
+    },
+    {
+      q: "What happens when you combine naive and aware datetimes in Python arithmetic?",
+      a: "Python raises a `TypeError: can't subtract offset-naive and offset-aware datetimes`. You must make naive datetimes aware using `.replace(tzinfo=...)` or `.astimezone()` before performing comparisons."
+    },
+    {
+      q: "How do I format a datetime object as an ISO string in Python?",
+      a: "Use `dt.isoformat()`. For explicit trailing 'Z' on UTC datetimes, call `dt.isoformat().replace('+00:00', 'Z')`."
+    },
+    {
+      q: "How does SQLAlchemy store timezone-aware datetimes in PostgreSQL?",
+      a: "Use `Column(DateTime(timezone=True))` in SQLAlchemy model definitions. In PostgreSQL, this maps to the `TIMESTAMPTZ` data type, which converts inputs into UTC for storage."
+    },
+    {
+      q: "How do I handle recurring Celery or Cron tasks across DST in Python?",
+      a: "Configure Celery to run in UTC (`CELERY_TIMEZONE = 'UTC'`). If scheduling tasks by local wall-clock hours, use Celery's `crontab(hour=9, minute=0, day_of_week='*')` with an explicit timezone parameter."
+    },
+    {
+      q: "What is `python-dateutil` and is it still useful alongside `zoneinfo`?",
+      a: "`python-dateutil` remains useful for advanced relative delta calculations (e.g. 'next Tuesday of every month') and parsing non-standard fuzzy date strings, although `zoneinfo` handles standard timezone representation."
+    },
+    {
+      q: "How do I get a list of all valid IANA time zone names in Python?",
+      a: "Import `zoneinfo` and call `zoneinfo.available_timezones()`. This returns a set of available zone strings like `'America/New_York'` and `'Europe/London'."
+    },
+    {
+      q: "Why should I avoid using `.replace(tzinfo=...)` for converting between time zones?",
+      a: "Calling `.replace(tzinfo=new_zone)` overwrites the timezone metadata without shifting the underlying clock hours. To convert wall-clock hours, always use `.astimezone(new_zone)`."
+    },
+    {
+      q: "How does Python handle fold (ambiguous hours) during fall-back DST transitions?",
+      a: "Python 3.6+ introduced the `fold` attribute on `datetime` objects. `fold=0` represents the first occurrence of a repeated hour, and `fold=1` represents the second occurrence after the clock shifts back."
+    },
+    {
+      q: "How do I set the default time zone for a FastAPI application?",
+      a: "FastAPI apps should operate entirely in UTC internally. Parse incoming ISO strings into aware UTC datetimes in Pydantic models using `datetime` fields."
+    },
+    {
+      q: "What is `time.strftime('%z')` vs `datetime.strftime('%z')`?",
+      a: "`datetime.strftime('%z')` formats the offset of an aware `datetime` object (e.g. `-0400` or `+0000`)."
+    },
+    {
+      q: "How do I compare two datetimes in different time zones in Python?",
+      a: "Direct comparison (`dt1 < dt2`) works seamlessly as long as both objects are timezone-aware. Python converts both to UTC under the hood prior to comparison."
+    },
+    {
+      q: "Where can I test Python timezone conversions against GMT and EST live?",
+      a: "Use our interactive <a href='/gmt-to-est/'>GMT to EST Converter</a> and developer guide links."
+    }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/time-zones-in-python/`;
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${pageUrlPath}#article`,
+    "mainEntityOfPage": pageUrlPath,
+    "headline": seoTitle,
+    "description": pageDescription,
+    "datePublished": pubDate,
+    "dateModified": updatedDate,
+    "inLanguage": "en",
+    "author": {
+      "@type": "Person",
+      "name": "Jackie Bruce",
+      "jobTitle": "Senior Time Zone Analyst",
+      "url": `${siteUrl}/author/jackie-bruce/`
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GMT to EST Converter",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.svg`
+      }
+    }
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="Python Time Zones"
+  hreflangCodes={["en"]}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemas)} slot="head" />
+
+  <!-- HERO & SUMMARY SECTION -->
+  <section class="hero-banner" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="hero-banner-title speakable-headline">
+      Time Zones in Python: <span class="gradient-text">Modern zoneinfo &amp; datetime Guide</span>
+    </h1>
+  </section>
+
+  <!-- Editorial Info Bar -->
+  <div class="editorial-meta-bar" aria-label="Editorial metadata">
+    <span>Last Updated: <strong>July 30, 2026</strong></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Editorially Reviewed by <a href="/author/jackie-bruce/"><strong>Jackie Bruce</strong></a></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Python Software Foundation Standard</span>
+  </div>
+
+  <section class="acdt-intro content-section" aria-label="Quick Answer Summary">
+    <div class="summary-box info-callout speakable-summary">
+      <h3>Quick Answer: How to Manage Time Zones in Modern Python 3.9+?</h3>
+      <p>
+        <strong>In Python 3.9+, use the standard library `zoneinfo` module paired with `datetime.now(timezone.utc)` for all timezone handling, and migrate away from legacy `pytz`.</strong> 
+        Always instantiate timezone-aware datetimes, store timestamps in UTC within databases (such as PostgreSQL `TIMESTAMPTZ`), and perform conversions to local time zones (e.g., `ZoneInfo("America/New_York")`) using `.astimezone()`.
+      </p>
+    </div>
+    
+    <div class="reading-meta" style="margin-top: 1rem; color: var(--muted); font-size: 0.9rem;">
+      <span>⏱️ Estimated Reading Time: <strong>16 minutes (2,400+ words)</strong></span>
+    </div>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <section class="table-of-contents reveal" aria-label="Table of Contents">
+    <span class="toc-kicker">Detailed Developer Navigation</span>
+    <h2>Guide Contents</h2>
+    <ol>
+      <li><a href="#zoneinfo-module-basics">1. The Python 3.9+ zoneinfo Module</a></li>
+      <li><a href="#naive-vs-aware">2. Naive vs. Aware Datetime Objects</a></li>
+      <li><a href="#pytz-deprecation">3. Why pytz is Deprecated &amp; Migration Code Patterns</a></li>
+      <li><a href="#parsing-iso8601">4. ISO 8601 Parsing &amp; Formatting with fromisoformat()</a></li>
+      <li><a href="#framework-integration">5. Web Framework Integration (Django, FastAPI, SQLAlchemy)</a></li>
+      <li><a href="#dst-ambiguity-fold">6. Handling DST Transitions &amp; The fold Attribute</a></li>
+      <li><a href="#celery-cron-scheduling">7. Celery &amp; Cron Scheduling Across Time Zones</a></li>
+      <li><a href="#python-code-cheatsheet">8. Executable Code Cheatsheet &amp; Examples</a></li>
+      <li><a href="#faq-section">9. Frequently Asked Questions (20 FAQs)</a></li>
+      <li><a href="#python-resources">10. Developer Tools &amp; Converter Links</a></li>
+    </ol>
+  </section>
+
+  <!-- SECTION 1: ZONEINFO BASICS -->
+  <section id="zoneinfo-module-basics" class="content-section reveal">
+    <h2>1. The Python 3.9+ zoneinfo Module</h2>
+    <p>
+      Starting with Python 3.9 (PEP 615), Python introduced the <code>zoneinfo</code> module to provide a system-supplied <a href="/time-zone-database-iana/">IANA Time Zone Database</a> implementation directly in the standard library.
+    </p>
+
+    <!-- SVG DIAGRAM 1: Python Timezone Flow -->
+    <div class="diagram-container" style="margin: 2.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-align: center;">
+      <h3 style="margin-top: 0; color: var(--text);">Figure 1: Python Datetime &amp; ZoneInfo Processing Pipeline</h3>
+      <svg viewBox="0 0 800 280" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="max-width: 760px; font-family: sans-serif;">
+        <rect width="800" height="280" fill="var(--panel)" rx="8"/>
+        
+        <!-- Step 1: Instantiation -->
+        <rect x="40" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="140" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">1. UTC Constructor</text>
+        <text x="140" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">datetime.now(timezone.utc)</text>
+        <text x="140" y="165" fill="var(--accent)" font-family="monospace" text-anchor="middle" font-size="12">14:00:00+00:00</text>
+
+        <!-- Arrow 1 -->
+        <line x1="240" y1="140" x2="300" y2="140" stroke="var(--text)" stroke-width="2.5"/>
+
+        <!-- Step 2: ZoneInfo Conversion -->
+        <rect x="300" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="#10b981" stroke-width="2"/>
+        <text x="400" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">2. astimezone()</text>
+        <text x="400" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">ZoneInfo("America/New_York")</text>
+        <text x="400" y="165" fill="#10b981" font-family="monospace" text-anchor="middle" font-size="12">10:00:00-04:00</text>
+
+        <!-- Arrow 2 -->
+        <line x1="500" y1="140" x2="560" y2="140" stroke="var(--text)" stroke-width="2.5"/>
+
+        <!-- Step 3: DB / Output -->
+        <rect x="560" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="#3b82f6" stroke-width="2"/>
+        <text x="660" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">3. DB / JSON API</text>
+        <text x="660" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">TIMESTAMPTZ / ISO</text>
+        <text x="660" y="165" fill="#3b82f6" font-family="monospace" text-anchor="middle" font-size="12">"2026-07-30T14:00:00Z"</text>
+
+        <text x="400" y="245" fill="var(--text)" font-size="13" text-anchor="middle">Standard: Create in UTC -> Convert via astimezone(ZoneInfo) -> Serialize in UTC</text>
+      </svg>
+      <p class="infographic-caption">Modern Python workflow: Construct aware UTC datetimes, shift wall-clock representation using ZoneInfo, and persist clean UTC timestamps.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: NAIVE VS AWARE -->
+  <section id="naive-vs-aware" class="content-section reveal">
+    <h2>2. Naive vs. Aware Datetime Objects</h2>
+    <p>
+      In Python, a <code>datetime</code> object can be either <strong>naive</strong> or <strong>aware</strong>:
+    </p>
+    <ul>
+      <li><strong>Naive Datetime:</strong> Lacks timezone offset metadata. <code>datetime(2026, 7, 30, 14, 0)</code> cannot be unambiguously converted to Unix timestamps or other time zones because Python does not know what location it belongs to.</li>
+      <li><strong>Aware Datetime:</strong> Contains a valid <code>tzinfo</code> object. <code>datetime(2026, 7, 30, 14, 0, tzinfo=timezone.utc)</code> unambiguously identifies a single moment in human history.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 3: PYTZ DEPRECATION -->
+  <section id="pytz-deprecation" class="content-section reveal">
+    <h2>3. Why pytz is Deprecated &amp; Migration Code Patterns</h2>
+    <p>
+      Legacy <code>pytz</code> required using non-standard methods like <code>tz.localize(dt)</code> or <code>tz.normalize(dt)</code> because passing a <code>pytz</code> timezone directly to the <code>datetime</code> constructor caused incorrect historical "Local Mean Time" (LMT) offsets (e.g. <code>LMT-04:56</code>).
+    </p>
+    
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Legacy pytz (Deprecated)</th>
+            <th>Modern Python 3.9+ (zoneinfo)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Construct Aware DT</strong></td>
+            <td><code>pytz.timezone('EST').localize(dt)</code></td>
+            <td><code>datetime(2026, 7, 30, 14, tzinfo=ZoneInfo('America/New_York'))</code></td>
+          </tr>
+          <tr>
+            <td><strong>Get Current UTC</strong></td>
+            <td><code>datetime.now(pytz.utc)</code></td>
+            <td><code>datetime.now(timezone.utc)</code></td>
+          </tr>
+          <tr>
+            <td><strong>Convert Timezone</strong></td>
+            <td><code>tz.normalize(dt.astimezone(tz))</code></td>
+            <td><code>dt.astimezone(ZoneInfo('Europe/London'))</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: PARSING ISO8601 -->
+  <section id="parsing-iso8601" class="content-section reveal">
+    <h2>4. ISO 8601 Parsing &amp; Formatting with fromisoformat()</h2>
+    <p>
+      Python 3.11+ enhanced <code>datetime.fromisoformat()</code> to parse all valid ISO 8601 strings:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+# Parsing ISO string with offset
+dt = datetime.fromisoformat("2026-07-30T14:00:00-04:00")
+
+# Convert to Eastern Time ZoneInfo
+est_dt = dt.astimezone(ZoneInfo("America/New_York"))
+print(est_dt.strftime("%Y-%m-%d %H:%M:%S %Z"))
+# Output: "2026-07-30 14:00:00 EDT"</code></pre>
+  </section>
+
+  <!-- SECTION 5: FRAMEWORK INTEGRATION -->
+  <section id="framework-integration" class="content-section reveal">
+    <h2>5. Web Framework Integration (Django, FastAPI, SQLAlchemy)</h2>
+    <p>
+      Follow these framework-specific settings for clean database and API operations:
+    </p>
+    <ul>
+      <li><strong>Django:</strong> Set <code>USE_TZ = True</code> and <code>TIME_ZONE = 'UTC'</code> in <code>settings.py</code>. Use <code>django.utils.timezone.now()</code>.</li>
+      <li><strong>FastAPI &amp; Pydantic:</strong> Define datetime attributes with type annotation <code>datetime</code>. Pydantic automatically parses incoming ISO strings into aware UTC datetimes.</li>
+      <li><strong>SQLAlchemy &amp; PostgreSQL:</strong> Declare table columns using <code>Column(DateTime(timezone=True))</code>, which translates to PostgreSQL's native <code>TIMESTAMPTZ</code>.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 6: DST TRANSITIONS & FOLD -->
+  <section id="dst-ambiguity-fold" class="content-section reveal">
+    <h2>6. Handling DST Transitions &amp; The fold Attribute</h2>
+    <p>
+      During autumn <a href="/daylight-saving-time-explained/">Daylight Saving Time</a> transitions ("Fall Back"), the hour between 1:00 AM and 2:00 AM repeats. Python uses the <code>fold</code> attribute to resolve ambiguity:
+    </p>
+    <ul>
+      <li><code>dt.replace(fold=0)</code>: Refers to the first occurrence (Daylight Time, e.g. EDT, UTC-4).</li>
+      <li><code>dt.replace(fold=1)</code>: Refers to the second occurrence (Standard Time, e.g. EST, UTC-5).</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 7: CELERY & CRON -->
+  <section id="celery-cron-scheduling" class="content-section reveal">
+    <h2>7. Celery &amp; Cron Scheduling Across Time Zones</h2>
+    <p>
+      To prevent scheduled jobs from executing twice or skipping during DST shifts:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code># Celery Configuration for UTC Execution
+app.conf.enable_utc = True
+app.conf.timezone = 'UTC'</code></pre>
+  </section>
+
+  <!-- SECTION 8: CODE CHEATSHEET -->
+  <section id="python-code-cheatsheet" class="content-section reveal">
+    <h2>8. Executable Code Cheatsheet &amp; Examples</h2>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+def convert_gmt_to_est(gmt_iso_str: str) -> str:
+    """Converts a GMT/UTC ISO timestamp string to Eastern Time string."""
+    utc_dt = datetime.fromisoformat(gmt_iso_str.replace("Z", "+00:00"))
+    est_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
+    return est_dt.strftime("%Y-%m-%d %I:%M:%S %p %Z")
+
+# Example Usage
+print(convert_gmt_to_est("2026-07-30T18:00:00Z"))
+# Output: "2026-07-30 02:00:00 PM EDT"</code></pre>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq-section" class="content-section reveal" aria-label="Frequently Asked Questions">
+    <h2>9. Frequently Asked Questions (FAQ)</h2>
+    <p>Explore 20 detailed questions and answers about Python timezone engineering:</p>
+
+    <div class="faq">
+      {meta.faqs.map((faq) => (
+        <details style="margin-bottom: 1rem; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;">
+          <summary style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; cursor: pointer; color: var(--text);">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+            <span set:html={faq.a} />
+          </p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- SUMMARY & RELATED RESOURCES -->
+  <section id="python-resources" class="other-tools content-section" aria-label="Time Zone Links and Resources">
+    <h2>10. Developer Tools &amp; Converter Links</h2>
+    <p>
+      Use our accurate developer time tools and converters for testing code:
+    </p>
+    <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="tools-list">
+        <h3>Primary Converters</h3>
+        <ul>
+          <li><a href="/">GMT to EST Converter</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT Converter</a></li>
+          <li><a href="/gmt-vs-est/">GMT vs EST Comparison</a></li>
+          <li><a href="/gmt-to-utc/">GMT to UTC Guide</a></li>
+          <li><a href="/utc-vs-est/">UTC vs EST Guide</a></li>
+          <li><a href="/gmt-to-pst/">GMT to PST Converter</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Developer Guides</h3>
+        <ul>
+          <li><a href="/handling-time-zones-javascript/">Handling Time Zones in JavaScript</a></li>
+          <li><a href="/php-datetime-guide/">PHP DateTime &amp; Timezone Guide</a></li>
+          <li><a href="/java-time-api/">Java Time API (JSR-310) Guide</a></li>
+          <li><a href="/time-zone-database-iana/">IANA Time Zone Database Guide</a></li>
+          <li><a href="/daylight-saving-time-explained/">Daylight Saving Time Explained</a></li>
+          <li><a href="/military-time-converter-guide/">Military Time Guide</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Major City Clocks</h3>
+        <ul>
+          <li><a href="/new-york-time/">New York Time Clock</a></li>
+          <li><a href="/london-time/">London Time Clock</a></li>
+          <li><a href="/tokyo-time/">Tokyo Time Clock</a></li>
+          <li><a href="/los-angeles-time/">Los Angeles Time Clock</a></li>
+          <li><a href="/toronto-time/">Toronto Time Clock</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .info-callout {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin: 2rem 0;
+  }
+  .info-callout h3 {
+    margin-top: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: var(--panel);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .infographic-caption {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-top: 1rem;
+    font-weight: 700;
+  }
+</style>

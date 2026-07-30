@@ -1,0 +1,662 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import UsersAlsoVisitWidget from "theme/components/UsersAlsoVisitWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+import CountryCityWidget from "theme/components/CountryCityWidget.astro";
+import { siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "pdt";
+const seoTitle = "Pacific Daylight Time (PDT) – UTC-7 Offset, Rules & Guide";
+const pageDescription = "Comprehensive guide to Pacific Daylight Time (PDT). Explore UTC-7 offset, summer daylight saving rules in western North America, affected cities (Los Angeles, Seattle, Vancouver), PDT vs MST overlap, and conversion tables.";
+
+const pubDate = "2026-07-30T10:00:00+05:00";
+const updatedDate = "2026-07-30T10:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "PDT, Pacific Daylight Time, UTC-7, PDT offset, PDT time zone, PDT vs PST, PDT vs MST, Los Angeles daylight time, spring forward, PDT to GMT, PDT to EST",
+  image: "/assets/pdt-timezone-guide.webp",
+  imageAlt: "Pacific Daylight Time (PDT) UTC-7 Offset Guide",
+  pubDate,
+  updatedDate,
+  author: "Jackie Bruce",
+  faqs: [
+    {
+      q: "What does PDT stand for?",
+      a: "PDT stands for Pacific Daylight Time. It is the daylight saving time offset (UTC-7) observed along the Pacific coast of North America during the spring, summer, and early autumn months."
+    },
+    {
+      q: "What is the UTC offset for PDT?",
+      a: "The UTC offset for Pacific Daylight Time (PDT) is UTC-7. Local time in the PDT zone is exactly 7 hours behind Coordinated Universal Time (UTC) and Greenwich Mean Time (GMT)."
+    },
+    {
+      q: "Is PDT the same offset as MST?",
+      a: "Yes. Both Pacific Daylight Time (PDT) and Mountain Standard Time (MST) operate on a UTC-7 offset. During summer, when Los Angeles is on PDT (UTC-7) and Phoenix is on MST (UTC-7), California and Arizona share the exact same clock time."
+    },
+    {
+      q: "When is PDT active during the year?",
+      a: "PDT is active from the second Sunday of March (when clocks 'spring forward' from 2:00 AM to 3:00 AM) until the first Sunday of November (when clocks 'fall back' from 2:00 AM to 1:00 AM)."
+    },
+    {
+      q: "Which major cities observe Pacific Daylight Time?",
+      a: "Major metropolitan cities observing PDT during summer include Los Angeles, San Francisco, San Jose, Seattle, San Diego, Portland, Las Vegas, Vancouver, and Tijuana."
+    },
+    {
+      q: "What is the difference between PDT and PST?",
+      a: "PDT (Pacific Daylight Time) is UTC-7, observed during summer daylight saving months. PST (Pacific Standard Time) is UTC-8, observed during winter standard time months."
+    },
+    {
+      q: "How far behind GMT is PDT?",
+      a: "PDT is 7 hours behind Greenwich Mean Time (GMT/UTC+0). When it is 12:00 PM (noon) GMT in London, it is 5:00 AM PDT in Los Angeles and Seattle."
+    },
+    {
+      q: "How do I convert PDT to Eastern Daylight Time (EDT)?",
+      a: "Pacific Daylight Time (PDT, UTC-7) is 3 hours behind Eastern Daylight Time (EDT, UTC-4). To convert PDT to EDT, add 3 hours (e.g., 10:00 AM PDT equals 1:00 PM EDT)."
+    },
+    {
+      q: "How do I convert PDT to Central Daylight Time (CDT)?",
+      a: "Pacific Daylight Time (PDT, UTC-7) is 2 hours behind Central Daylight Time (CDT, UTC-5). To convert PDT to CDT, add 2 hours (e.g., 1:00 PM PDT equals 3:00 PM CDT)."
+    },
+    {
+      q: "Why does Arizona match California time during the summer?",
+      a: "Most of Arizona does not observe Daylight Saving Time and remains on Mountain Standard Time (MST, UTC-7) year-round. When California advances to Pacific Daylight Time (PDT, UTC-7) in March, both states align on UTC-7 until November."
+    },
+    {
+      q: "What is the time difference between PDT and Central European Summer Time (CEST)?",
+      a: "Central European Summer Time (CEST, UTC+2) is 9 hours ahead of Pacific Daylight Time (PDT, UTC-7). When it is 8:00 AM PDT in Los Angeles, it is 5:00 PM CEST in Berlin and Paris."
+    },
+    {
+      q: "What is the time difference between PDT and India Standard Time (IST)?",
+      a: "India Standard Time (IST, UTC+5:30) is 12 hours and 30 minutes ahead of Pacific Daylight Time (PDT, UTC-7). When it is 7:00 AM PDT in Los Angeles, it is 7:30 PM IST in New Delhi."
+    },
+    {
+      q: "What is the time difference between PDT and British Summer Time (BST)?",
+      a: "British Summer Time (BST, UTC+1) is 8 hours ahead of Pacific Daylight Time (PDT, UTC-7). When it is 9:00 AM PDT in San Francisco, it is 5:00 PM BST in London."
+    },
+    {
+      q: "How do tech keynotes (Apple WWDC, Google I/O) manage PDT scheduling?",
+      a: "Major technology conferences hosted in California schedule morning keynotes at 10:00 AM PDT. This aligns with 1:00 PM EDT (New York) and 6:00 PM BST (London), maximizing global viewership."
+    },
+    {
+      q: "Does Yukon observe PDT?",
+      a: "No. In 2020, the Canadian territory of Yukon stopped changing clocks and adopted permanent Mountain Standard Time (UTC-7), effectively remaining aligned with PDT year-round."
+    },
+    {
+      q: "What happens to cron jobs during the fall back transition from PDT to PST?",
+      a: "When clocks fall back from 2:00 AM PDT to 1:00 AM PST on the first Sunday of November, automated scripts scheduled between 1:00 AM and 2:00 AM will run twice unless configured on UTC."
+    },
+    {
+      q: "What is the best meeting time between Los Angeles (PDT) and Sydney (AEST)?",
+      a: "With a 17-hour time difference between PDT (UTC-7) and AEST (UTC+10), the optimal meeting window is 4:00 PM – 6:00 PM PDT (which corresponds to 9:00 AM – 11:00 AM next day in Sydney)."
+    },
+    {
+      q: "How do streaming services handle PDT global releases?",
+      a: "Major entertainment streaming platforms (Netflix, Disney+) release new film and series episodes worldwide at 12:00 AM (midnight) PDT, corresponding to 3:00 AM EDT and 8:00 AM BST."
+    },
+    {
+      q: "What is the time difference between PDT and Japan Standard Time (JST)?",
+      a: "Japan Standard Time (JST, UTC+9) is 16 hours ahead of Pacific Daylight Time (PDT, UTC-7). When it is 5:00 PM PDT in San Francisco, it is 9:00 AM the following morning in Tokyo."
+    },
+    {
+      q: "Is PDT an official IANA identifier?",
+      a: "PDT is an abbreviation. Software engineering standards use IANA location strings like `America/Los_Angeles` or `America/Vancouver`, which handle PDT transitions automatically."
+    }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/${slug}/`;
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="PDT"
+>
+  <!-- Hero Section -->
+  <section class="hero-banner" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="hero-banner-title speakable-headline">
+      Pacific Daylight Time (PDT): <span class="gradient-text">UTC-7 Offset & Summer Rules</span>
+    </h1>
+  </section>
+
+  <!-- Editorial Info Bar -->
+  <div class="editorial-meta-bar" aria-label="Editorial metadata">
+    <span>Last Updated: <strong>July 30, 2026</strong></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Editorially Reviewed by <a href="/author/jackie-bruce/"><strong>Jackie Bruce</strong></a></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Data Source: <a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer"><strong>IANA Time Zone Database</strong></a></span>
+  </div>
+
+  <div class="article-wrapper">
+    <!-- Top Answer Summary Box -->
+    <div class="summary-box speakable-summary">
+      <div class="summary-header">
+        <span class="summary-badge">DAYLIGHT TIME PROFILE</span>
+        <h2>Pacific Daylight Time (PDT) Summary</h2>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label">UTC Offset:</span>
+          <span class="val highlight">UTC-7 (7 hours behind GMT)</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Active Window:</span>
+          <span class="val">2nd Sunday March to 1st Sunday November</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Standard Counterpart:</span>
+          <span class="val"><a href="/pst/">PST (Pacific Standard Time, UTC-8)</a></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Major Cities:</span>
+          <span class="val"><a href="/los-angeles-time/">Los Angeles</a>, San Francisco, Seattle, <a href="/vancouver-time/">Vancouver</a></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Arizona Alignment:</span>
+          <span class="val">Matches Arizona (MST UTC-7) in summer</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Spring Shift:</span>
+          <span class="val">Clocks spring forward 1 hour (2:00 AM → 3:00 AM)</span>
+        </div>
+      </div>
+      <p class="summary-text">
+        <strong>Pacific Daylight Time (PDT)</strong> is the daylight saving time offset observed across western North America from March through November. Operating at <strong>UTC-7</strong>, PDT advances local clocks by one hour relative to winter standard time (<a href="/pst/">PST UTC-8</a>). PDT governs key tech keynotes, streaming media debuts, and West Coast commerce across California, Washington, Oregon, and British Columbia.
+      </p>
+    </div>
+
+    <!-- Table of Contents -->
+    <nav class="about-toc" aria-label="Table of Contents">
+      <h2>Table of Contents</h2>
+      <ul>
+        <li><a href="#what-is-pdt">1. What is Pacific Daylight Time (PDT)?</a></li>
+        <li><a href="#pdt-vs-pst-and-mst">2. PDT vs. PST & Summer Alignment with Arizona (MST)</a></li>
+        <li><a href="#transition-calendar">3. Daylight Saving Transition Calendar & Rules</a></li>
+        <li><a href="#geographic-coverage">4. Geographic Extent & Regional Exceptions</a></li>
+        <li><a href="#conversion-tables">5. Global PDT Time Conversion Tables</a></li>
+        <li><a href="#tech-keynotes">6. Tech Industry Keynotes, Streaming Debuts & Server Scheduling</a></li>
+        <li><a href="#faqs">7. Frequently Asked Questions (20 Detailed Answers)</a></li>
+      </ul>
+    </nav>
+
+    <!-- Content Sections -->
+    <section id="what-is-pdt" class="content-section">
+      <h2>1. What is Pacific Daylight Time (PDT)?</h2>
+      <p>
+        <strong>Pacific Daylight Time (PDT)</strong> is the summer daylight saving phase of the Pacific Time Zone in North America. Governed by the US Uniform Time Act, PDT maintains an offset of <strong>UTC-7</strong>, placing local time 7 hours behind <a href="/utc/">Coordinated Universal Time (UTC)</a> and <a href="/gmt/">Greenwich Mean Time (GMT)</a>.
+      </p>
+      <p>
+        PDT covers major technology and entertainment hubs including Los Angeles, San Francisco, San Jose, Seattle, Portland, Las Vegas, Vancouver, and Tijuana.
+      </p>
+    </section>
+
+    <!-- SVG Diagram 1: PDT vs Arizona MST Alignment -->
+    <section class="diagram-section">
+      <div class="diagram-card">
+        <h3>Figure 1: Summer Timezone Alignment (California PDT ≡ Arizona MST)</h3>
+        <div class="svg-wrapper">
+          <svg viewBox="0 0 800 240" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" aria-label="PDT vs Arizona MST Alignment Diagram">
+            <rect width="800" height="240" fill="var(--panel)" rx="12" stroke="var(--line)" stroke-width="1"/>
+            
+            <!-- California Summer PDT Box -->
+            <rect x="60" y="50" width="310" height="130" rx="8" fill="rgba(255,255,255,0.03)" stroke="var(--accent)" stroke-width="2"/>
+            <text x="215" y="85" text-anchor="middle" fill="var(--accent)" font-family="Space Grotesk, sans-serif" font-weight="bold" font-size="16">California (PDT Summer)</text>
+            <text x="215" y="120" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="24">UTC-7</text>
+            <text x="215" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">Los Angeles / San Francisco (March–Nov)</text>
+
+            <!-- Equals Sign -->
+            <text x="400" y="125" text-anchor="middle" fill="var(--accent)" font-family="Space Grotesk, sans-serif" font-weight="bold" font-size="28">=</text>
+
+            <!-- Arizona MST Box -->
+            <rect x="430" y="50" width="310" height="130" rx="8" fill="rgba(255,255,255,0.03)" stroke="var(--line)" stroke-width="2"/>
+            <text x="585" y="85" text-anchor="middle" fill="var(--text)" font-family="Space Grotesk, sans-serif" font-weight="bold" font-size="16">Arizona (MST Year-Round)</text>
+            <text x="585" y="120" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="24">UTC-7</text>
+            <text x="585" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">Phoenix / Tucson (No DST Shift)</text>
+          </svg>
+        </div>
+        <p class="diagram-caption">
+          Figure 1: Illustration showing that California during PDT (UTC-7) matches the exact wall-clock time of Arizona (MST UTC-7) during summer months.
+        </p>
+      </div>
+    </section>
+
+    <section id="pdt-vs-pst-and-mst" class="content-section">
+      <h2>2. PDT vs. PST & Summer Alignment with Arizona (MST)</h2>
+      <p>
+        Key operational dynamics of Pacific Daylight Time include:
+      </p>
+      <ul>
+        <li><strong>PDT vs PST:</strong> PDT is UTC-7 (summer), whereas <a href="/pst/">PST is UTC-8</a> (winter). Moving from PST to PDT advances local clocks by 1 hour.</li>
+        <li><strong>PDT vs EDT:</strong> During summer, both coasts advance their clocks simultaneously. Thus, PDT (UTC-7) remains 3 hours behind <a href="/edt/">EDT (UTC-4)</a>.</li>
+        <li><strong>PDT vs Arizona (MST):</strong> Arizona does not observe Daylight Saving Time and remains on Mountain Standard Time (MST, UTC-7) year-round. Therefore, during summer, Los Angeles and Phoenix share the exact same clock time.</li>
+      </ul>
+      <p>
+        For a deep dive into global daylight saving rules, see <a href="/daylight-saving-time-explained/">Daylight Saving Time Explained</a>.
+      </p>
+    </section>
+
+    <section id="transition-calendar" class="content-section">
+      <h2>3. Daylight Saving Transition Calendar & Rules</h2>
+      <p>
+        Annual transition dates follow US federal rules:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transition Event</th>
+              <th>Date & Time Rule</th>
+              <th>Clock Adjustment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Spring Forward (PST → PDT)</strong></td>
+              <td>2nd Sunday of March at 2:00 AM</td>
+              <td>Clocks jump from 2:00 AM to 3:00 AM PDT (+1 hour)</td>
+            </tr>
+            <tr>
+              <td><strong>Fall Back (PDT → PST)</strong></td>
+              <td>1st Sunday of November at 2:00 AM</td>
+              <td>Clocks fall back from 2:00 AM to 1:00 AM PST (-1 hour)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="geographic-coverage" class="content-section">
+      <h2>4. Geographic Extent & Regional Exceptions</h2>
+      <p>
+        Pacific Daylight Time covers key West Coast jurisdictions:
+      </p>
+      <ul>
+        <li><strong>United States:</strong> California, Washington, Oregon (majority), Nevada. See <a href="/usa-time-zones/">USA Time Zones</a>.</li>
+        <li><strong>Canada:</strong> British Columbia (<a href="/vancouver-time/">Vancouver</a>, Victoria). See <a href="/canada-time-zones/">Canada Time Zones</a>.</li>
+        <li><strong>Mexico:</strong> Baja California (Tijuana, Mexicali) synchronizes with US PDT rules.</li>
+      </ul>
+    </section>
+
+    <section id="conversion-tables" class="content-section">
+      <h2>5. Global PDT Time Conversion Tables</h2>
+      <p>
+        Convert Pacific Daylight Time (PDT, UTC-7) to major world time zones during summer:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>PDT (UTC-7)</th>
+              <th>GMT (UTC+0)<br/><a href="/gmt-to-pdt/">PDT to GMT</a></th>
+              <th>EDT (UTC-4)<br/><a href="/gmt-to-pdt/">PDT to EDT</a></th>
+              <th>CDT (UTC-5)<br/><a href="/gmt-to-cdt/">PDT to CDT</a></th>
+              <th>BST (UTC+1)<br/><a href="/bst-to-est/">PDT to BST</a></th>
+              <th>IST (UTC+5:30)<br/><a href="/ist-to-est/">PDT to IST</a></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>00:00 PDT (Midnight)</td>
+              <td>07:00 GMT</td>
+              <td>03:00 EDT</td>
+              <td>02:00 CDT</td>
+              <td>08:00 BST</td>
+              <td>12:30 IST</td>
+            </tr>
+            <tr>
+              <td>06:00 PDT</td>
+              <td>13:00 GMT</td>
+              <td>09:00 EDT</td>
+              <td>08:00 CDT</td>
+              <td>14:00 BST</td>
+              <td>18:30 IST</td>
+            </tr>
+            <tr>
+              <td>09:00 PDT</td>
+              <td>16:00 GMT</td>
+              <td>12:00 EDT</td>
+              <td>11:00 CDT</td>
+              <td>17:00 BST</td>
+              <td>21:30 IST</td>
+            </tr>
+            <tr>
+              <td>12:00 PDT (Noon)</td>
+              <td>19:00 GMT</td>
+              <td>15:00 EDT</td>
+              <td>14:00 CDT</td>
+              <td>20:00 BST</td>
+              <td>00:30 IST (Next Day)</td>
+            </tr>
+            <tr>
+              <td>15:00 PDT</td>
+              <td>22:00 GMT</td>
+              <td>18:00 EDT</td>
+              <td>17:00 CDT</td>
+              <td>23:00 BST</td>
+              <td>03:30 IST (Next Day)</td>
+            </tr>
+            <tr>
+              <td>18:00 PDT</td>
+              <td>01:00 GMT (Next Day)</td>
+              <td>21:00 EDT</td>
+              <td>20:00 CDT</td>
+              <td>02:00 BST (Next Day)</td>
+              <td>06:30 IST (Next Day)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        For live, interactive conversion calculation, use our <a href="/gmt-to-pdt/">GMT to PDT Converter</a>.
+      </p>
+    </section>
+
+    <!-- SVG Diagram 2: Summer Daylight Saving Offsets -->
+    <section class="diagram-section">
+      <div class="diagram-card">
+        <h3>Figure 2: North American Summer Daylight Saving Offsets</h3>
+        <div class="svg-wrapper">
+          <svg viewBox="0 0 800 220" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" aria-label="North American Summer DST Offsets">
+            <rect width="800" height="220" fill="var(--panel)" rx="12" stroke="var(--line)" stroke-width="1"/>
+            
+            <circle cx="160" cy="110" r="38" fill="var(--accent)" stroke="#ffffff" stroke-width="2.5"/>
+            <text x="160" y="115" text-anchor="middle" fill="#ffffff" font-family="Space Grotesk, sans-serif" font-weight="bold" font-size="16">PDT</text>
+            <text x="160" y="165" text-anchor="middle" fill="var(--accent)" font-weight="bold" font-size="12">UTC-7 (Pacific)</text>
+
+            <circle cx="340" cy="110" r="30" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+            <text x="340" y="114" text-anchor="middle" fill="var(--text)" font-weight="bold" font-size="13">MDT</text>
+            <text x="340" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">UTC-6 (Mountain)</text>
+
+            <circle cx="500" cy="110" r="30" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+            <text x="500" y="114" text-anchor="middle" fill="var(--text)" font-weight="bold" font-size="13">CDT</text>
+            <text x="500" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">UTC-5 (Central)</text>
+
+            <circle cx="660" cy="110" r="30" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+            <text x="660" y="114" text-anchor="middle" fill="var(--text)" font-weight="bold" font-size="13">EDT</text>
+            <text x="660" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">UTC-4 (Eastern)</text>
+
+            <line x1="198" y1="110" x2="310" y2="110" stroke="var(--line)" stroke-width="2"/>
+            <line x1="370" y1="110" x2="470" y2="110" stroke="var(--line)" stroke-width="2"/>
+            <line x1="530" y1="110" x2="630" y2="110" stroke="var(--line)" stroke-width="2"/>
+          </svg>
+        </div>
+        <p class="diagram-caption">
+          Figure 2: Position of PDT (UTC-7) within the North American summer daylight saving continuum.
+        </p>
+      </div>
+    </section>
+
+    <section id="tech-keynotes" class="content-section">
+      <h2>6. Tech Industry Keynotes, Streaming Debuts & Server Scheduling</h2>
+      <p>
+        Major Apple, Google, and Meta developer keynotes originate live in California at 10:00 AM PDT, creating peak global network traffic across Asia, Europe, and the Americas. 
+      </p>
+      <p>
+        Software engineers operating globally distributed infrastructure ensure background job queues process timestamps in UTC to avoid missing scheduled execution windows during PDT transitions. See our guide on <a href="/handling-time-zones-javascript/">JavaScript Time Zone Handling</a>.
+      </p>
+    </section>
+
+    <!-- Contextual Widgets Integration -->
+    <RelatedConvertersWidget slug={slug} />
+    <UsersAlsoVisitWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+    <CountryCityWidget slug={slug} />
+
+    <!-- FAQ Section -->
+    <section id="faqs" class="content-section faqs-section">
+      <h2>7. Frequently Asked Questions (PDT)</h2>
+      <div class="faq-list">
+        {meta.faqs.map((faq, index) => (
+          <details class="faq-item" open={index === 0}>
+            <summary class="faq-question">
+              <h3>{faq.q}</h3>
+            </summary>
+            <div class="faq-answer">
+              <p>{faq.a}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .article-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+  }
+  .hero-banner {
+    text-align: center;
+    padding: 3rem 1rem 1.5rem;
+  }
+  .hero-banner-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent) 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .editorial-meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    padding: 0.75rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .editorial-meta-bar a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .separator {
+    opacity: 0.5;
+  }
+  .summary-box {
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .summary-badge {
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .summary-header h2 {
+    font-size: 1.35rem;
+    margin: 0;
+    color: var(--text);
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .summary-item {
+    background: rgba(255,255,255,0.03);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  .summary-item .label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .summary-item .val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .summary-item .highlight {
+    color: var(--accent);
+  }
+  .summary-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0;
+  }
+  .about-toc {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2.5rem;
+  }
+  .about-toc h2 {
+    font-size: 1.2rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+  .about-toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .about-toc li {
+    margin: 0.5rem 0;
+  }
+  .about-toc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .about-toc a:hover {
+    text-decoration: underline;
+  }
+  .content-section {
+    margin-bottom: 3rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .content-section h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.75rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+  }
+  .content-section p {
+    margin-bottom: 1.25rem;
+  }
+  .content-section a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .diagram-section {
+    margin: 2.5rem 0;
+  }
+  .diagram-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .diagram-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  .svg-wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  .diagram-caption {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: 1rem;
+    margin-bottom: 0;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.925rem;
+  }
+  th, td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  th {
+    background: var(--panel);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .faq-question h3 {
+    font-size: 1.1rem;
+    margin: 0;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .faq-answer {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+</style>

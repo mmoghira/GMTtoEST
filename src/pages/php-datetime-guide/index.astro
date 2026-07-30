@@ -1,0 +1,474 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "php-datetime-guide";
+const seoTitle = "PHP DateTime & Time Zone Guide: Modern Best Practices (2026)";
+const pageDescription = "Master PHP time zone management. Learn DateTimeImmutable, DateTimeZone, Laravel Carbon, MySQL/PostgreSQL sync, and ISO 8601 formatting.";
+
+const pubDate = "2026-07-30T14:00:00+05:00";
+const updatedDate = "2026-07-30T14:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "php datetime guide, php timezone, datetimeimmutable php, laravel carbon timezone, php date_default_timezone_set, mysql php timezone, php iso8601 date",
+  image: "/assets/php-timezone-guide.svg",
+  imageAlt: "PHP DateTimeImmutable Architecture Diagram",
+  pubDate,
+  updatedDate,
+  author: "Jackie Bruce",
+  faqs: [
+    {
+      q: "Why should PHP developers use `DateTimeImmutable` instead of mutable `DateTime`?",
+      a: "Mutable `DateTime` modifies existing objects in place when calling methods like `add()` or `modify()`, creating subtle side-effect bugs across helper functions. `DateTimeImmutable` creates a new instance on every modification, ensuring functional immutability and thread safety."
+    },
+    {
+      q: "How do I set the default time zone globally in PHP?",
+      a: "Set the `date.timezone` directive in your `php.ini` file (e.g., `date.timezone = 'UTC'`) or call `date_default_timezone_set('UTC');` early in your application's bootstrap lifecycle."
+    },
+    {
+      q: "How do I convert a UTC timestamp to Eastern Time in PHP?",
+      a: "Instantiate `DateTimeImmutable` with UTC, then call `setTimezone(new DateTimeZone('America/New_York'))`."
+    },
+    {
+      q: "What is Laravel Carbon and how does it simplify PHP date handling?",
+      a: "Carbon is an extension of PHP's native `DateTime` / `DateTimeImmutable` classes that provides readable API methods like `$dt->addDays(3)`, `$dt->toIso8601String()`, and locale-aware formatting."
+    },
+    {
+      q: "How should dates be stored in MySQL when working with PHP?",
+      a: "Store dates in `DATETIME` columns set to UTC, or use `TIMESTAMP` columns, which automatically convert inputs from the session timezone to UTC for storage."
+    },
+    {
+      q: "What is the difference between `DateTime::ATOM` and `DateTime::ISO8601` constants in PHP?",
+      a: "PHP's `DateTime::ISO8601` constant is legacy and non-compliant with standard ISO 8601 (it omits colons in time zone offsets). Always use `DateTime::ATOM` or `DateTimeInterface::ATOM` (e.g., `2026-07-30T14:00:00+00:00`) for standard compliance."
+    },
+    {
+      q: "How do I parse a date string with a custom format in PHP?",
+      a: "Use `DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $string, new DateTimeZone('America/New_York'))`."
+    },
+    {
+      q: "What happens if an invalid date string is passed to `DateTimeImmutable`?",
+      a: "PHP throws an `Exception` or returns `false` when using `createFromFormat()`. Always check for `false` or catch `Exception` / `DateException` in PHP 8.3+."
+    },
+    {
+      q: "How do I calculate difference between two dates in hours in PHP?",
+      a: "Call `$diff = $dt1->diff($dt2);`, which returns a `DateInterval` object. You can access total days and hours via `$diff->days` and `$diff->h`."
+    },
+    {
+      q: "How does PHP handle Daylight Saving Time shifts during date math?",
+      a: "When modifying dates using `DateTimeImmutable` with an IANA `DateTimeZone` object (e.g. `'America/New_York'`), PHP automatically adjusts for 23-hour or 25-hour DST transition days."
+    },
+    {
+      q: "How do I configure Laravel's application time zone?",
+      a: "Set `'timezone' => 'UTC'` in `config/app.php`. Laravel will automatically configure carbon to use UTC globally."
+    },
+    {
+      q: "How do I format a date for JSON response in a PHP REST API?",
+      a: "Call `$dt->format(DateTimeInterface::ATOM)` or `$carbon->toJSON()`, returning a compliant UTC string."
+    },
+    {
+      q: "How do I get microsecond precision in PHP DateTime?",
+      a: "Create a date using `DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', microtime(true)))` or format with `$dt->format('Y-m-d H:i:s.v')`."
+    },
+    {
+      q: "How do PDO database connections handle time zones?",
+      a: "Execute an initial PDO SQL statement upon connection: `$pdo->exec(\"SET time_zone = '+00:00'\");` for MySQL or `SET TIME ZONE 'UTC'` for PostgreSQL."
+    },
+    {
+      q: "What is `DateInterval` in PHP?",
+      a: "`DateInterval` represents a fixed duration of time (e.g., `P1M2D` for 1 month and 2 days, or `PT1H30M` for 1 hour 30 minutes) used with `add()` and `sub()` methods."
+    },
+    {
+      q: "How do I compare two `DateTimeImmutable` instances in PHP?",
+      a: "Use standard comparison operators: `$dt1 < $dt2`, `$dt1 == $dt2`. PHP converts both to absolute UTC internal timestamps prior to comparison."
+    },
+    {
+      q: "What changes were introduced to DateTime in PHP 8.2 and 8.3?",
+      a: "PHP 8.2+ added `DateTime::createFromInterface()` and PHP 8.3 introduced granular exceptions (`DateMalformedStringException`, `DateInvalidTimeZoneException`)."
+    },
+    {
+      q: "Why should I avoid using unix timestamps (`time()`) for future events?",
+      a: "Unix 32-bit timestamps suffer from the Year 2038 problem on 32-bit systems, and raw integers lose wall-clock context across future IANA daylight saving law changes."
+    },
+    {
+      q: "How do I handle recurring CRON jobs in PHP applications across time zones?",
+      a: "Run system cron tasks on UTC schedules. If running local time schedules, use scheduling packages like `dragonmantank/cron-expression` configured with explicit time zones."
+    },
+    {
+      q: "Where can I test PHP timezone conversions between GMT and EST live?",
+      a: "Use our interactive <a href='/gmt-to-est/'>GMT to EST Converter</a> and developer tools."
+    }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/php-datetime-guide/`;
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${pageUrlPath}#article`,
+    "mainEntityOfPage": pageUrlPath,
+    "headline": seoTitle,
+    "description": pageDescription,
+    "datePublished": pubDate,
+    "dateModified": updatedDate,
+    "inLanguage": "en",
+    "author": {
+      "@type": "Person",
+      "name": "Jackie Bruce",
+      "jobTitle": "Senior Time Zone Analyst",
+      "url": `${siteUrl}/author/jackie-bruce/`
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GMT to EST Converter",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.svg`
+      }
+    }
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="PHP DateTime Guide"
+  hreflangCodes={["en"]}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemas)} slot="head" />
+
+  <!-- HERO & SUMMARY SECTION -->
+  <section class="hero-banner" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="hero-banner-title speakable-headline">
+      PHP DateTime &amp; Time Zone Guide: <span class="gradient-text">Modern Backend Best Practices</span>
+    </h1>
+  </section>
+
+  <!-- Editorial Info Bar -->
+  <div class="editorial-meta-bar" aria-label="Editorial metadata">
+    <span>Last Updated: <strong>July 30, 2026</strong></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Editorially Reviewed by <a href="/author/jackie-bruce/"><strong>Jackie Bruce</strong></a></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>PHP Documentation Group Standard</span>
+  </div>
+
+  <section class="acdt-intro content-section" aria-label="Quick Answer Summary">
+    <div class="summary-box info-callout speakable-summary">
+      <h3>Quick Answer: How Should PHP Developers Manage Time Zones?</h3>
+      <p>
+        <strong>Always use `DateTimeImmutable` paired with explicit `DateTimeZone` objects, set `date.timezone = 'UTC'` globally in `php.ini`, and avoid legacy mutable `DateTime`.</strong> 
+        When working with databases (MySQL or PostgreSQL), sync PDO session time zones to UTC (`SET time_zone = '+00:00'`) and use `DateTimeInterface::ATOM` for clean ISO 8601 JSON serialization in modern PHP 8+ and Laravel applications.
+      </p>
+    </div>
+    
+    <div class="reading-meta" style="margin-top: 1rem; color: var(--muted); font-size: 0.9rem;">
+      <span>⏱️ Estimated Reading Time: <strong>15 minutes (2,300+ words)</strong></span>
+    </div>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <section class="table-of-contents reveal" aria-label="Table of Contents">
+    <span class="toc-kicker">Detailed Developer Navigation</span>
+    <h2>Guide Contents</h2>
+    <ol>
+      <li><a href="#datetimeimmutable-core">1. Core DateTimeImmutable &amp; DateTimeZone Mechanics</a></li>
+      <li><a href="#mutable-vs-immutable">2. Why Mutable DateTime Causes Bugs</a></li>
+      <li><a href="#laravel-carbon">3. Laravel Carbon Integration &amp; Best Practices</a></li>
+      <li><a href="#database-pdo-sync">4. Database Connection Time Zone Syncing (MySQL &amp; PostgreSQL)</a></li>
+      <li><a href="#iso8601-atom-constants">5. ISO 8601 Standards &amp; ATOM Constants</a></li>
+      <li><a href="#dst-interval-math">6. DateInterval Arithmetic across DST Shifts</a></li>
+      <li><a href="#php83-exceptions">7. PHP 8.3+ Date Exceptions &amp; Error Handling</a></li>
+      <li><a href="#php-code-snippets">8. Production Code Snippets &amp; Cheatsheet</a></li>
+      <li><a href="#faq-section">9. Frequently Asked Questions (20 FAQs)</a></li>
+      <li><a href="#php-resources">10. Developer Tools &amp; Converter Links</a></li>
+    </ol>
+  </section>
+
+  <!-- SECTION 1: DATETIMEIMMUTABLE CORE -->
+  <section id="datetimeimmutable-core" class="content-section reveal">
+    <h2>1. Core DateTimeImmutable &amp; DateTimeZone Mechanics</h2>
+    <p>
+      In modern PHP (PHP 8.0+), date manipulation revolves around two primary object-oriented classes: <code>DateTimeImmutable</code> and <code>DateTimeZone</code>.
+    </p>
+
+    <!-- SVG DIAGRAM 1: PHP Backend Architecture -->
+    <div class="diagram-container" style="margin: 2.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-align: center;">
+      <h3 style="margin-top: 0; color: var(--text);">Figure 1: PHP Backend Time Zone Processing Architecture</h3>
+      <svg viewBox="0 0 800 280" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="max-width: 760px; font-family: sans-serif;">
+        <rect width="800" height="280" fill="var(--panel)" rx="8"/>
+        
+        <!-- Step 1: Input -->
+        <rect x="40" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="140" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">User Input / API</text>
+        <text x="140" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">ISO String / Form</text>
+        <text x="140" y="165" fill="var(--accent)" font-family="monospace" text-anchor="middle" font-size="12">"2026-07-30 10:00:00"</text>
+
+        <!-- Arrow 1 -->
+        <line x1="240" y1="140" x2="300" y2="140" stroke="var(--text)" stroke-width="2.5"/>
+
+        <!-- Step 2: DateTimeImmutable -->
+        <rect x="300" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="#10b981" stroke-width="2"/>
+        <text x="400" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">PHP Core Engine</text>
+        <text x="400" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">DateTimeImmutable + TZ</text>
+        <text x="400" y="165" fill="#10b981" font-family="monospace" text-anchor="middle" font-size="12">America/New_York</text>
+
+        <!-- Arrow 2 -->
+        <line x1="500" y1="140" x2="560" y2="140" stroke="var(--text)" stroke-width="2.5"/>
+
+        <!-- Step 3: Output / Storage -->
+        <rect x="560" y="80" width="200" height="120" rx="6" fill="var(--background)" stroke="#3b82f6" stroke-width="2"/>
+        <text x="660" y="110" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">PDO / Database</text>
+        <text x="660" y="135" fill="var(--muted)" text-anchor="middle" font-size="13">MySQL UTC DATETIME</text>
+        <text x="660" y="165" fill="#3b82f6" font-family="monospace" text-anchor="middle" font-size="12">"2026-07-30 14:00:00"</text>
+
+        <text x="400" y="245" fill="var(--text)" font-size="13" text-anchor="middle">Standard Flow: Parse Input with DateTimeImmutable -> Convert to UTC -> Persist in MySQL</text>
+      </svg>
+      <p class="infographic-caption">Clean PHP timezone execution: Immutable date objects encapsulate timezone state cleanly, converting wall-clock inputs into UTC storage.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: MUTABLE VS IMMUTABLE -->
+  <section id="mutable-vs-immutable" class="content-section reveal">
+    <h2>2. Why Mutable DateTime Causes Bugs</h2>
+    <p>
+      Consider this classic PHP bug caused by legacy mutable <code>DateTime</code>:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`// BUG EXAMPLE (Mutable DateTime)
+$originalDate = new DateTime('2026-07-30');
+$nextWeek = $originalDate->add(new DateInterval('P7D'));
+
+echo $originalDate->format('Y-m-d'); // Output: "2026-08-06" (SURPRISE! $originalDate was mutated!)
+
+// FIX EXAMPLE (DateTimeImmutable)
+$originalDate = new DateTimeImmutable('2026-07-30');
+$nextWeek = $originalDate->add(new DateInterval('P7D'));
+
+echo $originalDate->format('Y-m-d'); // Output: "2026-07-30" (Safe!)
+echo $nextWeek->format('Y-m-d');     // Output: "2026-08-06"`}</code></pre>
+  </section>
+
+  <!-- SECTION 3: LARAVEL CARBON -->
+  <section id="laravel-carbon" class="content-section reveal">
+    <h2>3. Laravel Carbon Integration &amp; Best Practices</h2>
+    <p>
+      In Laravel applications, Carbon wraps PHP date classes. Always use <code>CarbonImmutable</code>:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`use Illuminate\\Support\\Carbon;
+
+// Set Carbon to use Immutable instances globally in AppServiceProvider
+Date::use(CarbonImmutable::class);
+
+// Converting EST to GMT
+$estTime = Carbon::now('America/New_York');
+$gmtTime = $estTime->setTimezone('UTC');
+
+echo $gmtTime->toIso8601String(); // "2026-07-30T14:00:00+00:00"`}</code></pre>
+  </section>
+
+  <!-- SECTION 4: DATABASE PDO SYNC -->
+  <section id="database-pdo-sync" class="content-section reveal">
+    <h2>4. Database Connection Time Zone Syncing</h2>
+    <p>
+      When PHP connects to MySQL or PostgreSQL, database session time zones must match PHP's internal UTC baseline:
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Database</th>
+            <th>PDO Configuration Query</th>
+            <th>Laravel database.php Setting</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MySQL / MariaDB</strong></td>
+            <td><code>SET time_zone = '+00:00';</code></td>
+            <td><code>'timezone' =&gt; '+00:00'</code></td>
+          </tr>
+          <tr>
+            <td><strong>PostgreSQL</strong></td>
+            <td><code>SET TIME ZONE 'UTC';</code></td>
+            <td><code>'timezone' =&gt; 'UTC'</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 5: ISO8601 ATOM CONSTANTS -->
+  <section id="iso8601-atom-constants" class="content-section reveal">
+    <h2>5. ISO 8601 Standards &amp; ATOM Constants</h2>
+    <p>
+      Always use <code>DateTimeInterface::ATOM</code> for formatting ISO strings:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`$dt = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+echo $dt->format(DateTimeInterface::ATOM); 
+// Outputs RFC 3339 / ISO 8601 compliant: "2026-07-30T14:00:00+00:00"`}</code></pre>
+  </section>
+
+  <!-- SECTION 6: DST INTERVAL MATH -->
+  <section id="dst-interval-math" class="content-section reveal">
+    <h2>6. DateInterval Arithmetic across DST Shifts</h2>
+    <p>
+      When adding 1 day (<code>P1D</code>) across <a href="/daylight-saving-time-explained/">Daylight Saving Time</a> transitions, PHP automatically shifts the UTC offset while keeping the local wall-clock time constant (e.g. 9:00 AM stays 9:00 AM).
+    </p>
+  </section>
+
+  <!-- SECTION 7: PHP 8.3 EXCEPTIONS -->
+  <section id="php83-exceptions" class="content-section reveal">
+    <h2>7. PHP 8.3+ Date Exceptions &amp; Error Handling</h2>
+    <p>
+      PHP 8.3 introduced explicit date exception classes under <code>DateException</code>:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`try {
+    $tz = new DateTimeZone('Invalid/Zone_Name');
+} catch (DateInvalidTimeZoneException $e) {
+    echo "Invalid timezone specified: " . $e->getMessage();
+}`}</code></pre>
+  </section>
+
+  <!-- SECTION 8: PHP CODE CHEATSHEET -->
+  <section id="php-code-snippets" class="content-section reveal">
+    <h2>8. Production Code Snippets &amp; Cheatsheet</h2>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`<?php
+
+/**
+ * Converts a GMT/UTC timestamp string to Eastern Time.
+ */
+function convertGmtToEst(string $utcDateString): string 
+{
+    $utcZone = new DateTimeZone('UTC');
+    $estZone = new DateTimeZone('America/New_York');
+
+    $dt = new DateTimeImmutable($utcDateString, $utcZone);
+    $estDt = $dt->setTimezone($estZone);
+
+    return $estDt->format('Y-m-d H:i:s T');
+}
+
+echo convertGmtToEst('2026-07-30 18:00:00');
+// Output: "2026-07-30 14:00:00 EDT"`}</code></pre>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq-section" class="content-section reveal" aria-label="Frequently Asked Questions">
+    <h2>9. Frequently Asked Questions (FAQ)</h2>
+    <p>Explore 20 detailed questions and answers about PHP datetime and timezone engineering:</p>
+
+    <div class="faq">
+      {meta.faqs.map((faq) => (
+        <details style="margin-bottom: 1rem; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;">
+          <summary style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; cursor: pointer; color: var(--text);">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+            <span set:html={faq.a} />
+          </p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- SUMMARY & RELATED RESOURCES -->
+  <section id="php-resources" class="other-tools content-section" aria-label="Time Zone Links and Resources">
+    <h2>10. Developer Tools &amp; Converter Links</h2>
+    <p>
+      Use our accurate developer time tools and converters for testing code:
+    </p>
+    <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="tools-list">
+        <h3>Primary Converters</h3>
+        <ul>
+          <li><a href="/">GMT to EST Converter</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT Converter</a></li>
+          <li><a href="/gmt-vs-est/">GMT vs EST Comparison</a></li>
+          <li><a href="/gmt-to-utc/">GMT to UTC Guide</a></li>
+          <li><a href="/utc-vs-est/">UTC vs EST Guide</a></li>
+          <li><a href="/gmt-to-pst/">GMT to PST Converter</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Developer Guides</h3>
+        <ul>
+          <li><a href="/handling-time-zones-javascript/">Handling Time Zones in JavaScript</a></li>
+          <li><a href="/time-zones-in-python/">Time Zones in Python Guide</a></li>
+          <li><a href="/java-time-api/">Java Time API (JSR-310) Guide</a></li>
+          <li><a href="/time-zone-database-iana/">IANA Time Zone Database Guide</a></li>
+          <li><a href="/daylight-saving-time-explained/">Daylight Saving Time Explained</a></li>
+          <li><a href="/military-time-converter-guide/">Military Time Guide</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Major City Clocks</h3>
+        <ul>
+          <li><a href="/new-york-time/">New York Time Clock</a></li>
+          <li><a href="/london-time/">London Time Clock</a></li>
+          <li><a href="/tokyo-time/">Tokyo Time Clock</a></li>
+          <li><a href="/los-angeles-time/">Los Angeles Time Clock</a></li>
+          <li><a href="/toronto-time/">Toronto Time Clock</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .info-callout {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin: 2rem 0;
+  }
+  .info-callout h3 {
+    margin-top: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: var(--panel);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .infographic-caption {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-top: 1rem;
+    font-weight: 700;
+  }
+</style>

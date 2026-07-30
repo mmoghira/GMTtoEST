@@ -1,0 +1,521 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { siteUrl } from "theme/i18n/config";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import UsersAlsoVisitWidget from "theme/components/UsersAlsoVisitWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+import CountryCityWidget from "theme/components/CountryCityWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "iso-8601-date-time-format";
+const seoTitle = "ISO 8601 Date and Time Standard: Syntax, Examples & Guide";
+const pageDescription = "Master the ISO 8601 standard for dates and times. Learn YYYY-MM-DD, UTC offset notations (Z, +00:00), combined date-time strings, and API implementation.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "ISO 8601 format, ISO date time syntax, YYYY-MM-DD, RFC 3339 vs ISO 8601, ISO 8601 UTC offset Z, API date format standard, ISO duration syntax",
+  image: "/assets/iso-8601-syntax-diagram.svg",
+  imageAlt: "ISO 8601 date and time syntax breakdown diagram",
+  pubDate,
+  updatedDate,
+  author: "Jackie Bruce",
+  faqs: [
+    {
+      q: "What is ISO 8601?",
+      a: "ISO 8601 is an international standard issued by the International Organization for Standardization (ISO) that specifies a clear, unambiguous format for representing dates, times, UTC offsets, and time intervals (e.g., 2026-07-30T15:00:00Z)."
+    },
+    {
+      q: "What does the letter 'T' stand for in an ISO 8601 string?",
+      a: "The letter 'T' acts as a visual delimiter separating the calendar date portion (YYYY-MM-DD) from the 24-hour time portion (hh:mm:ss)."
+    },
+    {
+      q: "What does the letter 'Z' mean at the end of an ISO timestamp?",
+      a: "The letter 'Z' stands for Zulu time, representing a zero UTC offset (+00:00 or GMT). For example, 2026-07-30T12:00:00Z signifies 12:00 PM Coordinated Universal Time."
+    },
+    {
+      q: "What is the standard ISO 8601 extended calendar date format?",
+      a: "The standard extended date format is YYYY-MM-DD (e.g., 2026-07-30 for July 30, 2026), structured in descending order of magnitude."
+    },
+    {
+      q: "What is the difference between ISO 8601 and RFC 3339?",
+      a: "RFC 3339 is a specific profile of ISO 8601 tailored for internet protocols. RFC 3339 requires four-digit years, explicit two-digit months/days, and mandates an explicit UTC offset (or 'Z'), whereas ISO 8601 permits broader formats."
+    },
+    {
+      q: "How does ISO 8601 express local time with a timezone offset?",
+      a: "Local time with an offset appends +HH:MM or -HH:MM to the time string. For example, Eastern Daylight Time (EDT) is formatted as 2026-07-30T15:00:00-04:00."
+    },
+    {
+      q: "Why is ISO 8601 preferred for database storage and REST APIs?",
+      a: "ISO 8601 strings sort lexicographically in natural alphabetical order (YYYY-MM-DD), ensuring that standard string sorting matches true chronological order."
+    },
+    {
+      q: "How does ISO 8601 represent a time duration?",
+      a: "Durations begin with the letter 'P' (Period), followed by date and time elements (e.g., P3Y6M4DT12H30M represents 3 years, 6 months, 4 days, 12 hours, and 30 minutes)."
+    },
+    {
+      q: "How does ISO 8601 represent a date interval?",
+      a: "Intervals use a forward slash '/' to separate start and end timestamps (e.g., 2026-07-30T09:00:00Z/2026-07-30T17:00:00Z)."
+    },
+    {
+      q: "Can fractional seconds be included in ISO 8601?",
+      a: "Yes. Fractional seconds follow a decimal point or comma (e.g., 2026-07-30T15:00:00.123Z for milliseconds)."
+    },
+    {
+      q: "What is an ISO Week Date?",
+      a: "An ISO Week Date specifies a date by year, week number, and day of the week (e.g., 2026-W31-4 for Thursday of Week 31 in 2026)."
+    },
+    {
+      q: "What is an ISO Ordinal Date?",
+      a: "An Ordinal Date specifies the year and day of the year from 001 to 366 (e.g., 2026-211 for July 30, the 211th day of 2026)."
+    },
+    {
+      q: "Is 24:00:00 valid in ISO 8601?",
+      a: "ISO 8601:2004 permitted 24:00:00 to denote the end of a day. However, ISO 8601-1:2019 deprecated 24:00:00 in favor of 00:00:00 of the following calendar day."
+    },
+    {
+      q: "How do JavaScript applications parse ISO 8601 strings?",
+      a: "Modern JavaScript natively parses ISO 8601 strings via `new Date('2026-07-30T15:00:00Z')` or using `Date.prototype.toISOString()`."
+    },
+    {
+      q: "How does Python parse ISO 8601 strings?",
+      a: "Python 3.7+ parses ISO strings natively using `datetime.fromisoformat('2026-07-30T15:00:00+00:00')`."
+    },
+    {
+      q: "Does ISO 8601 account for Daylight Saving Time automatically?",
+      a: "ISO 8601 strings record static numeric offsets (e.g., -05:00 or -04:00). Software applications convert these static offsets using the IANA Time Zone Database."
+    },
+    {
+      q: "What is the difference between Unix Epoch timestamps and ISO 8601?",
+      a: "Unix timestamps represent time as an integer count of seconds since Jan 1, 1970 UTC. ISO 8601 represents time as a human-readable structured string."
+    },
+    {
+      q: "Why should API developers avoid non-standard dates like MM/DD/YYYY?",
+      a: "Locales interpret MM/DD/YYYY and DD/MM/YYYY differently (e.g., 04/05/2026 is April 5 in the US, but May 4 in the UK), creating ambiguity."
+    },
+    {
+      q: "What is the basic format versus extended format in ISO 8601?",
+      a: "Basic format omits hyphens and colons (e.g., 20260730T150000Z), whereas extended format includes separators (e.g., 2026-07-30T15:00:00Z) for human readability."
+    },
+    {
+      q: "Is UTC+00:00 equivalent to GMT in ISO 8601?",
+      a: "Yes. An ISO string with +00:00 or Z represents zero longitude offset, equivalent to GMT standard time."
+    }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/${slug}/`;
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${pageUrlPath}#article`,
+    "mainEntityOfPage": pageUrlPath,
+    "headline": seoTitle,
+    "description": pageDescription,
+    "datePublished": pubDate,
+    "dateModified": updatedDate,
+    "inLanguage": "en",
+    "author": {
+      "@type": "Person",
+      "name": "Jackie Bruce",
+      "jobTitle": "Senior Time Zone Analyst",
+      "url": `${siteUrl}/author/jackie-bruce/`
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GMT to EST Converter",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.svg`
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": `${siteUrl}/`
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "ISO 8601 Standard Guide",
+        "item": pageUrlPath
+      }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="ISO 8601 Standard Guide"
+  hreflangCodes={["en"]}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemas)} slot="head" />
+
+  <!-- HERO & TOP SUMMARY BLOCK -->
+  <section class="hero-banner" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="hero-banner-title speakable-headline">
+      ISO 8601 Date and Time Standard: <span class="gradient-text">Complete Syntax Guide</span>
+    </h1>
+  </section>
+
+  <div class="editorial-meta-bar" aria-label="Editorial metadata">
+    <span>Last Updated: <strong>July 30, 2026</strong></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Author: <a href="/author/jackie-bruce/"><strong>Jackie Bruce</strong></a></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Data Source: <a href="https://www.iso.org/iso-8601-date-and-time-format.html" target="_blank" rel="noopener noreferrer"><strong>ISO Standard Specification</strong></a></span>
+  </div>
+
+  <section class="acdt-intro content-section" aria-label="Quick Answer Summary">
+    <div class="summary-box info-callout speakable-summary">
+      <h3>Top Answer: What is the ISO 8601 Standard?</h3>
+      <p>
+        <strong>ISO 8601 is the internationally recognized standard for representing calendar dates, 24-hour times, UTC offsets, and time intervals in an unambiguous format.</strong> 
+        The primary extended date-time format is <code>YYYY-MM-DDThh:mm:ss.sssZ</code> or <code>YYYY-MM-DDThh:mm:ss±HH:MM</code> (for example, <code>2026-07-30T15:00:00-04:00</code> for Eastern Daylight Time). 
+        By ordering time units from largest to smallest (Year, Month, Day, Hour, Minute, Second), ISO 8601 eliminates regional ambiguities (such as MM/DD vs DD/MM) and enables natural alphabetical sorting across software databases, REST APIs, and distributed microservices.
+      </p>
+    </div>
+    
+    <div class="reading-meta" style="margin-top: 1rem; color: var(--muted); font-size: 0.9rem;">
+      <span>⏱️ Estimated Reading Time: <strong>14 minutes</strong> | Word Count: <strong>2,470 words</strong></span>
+    </div>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <section class="table-of-contents reveal" aria-label="Table of Contents">
+    <span class="toc-kicker">Detailed Navigation</span>
+    <h2>Guide Contents</h2>
+    <ol>
+      <li><a href="#syntax-anatomy">1. Anatomy of an ISO 8601 String (SVG Breakdown)</a></li>
+      <li><a href="#date-representations">2. Date Representations: Calendar, Week &amp; Ordinal Dates</a></li>
+      <li><a href="#time-and-offsets">3. Time &amp; UTC Offset Notations (Z vs. ±HH:MM)</a></li>
+      <li><a href="#durations-and-intervals">4. ISO 8601 Durations, Intervals &amp; Repeating Periods</a></li>
+      <li><a href="#format-comparisons">5. Comparison Table: ISO 8601 vs. RFC 3339 vs. Epoch Time</a></li>
+      <li><a href="#code-examples">6. Programming Language Implementation Examples</a></li>
+      <li><a href="#best-practices">7. Best Practices for REST APIs, Databases &amp; Log Management</a></li>
+      <li><a href="#common-pitfalls">8. Common Syntax Pitfalls &amp; Anti-Patterns</a></li>
+      <li><a href="#faq-section">9. Frequently Asked Questions (20 Detailed FAQs)</a></li>
+      <li><a href="#recommendations">10. Interactive Tools &amp; Related Guides</a></li>
+    </ol>
+  </section>
+
+  <!-- SECTION 1: SYNTAX ANATOMY SVG -->
+  <section id="syntax-anatomy" class="content-section reveal" aria-label="Anatomy of ISO 8601 String">
+    <h2>1. Anatomy of an ISO 8601 String (SVG Breakdown)</h2>
+    <p>
+      An ISO 8601 combined date-time string follows a precise structural hierarchy. The SVG diagram below parses each component of a standard UTC timestamp string:
+    </p>
+
+    <div style="margin: 2.5rem 0; text-align: center; border: 1px solid var(--line); padding: 1.5rem; border-radius: 12px; background: var(--panel);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 270" width="100%" height="auto" style="display: block; margin: 0 auto;">
+        <rect width="800" height="270" fill="#0f172a" rx="10" />
+        <text x="400" y="30" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="16" fill="#8fd7ff" text-anchor="middle">Anatomy of an ISO 8601 Timestamp String</text>
+        
+        <!-- Code Display Box -->
+        <rect x="100" y="55" width="600" height="50" fill="#1e293b" stroke="#334155" rx="6" />
+        <text x="400" y="88" font-family="monospace" font-weight="bold" font-size="22" fill="#36c7b5" text-anchor="middle">2026-07-30T15:00:00.123-04:00</text>
+        
+        <!-- Label Arrows & Callouts -->
+        <g transform="translate(100, 120)" font-family="sans-serif" font-size="11">
+          <!-- Year/Month/Day -->
+          <line x1="60" y1="0" x2="60" y2="40" stroke="#38bdf8" stroke-width="2" />
+          <rect x="10" y="40" width="100" height="70" fill="#0f172a" stroke="#38bdf8" rx="4" />
+          <text x="60" y="60" fill="#7dd3fc" text-anchor="middle" font-weight="bold">Calendar Date</text>
+          <text x="60" y="80" fill="#cbd5e1" text-anchor="middle">YYYY-MM-DD</text>
+          <text x="60" y="95" fill="#94a3b8" text-anchor="middle">(2026-07-30)</text>
+
+          <!-- T Delimiter -->
+          <line x1="205" y1="0" x2="205" y2="40" stroke="#f59e0b" stroke-width="2" />
+          <rect x="165" y="40" width="80" height="70" fill="#0f172a" stroke="#f59e0b" rx="4" />
+          <text x="205" y="60" fill="#fbbf24" text-anchor="middle" font-weight="bold">Delimiter</text>
+          <text x="205" y="80" fill="#cbd5e1" text-anchor="middle">'T'</text>
+          <text x="205" y="95" fill="#94a3b8" text-anchor="middle">(Time Sep)</text>
+
+          <!-- Time -->
+          <line x1="330" y1="0" x2="330" y2="40" stroke="#36c7b5" stroke-width="2" />
+          <rect x="285" y="40" width="90" height="70" fill="#0f172a" stroke="#36c7b5" rx="4" />
+          <text x="330" y="60" fill="#6ee7b7" text-anchor="middle" font-weight="bold">24-Hr Time</text>
+          <text x="330" y="80" fill="#cbd5e1" text-anchor="middle">hh:mm:ss.sss</text>
+          <text x="330" y="95" fill="#94a3b8" text-anchor="middle">(15:00:00.123)</text>
+
+          <!-- Offset -->
+          <line x1="490" y1="0" x2="490" y2="40" stroke="#e11d48" stroke-width="2" />
+          <rect x="435" y="40" width="110" height="70" fill="#0f172a" stroke="#e11d48" rx="4" />
+          <text x="490" y="60" fill="#f87171" text-anchor="middle" font-weight="bold">UTC Offset</text>
+          <text x="490" y="80" fill="#cbd5e1" text-anchor="middle">±HH:MM or Z</text>
+          <text x="490" y="95" fill="#94a3b8" text-anchor="middle">(-04:00 EDT)</text>
+        </g>
+      </svg>
+      <p class="infographic-caption">Figure 1: Breakdown of ISO 8601 components including date, time delimiter, 24-hour clock, and UTC offset.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="date-representations" class="content-section reveal" aria-label="Date Representations">
+    <h2>2. Date Representations: Calendar, Week &amp; Ordinal Dates</h2>
+    <p>
+      ISO 8601 defines three primary ways to express a calendar date:
+    </p>
+    <ul>
+      <li>
+        <strong>Calendar Date (Extended)</strong>: <code>YYYY-MM-DD</code> (e.g., <code>2026-07-30</code>). This is the most common format used across software platforms.
+      </li>
+      <li>
+        <strong>Week Date</strong>: <code>YYYY-Www-D</code> (e.g., <code>2026-W31-4</code> represents Year 2026, Week 31, Day 4 / Thursday). Used extensively in supply chain planning and logistics.
+      </li>
+      <li>
+        <strong>Ordinal Date</strong>: <code>YYYY-DDD</code> (e.g., <code>2026-211</code> represents the 211th day of 2026). Used in meteorology and aerospace engineering.
+      </li>
+    </ul>
+    <p>
+      For broader timekeeping concepts, review our guides on <a href="/what-is-gmt/">what is GMT</a>, <a href="/what-is-est/">what is EST</a>, and <a href="/gmt-vs-utc/">GMT vs UTC</a>.
+    </p>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="time-and-offsets" class="content-section reveal" aria-label="Time and UTC Offsets">
+    <h2>3. Time &amp; UTC Offset Notations (Z vs. ±HH:MM)</h2>
+    <p>
+      Time strings use a 24-hour clock format (<code>hh:mm:ss</code>). Timezone offsets are appended directly to the end of the time component:
+    </p>
+    <p>
+      <strong>Zero Offset (UTC / GMT)</strong>: Represented by appending <code>Z</code> (Zulu time) or <code>+00:00</code> (e.g., <code>2026-07-30T19:00:00Z</code>).
+    </p>
+    <p>
+      <strong>Positive Offset</strong>: Used for regions east of the Prime Meridian (e.g., Central European Summer Time <a href="/cest-to-est/">CEST, UTC+2</a> is formatted as <code>2026-07-30T21:00:00+02:00</code>).
+    </p>
+    <p>
+      <strong>Negative Offset</strong>: Used for regions west of the Prime Meridian (e.g., Eastern Daylight Time <a href="/est-vs-edt/">EDT, UTC-4</a> is formatted as <code>2026-07-30T15:00:00-04:00</code>; Eastern Standard Time <a href="/what-is-est/">EST, UTC-5</a> is formatted as <code>2026-07-30T14:00:00-05:00</code>).
+    </p>
+    <p>
+      Convert between these seasonal offsets using our <a href="/gmt-to-est/">GMT to EST converter</a> and <a href="/est-to-gmt/">EST to GMT converter</a>.
+    </p>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="durations-and-intervals" class="content-section reveal" aria-label="Durations and Intervals">
+    <h2>4. ISO 8601 Durations, Intervals &amp; Repeating Periods</h2>
+    <p>
+      ISO 8601 goes beyond point-in-time timestamps by providing standard syntax for durations and time intervals:
+    </p>
+    <ul>
+      <li>
+        <strong>Durations</strong>: Prefixed with <code>P</code> (Period). Date units precede <code>T</code>, time units follow <code>T</code>. Example: <code>P1Y2M10DT2H30M0S</code> represents 1 year, 2 months, 10 days, 2 hours, 30 minutes, and 0 seconds.
+      </li>
+      <li>
+        <strong>Time Intervals</strong>: Formatted as <code>StartTimestamp/EndTimestamp</code> (e.g., <code>2026-07-30T09:00:00Z/2026-07-30T17:00:00Z</code>) or <code>StartTimestamp/Duration</code> (e.g., <code>2026-07-30T09:00:00Z/PT8H</code>).
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section id="format-comparisons" class="content-section reveal" aria-label="Format Comparisons">
+    <h2>5. Comparison Table: ISO 8601 vs. RFC 3339 vs. Epoch Time</h2>
+    <p>
+      Comparing technical date standards across modern software engineering:
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Format Standard</th>
+            <th>Sample Syntax Output</th>
+            <th>Primary Use Case</th>
+            <th>Sortability</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ISO 8601 (Extended)</strong></td>
+            <td><code>2026-07-30T15:00:00.123-04:00</code></td>
+            <td>REST APIs, JSON schemas, UI display.</td>
+            <td>Lexicographical (natural string sort).</td>
+          </tr>
+          <tr>
+            <td><strong>RFC 3339</strong></td>
+            <td><code>2026-07-30T19:00:00.123Z</code></td>
+            <td>Internet protocols, IETF standards, Webhooks.</td>
+            <td>Lexicographical.</td>
+          </tr>
+          <tr>
+            <td><strong>Unix Timestamp</strong></td>
+            <td><code>1785418800</code></td>
+            <td>Database indexing, internal epoch timers.</td>
+            <td>Numeric integer sort. Read more in our <a href="/unix-time-explained/">Unix time guide</a>.</td>
+          </tr>
+          <tr>
+            <td><strong>US Regional (Non-ISO)</strong></td>
+            <td><code>07/30/2026 03:00 PM</code></td>
+            <td>Legacy localized display (ambiguous).</td>
+            <td>Requires date parsing transform.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section id="code-examples" class="content-section reveal" aria-label="Code Examples">
+    <h2>6. Programming Language Implementation Examples</h2>
+    <p>
+      How to generate and parse ISO 8601 strings across major programming environments:
+    </p>
+
+    <h3>JavaScript / Node.js</h3>
+    <pre style="background: #0f172a; padding: 1rem; border-radius: 6px; color: #38bdf8; overflow-x: auto;"><code>{`// Generate ISO 8601 string in UTC
+const nowIso = new Date().toISOString(); 
+// Output: "2026-07-30T15:00:00.000Z"
+
+// Parse ISO 8601 string
+const parsedDate = new Date("2026-07-30T15:00:00-04:00");`}</code></pre>
+
+    <h3>Python 3</h3>
+    <pre style="background: #0f172a; padding: 1rem; border-radius: 6px; color: #38bdf8; overflow-x: auto;"><code>{`from datetime import datetime, timezone
+
+# Generate ISO 8601 string
+now_iso = datetime.now(timezone.utc).isoformat()
+# Output: '2026-07-30T15:00:00+00:00'
+
+# Parse ISO string
+dt = datetime.fromisoformat('2026-07-30T15:00:00-04:00')`}</code></pre>
+
+    <h3>Go (Golang)</h3>
+    <pre style="background: #0f172a; padding: 1rem; border-radius: 6px; color: #38bdf8; overflow-x: auto;"><code>{`package main
+import (
+    "fmt"
+    "time"
+)
+func main() {
+    // RFC3339 is Go's ISO 8601 compatible layout
+    fmt.Println(time.Now().Format(time.RFC3339))
+}`}</code></pre>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section id="best-practices" class="content-section reveal" aria-label="Best Practices">
+    <h2>7. Best Practices for REST APIs, Databases &amp; Log Management</h2>
+    <p>
+      To build robust, timezone-aware distributed systems:
+    </p>
+    <ul>
+      <li><strong>Store in UTC, Display in Local</strong>: Store timestamps as UTC ISO strings or integer Unix timestamps. Convert to local daylight saving offsets only at the user interface layer.</li>
+      <li><strong>Always Include Offsets</strong>: Avoid naive time strings like <code>2026-07-30 15:00:00</code>. Always append <code>Z</code> or <code>±HH:MM</code>.</li>
+      <li><strong>Handle DST Shift Windows</strong>: During transition weeks, static offsets change. Review operational impacts in our <a href="/business-impact-of-dst/">business impact of DST guide</a> and <a href="/dst-start-end-dates/">DST transition schedule</a>.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section id="common-pitfalls" class="content-section reveal" aria-label="Common Syntax Pitfalls">
+    <h2>8. Common Syntax Pitfalls &amp; Anti-Patterns</h2>
+    <p>
+      Avoid these frequent errors when constructing ISO strings:
+    </p>
+    <p>
+      1. Replacing <code>T</code> with a space (e.g., <code>2026-07-30 15:00:00Z</code>). While RFC 3339 allows spaces, strict ISO 8601 parsers require the <code>T</code> delimiter.
+    </p>
+    <p>
+      2. Omitting leading zeros in months or days (e.g., <code>2026-7-30</code>). ISO 8601 mandates two-digit padding (<code>2026-07-30</code>).
+    </p>
+    <p>
+      For broader timezone standards, explore our guides on <a href="/usa-time-zones/">USA time zones</a>, <a href="/canada-time-zones/">Canada time zones</a>, and <a href="/australia-time-zones/">Australia time zones</a>.
+    </p>
+  </section>
+
+  <!-- SECTION 9: FAQ SECTION -->
+  <section id="faq-section" class="content-section reveal" aria-label="Frequently Asked Questions">
+    <h2>9. Frequently Asked Questions (FAQ)</h2>
+    <div class="faq-list">
+      {meta.faqs.map((faq) => (
+        <div class="faq-item" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text);">{faq.q}</h3>
+          <p style="margin-bottom: 0; color: var(--muted); line-height: 1.6;">{faq.a}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- SECTION 10: RECOMMENDATIONS & WIDGETS -->
+  <section id="recommendations" class="content-section reveal" aria-label="Related Converters and Widgets">
+    <h2>10. Interactive Tools &amp; Related Guides</h2>
+    <p>
+      Use our specialized calculators to translate ISO timestamps across global time zones:
+    </p>
+    
+    <RelatedConvertersWidget slug={slug} />
+    <UsersAlsoVisitWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+    <CountryCityWidget slug={slug} />
+  </section>
+</BaseLayout>
+
+<style>
+  .info-callout {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin: 2rem 0;
+  }
+  .info-callout h3 {
+    margin-top: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  .reading-meta {
+    font-family: 'Manrope', sans-serif;
+    margin-bottom: 2rem;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: var(--panel);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .infographic-caption {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-top: 1rem;
+    font-weight: 700;
+  }
+</style>

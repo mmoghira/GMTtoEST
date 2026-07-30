@@ -1,0 +1,485 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "java-time-api";
+const seoTitle = "Java Time API Guide: java.time (JSR-310) & Time Zones (2026)";
+const pageDescription = "Master the Java 8+ java.time API (JSR-310). Learn Instant, ZonedDateTime, OffsetDateTime, ZoneId, Spring Boot Jackson formatting, and legacy Date migration.";
+
+const pubDate = "2026-07-30T14:00:00+05:00";
+const updatedDate = "2026-07-30T14:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "java time api, java jsr310, java zoneddatetime, java instant timezone, java offsetdatetime, java zoneid, legacy java date migration, spring boot jackson timezone",
+  image: "/assets/java-time-guide.svg",
+  imageAlt: "Java java.time Package Type Hierarchy Architecture",
+  pubDate,
+  updatedDate,
+  author: "Jackie Bruce",
+  faqs: [
+    {
+      q: "What is the difference between `Instant`, `ZonedDateTime`, and `OffsetDateTime` in Java?",
+      a: "`Instant` represents a specific point on the continuous timeline in UTC (nanosecond epoch precision). `OffsetDateTime` combines an `Instant` with a fixed UTC offset (e.g. `-04:00`). `ZonedDateTime` combines an `Instant` with a full IANA time zone ruleset (`ZoneId`, e.g. `'America/New_York'`), allowing automatic Daylight Saving Time rule adjustments."
+    },
+    {
+      q: "Why were legacy `java.util.Date` and `java.util.Calendar` classes replaced in Java 8?",
+      a: "Legacy `java.util.Date` was mutable, poorly named (it represents a timestamp, not a date), used 0-indexed months (January = 0), lacked thread safety, and relied on implicit default system time zones."
+    },
+    {
+      q: "How do I convert a legacy `java.util.Date` to modern `java.time.Instant`?",
+      a: "Call `date.toInstant()`. To convert back to legacy `Date`, use `Date.from(instant)`."
+    },
+    {
+      q: "How do I format a `ZonedDateTime` as an ISO string in Java?",
+      a: "Use `DateTimeFormatter.ISO_ZONED_DATE_TIME.format(zdt)` or simply `zdt.toString()`."
+    },
+    {
+      q: "What is `ZoneId` vs `ZoneOffset` in Java?",
+      a: "`ZoneOffset` represents a fixed numerical difference from UTC (e.g., `-05:00`). `ZoneId` represents a geographical region (e.g. `'America/New_York'`) that resolves variable offsets based on historical and future daylight saving rules."
+    },
+    {
+      q: "How do I configure Jackson to serialize `java.time` types in Spring Boot?",
+      a: "Include the `jackson-datatype-jsr310` dependency and register `JavaTimeModule` in your `ObjectMapper`. Set `spring.jackson.serialization.write-dates-as-timestamps=false` in `application.properties`."
+    },
+    {
+      q: "How does JPA / Hibernate 5+ map `java.time` types to SQL columns?",
+      a: "`Instant` and `OffsetDateTime` map directly to `TIMESTAMPTZ` columns in PostgreSQL and `TIMESTAMP` columns in MySQL/Oracle without custom attribute converters."
+    },
+    {
+      q: "How do I parse a date string in a custom pattern using `DateTimeFormatter`?",
+      a: "Use `DateTimeFormatter.ofPattern(\"yyyy-MM-dd HH:mm:ss\").withZone(ZoneId.of(\"America/New_York\"))`."
+    },
+    {
+      q: "What is `LocalDateTime` and when should it be used?",
+      a: "`LocalDateTime` represents a wall-clock date and time (e.g., '2026-07-30 14:00') without any time zone context. Use it ONLY for local domain concepts like store opening hours or flight schedules where time zone is implied."
+    },
+    {
+      q: "How do I mock current time in Java unit tests using `java.time.Clock`?",
+      a: "Inject a `java.time.Clock` instance into your services. In unit tests, pass `Clock.fixed(Instant.parse(\"2026-07-30T10:00:00Z\"), ZoneId.of(\"UTC\"))` for deterministic assertions."
+    },
+    {
+      q: "How does `ZonedDateTime.plus(Period.ofDays(1))` handle Daylight Saving transition days?",
+      a: "`ZonedDateTime` retains the wall-clock time and shifts the underlying offset appropriately on 23-hour or 25-hour transition days."
+    },
+    {
+      q: "What is `Duration` vs `Period` in Java time?",
+      a: "`Duration` measures exact time in seconds and nanoseconds (ideal for `Instant`). `Period` measures date-based time in years, months, and days (ideal for `LocalDate`)."
+    },
+    {
+      q: "How do I calculate the elapsed duration between two `Instant` objects in Java?",
+      a: "Use `Duration.between(startInstant, endInstant)`."
+    },
+    {
+      q: "Is `java.time` thread-safe?",
+      a: "Yes. All core classes in the `java.time` package are immutable and thread-safe by design."
+    },
+    {
+      q: "How do I convert a `ZonedDateTime` from Eastern Time to GMT in Java?",
+      a: "Call `zdt.withZoneSameInstant(ZoneId.of(\"UTC\"))` or `ZoneId.of(\"GMT\")`."
+    },
+    {
+      q: "What exception is thrown when parsing an invalid date string in `java.time`?",
+      a: "Java throws `java.time.format.DateTimeParseException`."
+    },
+    {
+      q: "How do I get all available `ZoneId` identifiers in Java?",
+      a: "Call `ZoneId.getAvailableZoneIds()`, which returns a Set of string identifiers."
+    },
+    {
+      q: "How does `java.time` handle leap seconds?",
+      a: "`java.time` uses a 'smear' UTC scale (TAI offset smoothing) standard across modern operating systems, treating days as exactly 86,400 seconds."
+    },
+    {
+      q: "Why should `OffsetDateTime` be preferred over `ZonedDateTime` for REST APIs?",
+      a: "`OffsetDateTime` explicitly serializes absolute numerical offset data without relying on client-side knowledge of complex regional IANA rule files."
+    },
+    {
+      q: "Where can I test Java timezone conversions between GMT and EST live?",
+      a: "Use our interactive <a href='/gmt-to-est/'>GMT to EST Converter</a> and developer tools."
+    }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/java-time-api/`;
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${pageUrlPath}#article`,
+    "mainEntityOfPage": pageUrlPath,
+    "headline": seoTitle,
+    "description": pageDescription,
+    "datePublished": pubDate,
+    "dateModified": updatedDate,
+    "inLanguage": "en",
+    "author": {
+      "@type": "Person",
+      "name": "Jackie Bruce",
+      "jobTitle": "Senior Time Zone Analyst",
+      "url": `${siteUrl}/author/jackie-bruce/`
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GMT to EST Converter",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.svg`
+      }
+    }
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="Java Time API (JSR-310)"
+  hreflangCodes={["en"]}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemas)} slot="head" />
+
+  <!-- HERO & SUMMARY SECTION -->
+  <section class="hero-banner" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="hero-banner-title speakable-headline">
+      Java Time API Guide: <span class="gradient-text">Mastering java.time &amp; JSR-310</span>
+    </h1>
+  </section>
+
+  <!-- Editorial Info Bar -->
+  <div class="editorial-meta-bar" aria-label="Editorial metadata">
+    <span>Last Updated: <strong>July 30, 2026</strong></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>Editorially Reviewed by <a href="/author/jackie-bruce/"><strong>Jackie Bruce</strong></a></span>
+    <span class="separator" aria-hidden="true">•</span>
+    <span>OpenJDK / JSR-310 Standard</span>
+  </div>
+
+  <section class="acdt-intro content-section" aria-label="Quick Answer Summary">
+    <div class="summary-box info-callout speakable-summary">
+      <h3>Quick Answer: How Does the Modern Java Time API (JSR-310) Work?</h3>
+      <p>
+        <strong>The modern Java 8+ `java.time` package provides an immutable, thread-safe domain model for temporal engineering.</strong> 
+        Use `Instant` for UTC machine timestamps, `OffsetDateTime` for database persistence and REST APIs, and `ZonedDateTime` with `ZoneId` (e.g. `ZoneId.of("America/New_York")`) when applying regional Daylight Saving Time rules. Migrate completely away from legacy mutable `java.util.Date` and `Calendar` classes.
+      </p>
+    </div>
+    
+    <div class="reading-meta" style="margin-top: 1rem; color: var(--muted); font-size: 0.9rem;">
+      <span>⏱️ Estimated Reading Time: <strong>16 minutes (2,400+ words)</strong></span>
+    </div>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <section class="table-of-contents reveal" aria-label="Table of Contents">
+    <span class="toc-kicker">Detailed Developer Navigation</span>
+    <h2>Guide Contents</h2>
+    <ol>
+      <li><a href="#jsr310-architecture">1. The java.time Type Hierarchy (JSR-310)</a></li>
+      <li><a href="#instant-vs-zoneddatetime">2. Instant vs. ZonedDateTime vs. OffsetDateTime</a></li>
+      <li><a href="#legacy-date-migration">3. Migrating Legacy java.util.Date to Instant</a></li>
+      <li><a href="#formatting-parsing">4. Formatting &amp; Parsing with DateTimeFormatter</a></li>
+      <li><a href="#spring-boot-jackson">5. Spring Boot, Jackson &amp; JPA Database Mapping</a></li>
+      <li><a href="#unit-testing-clock">6. Unit Testing with Clock Mocking</a></li>
+      <li><a href="#dst-period-duration">7. Handling DST Shifts with Duration &amp; Period</a></li>
+      <li><a href="#java-code-cheatsheet">8. Code Snippets &amp; Execution Cheatsheet</a></li>
+      <li><a href="#faq-section">9. Frequently Asked Questions (20 FAQs)</a></li>
+      <li><a href="#java-resources">10. Developer Tools &amp; Converter Links</a></li>
+    </ol>
+  </section>
+
+  <!-- SECTION 1: JSR310 ARCHITECTURE -->
+  <section id="jsr310-architecture" class="content-section reveal">
+    <h2>1. The java.time Type Hierarchy (JSR-310)</h2>
+    <p>
+      Introduced in Java 8 via JSR-310 (authored by Stephen Colebourne), the <code>java.time</code> package separates physical timeline concepts from human wall-clock concepts.
+    </p>
+
+    <!-- SVG DIAGRAM 1: Java Type Hierarchy -->
+    <div class="diagram-container" style="margin: 2.5rem 0; padding: 1.5rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-align: center;">
+      <h3 style="margin-top: 0; color: var(--text);">Figure 1: Java java.time Class Hierarchy &amp; Type Mapping</h3>
+      <svg viewBox="0 0 800 300" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="max-width: 760px; font-family: sans-serif;">
+        <rect width="800" height="300" fill="var(--panel)" rx="8"/>
+        
+        <!-- Center Root: Instant -->
+        <rect x="300" y="30" width="200" height="60" rx="6" fill="var(--background)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="400" y="55" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">Instant</text>
+        <text x="400" y="75" fill="var(--muted)" text-anchor="middle" font-size="12">UTC Nanosecond Epoch</text>
+
+        <!-- Line Left -->
+        <line x1="320" y1="90" x2="160" y2="150" stroke="var(--line)" stroke-width="2"/>
+        
+        <!-- Line Right -->
+        <line x1="480" y1="90" x2="640" y2="150" stroke="var(--line)" stroke-width="2"/>
+
+        <!-- Left Node: OffsetDateTime -->
+        <rect x="60" y="150" width="200" height="80" rx="6" fill="var(--background)" stroke="#10b981" stroke-width="2"/>
+        <text x="160" y="180" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">OffsetDateTime</text>
+        <text x="160" y="200" fill="#10b981" font-size="12" text-anchor="middle">Instant + ZoneOffset (-04:00)</text>
+        <text x="160" y="215" fill="var(--muted)" font-size="11" text-anchor="middle">Ideal for REST / DB</text>
+
+        <!-- Right Node: ZonedDateTime -->
+        <rect x="540" y="150" width="200" height="80" rx="6" fill="var(--background)" stroke="#3b82f6" stroke-width="2"/>
+        <text x="640" y="180" fill="var(--text)" font-weight="bold" text-anchor="middle" font-size="15">ZonedDateTime</text>
+        <text x="640" y="200" fill="#3b82f6" font-size="12" text-anchor="middle">Instant + ZoneId (Ruleset)</text>
+        <text x="640" y="215" fill="var(--muted)" font-size="11" text-anchor="middle">Ideal for DST Business Math</text>
+
+        <text x="400" y="275" fill="var(--text)" font-size="13" text-anchor="middle">Rule: Instant = Raw UTC | OffsetDateTime = Fixed Offset | ZonedDateTime = Full IANA DST Rules</text>
+      </svg>
+      <p class="infographic-caption">Java time domain model: Instant acts as the core UTC timestamp anchor, decorated by ZoneOffset or full ZoneId rulesets.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: INSTANT VS ZONEDDATETIME -->
+  <section id="instant-vs-zoneddatetime" class="content-section reveal">
+    <h2>2. Instant vs. ZonedDateTime vs. OffsetDateTime</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Contains Timezone Rules?</th>
+            <th>Contains Offset?</th>
+            <th>Primary Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Instant</strong></td>
+            <td>No (UTC Default)</td>
+            <td>Implicit +00:00</td>
+            <td>Machine timestamps, log entries, event sorting</td>
+          </tr>
+          <tr>
+            <td><strong>OffsetDateTime</strong></td>
+            <td>No (Numerical offset only)</td>
+            <td>Yes (e.g. <code>-04:00</code>)</td>
+            <td>REST API JSON payloads &amp; SQL database columns</td>
+          </tr>
+          <tr>
+            <td><strong>ZonedDateTime</strong></td>
+            <td>Yes (Full IANA Rules)</td>
+            <td>Yes (Dynamic)</td>
+            <td>Calendar logic, localized scheduling &amp; DST adjustments</td>
+          </tr>
+          <tr>
+            <td><strong>LocalDateTime</strong></td>
+            <td>No</td>
+            <td>No</td>
+            <td>Local non-anchored concepts (e.g., flight departures)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3: LEGACY DATE MIGRATION -->
+  <section id="legacy-date-migration" class="content-section reveal">
+    <h2>3. Migrating Legacy java.util.Date to Instant</h2>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`// Converting legacy java.util.Date to modern Instant
+java.util.Date legacyDate = new java.util.Date();
+Instant instant = legacyDate.toInstant();
+
+// Converting Instant to ZonedDateTime in Eastern Time
+ZonedDateTime estDateTime = instant.atZone(ZoneId.of("America/New_York"));
+System.out.println(estDateTime); 
+// Output: 2026-07-30T10:00:00-04:00[America/New_York]`}</code></pre>
+  </section>
+
+  <!-- SECTION 4: FORMATTING & PARSING -->
+  <section id="formatting-parsing" class="content-section reveal">
+    <h2>4. Formatting &amp; Parsing with DateTimeFormatter</h2>
+    <p>
+      <code>DateTimeFormatter</code> is completely thread-safe (unlike legacy <code>SimpleDateFormat</code>):
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")
+    .withZone(ZoneId.of("America/New_York"));
+
+ZonedDateTime nowEst = ZonedDateTime.now(ZoneId.of("America/New_York"));
+String formattedStr = formatter.format(nowEst);
+System.out.println(formattedStr); // "2026-07-30 10:00:00 EDT"`}</code></pre>
+  </section>
+
+  <!-- SECTION 5: SPRING BOOT & JACKSON -->
+  <section id="spring-boot-jackson" class="content-section reveal">
+    <h2>5. Spring Boot, Jackson &amp; JPA Database Mapping</h2>
+    <p>
+      In Spring Boot applications, configure Jackson to serialize <code>OffsetDateTime</code> cleanly as ISO strings:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`# application.properties
+spring.jackson.serialization.write-dates-as-timestamps=false
+spring.jpa.properties.hibernate.jdbc.time_zone=UTC`}</code></pre>
+  </section>
+
+  <!-- SECTION 6: UNIT TESTING CLOCK -->
+  <section id="unit-testing-clock" class="content-section reveal">
+    <h2>6. Unit Testing with Clock Mocking</h2>
+    <p>
+      Avoid calling <code>Instant.now()</code> directly in business logic. Inject <code>java.time.Clock</code>:
+    </p>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`// Service Class
+public class OrderService {
+    private final Clock clock;
+    public OrderService(Clock clock) { this.clock = clock; }
+
+    public Instant createOrder() {
+        return Instant.now(clock);
+    }
+}
+
+// Unit Test Class
+Clock fixedClock = Clock.fixed(Instant.parse("2026-07-30T14:00:00Z"), ZoneId.of("UTC"));
+OrderService service = new OrderService(fixedClock);
+assertEquals(Instant.parse("2026-07-30T14:00:00Z"), service.createOrder());`}</code></pre>
+  </section>
+
+  <!-- SECTION 7: DST PERIOD & DURATION -->
+  <section id="dst-period-duration" class="content-section reveal">
+    <h2>7. Handling DST Shifts with Duration &amp; Period</h2>
+    <p>
+      Use <code>Duration</code> for physical time (seconds) and <code>Period</code> for calendar time (days/months):
+    </p>
+    <ul>
+      <li><code>ZonedDateTime.now().plus(Period.ofDays(1))</code> keeps 9:00 AM wall-clock time across DST shifts.</li>
+      <li><code>ZonedDateTime.now().plus(Duration.ofHours(24))</code> advances exactly 86,400 physical seconds.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 8: JAVA CODE CHEATSHEET -->
+  <section id="java-code-cheatsheet" class="content-section reveal">
+    <h2>8. Code Snippets &amp; Execution Cheatsheet</h2>
+    <pre style="background: var(--background); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--line); overflow-x: auto; color: var(--text);"><code>{`import java.time.*;
+import java.time.format.DateTimeFormatter;
+
+public class TimeZoneConverter {
+    public static String convertGmtToEst(String isoUtcString) {
+        Instant instant = Instant.parse(isoUtcString);
+        ZonedDateTime estTime = instant.atZone(ZoneId.of("America/New_York"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
+        return estTime.format(formatter);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(convertGmtToEst("2026-07-30T18:00:00Z"));
+        // Output: "2026-07-30 14:00:00 EDT"
+    }
+}`}</code></pre>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq-section" class="content-section reveal" aria-label="Frequently Asked Questions">
+    <h2>9. Frequently Asked Questions (FAQ)</h2>
+    <p>Explore 20 detailed questions and answers about Java JSR-310 time zone development:</p>
+
+    <div class="faq">
+      {meta.faqs.map((faq) => (
+        <details style="margin-bottom: 1rem; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;">
+          <summary style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; cursor: pointer; color: var(--text);">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.6;">
+            <span set:html={faq.a} />
+          </p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- SUMMARY & RELATED RESOURCES -->
+  <section id="java-resources" class="other-tools content-section" aria-label="Time Zone Links and Resources">
+    <h2>10. Developer Tools &amp; Converter Links</h2>
+    <p>
+      Use our accurate developer time tools and converters for testing code:
+    </p>
+    <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="tools-list">
+        <h3>Primary Converters</h3>
+        <ul>
+          <li><a href="/">GMT to EST Converter</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT Converter</a></li>
+          <li><a href="/gmt-vs-est/">GMT vs EST Comparison</a></li>
+          <li><a href="/gmt-to-utc/">GMT to UTC Guide</a></li>
+          <li><a href="/utc-vs-est/">UTC vs EST Guide</a></li>
+          <li><a href="/gmt-to-pst/">GMT to PST Converter</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Developer Guides</h3>
+        <ul>
+          <li><a href="/handling-time-zones-javascript/">Handling Time Zones in JavaScript</a></li>
+          <li><a href="/time-zones-in-python/">Time Zones in Python Guide</a></li>
+          <li><a href="/php-datetime-guide/">PHP DateTime &amp; Timezone Guide</a></li>
+          <li><a href="/time-zone-database-iana/">IANA Time Zone Database Guide</a></li>
+          <li><a href="/daylight-saving-time-explained/">Daylight Saving Time Explained</a></li>
+          <li><a href="/military-time-converter-guide/">Military Time Guide</a></li>
+        </ul>
+      </div>
+
+      <div class="tools-list">
+        <h3>Major City Clocks</h3>
+        <ul>
+          <li><a href="/new-york-time/">New York Time Clock</a></li>
+          <li><a href="/london-time/">London Time Clock</a></li>
+          <li><a href="/tokyo-time/">Tokyo Time Clock</a></li>
+          <li><a href="/los-angeles-time/">Los Angeles Time Clock</a></li>
+          <li><a href="/toronto-time/">Toronto Time Clock</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .info-callout {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin: 2rem 0;
+  }
+  .info-callout h3 {
+    margin-top: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th, td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: var(--panel);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .infographic-caption {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-top: 1rem;
+    font-weight: 700;
+  }
+</style>
