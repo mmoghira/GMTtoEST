@@ -6,8 +6,8 @@ import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
 const lang = "en";
 const dir = "ltr";
 const slug = "meeting-planner";
-const seoTitle = "Global Meeting Planner — Interactive Visual Time Zone Matrix";
-const pageDescription = "Coordinate international business meetings easily across multiple time zones with our visual 24-hour matrix. Find green business hour overlaps, generate .ics calendar invites, and copy share links.";
+const seoTitle = "Global Meeting Planner — Interactive 200+ City Time Zone Matrix";
+const pageDescription = "Coordinate international business meetings easily across 200+ global cities with our interactive 24-hour visual time zone matrix. Find green business hour overlaps, generate .ics calendar invites, and copy share links.";
 
 const pubDate = "2026-07-31T00:00:00+05:00";
 const updatedDate = "2026-07-31T00:00:00+05:00";
@@ -15,26 +15,26 @@ const updatedDate = "2026-07-31T00:00:00+05:00";
 const meta = {
   seoTitle,
   description: pageDescription,
-  keywords: "meeting planner, global meeting planner, cross time zone meeting scheduler, time zone matrix, visual meeting planner, ICS export, shareable meeting link, golden hours",
+  keywords: "meeting planner, global meeting planner, cross time zone meeting scheduler, time zone matrix, visual meeting planner, 200 cities world clock matrix, ICS export, shareable meeting link, golden hours",
   pubDate,
   updatedDate,
   author: "Time Intelligence Team",
   faqs: [
     {
       q: "What is the Global Meeting Planner tool?",
-      a: "The Global Meeting Planner is a visual 24-hour time matrix designed to help distributed teams align meetings across international time zones. It color-codes every hour of the day into convenient business, shoulder, and night categories."
+      a: "The Global Meeting Planner is a visual 24-hour time matrix designed to help distributed teams align meetings across 200+ international cities. It color-codes every hour of the day into convenient business, shoulder, and night categories."
     },
     {
       q: "What do the color-coded slots mean on the visual matrix?",
-      a: "<strong>Green (Business Hours):</strong> 9:00 AM to 5:00 PM local time — ideal for calls.<br/><strong>Yellow (Shoulder Hours):</strong> 7:00 AM–9:00 AM & 5:00 PM–9:00 PM — acceptable with advance notice.<br/><strong>Dark Red (Night Hours):</strong> 9:00 PM to 7:00 AM — sleeping hours, avoid scheduling."
+      a: "<strong>Green (Business Hours):</strong> 9:00 AM to 5:00 PM local time — ideal for calls.<br/><strong>Yellow (Shoulder Hours):</strong> 7:00 AM–9:00 AM & 5:00 PM–9:00 PM — acceptable with advance notice.<br/><strong>Dark Slate (Night Hours):</strong> 9:00 PM to 7:00 AM — sleeping hours, avoid scheduling."
     },
     {
-      q: "How do I add multiple cities to my meeting plan?",
-      a: "Select a city from the drop-down menu and click 'Add City'. You can add as many locations as necessary to reflect your global project team."
+      q: "How do I search and add cities from the 200+ world city database?",
+      a: "Type the name of any major city or country into the live search input (e.g., 'Tokyo', 'London', 'Berlin', or 'San Francisco'). Select your target city from the instant autocomplete suggestions to automatically add it to your matrix."
     },
     {
       q: "Can I export my chosen meeting slot directly to Google Calendar or Outlook?",
-      a: "Yes! Once you select a time slot on the grid, click 'Export .ics File' to instantly download an iCalendar file compatible with Outlook, Apple Calendar, Google Calendar, and mobile devices."
+      a: "Yes! Once you click any hour column on the visual grid, click 'Export .ics File' to download an iCalendar file compatible with Outlook, Apple Calendar, Google Calendar, and mobile devices."
     },
     {
       q: "How does the 'Copy Schedule' button work?",
@@ -66,7 +66,7 @@ const meta = {
     },
     {
       q: "How do half-hour offset zones (like India or Adelaide) appear on the matrix?",
-      a: "Half-hour timezone offsets are indicated with a clear half-hour offset badge and rounded grid hours aligned accurately to UTC offsets."
+      a: "Half-hour timezone offsets calculate exact local minute adjustments while displaying accurate local clock hours in the cell grid."
     },
     {
       q: "Can I change the meeting date to test future DST shifts?",
@@ -82,7 +82,7 @@ const meta = {
     },
     {
       q: "Is there a limit on how many cities I can add?",
-      a: "No hard limit exists, though 3 to 6 cities provide the cleanest visual display on desktop and tablet screens."
+      a: "No hard limit exists, though 3 to 8 cities provide the cleanest visual display on desktop and tablet screens."
     },
     {
       q: "Does this tool store my meeting data on a server?",
@@ -164,24 +164,94 @@ const meta = {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      flex-wrap: wrap;
     }
     .control-group label {
       font-weight: 700;
       color: #334155;
+      font-size: 0.95rem;
     }
-    .select-input, .date-input {
-      padding: 0.6rem 1rem;
+
+    /* Autocomplete Dropdown Styles */
+    .search-autocomplete-wrapper {
+      position: relative;
+      min-width: 320px;
+      flex: 1;
+    }
+    .city-search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
       border: 2px solid #cbd5e1;
       border-radius: 0.5rem;
       font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #ffffff;
+      color: #0f172a;
     }
+    .city-search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .city-suggestions-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      margin-top: 4px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      display: none;
+    }
+    .city-suggestion-item {
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.95rem;
+      color: #1e293b;
+    }
+    .city-suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .city-suggestion-item:hover, .city-suggestion-item.highlighted {
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .city-flag {
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    .date-input {
+      padding: 0.65rem 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      outline: none;
+      background: #ffffff;
+      color: #0f172a;
+    }
+
     .btn {
-      padding: 0.6rem 1.2rem;
+      padding: 0.65rem 1.25rem;
       border-radius: 0.5rem;
       font-weight: 700;
       cursor: pointer;
       border: none;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
     }
     .btn-primary {
       background: #2563eb;
@@ -244,7 +314,7 @@ const meta = {
     }
     .matrix-table th, .matrix-table td {
       border: 1px solid #e2e8f0;
-      padding: 0.5rem 0.25rem;
+      padding: 0.6rem 0.35rem;
       text-align: center;
       font-size: 0.85rem;
     }
@@ -254,9 +324,14 @@ const meta = {
       color: #334155;
     }
     .city-col-header {
-      min-width: 180px;
+      min-width: 220px;
       text-align: left !important;
       padding-left: 1rem !important;
+      background: #ffffff;
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
     .hour-cell {
       cursor: pointer;
@@ -285,13 +360,20 @@ const meta = {
       font-weight: 800;
     }
     .btn-remove-city {
-      background: none;
-      border: none;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
       color: #ef4444;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      padding: 2px 8px;
       cursor: pointer;
       margin-left: 0.5rem;
+      float: right;
+    }
+    .btn-remove-city:hover {
+      background: #ef4444;
+      color: #ffffff;
     }
 
     .meeting-summary-card {
@@ -387,125 +469,109 @@ const meta = {
   <div class="planner-container">
     <div class="hero-banner">
       <h1>Global <span style="color: #60a5fa;">Meeting Planner</span></h1>
-      <p>Visual 24-hour time zone matrix for multi-city team scheduling, golden hour discovery, and instant calendar export.</p>
+      <p>Visual 24-hour time zone matrix for 200+ world cities. Find green business hour overlaps, generate .ics calendar invites, and share links.</p>
     </div>
 
     <div class="card">
       <div class="control-row">
-        <div class="control-group">
-          <label for="city-select">Add City:</label>
-          <select id="city-select" class="select-input">
-            <option value="" disabled selected>Select a city...</option>
-          </select>
-          <button id="btn-add-city" class="btn btn-primary">Add City</button>
+        <div class="control-group" style="flex: 1; min-width: 300px;">
+          <label for="city-search-input">Add City:</label>
+          <div class="search-autocomplete-wrapper">
+            <input
+              id="city-search-input"
+              type="text"
+              class="city-search-input"
+              placeholder="🔍 Search 200+ cities (e.g. Tokyo, London, Paris, New York)..."
+              autocomplete="off"
+            />
+            <div id="city-suggestions-list" class="city-suggestions-list"></div>
+          </div>
         </div>
 
         <div class="control-group">
           <label for="meeting-date">Meeting Date:</label>
-          <input type="date" id="meeting-date" class="date-input" />
+          <input id="meeting-date" type="date" class="date-input" />
         </div>
 
-        <div class="control-group">
-          <button id="btn-share" class="btn btn-secondary">🔗 Share Link</button>
-        </div>
+        <button id="btn-share" class="btn btn-secondary">🔗 Share Link</button>
       </div>
 
       <div class="legend-bar">
-        <div class="legend-item"><div class="color-box box-green"></div> Business Hours (09:00 - 17:00)</div>
-        <div class="legend-item"><div class="color-box box-yellow"></div> Shoulder Hours (07:00-09:00 / 17:00-21:00)</div>
-        <div class="legend-item"><div class="color-box box-red"></div> Sleeping Hours (21:00 - 07:00)</div>
+        <div class="legend-item">
+          <div class="color-box box-green"></div>
+          <span>Business Hours (09:00 - 17:00)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box box-yellow"></div>
+          <span>Shoulder Hours (07:00-09:00 & 17:00-21:00)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box box-red"></div>
+          <span>Sleeping / Night Hours (21:00 - 07:00)</span>
+        </div>
       </div>
 
       <div class="matrix-wrapper">
-        <table class="matrix-table" id="matrix-table">
+        <table class="matrix-table">
           <thead>
             <tr id="matrix-header-row">
               <th class="city-col-header">Location</th>
-              <!-- Hours 00 to 23 populates via JS -->
             </tr>
           </thead>
-          <tbody id="matrix-body">
-            <!-- City rows populate via JS -->
-          </tbody>
+          <tbody id="matrix-body"></tbody>
         </table>
       </div>
 
-      <div id="summary-card" class="meeting-summary-card">
+      <div class="meeting-summary-card">
         <div class="summary-title">📅 Proposed Meeting Schedule</div>
-        <div id="summary-text" class="summary-details">Select an hour column in the matrix above to view meeting times across all participant cities.</div>
+        <pre id="summary-text" class="summary-details">Select an hour column in the matrix above to view meeting times across all participant cities.</pre>
         <div class="summary-actions">
-          <button id="btn-copy-summary" class="btn btn-accent">📋 Copy Schedule Text</button>
-          <button id="btn-export-ics" class="btn btn-primary">📥 Export .ics Calendar Event</button>
+          <button id="btn-copy-summary" class="btn btn-primary">📋 Copy Schedule</button>
+          <button id="btn-export-ics" class="btn btn-accent">📅 Export .ics Calendar</button>
         </div>
       </div>
     </div>
 
     <article class="article-section">
-      <h2>Mastering Global Meeting Coordination Across Time Zones</h2>
+      <h2>Mastering Global Meeting Coordination Across Distributed Time Zones</h2>
       <p>
-        In modern remote-first companies, project teams are rarely located in a single office or time zone. A typical product engineering sync might involve a product manager in New York (<a href="/est">EST</a>), a frontend developer in London (<a href="/bst">BST</a>), a backend engineer in New Delhi (<a href="/delhi-time">IST</a>), and a QA lead in Sydney (<a href="/aest">AEST</a>). Coordinating a 45-minute call without waking team members in the middle of the night requires visual precision.
+        In modern international business, cross-border remote teams, offshore software engineering units, and global customer support teams operate across disparate continents. While global talent provides round-the-clock continuity, organizing synchronous video calls or executive reviews across multiple time zones poses significant logistical challenges. Without structured scheduling tools, team leads risk assigning meetings during a colleague's late evening or midnight hours.
       </p>
 
-      <h3>The Visual Matrix Advantage: Overcoming Mental Conversion Fatigue</h3>
+      <h3>The Science of Visual 24-Hour Overlap Matrices</h3>
       <p>
-        Traditional timezone converters require doing sequential mental addition or subtraction across multiple locations. For example, converting 10:00 AM Eastern Time to British Summer Time (<a href="/est-to-bst">EST to BST</a>), Central European Time (<a href="/est-to-cet">EST to CET</a>), and Japan Standard Time (<a href="/est-to-jst">EST to JST</a>) quickly becomes taxing. 
-      </p>
-      <p>
-        Our 24-hour visual meeting matrix solves this by normalizing all participant schedules onto a single continuous grid. By color-coding local hours into green business slots (9:00 AM to 5:00 PM), yellow shoulder hours, and dark sleeping windows, you can identify overlapping "golden hours" in seconds.
-      </p>
-
-      <h3>Identifying Golden Overlap Windows Across Major Corridors</h3>
-      <p>
-        Finding acceptable meeting windows depends on the geographic dispersion of your team members:
+        Traditional timezone conversion tables rely on static pairs of numbers. For complex multi-city calls involving participants in San Francisco, London, New Delhi, and Tokyo, standard tables require multi-step mental math. A visual 24-hour overlap matrix translates raw Coordinated Universal Time (UTC) offsets into intuitively color-coded human activity windows:
       </p>
       <ul>
-        <li>
-          <strong>Transatlantic Corridor (US East Coast & Europe):</strong> The classic overlap window occurs between 9:00 AM – 12:00 PM EST, which aligns with 2:00 PM – 5:00 PM GMT/BST in Western Europe. Explore comprehensive schedules on our <a href="/best-time-us-europe-meetings">US & Europe Meeting Guide</a>.
-        </li>
-        <li>
-          <strong>Transpacific Corridor (US West Coast & East Asia):</strong> The optimal window is late afternoon in North America (4:00 PM – 6:00 PM PST), matching early morning (9:00 AM – 11:00 AM JST/SGT) the next calendar day in Tokyo, Singapore, or Hong Kong. See <a href="/best-time-us-asia-meetings">US & Asia Meeting Guide</a>.
-        </li>
-        <li>
-          <strong>Tri-Continental Hubs (US, Europe & Asia):</strong> When all three major economic zones are involved, true 3-way green overlap is physically impossible due to the 12 to 14 hour gap. In such cases, teams utilize rotating shoulder hours or our specialized <a href="/business-hours-overlap">Business Hours Overlap Tool</a>.
-        </li>
+        <li><strong>Green Slots (09:00 to 17:00 local):</strong> Core working hours when employees operate at peak cognitive energy.</li>
+        <li><strong>Yellow Slots (07:00 to 09:00 & 17:00 to 21:00 local):</strong> Flexible shoulder hours suitable for urgent team syncs with advance agreement.</li>
+        <li><strong>Dark Slate Slots (21:00 to 07:00 local):</strong> Rest and sleep periods that should be protected from meeting interruptions.</li>
       </ul>
 
-      <h3>Handling Asymmetric Daylight Saving Transitions</h3>
+      <h3>Identifying "Golden Hours" for Transatlantic & Transpacific Teams</h3>
       <p>
-        A frequent trap for international schedulers is assuming that time gaps between countries remain static throughout the year. For instance:
-      </p>
-      <ul>
-        <li>The United States enters Daylight Saving Time on the second Sunday of March, while the United Kingdom enters BST on the last Sunday of March. During this 2-3 week lag, the gap between New York and London shrinks from 5 hours to 4 hours. See our <a href="/daylight-saving-time-explained">DST Explanation Guide</a>.</li>
-        <li>Australia enters DST in October while North America leaves DST in November, causing the time difference between Sydney and New York to shift by 2 full hours within a few weeks. Check <a href="/australia-time-zones">Australia Time Zone Guide</a>.</li>
-      </ul>
-
-      <h3>Exporting iCalendar (.ics) Invites for Frictionless Scheduling</h3>
-      <p>
-        Once you click any hour column on our interactive grid, our tool dynamically generates a RFC-5545 compliant `.ics` calendar invitation file. When imported into Outlook, Apple Calendar, or Google Calendar, it automatically places the meeting into every attendee's native local calendar slot without offset calculation errors.
+        When coordinating transatlantic schedules (such as New York UTC-5 and London UTC+0), teams enjoy a broad 3-to-4 hour "Golden Hour" overlap between 09:00 AM EST and 12:00 PM EST (14:00 to 17:00 GMT). Conversely, transpacific teams (such as San Francisco UTC-8 and Tokyo UTC+9) face a 17-hour gap where daytime hours rarely intersect. In zero-overlap scenarios, the optimal strategy is scheduling late afternoon US calls (16:00 to 18:00 PST) which land on early morning business hours in East Asia (09:00 to 11:00 JST the next day).
       </p>
 
-      <pre><code>{`// RFC-5545 iCalendar Event Builder Example
-function generateICS(title, startDate, durationMinutes, description) {
-  const formatDateStr = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
-  const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-  
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//GMTtoEST//Global Meeting Planner//EN",
-    "BEGIN:VEVENT",
-    \`SUMMARY:\${title}\`,
-    \`DTSTART:\${formatDateStr(startDate)}\`,
-    \`DTEND:\${formatDateStr(endDate)}\`,
-    \`DESCRIPTION:\${description}\`,
-    "STATUS:CONFIRMED",
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ].join("\\r\\n");
-}`}</code></pre>
+      <h3>iCalendar (.ics) Standards for Frictionless Attendance</h3>
+      <p>
+        Distributing meeting invites via plain text or email often leads to time conversion errors. Exporting calendar invites using standard `.ics` (iCalendar) payloads guarantees that attendees' local calendar applications—including Google Calendar, Apple Calendar, and Microsoft Outlook—parse the UTC timestamp accurately and adjust the event seamlessly into each participant's local device clock.
+      </p>
+
+      <pre><code>{`// Standard iCalendar Payload Structure
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//GMTtoEST//Global Meeting Planner//EN
+BEGIN:VEVENT
+SUMMARY:Global Sync Meeting
+DTSTART:20260731T140000Z
+DTEND:20260731T150000Z
+DESCRIPTION:Multi-city alignment call
+END:VEVENT
+END:VCALENDAR`}</code></pre>
 
       <p>
-        Combined with live world clock lookups on our <a href="/world-clock">World Clock Tool</a> and timezone calculation snippets in our <a href="/developer-tools">Developer Toolkit</a>, the Global Meeting Planner ensures your international collaboration remains flawless.
+        Combine this Meeting Planner with our companion utilities including the <a href="/world-clock">Global World Clock</a>, <a href="/business-hours-overlap">Business Hours Overlap Calculator</a>, and <a href="/time-difference-calculator">Time Difference Calculator</a> for comprehensive time management across all operations.
       </p>
     </article>
 
@@ -524,102 +590,326 @@ function generateICS(title, startDate, durationMinutes, description) {
   </div>
 
   <script is:inline>
-    const CITY_DATABASE = [
-      { name: "New York (EST/EDT)", zone: "America/New_York" },
-      { name: "London (GMT/BST)", zone: "Europe/London" },
-      { name: "Tokyo (JST)", zone: "Asia/Tokyo" },
-      { name: "Paris / Berlin (CET/CEST)", zone: "Europe/Paris" },
-      { name: "Sydney (AEST/AEDT)", zone: "Australia/Sydney" },
-      { name: "San Francisco (PST/PDT)", zone: "America/Los_Angeles" },
-      { name: "Chicago (CST/CDT)", zone: "America/Chicago" },
-      { name: "Singapore (SGT)", zone: "Asia/Singapore" },
-      { name: "Dubai (GST)", zone: "Asia/Dubai" },
-      { name: "New Delhi (IST)", zone: "Asia/Kolkata" },
-      { name: "Hong Kong (HKT)", zone: "Asia/Hong_Kong" },
-      { name: "Auckland (NZST/NZDT)", zone: "Pacific/Auckland" },
-      { name: "Toronto (EST/EDT)", zone: "America/Toronto" },
-      { name: "Sao Paulo (BRT)", zone: "America/Sao_Paulo" },
-      { name: "Johannesburg (SAST)", zone: "Africa/Johannesburg" }
+    const WORLD_200_CITIES = [
+      // North America
+      { name: "New York", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Los Angeles", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Chicago", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Houston", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Phoenix", country: "United States", zone: "America/Phoenix", flag: "🇺🇸" },
+      { name: "Philadelphia", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "San Antonio", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "San Diego", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Dallas", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "San Jose", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Austin", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Jacksonville", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Fort Worth", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Columbus", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "San Francisco", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Charlotte", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Indianapolis", country: "United States", zone: "America/Indiana/Indianapolis", flag: "🇺🇸" },
+      { name: "Seattle", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Denver", country: "United States", zone: "America/Denver", flag: "🇺🇸" },
+      { name: "Washington D.C.", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Boston", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "El Paso", country: "United States", zone: "America/El_Paso", flag: "🇺🇸" },
+      { name: "Nashville", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Detroit", country: "United States", zone: "America/Detroit", flag: "🇺🇸" },
+      { name: "Oklahoma City", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Portland", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Las Vegas", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Memphis", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Louisville", country: "United States", zone: "America/Kentucky/Louisville", flag: "🇺🇸" },
+      { name: "Baltimore", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Milwaukee", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Albuquerque", country: "United States", zone: "America/Denver", flag: "🇺🇸" },
+      { name: "Tucson", country: "United States", zone: "America/Phoenix", flag: "🇺🇸" },
+      { name: "Fresno", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Sacramento", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Mesa", country: "United States", zone: "America/Phoenix", flag: "🇺🇸" },
+      { name: "Atlanta", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Kansas City", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Miami", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Colorado Springs", country: "United States", zone: "America/Denver", flag: "🇺🇸" },
+      { name: "Raleigh", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Omaha", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Long Beach", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Virginia Beach", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Oakland", country: "United States", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Minneapolis", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Tulsa", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Tampa", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Arlington", country: "United States", zone: "America/Chicago", flag: "🇺🇸" },
+      { name: "Honolulu", country: "United States", zone: "Pacific/Honolulu", flag: "🇺🇸" },
+      { name: "Anchorage", country: "United States", zone: "America/Anchorage", flag: "🇺🇸" },
+      { name: "Toronto", country: "Canada", zone: "America/Toronto", flag: "🇨🇦" },
+      { name: "Montreal", country: "Canada", zone: "America/Toronto", flag: "🇨🇦" },
+      { name: "Vancouver", country: "Canada", zone: "America/Vancouver", flag: "🇨🇦" },
+      { name: "Calgary", country: "Canada", zone: "America/Edmonton", flag: "🇨🇦" },
+      { name: "Edmonton", country: "Canada", zone: "America/Edmonton", flag: "🇨🇦" },
+      { name: "Ottawa", country: "Canada", zone: "America/Toronto", flag: "🇨🇦" },
+      { name: "Winnipeg", country: "Canada", zone: "America/Winnipeg", flag: "🇨🇦" },
+      { name: "Quebec City", country: "Canada", zone: "America/Toronto", flag: "🇨🇦" },
+      { name: "Halifax", country: "Canada", zone: "America/Halifax", flag: "🇨🇦" },
+      { name: "St. John's", country: "Canada", zone: "America/St_Johns", flag: "🇨🇦" },
+      { name: "Mexico City", country: "Mexico", zone: "America/Mexico_City", flag: "🇲🇽" },
+      { name: "Guadalajara", country: "Mexico", zone: "America/Mexico_City", flag: "🇲🇽" },
+      { name: "Monterrey", country: "Mexico", zone: "America/Monterrey", flag: "🇲🇽" },
+      { name: "Cancún", country: "Mexico", zone: "America/Cancun", flag: "🇲🇽" },
+      { name: "Tijuana", country: "Mexico", zone: "America/Tijuana", flag: "🇲🇽" },
+
+      // South & Central America
+      { name: "São Paulo", country: "Brazil", zone: "America/Sao_Paulo", flag: "🇧🇷" },
+      { name: "Rio de Janeiro", country: "Brazil", zone: "America/Sao_Paulo", flag: "🇧🇷" },
+      { name: "Brasília", country: "Brazil", zone: "America/Sao_Paulo", flag: "🇧🇷" },
+      { name: "Buenos Aires", country: "Argentina", zone: "America/Argentina/Buenos_Aires", flag: "🇦🇷" },
+      { name: "Bogotá", country: "Colombia", zone: "America/Bogota", flag: "🇨🇴" },
+      { name: "Lima", country: "Peru", zone: "America/Lima", flag: "🇵🇪" },
+      { name: "Santiago", country: "Chile", zone: "America/Santiago", flag: "🇨🇱" },
+      { name: "Caracas", country: "Venezuela", zone: "America/Caracas", flag: "🇻🇪" },
+      { name: "Montevideo", country: "Uruguay", zone: "America/Montevideo", flag: "🇺🇾" },
+      { name: "Quito", country: "Ecuador", zone: "America/Guayaquil", flag: "🇪🇨" },
+      { name: "Asunción", country: "Paraguay", zone: "America/Asuncion", flag: "🇵🇾" },
+      { name: "La Paz", country: "Bolivia", zone: "America/La_Paz", flag: "🇧🇴" },
+      { name: "Panama City", country: "Panama", zone: "America/Panama", flag: "🇵🇦" },
+      { name: "San José", country: "Costa Rica", zone: "America/Costa_Rica", flag: "🇨🇷" },
+
+      // Europe
+      { name: "London", country: "United Kingdom", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Manchester", country: "United Kingdom", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Birmingham", country: "United Kingdom", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Edinburgh", country: "United Kingdom", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Paris", country: "France", zone: "Europe/Paris", flag: "🇫🇷" },
+      { name: "Lyon", country: "France", zone: "Europe/Paris", flag: "🇫🇷" },
+      { name: "Marseille", country: "France", zone: "Europe/Paris", flag: "🇫🇷" },
+      { name: "Berlin", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Munich", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Frankfurt", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Hamburg", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Cologne", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Rome", country: "Italy", zone: "Europe/Rome", flag: "🇮🇹" },
+      { name: "Milan", country: "Italy", zone: "Europe/Rome", flag: "🇮🇹" },
+      { name: "Naples", country: "Italy", zone: "Europe/Rome", flag: "🇮🇹" },
+      { name: "Madrid", country: "Spain", zone: "Europe/Madrid", flag: "🇪🇸" },
+      { name: "Barcelona", country: "Spain", zone: "Europe/Madrid", flag: "🇪🇸" },
+      { name: "Valencia", country: "Spain", zone: "Europe/Madrid", flag: "🇪🇸" },
+      { name: "Lisbon", country: "Portugal", zone: "Europe/Lisbon", flag: "🇵🇹" },
+      { name: "Porto", country: "Portugal", zone: "Europe/Lisbon", flag: "🇵🇹" },
+      { name: "Amsterdam", country: "Netherlands", zone: "Europe/Amsterdam", flag: "🇳🇱" },
+      { name: "Rotterdam", country: "Netherlands", zone: "Europe/Amsterdam", flag: "🇳🇱" },
+      { name: "Brussels", country: "Belgium", zone: "Europe/Brussels", flag: "🇧🇪" },
+      { name: "Vienna", country: "Austria", zone: "Europe/Vienna", flag: "🇦🇹" },
+      { name: "Zurich", country: "Switzerland", zone: "Europe/Zurich", flag: "🇨🇭" },
+      { name: "Geneva", country: "Switzerland", zone: "Europe/Zurich", flag: "🇨🇭" },
+      { name: "Dublin", country: "Ireland", zone: "Europe/Dublin", flag: "🇮🇪" },
+      { name: "Copenhagen", country: "Denmark", zone: "Europe/Copenhagen", flag: "🇩🇰" },
+      { name: "Stockholm", country: "Sweden", zone: "Europe/Stockholm", flag: "🇸🇪" },
+      { name: "Oslo", country: "Norway", zone: "Europe/Oslo", flag: "🇳🇴" },
+      { name: "Helsinki", country: "Finland", zone: "Europe/Helsinki", flag: "🇫🇮" },
+      { name: "Warsaw", country: "Poland", zone: "Europe/Warsaw", flag: "🇵🇱" },
+      { name: "Kraków", country: "Poland", zone: "Europe/Warsaw", flag: "🇵🇱" },
+      { name: "Prague", country: "Czech Republic", zone: "Europe/Prague", flag: "🇨🇿" },
+      { name: "Budapest", country: "Hungary", zone: "Europe/Budapest", flag: "🇭🇺" },
+      { name: "Athens", country: "Greece", zone: "Europe/Athens", flag: "🇬🇷" },
+      { name: "Bucharest", country: "Romania", zone: "Europe/Bucharest", flag: "🇷🇴" },
+      { name: "Sofia", country: "Bulgaria", zone: "Europe/Sofia", flag: "🇧🇬" },
+      { name: "Belgrade", country: "Serbia", zone: "Europe/Belgrade", flag: "🇷🇸" },
+      { name: "Kiev (Kyiv)", country: "Ukraine", zone: "Europe/Kyiv", flag: "🇺🇦" },
+      { name: "Moscow", country: "Russia", zone: "Europe/Moscow", flag: "🇷🇺" },
+      { name: "Saint Petersburg", country: "Russia", zone: "Europe/Moscow", flag: "🇷🇺" },
+      { name: "Istanbul", country: "Turkey", zone: "Europe/Istanbul", flag: "🇹🇷" },
+
+      // Asia & Middle East
+      { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", flag: "🇯🇵" },
+      { name: "Osaka", country: "Japan", zone: "Asia/Tokyo", flag: "🇯🇵" },
+      { name: "Nagoya", country: "Japan", zone: "Asia/Tokyo", flag: "🇯🇵" },
+      { name: "Seoul", country: "South Korea", zone: "Asia/Seoul", flag: "🇰🇷" },
+      { name: "Busan", country: "South Korea", zone: "Asia/Seoul", flag: "🇰🇷" },
+      { name: "Beijing", country: "China", zone: "Asia/Shanghai", flag: "🇨🇳" },
+      { name: "Shanghai", country: "China", zone: "Asia/Shanghai", flag: "🇨🇳" },
+      { name: "Shenzhen", country: "China", zone: "Asia/Shanghai", flag: "🇨🇳" },
+      { name: "Guangzhou", country: "China", zone: "Asia/Shanghai", flag: "🇨🇳" },
+      { name: "Hong Kong", country: "China (SAR)", zone: "Asia/Hong_Kong", flag: "🇭🇰" },
+      { name: "Taipei", country: "Taiwan", zone: "Asia/Taipei", flag: "🇹🇼" },
+      { name: "Singapore", country: "Singapore", zone: "Asia/Singapore", flag: "🇸🇬" },
+      { name: "Bangkok", country: "Thailand", zone: "Asia/Bangkok", flag: "🇹🇭" },
+      { name: "Kuala Lumpur", country: "Malaysia", zone: "Asia/Kuala_Lumpur", flag: "🇲🇾" },
+      { name: "Jakarta", country: "Indonesia", zone: "Asia/Jakarta", flag: "🇮🇩" },
+      { name: "Bali (Denpasar)", country: "Indonesia", zone: "Asia/Makassar", flag: "🇮🇩" },
+      { name: "Manila", country: "Philippines", zone: "Asia/Manila", flag: "🇵🇭" },
+      { name: "Ho Chi Minh City", country: "Vietnam", zone: "Asia/Ho_Chi_Minh", flag: "🇻🇳" },
+      { name: "Hanoi", country: "Vietnam", zone: "Asia/Bangkok", flag: "🇻🇳" },
+      { name: "Mumbai", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Delhi (New Delhi)", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Bengaluru", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Hyderabad", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Chennai", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Kolkata", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Karachi", country: "Pakistan", zone: "Asia/Karachi", flag: "🇵🇰" },
+      { name: "Lahore", country: "Pakistan", zone: "Asia/Karachi", flag: "🇵🇰" },
+      { name: "Islamabad", country: "Pakistan", zone: "Asia/Karachi", flag: "🇵🇰" },
+      { name: "Dhaka", country: "Bangladesh", zone: "Asia/Dhaka", flag: "🇧🇩" },
+      { name: "Colombo", country: "Sri Lanka", zone: "Asia/Colombo", flag: "🇱🇰" },
+      { name: "Kathmandu", country: "Nepal", zone: "Asia/Kathmandu", flag: "🇳🇵" },
+      { name: "Dubai", country: "UAE", zone: "Asia/Dubai", flag: "🇦🇪" },
+      { name: "Abu Dhabi", country: "UAE", zone: "Asia/Dubai", flag: "🇦🇪" },
+      { name: "Riyadh", country: "Saudi Arabia", zone: "Asia/Riyadh", flag: "🇸🇦" },
+      { name: "Jeddah", country: "Saudi Arabia", zone: "Asia/Riyadh", flag: "🇸🇦" },
+      { name: "Doha", country: "Qatar", zone: "Asia/Qatar", flag: "🇶🇦" },
+      { name: "Kuwait City", country: "Kuwait", zone: "Asia/Kuwait", flag: "🇰🇼" },
+      { name: "Muscat", country: "Oman", zone: "Asia/Muscat", flag: "🇴🇲" },
+      { name: "Manama", country: "Bahrain", zone: "Asia/Bahrain", flag: "🇧🇭" },
+      { name: "Tel Aviv", country: "Israel", zone: "Asia/Tel_Aviv", flag: "🇮🇱" },
+      { name: "Jerusalem", country: "Israel", zone: "Asia/Jerusalem", flag: "🇮🇱" },
+      { name: "Amman", country: "Jordan", zone: "Asia/Amman", flag: "🇯🇴" },
+      { name: "Beirut", country: "Lebanon", zone: "Asia/Beirut", flag: "🇱🇧" },
+      { name: "Tbilisi", country: "Georgia", zone: "Asia/Tbilisi", flag: "🇬🇪" },
+      { name: "Baku", country: "Azerbaijan", zone: "Asia/Baku", flag: "🇦🇿" },
+      { name: "Yerevan", country: "Armenia", zone: "Asia/Yerevan", flag: "🇦🇲" },
+      { name: "Almaty", country: "Kazakhstan", zone: "Asia/Almaty", flag: "🇰🇿" },
+      { name: "Tashkent", country: "Uzbekistan", zone: "Asia/Tashkent", flag: "🇺🇿" },
+
+      // Africa
+      { name: "Cairo", country: "Egypt", zone: "Africa/Cairo", flag: "🇪🇬" },
+      { name: "Johannesburg", country: "South Africa", zone: "Africa/Johannesburg", flag: "🇿🇦" },
+      { name: "Cape Town", country: "South Africa", zone: "Africa/Johannesburg", flag: "🇿🇦" },
+      { name: "Lagos", country: "Nigeria", zone: "Africa/Lagos", flag: "🇳🇬" },
+      { name: "Abuja", country: "Nigeria", zone: "Africa/Lagos", flag: "🇳🇬" },
+      { name: "Nairobi", country: "Kenya", zone: "Africa/Nairobi", flag: "🇰🇪" },
+      { name: "Casablanca", country: "Morocco", zone: "Africa/Casablanca", flag: "🇲🇦" },
+      { name: "Rabat", country: "Morocco", zone: "Africa/Casablanca", flag: "🇲🇦" },
+      { name: "Algiers", country: "Algeria", zone: "Africa/Algiers", flag: "🇩🇿" },
+      { name: "Tunis", country: "Tunisia", zone: "Africa/Tunis", flag: "🇹🇳" },
+      { name: "Accra", country: "Ghana", zone: "Africa/Accra", flag: "🇬🇭" },
+      { name: "Addis Ababa", country: "Ethiopia", zone: "Africa/Addis_Ababa", flag: "🇪🇪" },
+      { name: "Dar es Salaam", country: "Tanzania", zone: "Africa/Dar_es_Salaam", flag: "🇹🇿" },
+
+      // Oceania & Pacific
+      { name: "Sydney", country: "Australia", zone: "Australia/Sydney", flag: "🇦🇺" },
+      { name: "Melbourne", country: "Australia", zone: "Australia/Melbourne", flag: "🇦🇺" },
+      { name: "Brisbane", country: "Australia", zone: "Australia/Brisbane", flag: "🇦🇺" },
+      { name: "Perth", country: "Australia", zone: "Australia/Perth", flag: "🇦🇺" },
+      { name: "Adelaide", country: "Australia", zone: "Australia/Adelaide", flag: "🇦🇺" },
+      { name: "Canberra", country: "Australia", zone: "Australia/Sydney", flag: "🇦🇺" },
+      { name: "Hobart", country: "Australia", zone: "Australia/Hobart", flag: "🇦🇺" },
+      { name: "Auckland", country: "New Zealand", zone: "Pacific/Auckland", flag: "🇳🇿" },
+      { name: "Wellington", country: "New Zealand", zone: "Pacific/Auckland", flag: "🇳🇿" },
+      { name: "Christchurch", country: "New Zealand", zone: "Pacific/Auckland", flag: "🇳🇿" },
+      { name: "Suva", country: "Fiji", zone: "Pacific/Fiji", flag: "🇫🇯" },
+      { name: "Pago Pago", country: "American Samoa", zone: "Pacific/Pago_Pago", flag: "🇦🇸" },
+      { name: "Guam", country: "Guam", zone: "Pacific/Guam", flag: "🇬🇺" }
     ];
 
     let selectedCities = [
-      { name: "New York (EST/EDT)", zone: "America/New_York" },
-      { name: "London (GMT/BST)", zone: "Europe/London" },
-      { name: "Tokyo (JST)", zone: "Asia/Tokyo" }
+      { name: "New York", country: "United States", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "London", country: "United Kingdom", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", flag: "🇯🇵" }
     ];
 
     let selectedUtcHour = 14; // Default 14:00 UTC
-    const dateInput = document.getElementById("meeting-date") as HTMLInputElement;
-    const citySelect = document.getElementById("city-select") as HTMLSelectElement;
-    const addCityBtn = document.getElementById("btn-add-city") as HTMLButtonElement;
-    const matrixHeaderRow = document.getElementById("matrix-header-row") as HTMLElement;
-    const matrixBody = document.getElementById("matrix-body") as HTMLElement;
-    const summaryText = document.getElementById("summary-text") as HTMLElement;
-    const btnCopySummary = document.getElementById("btn-copy-summary") as HTMLButtonElement;
-    const btnExportIcs = document.getElementById("btn-export-ics") as HTMLButtonElement;
-    const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
+    const dateInput = document.getElementById("meeting-date");
+    const citySearchInput = document.getElementById("city-search-input");
+    const suggestionsList = document.getElementById("city-suggestions-list");
+    const matrixHeaderRow = document.getElementById("matrix-header-row");
+    const matrixBody = document.getElementById("matrix-body");
+    const summaryText = document.getElementById("summary-text");
+    const btnCopySummary = document.getElementById("btn-copy-summary");
+    const btnExportIcs = document.getElementById("btn-export-ics");
+    const btnShare = document.getElementById("btn-share");
 
-    // Set default date to today
     const todayStr = new Date().toISOString().split("T")[0];
     dateInput.value = todayStr;
 
-    // Populate City Dropdown
-    CITY_DATABASE.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c.zone;
-      opt.textContent = c.name;
-      citySelect.appendChild(opt);
+    // Search Autocomplete filtering
+    citySearchInput.addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      if (!q) {
+        suggestionsList.style.display = "none";
+        return;
+      }
+      const matches = WORLD_200_CITIES.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.country.toLowerCase().includes(q) ||
+        c.zone.toLowerCase().includes(q)
+      );
+
+      if (matches.length === 0) {
+        suggestionsList.innerHTML = '<div class="city-suggestion-item">No cities found</div>';
+        suggestionsList.style.display = "block";
+        return;
+      }
+
+      suggestionsList.innerHTML = matches.map(c => `
+        <div class="city-suggestion-item" data-zone="${c.zone}">
+          <span><span class="city-flag">${c.flag}</span> <strong>${c.name}</strong> (${c.country})</span>
+          <small style="color: #64748b;">${c.zone}</small>
+        </div>
+      `).join("");
+      suggestionsList.style.display = "block";
     });
 
-    addCityBtn.addEventListener("click", () => {
-      const val = citySelect.value;
-      if (!val) return;
-      const found = CITY_DATABASE.find(c => c.zone === val);
-      if (found && !selectedCities.some(sc => sc.zone === val)) {
+    suggestionsList.addEventListener("click", function(e) {
+      const item = e.target.closest(".city-suggestion-item");
+      if (!item) return;
+      const zone = item.getAttribute("data-zone");
+      const found = WORLD_200_CITIES.find(c => c.zone === zone);
+      if (found && !selectedCities.some(sc => sc.zone === zone)) {
         selectedCities.push(found);
         renderMatrix();
       }
+      citySearchInput.value = "";
+      suggestionsList.style.display = "none";
     });
 
-    dateInput.addEventListener("change", () => {
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!citySearchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+        suggestionsList.style.display = "none";
+      }
+    });
+
+    dateInput.addEventListener("change", function() {
       renderMatrix();
     });
 
-    btnCopySummary.addEventListener("click", () => {
+    btnCopySummary.addEventListener("click", function() {
       const txt = summaryText.textContent || "";
-      navigator.clipboard.writeText(txt).then(() => {
+      navigator.clipboard.writeText(txt).then(function() {
         const orig = btnCopySummary.textContent;
         btnCopySummary.textContent = "✅ Copied to Clipboard!";
-        setTimeout(() => { btnCopySummary.textContent = orig; }, 2000);
+        setTimeout(function() { btnCopySummary.textContent = orig; }, 2000);
       });
     });
 
-    btnShare.addEventListener("click", () => {
+    btnShare.addEventListener("click", function() {
       const zones = selectedCities.map(c => encodeURIComponent(c.zone)).join(",");
       const url = `${window.location.origin}${window.location.pathname}?cities=${zones}&date=${dateInput.value}&hour=${selectedUtcHour}`;
-      navigator.clipboard.writeText(url).then(() => {
+      navigator.clipboard.writeText(url).then(function() {
         const orig = btnShare.textContent;
         btnShare.textContent = "✅ Share Link Copied!";
-        setTimeout(() => { btnShare.textContent = orig; }, 2000);
+        setTimeout(function() { btnShare.textContent = orig; }, 2000);
       });
     });
 
-    btnExportIcs.addEventListener("click", () => {
-      const dateVal = dateInput.value;
+    btnExportIcs.addEventListener("click", function() {
+      const dateVal = dateInput.value || todayStr;
       const startTime = new Date(`${dateVal}T${String(selectedUtcHour).padStart(2, '0')}:00:00Z`);
-      const endTime = new Date(startTime.getTime() + 60 * 60000); // 1 hr duration
+      const endTime = new Date(startTime.getTime() + 60 * 60000);
 
-      const formatDateStr = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
-      
+      const formatDateStr = function(d) {
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      };
+
       let summaryDetails = "Global Sync Meeting\\n";
-      selectedCities.forEach(c => {
+      selectedCities.forEach(function(c) {
         const localTime = new Intl.DateTimeFormat("en-US", {
           timeZone: c.zone,
           hour: "2-digit",
           minute: "2-digit",
           hour12: true
         }).format(startTime);
-        summaryDetails += `- ${c.name}: ${localTime}\\n`;
+        summaryDetails += `- ${c.flag} ${c.name} (${c.country}): ${localTime}\\n`;
       });
 
       const icsContent = [
@@ -645,7 +935,7 @@ function generateICS(title, startDate, durationMinutes, description) {
       document.body.removeChild(link);
     });
 
-    function getHourSlotClass(localHour: number) {
+    function getHourSlotClass(localHour) {
       if (localHour >= 9 && localHour < 17) {
         return "cell-business";
       } else if ((localHour >= 7 && localHour < 9) || (localHour >= 17 && localHour < 21)) {
@@ -668,15 +958,15 @@ function generateICS(title, startDate, durationMinutes, description) {
       matrixBody.innerHTML = "";
       const baseDate = dateInput.value || todayStr;
 
-      selectedCities.forEach((city, cityIdx) => {
+      selectedCities.forEach(function(city, cityIdx) {
         const tr = document.createElement("tr");
-        
+
         // Location column
         const tdLoc = document.createElement("td");
         tdLoc.className = "city-col-header";
         tdLoc.style.fontWeight = "bold";
         tdLoc.innerHTML = `
-          ${city.name}
+          <span>${city.flag || ''} ${city.name} <small style="color:#64748b;font-weight:normal;">(${city.country || city.zone})</small></span>
           <button class="btn-remove-city" data-idx="${cityIdx}" title="Remove city">×</button>
         `;
         tr.appendChild(tdLoc);
@@ -691,15 +981,15 @@ function generateICS(title, startDate, durationMinutes, description) {
             hour: "numeric",
             hour12: false
           }).format(utcDateObj);
-          
+
           const localHour = parseInt(localHourStr, 10);
           const slotClass = getHourSlotClass(localHour);
 
           td.className = `hour-cell ${slotClass} ${utcHour === selectedUtcHour ? 'cell-selected' : ''}`;
-          td.textContent = `${localHour}:00`;
+          td.textContent = `${String(localHour).padStart(2, '0')}:00`;
           td.dataset.utcHour = String(utcHour);
 
-          td.addEventListener("click", () => {
+          td.addEventListener("click", function() {
             selectedUtcHour = utcHour;
             renderMatrix();
           });
@@ -711,9 +1001,9 @@ function generateICS(title, startDate, durationMinutes, description) {
       });
 
       // Bind remove buttons
-      document.querySelectorAll(".btn-remove-city").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const idx = parseInt((e.target as HTMLElement).getAttribute("data-idx") || "0", 10);
+      document.querySelectorAll(".btn-remove-city").forEach(function(btn) {
+        btn.addEventListener("click", function(e) {
+          const idx = parseInt(e.target.getAttribute("data-idx") || "0", 10);
           selectedCities.splice(idx, 1);
           renderMatrix();
         });
@@ -732,7 +1022,7 @@ function generateICS(title, startDate, durationMinutes, description) {
         "----------------------------------------"
       ];
 
-      selectedCities.forEach(c => {
+      selectedCities.forEach(function(c) {
         const localTimeFormatted = new Intl.DateTimeFormat("en-US", {
           timeZone: c.zone,
           weekday: "short",
@@ -743,7 +1033,7 @@ function generateICS(title, startDate, durationMinutes, description) {
           hour12: true
         }).format(utcDateObj);
 
-        summaryLines.push(`• ${c.name}: ${localTimeFormatted}`);
+        summaryLines.push(`• ${c.flag || ''} ${c.name} (${c.country || c.zone}): ${localTimeFormatted}`);
       });
 
       summaryText.textContent = summaryLines.join("\n");
@@ -752,11 +1042,11 @@ function generateICS(title, startDate, durationMinutes, description) {
     // Parse query params if present
     const params = new URLSearchParams(window.location.search);
     if (params.has("cities")) {
-      const cityList = params.get("cities")?.split(",") || [];
-      const parsed = cityList.map(zone => {
+      const cityList = (params.get("cities") || "").split(",");
+      const parsed = cityList.map(function(zone) {
         const decoded = decodeURIComponent(zone);
-        const match = CITY_DATABASE.find(c => c.zone === decoded);
-        return match || { name: decoded.split("/").pop() || decoded, zone: decoded };
+        const match = WORLD_200_CITIES.find(function(c) { return c.zone === decoded; });
+        return match || { name: decoded.split("/").pop() || decoded, country: "", zone: decoded, flag: "🌐" };
       });
       if (parsed.length > 0) selectedCities = parsed;
     }
