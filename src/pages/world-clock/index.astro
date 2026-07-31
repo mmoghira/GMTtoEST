@@ -479,7 +479,7 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
     <LearnMoreWidget slug={slug} />
   </div>
 
-  <script>
+  <script is:inline>
     const CITIES = [
       { name: "New York", country: "USA", zone: "America/New_York", continent: "North America" },
       { name: "London", country: "UK", zone: "Europe/London", continent: "Europe" },
@@ -538,11 +538,11 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
     let searchQuery = "";
     let favorites = JSON.parse(localStorage.getItem("gmt_fav_clocks") || "[]");
 
-    const searchInput = document.getElementById("city-search") as HTMLInputElement;
-    const formatToggleBtn = document.getElementById("format-toggle") as HTMLButtonElement;
-    const clocksGrid = document.getElementById("clocks-grid") as HTMLElement;
-    const favoritesGrid = document.getElementById("favorites-grid") as HTMLElement;
-    const favoritesContainer = document.getElementById("favorites-container") as HTMLElement;
+    const searchInput = document.getElementById("city-search");
+    const formatToggleBtn = document.getElementById("format-toggle");
+    const clocksGrid = document.getElementById("clocks-grid");
+    const favoritesGrid = document.getElementById("favorites-grid");
+    const favoritesContainer = document.getElementById("favorites-container");
     const filterBtns = document.querySelectorAll(".btn-filter");
 
     formatToggleBtn.addEventListener("click", () => {
@@ -552,7 +552,7 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
     });
 
     searchInput.addEventListener("input", (e) => {
-      searchQuery = (e.target as HTMLInputElement).value.toLowerCase();
+      searchQuery = e.target.value.toLowerCase();
       renderClocks();
     });
 
@@ -565,7 +565,7 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
       });
     });
 
-    function toggleFavorite(cityName: string) {
+    function toggleFavorite(cityName) {
       if (favorites.includes(cityName)) {
         favorites = favorites.filter(f => f !== cityName);
       } else {
@@ -575,7 +575,7 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
       renderClocks();
     }
 
-    function getFormattedTime(zone: string) {
+    function getFormattedTime(zone) {
       const now = new Date();
       try {
         const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -597,14 +597,15 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
           hour12: false
         });
 
-        // Calculate UTC Offset
-        const utcDate = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
-        const tzDate = new Date(now.toLocaleString("en-US", { timeZone: zone }));
-        const offsetDiffMs = tzDate.getTime() - utcDate.getTime();
-        const offsetHours = Math.floor(Math.abs(offsetDiffMs) / 3600000);
-        const offsetMins = Math.floor((Math.abs(offsetDiffMs) % 3600000) / 60000);
-        const sign = offsetDiffMs >= 0 ? "+" : "-";
-        const offsetStr = `UTC${sign}${String(offsetHours).padStart(2, "0")}:${String(offsetMins).padStart(2, "0")}`;
+        // Calculate UTC Offset reliably using Intl timeZoneName shortOffset
+        const offsetFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          timeZoneName: "shortOffset"
+        });
+        const parts = offsetFormatter.formatToParts(now);
+        const tzPart = parts.find(p => p.type === "timeZoneName");
+        let offsetStr = tzPart ? tzPart.value.replace("GMT", "UTC") : "UTC+00:00";
+        if (offsetStr === "UTC") offsetStr = "UTC+00:00";
 
         const hour24 = parseInt(hourFormatter.format(now), 10);
         const isDay = hour24 >= 6 && hour24 < 18;
@@ -616,29 +617,29 @@ console.log("New York Time:", getCityTime("America/New_York", true));`}</code></
           isDay
         };
       } catch (err) {
-        return { timeStr: "--:--:--", dateStr: "", offsetStr: "UTC", isDay: true };
+        return { timeStr: "--:--:--", dateStr: "", offsetStr: "UTC+00:00", isDay: true };
       }
     }
 
-    function createClockCard(city: typeof CITIES[0], isFav: boolean) {
+    function createClockCard(city, isFav) {
       const { timeStr, dateStr, offsetStr, isDay } = getFormattedTime(city.zone);
       const card = document.createElement("div");
       card.className = "clock-card";
       card.innerHTML = `
         <div class="card-header">
           <div>
-            <h3 class="city-name">\${city.name}</h3>
-            <div class="country-name">\${city.country}</div>
+            <h3 class="city-name">${city.name}</h3>
+            <div class="country-name">${city.country}</div>
           </div>
-          <button class="fav-star \${isFav ? 'active' : ''}" data-city="\${city.name}" title="Toggle Favorite">★</button>
+          <button class="fav-star ${isFav ? 'active' : ''}" data-city="${city.name}" title="Toggle Favorite">★</button>
         </div>
-        <div class="time-display">\${timeStr}</div>
-        <div class="date-display">\${dateStr}</div>
+        <div class="time-display">${timeStr}</div>
+        <div class="date-display">${dateStr}</div>
         <div class="card-footer">
-          <span class="badge \${isDay ? 'badge-day' : 'badge-night'}">
-            \${isDay ? '☀️ Day' : '🌙 Night'}
+          <span class="badge ${isDay ? 'badge-day' : 'badge-night'}">
+            ${isDay ? '☀️ Day' : '🌙 Night'}
           </span>
-          <span class="badge badge-utc">\${offsetStr}</span>
+          <span class="badge badge-utc">${offsetStr}</span>
         </div>
       `;
 
