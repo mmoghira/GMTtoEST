@@ -1,0 +1,738 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "business-hours-overlap";
+const seoTitle = "Business Hours Overlap Tool — Find Global Team Meeting Windows";
+const pageDescription = "Find optimal meeting windows across distributed teams with our Business Hours Overlap Tool. Graphically align working hours across multiple time zones to discover golden overlap hours.";
+
+const pubDate = "2026-07-31T00:00:00+05:00";
+const updatedDate = "2026-07-31T00:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "business hours overlap, global team scheduling, time zone overlap, golden hours, meeting planner, remote team overlap, workforce timezone matrix",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is the Business Hours Overlap Tool?",
+      a: "The Business Hours Overlap Tool is a visual scheduling assistant designed to help distributed teams find common working hours across multiple time zones. It graphically displays when everyone is at work, highlighting 'golden hours' for synchronous collaboration."
+    },
+    {
+      q: "How does the tool calculate overlap?",
+      a: "The tool takes each team member's city, calculates its current offset from UTC (accounting for daylight saving time), and maps their custom working hours (e.g. 9 AM to 5 PM) onto a 24-hour UTC grid. When all team members have active working hours on the grid, that time slot is marked as a golden overlap."
+    },
+    {
+      q: "Can I customize working hours for individual team members?",
+      a: "Yes. By default, working hours are set to 09:00 to 17:00. You can adjust the start and end hours for each individual team member to reflect custom schedules, flexible shifts, or early risers."
+    },
+    {
+      q: "How do I save my team's configuration for future visits?",
+      a: "Click 'Save Team' to store your team members, cities, and custom working hours in your browser's local storage. Click 'Load Team' on return visits to instantly restore your layout."
+    },
+    {
+      q: "What are 'Golden Hours' in global scheduling?",
+      a: "'Golden Hours' refer to the narrow window of time during the day when the standard working hours of all your team members across the globe overlap. For highly distributed teams, this might only be one or two hours a day, making them crucial for synchronous collaboration."
+    },
+    {
+      q: "Can I share my overlap chart with colleagues?",
+      a: "Yes, click 'Share Link'. This generates a special URL containing your selected team members and working hours, which you can copy and send to colleagues."
+    },
+    {
+      q: "Does the tool account for Daylight Saving Time (DST)?",
+      a: "Absolutely. The tool uses standard browser time zone APIs (`Intl.DateTimeFormat`) which automatically adjust for Daylight Saving Time changes in real-time based on the selected region."
+    },
+    {
+      q: "What should teams do when there is zero business hour overlap?",
+      a: "When teams span extreme time gaps (such as San Francisco and Singapore), zero 9-to-5 overlap exists. Teams must establish rotating meeting shifts or adopt asynchronous documentation workflows."
+    },
+    {
+      q: "How many team members can I add to the overlap grid?",
+      a: "You can add as many team members as needed. The visual grid dynamically expands to accommodate small sub-teams or large cross-functional departments."
+    },
+    {
+      q: "Can I copy the calculated schedule summary to Slack or email?",
+      a: "Yes! Click 'Copy Schedule Summary' to format the overlap window into clean text displaying local times for every team member."
+    },
+    {
+      q: "What is the difference between synchronous and asynchronous collaboration?",
+      a: "Synchronous collaboration happens in real-time via video calls or chat during overlapping hours. Asynchronous collaboration relies on recorded videos, PR reviews, and detailed documentation completed across non-overlapping hours."
+    },
+    {
+      q: "How does the tool handle half-hour time zone offsets like India?",
+      a: "Half-hour offsets (such as India Standard Time, UTC+5:30) are calculated precisely and visually aligned within the 24-hour matrix."
+    },
+    {
+      q: "What are the quick presets for?",
+      a: "Presets like 'US East + Europe' or 'US West + Asia' automatically load common multi-regional team configurations with one click."
+    },
+    {
+      q: "How does daylight saving shift affect team overlap windows?",
+      a: "Because northern and southern hemispheres observe DST at different times of the year, overlap windows can expand or shrink by 1–2 hours twice annually."
+    },
+    {
+      q: "Is there any software installation required?",
+      a: "No. The Business Hours Overlap Tool runs 100% inside your web browser."
+    },
+    {
+      q: "Is this tool completely free?",
+      a: "Yes, it is completely free with no user limits."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Business Hours Overlap Tool",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <style>
+    .overlap-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: #ffffff;
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .hero-banner h1 {
+      font-size: 2.75rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+    }
+    .hero-banner p {
+      font-size: 1.25rem;
+      color: #a7f3d0;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .input-field {
+      padding: 0.6rem 0.8rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #10b981; color: white; }
+    .btn-primary:hover { background: #059669; }
+    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    .preset-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+    }
+    .btn-preset {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #334155;
+    }
+    .btn-preset:hover {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+
+    .golden-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .golden-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #92400e;
+      margin-bottom: 0.25rem;
+    }
+    .golden-text {
+      color: #78350f;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .matrix-wrapper {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem 0.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .matrix-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #334155;
+    }
+    .member-col {
+      min-width: 220px;
+      text-align: left !important;
+      padding-left: 1rem !important;
+    }
+    .cell-working {
+      background: #d1fae5;
+      color: #065f46;
+      font-weight: 700;
+    }
+    .cell-off {
+      background: #f8fafc;
+      color: #cbd5e1;
+    }
+    .cell-golden {
+      background: #10b981 !important;
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      box-shadow: inset 0 0 0 2px #047857;
+    }
+
+    .summary-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .summary-details {
+      font-family: monospace;
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+
+    .article-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-top: 3rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .article-section h2 {
+      font-size: 1.85rem;
+      color: #0f172a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .article-section h3 {
+      font-size: 1.4rem;
+      color: #1e293b;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .article-section p {
+      margin-bottom: 1.25rem;
+    }
+    .article-section ul {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+
+    .faq-container {
+      margin-top: 3rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+    }
+    .faq-question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .faq-answer {
+      color: #475569;
+      margin: 0;
+    }
+  </style>
+
+  <div class="overlap-container">
+    <div class="hero-banner">
+      <h1>Business Hours <span style="color: #6ee7b7;">Overlap Tool</span></h1>
+      <p>Identify optimal meeting windows and golden overlapping working hours across remote team members worldwide.</p>
+    </div>
+
+    <div class="card">
+      <div class="control-row">
+        <div class="control-group">
+          <input type="text" id="member-name" class="input-field" placeholder="Member Name (e.g. Alice)" style="width: 160px;" />
+          <select id="member-city" class="input-field" style="width: 200px;"></select>
+          <label style="font-weight: 600; font-size: 0.85rem;">Hours:</label>
+          <input type="number" id="work-start" class="input-field" value="9" min="0" max="23" style="width: 60px;" />
+          <span>to</span>
+          <input type="number" id="work-end" class="input-field" value="17" min="1" max="24" style="width: 60px;" />
+          <button id="btn-add-member" class="btn btn-primary">+ Add Member</button>
+        </div>
+
+        <div class="control-group">
+          <button id="btn-save-team" class="btn btn-secondary">💾 Save Team</button>
+          <button id="btn-load-team" class="btn btn-secondary">📂 Load Team</button>
+          <button id="btn-share-team" class="btn btn-secondary">🔗 Share Link</button>
+        </div>
+      </div>
+
+      <div class="preset-bar">
+        <strong style="font-size: 0.9rem; color: #475569;">Quick Presets:</strong>
+        <button class="btn-preset" data-preset="us-eu">US East + Europe</button>
+        <button class="btn-preset" data-preset="us-asia">US West + East Asia</button>
+        <button class="btn-preset" data-preset="tri-hub">Tri-Hub (NY + London + Tokyo)</button>
+      </div>
+
+      <div id="golden-banner" class="golden-banner">
+        <div class="golden-title">🌟 Golden Overlap Window</div>
+        <div id="golden-text" class="golden-text">Calculating team golden hours...</div>
+      </div>
+
+      <div class="matrix-wrapper">
+        <table class="matrix-table">
+          <thead>
+            <tr id="matrix-header">
+              <th class="member-col">Team Member & Location</th>
+              <!-- 24 UTC Hours populated via JS -->
+            </tr>
+          </thead>
+          <tbody id="matrix-body">
+            <!-- Team rows populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="summary-card">
+        <div style="font-weight: 800; font-size: 1.1rem; color: #065f46; margin-bottom: 0.5rem;">
+          📋 Team Overlap Schedule Summary
+        </div>
+        <div id="summary-details" class="summary-details">Generating summary...</div>
+        <button id="btn-copy-summary" class="btn btn-primary">📋 Copy Summary to Clipboard</button>
+      </div>
+    </div>
+
+    <article class="article-section">
+      <h2>Maximizing Distributed Team Productivity with Overlap Intelligence</h2>
+      <p>
+        Managing a global workforce presents unique communication dynamics. While asynchronous documentation keeps engineering velocity high, synchronous connection—such as sprint planning, architecture reviews, and 1-on-1 feedback—remains essential. Finding overlapping 9-to-5 working hours across distributed team members prevents burnout and eliminates late-night calls.
+      </p>
+
+      <h3>The Concept of 'Golden Hours' in Remote Work</h3>
+      <p>
+        "Golden Hours" represent the narrow window of time during a 24-hour cycle when every designated team member is within their active working hours (typically 9:00 AM to 5:00 PM local time).
+      </p>
+      <ul>
+        <li><strong>Transatlantic Teams:</strong> A team bridging New York (<a href="/gmt-to-est">EST</a>) and London (<a href="/bst">BST</a>) enjoys a generous 3 to 4 hour golden overlap between 9:00 AM – 1:00 PM EST (2:00 PM – 6:00 PM BST). Learn more on our <a href="/best-time-us-europe-meetings">US & Europe Meeting Guide</a>.</li>
+        <li><strong>Transpacific Teams:</strong> A team spanning San Francisco (<a href="/pst-to-est">PST</a>) and Tokyo (<a href="/tokyo-time">JST</a>) experiences overlap during late afternoon PST (4:00 PM – 5:00 PM) corresponding to early morning JST (9:00 AM – 10:00 AM). See <a href="/best-time-us-asia-meetings">US & Asia Meeting Guide</a>.</li>
+      </ul>
+
+      <h3>Overcoming Zero-Overlap Scenarios</h3>
+      <p>
+        When teams span 12 to 14 hour gaps, standard 9-to-5 working hours do not intersect. Rather than forcing one engineer to take calls at 2:00 AM, high-performing remote companies adopt key strategies:
+      </p>
+      <ul>
+        <li><strong>Shoulder Hour Adjustments:</strong> Shifting one team member's schedule slightly earlier (e.g. 8:00 AM start) and another slightly later (e.g. 10:00 AM start).</li>
+        <li><strong>Rotating Meeting Slots:</strong> Alternating meeting hours weekly so no single region permanently bears inconvenient hours.</li>
+        <li><strong>Asynchronous Video Updates:</strong> Utilizing recorded walkthroughs and detailed PR descriptions to minimize mandatory live meetings.</li>
+      </ul>
+
+      <h3>Developer Code Snippet: Calculating Overlap Windows in Code</h3>
+      <p>
+        Developers building internal developer portals or HR management tools can calculate overlap vectors using standard array intersection algorithms in JavaScript:
+      </p>
+
+      <pre><code>{`// Calculate overlapping UTC hours across N team members
+function findTeamOverlap(members) {
+  // Array of 24 booleans representing UTC hours 0-23
+  let overlapGrid = new Array(24).fill(true);
+
+  members.forEach(member => {
+    for (let utcHour = 0; utcHour < 24; utcHour++) {
+      const utcDate = new Date(\`2026-07-31T\${String(utcHour).padStart(2, '0')}:00:00Z\`);
+      const localHour = parseInt(new Intl.DateTimeFormat('en-US', {
+        timeZone: member.zone,
+        hour: 'numeric',
+        hour12: false
+      }).format(utcDate), 10);
+
+      const isWorking = localHour >= member.start && localHour < member.end;
+      if (!isWorking) {
+        overlapGrid[utcHour] = false;
+      }
+    }
+  });
+
+  // Extract continuous golden UTC hours
+  return overlapGrid.map((isGolden, hour) => isGolden ? hour : null).filter(h => h !== null);
+}`}</code></pre>
+
+      <p>
+        Explore related utilities including our <a href="/meeting-planner">Global Meeting Planner</a>, <a href="/time-difference-calculator">Time Difference Calculator</a>, and <a href="/world-clock">World Clock Tool</a>.
+      </p>
+    </article>
+
+    <div class="faq-container">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      {meta.faqs.map((faq) => (
+        <div class="faq-item">
+          <div class="faq-question">{faq.q}</div>
+          <div class="faq-answer" set:html={faq.a}></div>
+        </div>
+      ))}
+    </div>
+
+    <RelatedConvertersWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+  </div>
+
+  <script>
+    const CITIES = [
+      { name: "New York, USA", zone: "America/New_York" },
+      { name: "London, UK", zone: "Europe/London" },
+      { name: "Tokyo, Japan", zone: "Asia/Tokyo" },
+      { name: "Paris, France", zone: "Europe/Paris" },
+      { name: "Sydney, Australia", zone: "Australia/Sydney" },
+      { name: "San Francisco, USA", zone: "America/Los_Angeles" },
+      { name: "Chicago, USA", zone: "America/Chicago" },
+      { name: "Singapore", zone: "Asia/Singapore" },
+      { name: "Dubai, UAE", zone: "Asia/Dubai" },
+      { name: "New Delhi, India", zone: "Asia/Kolkata" },
+      { name: "Hong Kong", zone: "Asia/Hong_Kong" },
+      { name: "Berlin, Germany", zone: "Europe/Berlin" },
+      { name: "Toronto, Canada", zone: "America/Toronto" }
+    ];
+
+    let teamMembers = [
+      { name: "Alex (Product)", zone: "America/New_York", start: 9, end: 17 },
+      { name: "Emma (Engineering)", zone: "Europe/London", start: 9, end: 17 },
+      { name: "Kenji (Design)", zone: "Asia/Tokyo", start: 9, end: 17 }
+    ];
+
+    const nameInput = document.getElementById("member-name") as HTMLInputElement;
+    const citySelect = document.getElementById("member-city") as HTMLSelectElement;
+    const startInput = document.getElementById("work-start") as HTMLInputElement;
+    const endInput = document.getElementById("work-end") as HTMLInputElement;
+    const btnAdd = document.getElementById("btn-add-member") as HTMLButtonElement;
+    
+    const matrixHeader = document.getElementById("matrix-header") as HTMLElement;
+    const matrixBody = document.getElementById("matrix-body") as HTMLElement;
+    const goldenBanner = document.getElementById("golden-banner") as HTMLElement;
+    const goldenText = document.getElementById("golden-text") as HTMLElement;
+    const summaryDetails = document.getElementById("summary-details") as HTMLElement;
+    const btnCopySummary = document.getElementById("btn-copy-summary") as HTMLButtonElement;
+
+    const btnSave = document.getElementById("btn-save-team") as HTMLButtonElement;
+    const btnLoad = document.getElementById("btn-load-team") as HTMLButtonElement;
+    const btnShare = document.getElementById("btn-share-team") as HTMLButtonElement;
+
+    // Populate Cities
+    CITIES.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.zone;
+      opt.textContent = c.name;
+      citySelect.appendChild(opt);
+    });
+
+    btnAdd.addEventListener("click", () => {
+      const name = nameInput.value.trim() || "Team Member";
+      const zone = citySelect.value;
+      const start = parseInt(startInput.value, 10);
+      const end = parseInt(endInput.value, 10);
+
+      teamMembers.push({ name, zone, start, end });
+      nameInput.value = "";
+      renderGrid();
+    });
+
+    btnSave.addEventListener("click", () => {
+      localStorage.setItem("gmt_team_members", JSON.stringify(teamMembers));
+      alert("Team configuration saved to local storage!");
+    });
+
+    btnLoad.addEventListener("click", () => {
+      const saved = localStorage.getItem("gmt_team_members");
+      if (saved) {
+        teamMembers = JSON.parse(saved);
+        renderGrid();
+      } else {
+        alert("No saved team found.");
+      }
+    });
+
+    btnShare.addEventListener("click", () => {
+      const jsonStr = encodeURIComponent(JSON.stringify(teamMembers));
+      const url = `${window.location.origin}${window.location.pathname}?team=${jsonStr}`;
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = btnShare.textContent;
+        btnShare.textContent = "✅ Link Copied!";
+        setTimeout(() => { btnShare.textContent = orig; }, 2000);
+      });
+    });
+
+    btnCopySummary.addEventListener("click", () => {
+      navigator.clipboard.writeText(summaryDetails.textContent || "").then(() => {
+        const orig = btnCopySummary.textContent;
+        btnCopySummary.textContent = "✅ Summary Copied!";
+        setTimeout(() => { btnCopySummary.textContent = orig; }, 2000);
+      });
+    });
+
+    // Presets
+    document.querySelectorAll(".btn-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const preset = btn.getAttribute("data-preset");
+        if (preset === "us-eu") {
+          teamMembers = [
+            { name: "New York Hub", zone: "America/New_York", start: 9, end: 17 },
+            { name: "London Hub", zone: "Europe/London", start: 9, end: 17 },
+            { name: "Berlin Hub", zone: "Europe/Berlin", start: 9, end: 17 }
+          ];
+        } else if (preset === "us-asia") {
+          teamMembers = [
+            { name: "San Francisco Hub", zone: "America/Los_Angeles", start: 9, end: 17 },
+            { name: "Tokyo Hub", zone: "Asia/Tokyo", start: 9, end: 17 },
+            { name: "Singapore Hub", zone: "Asia/Singapore", start: 9, end: 17 }
+          ];
+        } else if (preset === "tri-hub") {
+          teamMembers = [
+            { name: "New York Hub", zone: "America/New_York", start: 9, end: 17 },
+            { name: "London Hub", zone: "Europe/London", start: 9, end: 17 },
+            { name: "Tokyo Hub", zone: "Asia/Tokyo", start: 9, end: 17 }
+          ];
+        }
+        renderGrid();
+      });
+    });
+
+    function renderGrid() {
+      // Header
+      matrixHeader.innerHTML = '<th class="member-col">Team Member & Location</th>';
+      for (let h = 0; h < 24; h++) {
+        const th = document.createElement("th");
+        th.textContent = `${String(h).padStart(2, "0")}:00 UTC`;
+        matrixHeader.appendChild(th);
+      }
+
+      // Determine Golden Hours
+      const goldenUtcHours: number[] = [];
+      for (let utcHour = 0; utcHour < 24; utcHour++) {
+        const utcDate = new Date(`2026-07-31T${String(utcHour).padStart(2, "0")}:00:00Z`);
+        let allWorking = true;
+
+        for (const m of teamMembers) {
+          const localHour = parseInt(new Intl.DateTimeFormat("en-US", {
+            timeZone: m.zone,
+            hour: "numeric",
+            hour12: false
+          }).format(utcDate), 10);
+
+          if (localHour < m.start || localHour >= m.end) {
+            allWorking = false;
+            break;
+          }
+        }
+
+        if (allWorking && teamMembers.length > 0) {
+          goldenUtcHours.push(utcHour);
+        }
+      }
+
+      // Update Golden Banner
+      if (goldenUtcHours.length > 0) {
+        const firstHour = goldenUtcHours[0];
+        const lastHour = goldenUtcHours[goldenUtcHours.length - 1] + 1;
+        goldenText.textContent = `Found ${goldenUtcHours.length} Golden Hour(s) of 100% team overlap: ${String(firstHour).padStart(2, "0")}:00 to ${String(lastHour).padStart(2, "0")}:00 UTC!`;
+      } else {
+        goldenText.textContent = "No 100% 9-to-5 working hour overlap found for this combination. Try adjusting start/end hours or using shoulder windows.";
+      }
+
+      // Body Rows
+      matrixBody.innerHTML = "";
+      const baseDateStr = "2026-07-31";
+
+      teamMembers.forEach((m, idx) => {
+        const tr = document.createElement("tr");
+        
+        const tdMember = document.createElement("td");
+        tdMember.className = "member-col";
+        const cityObj = CITIES.find(c => c.zone === m.zone) || { name: m.zone };
+        tdMember.innerHTML = `
+          <strong>${m.name}</strong><br/>
+          <span style="font-size: 0.8rem; color: #64748b;">${cityObj.name} (${m.start}:00-${m.end}:00)</span>
+          <button class="btn-remove" data-idx="${idx}" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; margin-left:0.5rem;">×</button>
+        `;
+        tr.appendChild(tdMember);
+
+        for (let utcHour = 0; utcHour < 24; utcHour++) {
+          const utcDate = new Date(`${baseDateStr}T${String(utcHour).padStart(2, "0")}:00:00Z`);
+          const localHour = parseInt(new Intl.DateTimeFormat("en-US", {
+            timeZone: m.zone,
+            hour: "numeric",
+            hour12: false
+          }).format(utcDate), 10);
+
+          const isWorking = localHour >= m.start && localHour < m.end;
+          const isGolden = goldenUtcHours.includes(utcHour);
+
+          const td = document.createElement("td");
+          if (isGolden) {
+            td.className = "cell-golden";
+            td.textContent = "⭐ " + localHour + ":00";
+          } else if (isWorking) {
+            td.className = "cell-working";
+            td.textContent = `${localHour}:00`;
+          } else {
+            td.className = "cell-off";
+            td.textContent = `${localHour}:00`;
+          }
+
+          tr.appendChild(td);
+        }
+
+        matrixBody.appendChild(tr);
+      });
+
+      // Remove handlers
+      document.querySelectorAll(".btn-remove").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = parseInt((e.target as HTMLElement).getAttribute("data-idx") || "0", 10);
+          teamMembers.splice(idx, 1);
+          renderGrid();
+        });
+      });
+
+      updateSummaryText(goldenUtcHours);
+    }
+
+    function updateSummaryText(goldenUtcHours: number[]) {
+      if (goldenUtcHours.length === 0) {
+        summaryDetails.textContent = "No 100% working hour overlap window detected across all team members.";
+        return;
+      }
+
+      const firstUtc = goldenUtcHours[0];
+      const dateObj = new Date(`2026-07-31T${String(firstUtc).padStart(2, "0")}:00:00Z`);
+
+      let lines = [
+        "🌟 Team Golden Hours Overlap Summary",
+        `UTC Golden Hour Window Start: ${String(firstUtc).padStart(2, "0")}:00 UTC`,
+        "----------------------------------------"
+      ];
+
+      teamMembers.forEach(m => {
+        const localFormatted = new Intl.DateTimeFormat("en-US", {
+          timeZone: m.zone,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }).format(dateObj);
+
+        const cityName = CITIES.find(c => c.zone === m.zone)?.name || m.zone;
+        lines.push(`• ${m.name} (${cityName}): ${localFormatted}`);
+      });
+
+      summaryDetails.textContent = lines.join("\n");
+    }
+
+    // Query param parse
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("team")) {
+      try {
+        teamMembers = JSON.parse(decodeURIComponent(params.get("team") || "[]"));
+      } catch (e) {}
+    }
+
+    renderGrid();
+  </script>
+</BaseLayout>

@@ -1,0 +1,687 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "world-clock";
+const seoTitle = "Global World Clock — Real-Time Live Clocks for 50+ Cities";
+const pageDescription = "Track current live local times across 50+ global cities with our interactive World Clock tool. Search, filter by continent, save favorite time zones, and inspect UTC offsets.";
+
+const pubDate = "2026-07-31T00:00:00+05:00";
+const updatedDate = "2026-07-31T00:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "world clock, live world clock, current time around the world, global time zones, city clocks, local time finder, UTC offset clock, day night status",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is a World Clock and how does it work?",
+      a: "A World Clock is an interactive digital utility that displays live local times for multiple cities across global time zones simultaneously. It uses standard UTC offsets and local timezone rules to calculate real-time hours, minutes, and seconds."
+    },
+    {
+      q: "How does the live world clock account for Daylight Saving Time (DST)?",
+      a: "The tool leverages native browser time zone APIs (`Intl.DateTimeFormat`) configured with standard IANA time zone identifiers (such as `America/New_York` or `Europe/London`). This ensures DST adjustments occur automatically based on official local transition rules."
+    },
+    {
+      q: "Can I filter cities by continent?",
+      a: "Yes. You can toggle between continent categories including North America, South America, Europe, Asia, Africa, and Oceania, or view all cities in a single unified view."
+    },
+    {
+      q: "How do I save my favorite cities?",
+      a: "Click the star icon on any city card to add it to your Favorites. Saved cities are automatically pinned to the top of your dashboard and persisted in your browser's `localStorage`."
+    },
+    {
+      q: "Does the world clock support 24-hour military time?",
+      a: "Yes! Use the 12h / 24h toggle switch at the top of the interface to instantly convert all displayed city clocks between standard AM/PM format and 24-hour military time."
+    },
+    {
+      q: "What is Coordinated Universal Time (UTC)?",
+      a: "Coordinated Universal Time (UTC) is the primary time standard by which the world regulates clocks and time. Time zones are defined as positive or negative offsets from UTC (e.g., UTC-5 for Eastern Standard Time)."
+    },
+    {
+      q: "Why is Greenwich Mean Time (GMT) sometimes used interchangeably with UTC?",
+      a: "GMT is a time zone based on solar time at the Royal Observatory in Greenwich, London. UTC is an atomic clock time standard. While they share the same zero-offset time during winter in the UK, UTC is the modern scientific standard."
+    },
+    {
+      q: "How many time zones exist worldwide?",
+      a: "There are 24 primary nautical time zones spaced at 15-degree longitude intervals. However, due to political boundaries, fractional offsets (such as India's UTC+5:30), and seasonal DST shifts, over 38 time zones are in active global use."
+    },
+    {
+      q: "What is the day/night badge indicator on each clock?",
+      a: "The day/night indicator displays a sun icon for local daytime (06:00 AM to 05:59 PM) and a moon icon for local nighttime (06:00 PM to 05:59 AM) based on each city's live local time."
+    },
+    {
+      q: "How can I search for a specific city or country?",
+      a: "Type the name of the city, country, or timezone abbreviation (e.g., 'Tokyo', 'Japan', or 'JST') into the live search bar to instantly filter the displayed clocks."
+    },
+    {
+      q: "Why do some countries have half-hour or 45-minute offsets?",
+      a: "Certain nations, such as India (UTC+5:30), Iran (UTC+3:30), and Nepal (UTC+5:45), established fractional offsets to better align solar noon with human activity across their geographic terrain."
+    },
+    {
+      q: "Does the tool run accurately on mobile devices?",
+      a: "Yes. The tool is fully responsive and optimized for mobile, tablet, and desktop screens with real-time ticking rendered efficiently via JavaScript request animation loops."
+    },
+    {
+      q: "How do aviation and maritime industries use world clocks?",
+      a: "Aviation and shipping operators rely on UTC (often referred to as Zebra time or Z-time) to coordinate flight paths, sea routes, and radio schedules across international boundaries without local time confusion."
+    },
+    {
+      q: "What happens when I cross the International Date Line?",
+      a: "Crossing the International Date Line (180° longitude) shifts the calendar date forward by 24 hours when traveling west, or backward by 24 hours when traveling east, while the clock time minutes remain synchronized."
+    },
+    {
+      q: "Can I use the world clock to plan international meetings?",
+      a: "Yes! The world clock lets you quickly compare current times across team locations. For visual matrix planning, you can also use our dedicated <a href=\"/meeting-planner\">Meeting Planner</a> tool."
+    },
+    {
+      q: "How does daylight saving time affect global time differences?",
+      a: "Because northern and southern hemispheres observe DST in opposite months—and many tropical nations do not observe DST at all—the hour gap between two cities can shift twice a year."
+    },
+    {
+      q: "How can developers programmatically fetch live time zone data in JavaScript?",
+      a: "Developers can utilize the standard JavaScript `Intl.DateTimeFormat` API with `timeZone` parameters or standard date formatting libraries to calculate offset differences."
+    },
+    {
+      q: "Is there any cost or registration required to use this tool?",
+      a: "No. The Global World Clock tool is 100% free with no registration, subscription, or software installation required."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Global World Clock Tool",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <style>
+    .world-clock-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .hero-banner h1 {
+      font-size: 2.75rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+    }
+    .hero-banner p {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .controls-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+    .filter-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .btn-filter {
+      padding: 0.5rem 1rem;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #475569;
+      transition: all 0.2s;
+    }
+    .btn-filter.active, .btn-filter:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .toggle-btn {
+      padding: 0.5rem 1rem;
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .favorites-section {
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .clocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .clock-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .clock-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .city-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+    .country-name {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    .fav-star {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: color 0.2s;
+    }
+    .fav-star.active {
+      color: #eab308;
+    }
+    .time-display {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0.5rem 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .date-display {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.75rem;
+      border-top: 1px solid #f1f5f9;
+    }
+    .badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-day {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .badge-night {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    .badge-utc {
+      background: #f1f5f9;
+      color: #475569;
+      font-family: monospace;
+    }
+
+    .article-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-top: 3rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .article-section h2 {
+      font-size: 1.85rem;
+      color: #0f172a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .article-section h3 {
+      font-size: 1.4rem;
+      color: #1e293b;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .article-section p {
+      margin-bottom: 1.25rem;
+    }
+    .article-section ul {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+    .article-section li {
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-container {
+      margin-top: 3rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+    }
+    .faq-question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .faq-answer {
+      color: #475569;
+      margin: 0;
+    }
+  </style>
+
+  <div class="world-clock-container">
+    <div class="hero-banner">
+      <h1>Global <span style="color: #60a5fa;">World Clock</span></h1>
+      <p>Real-time live ticking clocks for 50+ major cities worldwide with UTC offsets, DST status, and custom favorites.</p>
+    </div>
+
+    <div class="controls-card">
+      <div class="search-box">
+        <input type="text" id="city-search" class="search-input" placeholder="Search city, country, or timezone (e.g. Tokyo, UK, EST)..." />
+      </div>
+      <div class="filter-buttons">
+        <button class="btn-filter active" data-continent="all">All</button>
+        <button class="btn-filter" data-continent="North America">N. America</button>
+        <button class="btn-filter" data-continent="Europe">Europe</button>
+        <button class="btn-filter" data-continent="Asia">Asia</button>
+        <button class="btn-filter" data-continent="Africa">Africa</button>
+        <button class="btn-filter" data-continent="South America">S. America</button>
+        <button class="btn-filter" data-continent="Oceania">Oceania</button>
+      </div>
+      <div class="toggle-container">
+        <span>Format:</span>
+        <button id="format-toggle" class="toggle-btn">12H</button>
+      </div>
+    </div>
+
+    <div id="favorites-container" class="favorites-section" style="display: none;">
+      <div class="section-title">⭐ Favorite Clocks</div>
+      <div id="favorites-grid" class="clocks-grid"></div>
+    </div>
+
+    <div class="all-clocks-section">
+      <div class="section-title">🌐 All World Clocks</div>
+      <div id="clocks-grid" class="clocks-grid"></div>
+    </div>
+
+    <article class="article-section">
+      <h2>Understanding the Global World Clock Standard</h2>
+      <p>
+        In an increasingly interconnected world, keeping track of exact time across continental boundaries is essential for business executives, remote engineering teams, international travelers, and aviation professionals. Whether you are scheduling a synchronizing meeting using our <a href="/meeting-planner">Global Meeting Planner</a>, converting times between <a href="/gmt-to-est">GMT and EST</a>, or tracking software servers configured in UTC, a comprehensive world clock serves as the foundational anchor of global time intelligence.
+      </p>
+
+      <h3>The Evolution from Solar Time to Coordinated Universal Time (UTC)</h3>
+      <p>
+        Historically, every city and township kept its own local solar time based on the Sun reaching its meridian zenith (solar noon). When high-speed railway networks expanded in the 19th century, localized solar times created severe logistical hazards. In 1884, the International Meridian Conference in Washington, D.C. established Greenwich, London as the prime meridian (0° longitude), creating Greenwich Mean Time (GMT).
+      </p>
+      <p>
+        In 1972, Coordinated Universal Time (UTC) replaced GMT as the precise international atomic time standard. UTC is measured by highly stabilized international atomic clocks, maintaining nanosecond precision. Modern time zones—such as <a href="/est">Eastern Standard Time (EST)</a>, <a href="/pst-to-est">Pacific Standard Time (PST)</a>, and <a href="/cet">Central European Time (CET)</a>—are formally defined by their fixed or seasonal hour offsets from UTC.
+      </p>
+
+      <h3>How Time Zone Offsets Work Across Continents</h3>
+      <p>
+        Earth is divided geometrically into 360 degrees of longitude. Because the planet completes one full rotation every 24 hours, each hour corresponds to exactly 15 degrees of longitude. However, geopolitical borders, economic trading partnerships, and island geography shape modern time zone boundaries:
+      </p>
+      <ul>
+        <li><strong>North America:</strong> Spans multiple major zones from Pacific Time (UTC-8 / UTC-7) to Eastern Time (UTC-5 / UTC-4). Detailed conversion guides can be found on our <a href="/us-time-zones">US Time Zones Guide</a>.</li>
+        <li><strong>Europe:</strong> Operates across Western European Time (UTC+0), Central European Time (UTC+1, see <a href="/cet-to-est">CET to EST</a>), and Eastern European Time (UTC+2).</li>
+        <li><strong>Asia & Pacific:</strong> Features large unified zones like China Standard Time (UTC+8) and Japan Standard Time (UTC+9, see <a href="/tokyo-time">Tokyo Live Time</a>), as well as fractional half-hour zones like India Standard Time (UTC+5:30, see <a href="/delhi-time">Delhi Live Time</a>).</li>
+        <li><strong>Australia & Oceania:</strong> Covers multiple daylight saving and standard zones ranging from Perth (UTC+8, <a href="/awst-to-est">AWST</a>) to Sydney (UTC+10 / UTC+11, <a href="/aest-to-est">AEST</a>) and Auckland (UTC+12 / UTC+13, <a href="/auckland-time">Auckland Live Time</a>).</li>
+      </ul>
+
+      <h3>Daylight Saving Time (DST) Dynamic Shifts</h3>
+      <p>
+        One of the greatest challenges in international scheduling is the asymmetric application of Daylight Saving Time. Around 70 countries shift their local clocks forward by one hour in spring and backward in autumn to maximize daylight hours. However:
+      </p>
+      <ul>
+        <li>Northern hemisphere nations (e.g., USA, Canada, UK, Germany) shift forward between March and April and back in October or November. Learn more in our guide on <a href="/countries-that-use-dst">Countries That Use DST</a>.</li>
+        <li>Southern hemisphere nations (e.g., Australia, New Zealand) shift forward in October and back in April. See <a href="/australia-time-zones">Australia Time Zones</a>.</li>
+        <li>Tropical and equatorial countries (e.g., Singapore, Dubai, Brazil near equator) do not observe DST. Check <a href="/countries-without-dst">Countries Without DST</a>.</li>
+      </ul>
+      <p>
+        Because these transition dates do not coincide, time differences between global hub cities—such as <a href="/london-time">London</a> and <a href="/chicago-time">Chicago</a>—change by an hour twice per year. Using an automated world clock tool ensures you never miss a critical call during seasonal DST transition windows.
+      </p>
+
+      <h3>Developer Cheat Sheet: Working with Timezones in Code</h3>
+      <p>
+        For software developers building global web applications or microservices, managing timezones requiring converting local timestamps into standardized ISO 8601 strings. You can explore complete tutorials in our <a href="/developer-tools">Developer Toolkit</a>. Here is an example of accessing localized time in JavaScript:
+      </p>
+
+      <pre><code>{`// Native JavaScript Intl API for real-time timezone resolution
+function getCityTime(timeZone, use24Hour = false) {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: !use24Hour
+  });
+  return formatter.format(now);
+}
+
+console.log("Tokyo Time:", getCityTime("Asia/Tokyo"));
+console.log("New York Time:", getCityTime("America/New_York", true));`}</code></pre>
+
+      <p>
+        Whether you are managing cross-border financial trades, coordinating server deployments, or calculating team availability with our <a href="/business-hours-overlap">Business Hours Overlap Tool</a>, our live world clock gives you instant clarity across every major time zone worldwide.
+      </p>
+    </article>
+
+    <div class="faq-container">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      {meta.faqs.map((faq) => (
+        <div class="faq-item">
+          <div class="faq-question">{faq.q}</div>
+          <div class="faq-answer" set:html={faq.a}></div>
+        </div>
+      ))}
+    </div>
+
+    <RelatedConvertersWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+  </div>
+
+  <script>
+    const CITIES = [
+      { name: "New York", country: "USA", zone: "America/New_York", continent: "North America" },
+      { name: "London", country: "UK", zone: "Europe/London", continent: "Europe" },
+      { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", continent: "Asia" },
+      { name: "Paris", country: "France", zone: "Europe/Paris", continent: "Europe" },
+      { name: "Sydney", country: "Australia", zone: "Australia/Sydney", continent: "Oceania" },
+      { name: "Dubai", country: "UAE", zone: "Asia/Dubai", continent: "Asia" },
+      { name: "Singapore", country: "Singapore", zone: "Asia/Singapore", continent: "Asia" },
+      { name: "Hong Kong", country: "China", zone: "Asia/Hong_Kong", continent: "Asia" },
+      { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles", continent: "North America" },
+      { name: "Chicago", country: "USA", zone: "America/Chicago", continent: "North America" },
+      { name: "Toronto", country: "Canada", zone: "America/Toronto", continent: "North America" },
+      { name: "Berlin", country: "Germany", zone: "Europe/Berlin", continent: "Europe" },
+      { name: "Rome", country: "Italy", zone: "Europe/Rome", continent: "Europe" },
+      { name: "Madrid", country: "Spain", zone: "Europe/Madrid", continent: "Europe" },
+      { name: "Amsterdam", country: "Netherlands", zone: "Europe/Amsterdam", continent: "Europe" },
+      { name: "Zurich", country: "Switzerland", zone: "Europe/Zurich", continent: "Europe" },
+      { name: "Moscow", country: "Russia", zone: "Europe/Moscow", continent: "Europe" },
+      { name: "Istanbul", country: "Turkey", zone: "Europe/Istanbul", continent: "Europe" },
+      { name: "Riyadh", country: "Saudi Arabia", zone: "Asia/Riyadh", continent: "Asia" },
+      { name: "New Delhi", country: "India", zone: "Asia/Kolkata", continent: "Asia" },
+      { name: "Bangkok", country: "Thailand", zone: "Asia/Bangkok", continent: "Asia" },
+      { name: "Seoul", country: "South Korea", zone: "Asia/Seoul", continent: "Asia" },
+      { name: "Beijing", country: "China", zone: "Asia/Shanghai", continent: "Asia" },
+      { name: "Jakarta", country: "Indonesia", zone: "Asia/Jakarta", continent: "Asia" },
+      { name: "Cairo", country: "Egypt", zone: "Africa/Cairo", continent: "Africa" },
+      { name: "Johannesburg", country: "South Africa", zone: "Africa/Johannesburg", continent: "Africa" },
+      { name: "Lagos", country: "Nigeria", zone: "Africa/Lagos", continent: "Africa" },
+      { name: "Nairobi", country: "Kenya", zone: "Africa/Nairobi", continent: "Africa" },
+      { name: "Sao Paulo", country: "Brazil", zone: "America/Sao_Paulo", continent: "South America" },
+      { name: "Buenos Aires", country: "Argentina", zone: "America/Argentina/Buenos_Aires", continent: "South America" },
+      { name: "Santiago", country: "Chile", zone: "America/Santiago", continent: "South America" },
+      { name: "Mexico City", country: "Mexico", zone: "America/Mexico_City", continent: "North America" },
+      { name: "Auckland", country: "New Zealand", zone: "Pacific/Auckland", continent: "Oceania" },
+      { name: "Honolulu", country: "USA (Hawaii)", zone: "Pacific/Honolulu", continent: "Oceania" },
+      { name: "Vancouver", country: "Canada", zone: "America/Vancouver", continent: "North America" },
+      { name: "Denver", country: "USA", zone: "America/Denver", continent: "North America" },
+      { name: "Phoenix", country: "USA", zone: "America/Phoenix", continent: "North America" },
+      { name: "Anchorage", country: "USA (Alaska)", zone: "America/Anchorage", continent: "North America" },
+      { name: "Stockholm", country: "Sweden", zone: "Europe/Stockholm", continent: "Europe" },
+      { name: "Athens", country: "Greece", zone: "Europe/Athens", continent: "Europe" },
+      { name: "Dublin", country: "Ireland", zone: "Europe/Dublin", continent: "Europe" },
+      { name: "Lisbon", country: "Portugal", zone: "Europe/Lisbon", continent: "Europe" },
+      { name: "Warsaw", country: "Poland", zone: "Europe/Warsaw", continent: "Europe" },
+      { name: "Vienna", country: "Austria", zone: "Europe/Vienna", continent: "Europe" },
+      { name: "Manila", country: "Philippines", zone: "Asia/Manila", continent: "Asia" },
+      { name: "Kuala Lumpur", country: "Malaysia", zone: "Asia/Kuala_Lumpur", continent: "Asia" },
+      { name: "Taipei", country: "Taiwan", zone: "Asia/Taipei", continent: "Asia" },
+      { name: "Melbourne", country: "Australia", zone: "Australia/Melbourne", continent: "Oceania" },
+      { name: "Brisbane", country: "Australia", zone: "Australia/Brisbane", continent: "Oceania" },
+      { name: "Perth", country: "Australia", zone: "Australia/Perth", continent: "Oceania" }
+    ];
+
+    let is24Hour = false;
+    let currentContinent = "all";
+    let searchQuery = "";
+    let favorites = JSON.parse(localStorage.getItem("gmt_fav_clocks") || "[]");
+
+    const searchInput = document.getElementById("city-search") as HTMLInputElement;
+    const formatToggleBtn = document.getElementById("format-toggle") as HTMLButtonElement;
+    const clocksGrid = document.getElementById("clocks-grid") as HTMLElement;
+    const favoritesGrid = document.getElementById("favorites-grid") as HTMLElement;
+    const favoritesContainer = document.getElementById("favorites-container") as HTMLElement;
+    const filterBtns = document.querySelectorAll(".btn-filter");
+
+    formatToggleBtn.addEventListener("click", () => {
+      is24Hour = !is24Hour;
+      formatToggleBtn.textContent = is24Hour ? "24H" : "12H";
+      renderClocks();
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = (e.target as HTMLInputElement).value.toLowerCase();
+      renderClocks();
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentContinent = btn.getAttribute("data-continent") || "all";
+        renderClocks();
+      });
+    });
+
+    function toggleFavorite(cityName: string) {
+      if (favorites.includes(cityName)) {
+        favorites = favorites.filter(f => f !== cityName);
+      } else {
+        favorites.push(cityName);
+      }
+      localStorage.setItem("gmt_fav_clocks", JSON.stringify(favorites));
+      renderClocks();
+    }
+
+    function getFormattedTime(zone: string) {
+      const now = new Date();
+      try {
+        const timeFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: !is24Hour
+        });
+        const dateFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          weekday: "short",
+          month: "short",
+          day: "numeric"
+        });
+        const hourFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          hour: "numeric",
+          hour12: false
+        });
+
+        // Calculate UTC Offset
+        const utcDate = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
+        const tzDate = new Date(now.toLocaleString("en-US", { timeZone: zone }));
+        const offsetDiffMs = tzDate.getTime() - utcDate.getTime();
+        const offsetHours = Math.floor(Math.abs(offsetDiffMs) / 3600000);
+        const offsetMins = Math.floor((Math.abs(offsetDiffMs) % 3600000) / 60000);
+        const sign = offsetDiffMs >= 0 ? "+" : "-";
+        const offsetStr = `UTC${sign}${String(offsetHours).padStart(2, "0")}:${String(offsetMins).padStart(2, "0")}`;
+
+        const hour24 = parseInt(hourFormatter.format(now), 10);
+        const isDay = hour24 >= 6 && hour24 < 18;
+
+        return {
+          timeStr: timeFormatter.format(now),
+          dateStr: dateFormatter.format(now),
+          offsetStr,
+          isDay
+        };
+      } catch (err) {
+        return { timeStr: "--:--:--", dateStr: "", offsetStr: "UTC", isDay: true };
+      }
+    }
+
+    function createClockCard(city: typeof CITIES[0], isFav: boolean) {
+      const { timeStr, dateStr, offsetStr, isDay } = getFormattedTime(city.zone);
+      const card = document.createElement("div");
+      card.className = "clock-card";
+      card.innerHTML = `
+        <div class="card-header">
+          <div>
+            <h3 class="city-name">\${city.name}</h3>
+            <div class="country-name">\${city.country}</div>
+          </div>
+          <button class="fav-star \${isFav ? 'active' : ''}" data-city="\${city.name}" title="Toggle Favorite">★</button>
+        </div>
+        <div class="time-display">\${timeStr}</div>
+        <div class="date-display">\${dateStr}</div>
+        <div class="card-footer">
+          <span class="badge \${isDay ? 'badge-day' : 'badge-night'}">
+            \${isDay ? '☀️ Day' : '🌙 Night'}
+          </span>
+          <span class="badge badge-utc">\${offsetStr}</span>
+        </div>
+      `;
+
+      const starBtn = card.querySelector(".fav-star");
+      starBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(city.name);
+      });
+
+      return card;
+    }
+
+    function renderClocks() {
+      const filtered = CITIES.filter(city => {
+        const matchesContinent = currentContinent === "all" || city.continent === currentContinent;
+        const matchesSearch = city.name.toLowerCase().includes(searchQuery) ||
+                              city.country.toLowerCase().includes(searchQuery) ||
+                              city.continent.toLowerCase().includes(searchQuery);
+        return matchesContinent && matchesSearch;
+      });
+
+      const favCities = CITIES.filter(c => favorites.includes(c.name));
+
+      if (favCities.length > 0 && searchQuery === "" && currentContinent === "all") {
+        favoritesContainer.style.display = "block";
+        favoritesGrid.innerHTML = "";
+        favCities.forEach(c => favoritesGrid.appendChild(createClockCard(c, true)));
+      } else {
+        favoritesContainer.style.display = "none";
+      }
+
+      clocksGrid.innerHTML = "";
+      filtered.forEach(c => {
+        const isFav = favorites.includes(c.name);
+        clocksGrid.appendChild(createClockCard(c, isFav));
+      });
+    }
+
+    // Ticking loop
+    setInterval(() => {
+      renderClocks();
+    }, 1000);
+
+    renderClocks();
+  </script>
+</BaseLayout>

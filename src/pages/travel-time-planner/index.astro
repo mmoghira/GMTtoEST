@@ -1,0 +1,394 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "travel-time-planner";
+const seoTitle = "Travel Planner & Jet Lag Minimizer — Calculate Arrival Time & Circadian Protocol";
+const pageDescription = "Calculate your exact local arrival date and time across time zones, estimate jet lag severity, and generate a customized light & sleep circadian protocol.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "travel time planner, jet lag calculator, flight arrival time calculator, circadian rhythm protocol, travel time zone converter, jet lag score, flight time calculator",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is the Travel Planner & Jet Lag Minimizer?",
+      a: "The Travel Planner & Jet Lag Minimizer is an interactive flight logistics tool that calculates your exact local arrival time at your destination, determines the time zone gap, assesses your jet lag severity score, and generates a personalized light exposure and circadian adjustment schedule."
+    },
+    {
+      q: "How does the tool calculate local arrival time?",
+      a: "The tool takes your local departure date and time, adds the total flight duration in hours and minutes, and converts the resulting timestamp to your destination's local time zone (accounting for standard time or Daylight Saving Time offsets)."
+    },
+    {
+      q: "Why is jet lag worse when flying East than flying West?",
+      a: "Flying East shortens your day, forcing your internal body clock (circadian rhythm) to advance—which is biologically harder than delaying your body clock when flying West ('East is Beast, West is Best')."
+    },
+    {
+      q: "How long does it take the body to adjust to a new time zone?",
+      a: "On average, the human circadian clock adapts at a rate of approximately 1 to 1.5 hours of time shift per day when flying West, and about 1 hour per day when flying East."
+    },
+    {
+      q: "What is a Circadian Reset Protocol?",
+      a: "A Circadian Reset Protocol is a science-backed schedule that prescribes specific windows for bright light exposure, light avoidance (wearing sunglasses), strategic sleep, and optional low-dose melatonin to rapidly synchronize your internal clock."
+    },
+    {
+      q: "When should I seek bright light after an Eastward flight?",
+      a: "After an Eastward flight (e.g., New York to London), seek bright daylight in the morning local time at your destination to help advance your body clock."
+    },
+    {
+      q: "When should I avoid light after a long-haul flight?",
+      a: "If you arrive in the morning after a major Eastward shift crossing 6+ time zones, avoid bright light prior to your minimum body temperature point (typically 3-4 hours before your normal wake time) to prevent pushing your clock in the wrong direction."
+    },
+    {
+      q: "How does flight duration impact jet lag severity?",
+      a: "Flight duration causes physical fatigue, but jet lag severity is primarily caused by the number of time zones crossed. A 10-hour flight straight North or South produces minimal jet lag, whereas an 8-hour flight East causes significant circadian disruption."
+    },
+    {
+      q: "Can I pre-adjust my sleep schedule before traveling?",
+      a: "Yes! Moving your sleep and meal times by 1 to 2 hours closer to your destination's time zone over the 2-3 days preceding your flight significantly reduces arrival jet lag."
+    },
+    {
+      q: "How does caffeine affect jet lag recovery?",
+      a: "Caffeine can boost alertness during morning exposure windows, but consuming caffeine within 6 to 8 hours of your target sleep window impairs sleep quality and delays circadian alignment."
+    },
+    {
+      q: "Does hydration play a role in jet lag reduction?",
+      a: "Dehydration from dry aircraft cabin air exacerbates physical symptoms like headache, dry eyes, and fatigue. Drinking 250ml of water per hour of flight helps mitigate physical stress."
+    },
+    {
+      q: "Does the tool account for Daylight Saving Time (DST)?",
+      a: "Yes. Our tool uses standard IANA timezone database offsets which automatically incorporate seasonal Daylight Saving Time transitions for both origin and destination cities."
+    },
+    {
+      q: "What is the Jet Lag Severity Score?",
+      a: "Our Jet Lag Severity Score measures circadian disruption on a 1-to-10 scale based on the direction of travel (East vs West), total time zone shift, flight duration, and sleep windows."
+    },
+    {
+      q: "Can I save or copy my travel schedule?",
+      a: "Yes, click the 'Copy Travel Itinerary' button to copy your departure, arrival, time zone gap, and circadian protocol directly to your clipboard."
+    },
+    {
+      q: "Is melatonin recommended for long-haul flights?",
+      a: "Low-dose melatonin (0.5mg - 3mg) taken 30-60 minutes before your desired target bedtime at your destination can help signal sleep readiness to your brain. Consult a physician before taking supplements."
+    },
+    {
+      q: "How do I calculate arrival time for flights crossing the International Date Line?",
+      a: "Our calculator automatically accounts for the International Date Line. For example, departing Tokyo on Monday morning for Los Angeles will arrive on Monday morning local time (or Sunday evening)."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Travel Planner & Jet Lag Minimizer",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <div class="hero-header text-center py-8 bg-gradient-to-r from-teal-900 via-indigo-950 to-slate-900 text-white rounded-2xl mb-8 shadow-xl">
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">Travel Planner & Jet Lag Minimizer</h1>
+    <p class="text-lg sm:text-xl text-teal-200 max-w-3xl mx-auto px-4">
+      Calculate exact arrival times across time zones, evaluate your jet lag severity score, and follow a science-backed circadian protocol.
+    </p>
+  </div>
+
+  <!-- Interactive Flight & Jet Lag App -->
+  <section class="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Origin -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <span>🛫 Flight Origin</span>
+        </h3>
+        <div>
+          <label for="origin-tz" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Origin City / Time Zone:</label>
+          <select id="origin-tz" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+            <option value="America/New_York" selected>New York (EST/EDT, UTC-5/UTC-4)</option>
+            <option value="America/Los_Angeles">Los Angeles (PST/PDT, UTC-8/UTC-7)</option>
+
+            <option value="America/Chicago">Chicago (CST/CDT, UTC-6/UTC-5)</option>
+            <option value="Europe/London">London (GMT/BST, UTC+0/UTC+1)</option>
+            <option value="Europe/Paris">Paris / Berlin (CET/CEST, UTC+1/UTC+2)</option>
+            <option value="Asia/Dubai">Dubai (GST, UTC+4)</option>
+            <option value="Asia/Kolkata">New Delhi (IST, UTC+5:30)</option>
+            <option value="Asia/Singapore">Singapore (SGT, UTC+8)</option>
+            <option value="Asia/Tokyo">Tokyo (JST, UTC+9)</option>
+            <option value="Australia/Sydney">Sydney (AEST/AEDT, UTC+10/UTC+11)</option>
+          </select>
+        </div>
+        <div>
+          <label for="dep-datetime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Departure Local Date & Time:</label>
+          <input type="datetime-local" id="dep-datetime" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+        </div>
+      </div>
+
+      <!-- Destination -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <span>🛬 Flight Destination</span>
+        </h3>
+        <div>
+          <label for="dest-tz" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Destination City / Time Zone:</label>
+          <select id="dest-tz" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+            <option value="Europe/London" selected>London (GMT/BST, UTC+0/UTC+1)</option>
+            <option value="America/New_York">New York (EST/EDT, UTC-5/UTC-4)</option>
+            <option value="America/Los_Angeles">Los Angeles (PST/PDT, UTC-8/UTC-7)</option>
+            <option value="Europe/Paris">Paris / Berlin (CET/CEST, UTC+1/UTC+2)</option>
+
+            <option value="Asia/Dubai">Dubai (GST, UTC+4)</option>
+            <option value="Asia/Kolkata">New Delhi (IST, UTC+5:30)</option>
+            <option value="Asia/Singapore">Singapore (SGT, UTC+8)</option>
+            <option value="Asia/Tokyo">Tokyo (JST, UTC+9)</option>
+            <option value="Australia/Sydney">Sydney (AEST/AEDT, UTC+10/UTC+11)</option>
+          </select>
+        </div>
+        <div>
+          <label for="flight-duration" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Flight Duration (Hours):</label>
+          <input type="number" id="flight-duration" step="0.5" value="7" min="0.5" max="30" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Output Display Panel -->
+    <div class="bg-gradient-to-br from-teal-50 to-indigo-50 dark:from-slate-900 dark:to-teal-950/40 rounded-xl p-6 border border-teal-200 dark:border-teal-800/50">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-teal-100 dark:border-teal-900/60 pb-3">
+        <h3 class="text-lg font-bold text-teal-950 dark:text-teal-200">Travel & Arrival Summary</h3>
+        <button id="copy-itinerary-btn" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg transition-colors shadow">
+          Copy Itinerary
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Destination Arrival Time</span>
+          <span id="res-arrival" class="text-xl font-extrabold text-teal-700 dark:text-teal-300">-</span>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Time Zone Gap</span>
+          <span id="res-gap" class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">-</span>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Jet Lag Severity Score</span>
+          <span id="res-score" class="text-xl font-extrabold text-amber-600 dark:text-amber-400">-</span>
+        </div>
+      </div>
+
+      <!-- Circadian Protocol Schedule -->
+      <div class="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700">
+        <h4 class="font-bold text-slate-900 dark:text-white mb-2 text-base flex items-center gap-2">
+          <span>☀️ Circadian Reset Protocol (Day 1 at Destination)</span>
+        </h4>
+        <div id="res-protocol" class="text-sm text-slate-700 dark:text-slate-300 space-y-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Educational Article -->
+  <section class="max-w-4xl mx-auto article-container text-slate-800 dark:text-slate-200 space-y-6 leading-relaxed">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-3">
+      The Physiology of Jet Lag & Science-Backed Circadian Reset Strategies
+    </h2>
+    <p>
+      Transmeridian travel across multiple time zones subjects the human organism to a condition clinically known as <strong>Desynchronosis</strong>, or commonly <strong>Jet Lag</strong>. Jet lag occurs when your internal biological master clock—located in the suprachiasmatic nucleus (SCN) of the hypothalamus—remains synchronized with your origin time zone, while your physical body is thrust into a new local environmental light/dark cycle.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Why "East is Beast, West is Best"
+    </h3>
+    <p>
+      Travelers almost universally report that flying East (e.g., New York to London, or London to Tokyo) causes significantly worse jet lag than flying West (e.g., London to New York). Chronobiology explains this asymmetry through natural circadian period lengths:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>Natural Body Clock Period:</strong> Human intrinsic circadian rhythms actually run slightly longer than 24 hours (approximately 24.2 hours on average).</li>
+      <li><strong>Flying West (Phase Delay):</strong> Traveling West lengthens your day. Extending your waking hours to stay up later aligns with your body's natural tendency to delay sleep. The human body adapts at a rate of <strong>1.5 hours per day</strong> when traveling West.</li>
+      <li><strong>Flying East (Phase Advance):</strong> Traveling East shortens your day. Forcing your brain to fall asleep 5 to 8 hours earlier requires advancing your circadian phase, which is biologically harder. The human body adapts at a rate of only <strong>1.0 hour per day</strong> when traveling East.</li>
+    </ul>
+
+    <div class="my-6 p-4 bg-slate-100 dark:bg-slate-800/80 rounded-xl border-l-4 border-teal-500">
+      <h4 class="font-bold text-teal-900 dark:text-teal-300 mb-1">Circadian Adaptation Recovery Rule:</h4>
+      <p class="text-sm font-mono text-slate-700 dark:text-slate-300">
+        Westward Shift (6 hrs) = ~4 Days Full Adaptation<br/>
+        Eastward Shift (6 hrs) = ~6 Days Full Adaptation
+      </p>
+    </div>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      The Role of Sunlight, Dark Windows, and Melatonin
+    </h3>
+    <p>
+      The primary environmental Zeitgeber (time-giver) that resets your internal clock is high-lux blue-wavelength light entering the retina. However, timing is everything:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>Bright Light Exposure Window:</strong> Seeking direct daylight during specific local destination hours signals to the SCN to shift your body clock forward or backward.</li>
+      <li><strong>Light Avoidance Window (Darkness):</strong> Exposing your eyes to bright sunlight during the wrong circadian phase can push your internal clock in the opposite direction, worsening jet lag. Wear blue-blocking sunglasses when outside during avoidance windows.</li>
+      <li><strong>Exogenous Melatonin:</strong> Taking low-dose melatonin (0.5 mg to 3 mg) approximately 30–60 minutes before your target destination bedtime helps induce sleepiness and reinforces circadian shift.</li>
+    </ul>
+
+    <p>
+      When planning long-haul business trips between major hubs like <a href="/gmt-to-est/" class="text-teal-600 dark:text-teal-400 underline font-medium">GMT to EST</a>, <a href="/pst/" class="text-teal-600 dark:text-teal-400 underline font-medium">PST to CET</a>, or <a href="/est/" class="text-teal-600 dark:text-teal-400 underline font-medium">EST to JST</a>, using our <a href="/time-difference-calculator/" class="text-teal-600 dark:text-teal-400 underline font-medium">Time Difference Calculator</a> and <a href="/meeting-planner/" class="text-teal-600 dark:text-teal-400 underline font-medium">Meeting Planner</a> allows you to schedule critical meetings during your peak alertness windows.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Step-by-Step Pre-Flight Protocol
+    </h3>
+    <ol class="list-decimal pl-6 space-y-2">
+      <li><strong>3 Days Before Departure:</strong> Gradually adjust bedtime by 30 to 60 minutes each night toward destination time.</li>
+      <li><strong>On the Airplane:</strong> Immediately switch your watch and smartphone clock to your destination local time. Sleep on the flight only if it is night time at your destination.</li>
+      <li><strong>Hydration & Nutrition:</strong> Drink 250 ml of water per hour aloft. Avoid heavy alcohol and excess caffeine, which fragment sleep architecture.</li>
+      <li><strong>Arrival Day:</strong> Resist the urge to take long naps during local daylight hours. Keep naps under 30 minutes if essential, and stay outdoors in natural sunlight.</li>
+    </ol>
+
+    <p>
+      For regional timezone details, consult our guides on <a href="/chicago-time/" class="text-teal-600 dark:text-teal-400 underline font-medium">Chicago Time</a>, <a href="/aest/" class="text-teal-600 dark:text-teal-400 underline font-medium">AEST</a>, <a href="/cet/" class="text-teal-600 dark:text-teal-400 underline font-medium">CET</a>, <a href="/countries-that-use-dst/" class="text-teal-600 dark:text-teal-400 underline font-medium">Countries That Use DST</a>, and standard <a href="/iso-8601-date-time-format/" class="text-teal-600 dark:text-teal-400 underline font-medium">ISO 8601 Date Format</a> tracking.
+    </p>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="max-w-4xl mx-auto my-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
+    <div class="space-y-4">
+      {meta.faqs.map(faq => (
+        <details class="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-slate-800 dark:text-slate-100">
+            <span>{faq.q}</span>
+            <span class="ml-2 transition transform group-open:rotate-180 text-teal-600 dark:text-teal-400">▼</span>
+          </summary>
+          <div class="mt-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700/60 pt-3">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Script for Interactive Travel App -->
+  <script is:inline>
+    (function() {
+      const originTzSelect = document.getElementById("origin-tz");
+      const destTzSelect = document.getElementById("dest-tz");
+      const depDatetimeInput = document.getElementById("dep-datetime");
+      const flightDurationInput = document.getElementById("flight-duration");
+
+      const resArrival = document.getElementById("res-arrival");
+      const resGap = document.getElementById("res-gap");
+      const resScore = document.getElementById("res-score");
+      const resProtocol = document.getElementById("res-protocol");
+      const copyBtn = document.getElementById("copy-itinerary-btn");
+
+      // Default departure time to now + 3 hours
+      const now = new Date();
+      now.setHours(now.getHours() + 3);
+      now.setMinutes(0);
+      const isoLocal = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      depDatetimeInput.value = isoLocal;
+
+      function getTzOffsetMinutes(tzName, dateObj) {
+        const dStr = dateObj.toLocaleString("en-US", { timeZone: tzName });
+        const tzDate = new Date(dStr);
+        const utcDate = new Date(dateObj.toLocaleString("en-US", { timeZone: "UTC" }));
+        return (tzDate - utcDate) / 60000;
+      }
+
+      function calculateItinerary() {
+        const oTz = originTzSelect.value;
+        const dTz = destTzSelect.value;
+        const depVal = depDatetimeInput.value;
+        const durHours = parseFloat(flightDurationInput.value) || 0;
+
+        if (!depVal) return;
+
+        // Departure date in origin timezone
+        const depDate = new Date(depVal);
+        const durMs = durHours * 3600000;
+        const arrDate = new Date(depDate.getTime() + durMs);
+
+        // Offsets
+        const oOffset = getTzOffsetMinutes(oTz, depDate);
+        const dOffset = getTzOffsetMinutes(dTz, arrDate);
+        const gapMin = dOffset - oOffset;
+        const gapHours = gapMin / 60;
+
+        // Arrival string formatted in destination timezone
+        const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const arrivalStr = arrDate.toLocaleString("en-US", { timeZone: dTz, ...options });
+
+        resArrival.textContent = arrivalStr;
+
+        let gapText = "";
+        if (gapHours > 0) gapText = `+${gapHours} hrs ahead`;
+        else if (gapHours < 0) gapText = `${gapHours} hrs behind`;
+        else gapText = "Same time zone";
+        resGap.textContent = gapText;
+
+        // Severity score formula
+        const absGap = Math.abs(gapHours);
+        const isEast = gapHours > 0;
+        let score = Math.round((absGap * (isEast ? 1.3 : 1.0)) + (durHours * 0.2));
+        if (score > 10) score = 10;
+        if (absGap === 0) score = Math.min(score, 3);
+
+        resScore.textContent = `${score} / 10 (${score > 6 ? 'High' : score > 3 ? 'Moderate' : 'Low'})`;
+
+        // Protocol suggestions
+        let protocolHtml = "";
+        if (absGap === 0) {
+          protocolHtml = `<p>• Minimal circadian gap. Focus on staying hydrated during your ${durHours}-hour flight and maintaining normal bedtime hours.</p>`;
+        } else if (isEast) {
+          protocolHtml = `
+            <p>• <strong>Morning Sunlight Exposure:</strong> Seek 30–45 mins of bright daylight between 8:00 AM and 11:00 AM local arrival time.</p>
+            <p>• <strong>Evening Light Avoidance:</strong> Wear blue-blocking sunglasses after 6:00 PM local time to encourage early melatonin release.</p>
+            <p>• <strong>Bedtime Target:</strong> Aim to sleep by 10:00 PM local destination time. Take 0.5–1mg melatonin 30 minutes prior if needed.</p>
+          `;
+        } else {
+          protocolHtml = `
+            <p>• <strong>Late Afternoon Light Exposure:</strong> Seek natural sunlight between 3:00 PM and 6:00 PM local arrival time to delay your body clock.</p>
+            <p>• <strong>Night Restraint:</strong> Stay awake until at least 9:30 PM local destination time to prevent waking up at 3:00 AM.</p>
+            <p>• <strong>Hydration Goal:</strong> Consume 2 liters of water on arrival day to flush metabolic fatigue.</p>
+          `;
+        }
+        resProtocol.innerHTML = protocolHtml;
+      }
+
+      [originTzSelect, destTzSelect, depDatetimeInput, flightDurationInput].forEach(el => {
+        el.addEventListener("change", calculateItinerary);
+        el.addEventListener("input", calculateItinerary);
+      });
+
+      copyBtn.addEventListener("click", () => {
+        const arr = resArrival.textContent;
+        const gap = resGap.textContent;
+        const score = resScore.textContent;
+        const text = `Travel Itinerary Summary:\n- Departure: ${depDatetimeInput.value}\n- Arrival (Local Time): ${arr}\n- Time Gap: ${gap}\n- Jet Lag Score: ${score}`;
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = copyBtn.textContent;
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => copyBtn.textContent = orig, 2000);
+        });
+      });
+
+      calculateItinerary();
+    })();
+  </script>
+</BaseLayout>

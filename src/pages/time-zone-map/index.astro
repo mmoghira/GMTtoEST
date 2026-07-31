@@ -1,0 +1,428 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "time-zone-map";
+const seoTitle = "Interactive Time Zone Map — SVG World Clock & Meridian Visualizer";
+const pageDescription = "Explore our interactive SVG time zone map. View live global clock meridians, real-time day/night solar shading, fractional offset zones, and city time details.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "time zone map, interactive time zone map, svg world time map, UTC meridian map, day night clock curve, world time zones map, fractional timezone map",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is an interactive time zone map?",
+      a: "An interactive time zone map is a visual geographical tool that displays global time zone boundaries, UTC offset meridians, real-time day/night solar shading, and live local clocks for regions worldwide."
+    },
+    {
+      q: "How many official time zones exist in the world?",
+      a: "While the world is theoretically divided into 24 standard 15-degree longitudinal bands (one for each hour of the day), geopolitical boundaries and fractional offsets mean there are currently over 38 active local time zone offsets worldwide."
+    },
+    {
+      q: "What is the International Date Line (IDL)?",
+      a: "The International Date Line is an imaginary line located roughly at 180° longitude in the Pacific Ocean. Crossing it traveling west advances the date by one full calendar day, while crossing eastward moves back one calendar day."
+    },
+    {
+      q: "Why do some time zones have 30-minute or 45-minute offsets?",
+      a: "Certain nations adopted fractional offsets from UTC to better match solar noon in their geographic center or for economic alignment. Examples include India (IST, UTC+5:30), Nepal (UTC+5:45), and Central Australia (ACST, UTC+9:30)."
+    },
+    {
+      q: "How does the day/night curve on the map work?",
+      a: "The day/night solar terminator curve dynamically calculates which half of the Earth is currently illuminated by the sun versus shaded in night based on the current UTC time and Earth's axial tilt."
+    },
+    {
+      q: "Why are time zone lines on the map jagged rather than straight?",
+      a: "Although theoretical longitudinal meridians are straight lines from pole to pole, actual time zone boundaries follow national, state, and economic borders so communities within a single jurisdiction share a uniform clock time."
+    },
+    {
+      q: "Which country spans the highest number of time zones?",
+      a: "France holds the record for the most time zones (12) due to its overseas territories around the globe. Russia spans the largest contiguous land area across 11 consecutive time zones."
+    },
+    {
+      q: "Why does China use a single time zone despite its vast geographic size?",
+      a: "Geographically, China spans five theoretical 15-degree time zones. However, in 1949, the government established a single national standard time—Beijing Time (UTC+8)—to foster national unity and centralized governance."
+    },
+    {
+      q: "How does Daylight Saving Time alter the time zone map?",
+      a: "During DST shifts, participating regions advance their local clocks by 1 hour (e.g., from EST UTC-5 to EDT UTC-4), effectively shifting their position relative to the global UTC meridian grid twice a year."
+    },
+    {
+      q: "What is UTC+14:00, the highest time zone offset?",
+      a: "The Line Islands in Kiribati operate at UTC+14:00. This offset was created in 1995 to ensure the nation shares the same calendar date across its islands, making Kiribati the first country to welcome each new calendar day."
+    },
+    {
+      q: "Can I click on the map to view a specific city's live time?",
+      a: "Yes! Hovering or clicking on any time zone meridian band on our interactive map highlights major cities within that zone along with live local clock times and UTC offset data."
+    },
+    {
+      q: "What is the Prime Meridian?",
+      a: "The Prime Meridian is the 0° longitude line passing through the Royal Observatory in Greenwich, London. It serves as the baseline zero point for Coordinated Universal Time (UTC+00:00)."
+    },
+    {
+      q: "How does nautical time work at sea?",
+      a: "In international waters, ships use Nautical Time Zones, strictly divided into 15° longitudinal bands centered on standard meridians, changing clocks as they cross each 15° line."
+    },
+    {
+      q: "Are time zones observed at the North and South Poles?",
+      a: "At the poles, all meridians converge. Stationed researchers typically use UTC, GMT, or the local time zone of their supply base or governing country (such as McMurdo Station using New Zealand time)."
+    },
+    {
+      q: "Is UTC+00:00 the same as GMT?",
+      a: "UTC (Coordinated Universal Time) is an atomic time standard, while GMT (Greenwich Mean Time) is a traditional time zone offset. In practice, both share the exact same clock time (UTC+00:00)."
+    },
+    {
+      q: "How often is the time zone map updated?",
+      a: "Time zone data on our interactive map updates in real time to reflect seasonal Daylight Saving Time adjustments and geopolitical boundary changes as reported by the IANA Time Zone Database."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Interactive Time Zone Map",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <div class="hero-header text-center py-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white rounded-2xl mb-8 shadow-xl">
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">Interactive Time Zone Map</h1>
+    <p class="text-lg sm:text-xl text-blue-200 max-w-3xl mx-auto px-4">
+      Explore real-time global meridians, solar day/night curves, fractional time offsets, and live city clocks.
+    </p>
+  </div>
+
+  <!-- Interactive SVG Map Component -->
+  <section class="max-w-6xl mx-auto bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-2xl border border-slate-800 mb-12 text-white">
+    <!-- Map Control Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+      <div class="flex items-center gap-3">
+        <label for="zone-select" class="text-sm font-semibold text-slate-300">Jump to Offset:</label>
+        <select id="zone-select" class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 text-sm focus:ring-2 focus:ring-blue-500">
+          <option value="UTC-10:00">UTC-10:00 (Hawaii)</option>
+          <option value="UTC-08:00">UTC-08:00 (PST - Pacific)</option>
+          <option value="UTC-07:00">UTC-07:00 (MST - Mountain)</option>
+          <option value="UTC-06:00">UTC-06:00 (CST - Central)</option>
+          <option value="UTC-05:00" selected>UTC-05:00 (EST - Eastern / Peru)</option>
+          <option value="UTC-04:00">UTC-04:00 (AST - Atlantic / EDT)</option>
+          <option value="UTC+00:00">UTC+00:00 (GMT - London / Lisbon)</option>
+          <option value="UTC+01:00">UTC+01:00 (CET - Paris / Berlin)</option>
+          <option value="UTC+03:00">UTC+03:00 (MSK - Moscow / Arabia)</option>
+          <option value="UTC+05:30">UTC+05:30 (IST - India)</option>
+          <option value="UTC+08:00">UTC+08:00 (CST - China / Singapore)</option>
+          <option value="UTC+09:00">UTC+09:00 (JST - Japan / Korea)</option>
+          <option value="UTC+10:00">UTC+10:00 (AEST - East Australia)</option>
+          <option value="UTC+12:00">UTC+12:00 (NZST - New Zealand)</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs sm:text-sm">
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+          <span class="text-slate-300">Daylight</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-indigo-900 inline-block"></span>
+          <span class="text-slate-300">Night Curve</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span id="current-utc-clock" class="font-mono text-blue-400 font-bold">UTC --:--:--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVG Container -->
+    <div class="relative w-full overflow-x-auto bg-slate-950 rounded-xl border border-slate-800 p-2">
+      <svg id="world-map-svg" viewBox="0 0 1000 500" class="w-full h-auto min-w-[700px] select-none">
+        <!-- Background Oceans -->
+        <rect width="1000" height="500" fill="#0f172a" />
+
+        <!-- Grid Lines Meridians -->
+        <g stroke="#1e293b" stroke-width="1" stroke-dasharray="2 2">
+          <line x1="83" y1="0" x2="83" y2="500" />
+          <line x1="166" y1="0" x2="166" y2="500" />
+          <line x1="250" y1="0" x2="250" y2="500" />
+          <line x1="333" y1="0" x2="333" y2="500" />
+          <line x1="416" y1="0" x2="416" y2="500" />
+          <line x1="500" y1="0" x2="500" y2="500" stroke="#3b82f6" stroke-width="1.5" /> <!-- Prime Meridian -->
+          <line x1="583" y1="0" x2="583" y2="500" />
+          <line x1="666" y1="0" x2="666" y2="500" />
+          <line x1="750" y1="0" x2="750" y2="500" />
+          <line x1="833" y1="0" x2="833" y2="500" />
+          <line x1="916" y1="0" x2="916" y2="500" />
+        </g>
+
+        <!-- Simplified Continent Paths -->
+        <g fill="#334155" stroke="#475569" stroke-width="1.5">
+          <!-- North America -->
+          <path d="M120 70 L260 60 L320 140 L280 200 L200 240 L160 210 L120 160 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="North America" />
+          <!-- South America -->
+          <path d="M280 240 L350 260 L360 380 L310 440 L270 340 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="South America" />
+          <!-- Europe -->
+          <path d="M470 60 L570 60 L580 140 L490 150 L460 110 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="Europe" />
+          <!-- Africa -->
+          <path d="M460 160 L580 160 L610 270 L540 380 L470 280 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="Africa" />
+          <!-- Asia -->
+          <path d="M580 50 L900 50 L920 200 L760 240 L600 160 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="Asia" />
+          <!-- Australia & Oceania -->
+          <path d="M780 300 L900 300 L880 400 L800 410 Z" class="continent-path hover:fill-blue-900 transition-colors cursor-pointer" data-region="Australia" />
+        </g>
+
+        <!-- Interactive Meridian Hover Bands -->
+        <g id="meridian-bands">
+          <rect x="0" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-10:00" data-name="Hawaii-Aleutian Time" data-cities="Honolulu, Papeete" />
+          <rect x="83" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-08:00" data-name="Pacific Standard Time (PST)" data-cities="Los Angeles, Vancouver, Seattle" />
+          <rect x="166" y="0" width="84" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-07:00" data-name="Mountain Standard Time (MST)" data-cities="Denver, Phoenix, Calgary" />
+          <rect x="250" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-06:00" data-name="Central Standard Time (CST)" data-cities="Chicago, Dallas, Mexico City" />
+          <rect x="333" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-05:00" data-name="Eastern Standard Time (EST)" data-cities="New York, Toronto, Lima" />
+          <rect x="416" y="0" width="84" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC-03:00" data-name="Brasilia Time (BRT)" data-cities="Sao Paulo, Buenos Aires" />
+          <rect x="500" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+00:00" data-name="Greenwich Mean Time (GMT)" data-cities="London, Dublin, Lisbon, Accra" />
+          <rect x="583" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+01:00" data-name="Central European Time (CET)" data-cities="Paris, Berlin, Rome, Madrid" />
+          <rect x="666" y="0" width="84" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+03:00" data-name="Moscow / Arabia Time (MSK/AST)" data-cities="Riyadh, Moscow, Istanbul, Nairobi" />
+          <rect x="750" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+05:30" data-name="India Standard Time (IST)" data-cities="New Delhi, Mumbai, Bengaluru" />
+          <rect x="833" y="0" width="83" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+08:00" data-name="China Standard Time (CST)" data-cities="Beijing, Shanghai, Singapore, Perth" />
+          <rect x="916" y="0" width="84" height="500" fill="transparent" class="zone-band cursor-pointer hover:fill-blue-500/20" data-offset="UTC+10:00" data-name="Australian Eastern Time (AEST)" data-cities="Sydney, Melbourne, Brisbane" />
+        </g>
+
+        <!-- Dynamic Solar Night Shading Path -->
+        <path id="night-overlay" fill="rgba(15, 23, 42, 0.55)" d="M0,0 L1000,0 L1000,500 L0,500 Z" style="pointer-events: none;"></path>
+
+        <!-- Major City Pin Dots -->
+        <g fill="#60a5fa" stroke="#ffffff" stroke-width="1.5">
+          <circle cx="360" cy="140" r="5" class="city-pin" data-city="New York" data-tz="America/New_York" />
+          <circle cx="500" cy="100" r="5" class="city-pin" data-city="London" data-tz="Europe/London" />
+          <circle cx="530" cy="110" r="5" class="city-pin" data-city="Paris" data-tz="Europe/Paris" />
+          <circle cx="780" cy="180" r="5" class="city-pin" data-city="New Delhi" data-tz="Asia/Kolkata" />
+          <circle cx="840" cy="150" r="5" class="city-pin" data-city="Beijing" data-tz="Asia/Shanghai" />
+          <circle cx="910" cy="160" r="5" class="city-pin" data-city="Tokyo" data-tz="Asia/Tokyo" />
+          <circle cx="880" cy="380" r="5" class="city-pin" data-city="Sydney" data-tz="Australia/Sydney" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- Active Zone Inspection Panel -->
+    <div id="zone-details-card" class="mt-6 bg-slate-800/90 rounded-xl p-5 border border-slate-700">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-3 mb-3">
+        <div>
+          <span id="detail-offset" class="px-3 py-1 bg-blue-600 font-bold text-xs rounded-full uppercase tracking-wider">UTC-05:00</span>
+          <h3 id="detail-name" class="text-xl font-bold text-white mt-1 inline-block ml-2">Eastern Standard Time (EST)</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-400 block">Current Local Time:</span>
+          <span id="detail-clock" class="text-2xl font-mono font-bold text-blue-400">12:00:00 PM</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+        <div>
+          <strong class="text-white">Major Cities Included:</strong>
+          <p id="detail-cities" class="mt-1 text-slate-400">New York, Toronto, Miami, Lima, Bogota</p>
+        </div>
+        <div>
+          <strong class="text-white">Related Converter Tools:</strong>
+          <div class="mt-1 flex flex-wrap gap-2">
+            <a href="/gmt-to-est/" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-2.5 py-1 rounded-md transition-colors">GMT to EST</a>
+            <a href="/est/" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-2.5 py-1 rounded-md transition-colors">EST Guide</a>
+            <a href="/time-difference-calculator/" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-2.5 py-1 rounded-md transition-colors">Time Diff Calc</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Educational Article -->
+  <section class="max-w-4xl mx-auto article-container text-slate-800 dark:text-slate-200 space-y-6 leading-relaxed">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-3">
+      Understanding World Time Zone Geography & Meridian Systems
+    </h2>
+    <p>
+      The system of global time zones is one of modern society's greatest infrastructural achievements. Before the late 19th century, nearly every city and town on Earth set its own local clock based on solar noon—the exact instant the sun reached its highest point in the local sky. While solar time worked for isolated agrarian communities, the expansion of global railways and telegraph networks in the 1870s created operational chaos.
+    </p>
+    <p>
+      In 1884, representatives from 25 nations convened at the <strong>International Meridian Conference</strong> in Washington, D.C., and established the Royal Observatory in Greenwich, London as the international <strong>Prime Meridian (0° Longitude)</strong>. This paved the way for dividing the globe into 24 standardized longitudinal time bands.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      The Mathematics of 15° Longitudinal Bands
+    </h3>
+    <p>
+      The Earth rotates a full 360 degrees on its axis once every 24 hours. Dividing 360 degrees by 24 hours yields exactly <strong>15 degrees of longitude per hour</strong>:
+    </p>
+
+    <div class="my-6 p-4 bg-slate-100 dark:bg-slate-800/80 rounded-xl border-l-4 border-blue-500 font-mono text-sm">
+      360° Earth Circumference ÷ 24 Hours = 15° Longitude per 1-Hour UTC Offset
+    </div>
+
+    <p>
+      In theory, traveling 15 degrees east from Greenwich advances your clock by +1 hour (<a href="/cet/" class="text-blue-600 dark:text-blue-400 underline font-medium">CET</a>), while traveling 15 degrees west delays your clock by -1 hour. For instance, North America's Eastern Time Zone (<a href="/est/" class="text-blue-600 dark:text-blue-400 underline font-medium">EST</a>) centers around 75° West longitude, placing it 5 hours behind UTC (UTC-05:00).
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Geopolitical Anomalies & Fractional Time Zones
+    </h3>
+    <p>
+      While standard time zones step in 60-minute increments, several nations observe fractional offsets of 30 or 45 minutes to better align with local solar positioning:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>India & Sri Lanka (UTC+05:30):</strong> India Standard Time (<a href="/ist/" class="text-blue-600 dark:text-blue-400 underline font-medium font-semibold">IST</a>) operates at a half-hour offset to unify a vast country spanning two theoretical time zones under a single national clock.</li>
+      <li><strong>Nepal (UTC+05:45):</strong> Nepal observes a 45-minute offset from UTC based on the solar meridian passing through Mount Gaurishankar.</li>
+      <li><strong>Central Australia (UTC+09:30 / UTC+10:30):</strong> South Australia and the Northern Territory observe Australian Central Standard Time (ACST), creating a 30-minute shift between <a href="/aest/" class="text-blue-600 dark:text-blue-400 underline font-medium">AEST</a> and Western Australia.</li>
+      <li><strong>Eucla, Australia (UTC+08:45):</strong> An unofficial 45-minute timezone observed along the Eyre Highway in Western Australia.</li>
+    </ul>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      The International Date Line & Extreme Offsets
+    </h3>
+    <p>
+      Located directly opposite the Prime Meridian in the Pacific Ocean is the <strong>International Date Line (IDL)</strong>. While theoretically centered at 180° longitude, the actual Date Line zigzags around island nations to prevent dividing territories into different calendar days.
+    </p>
+    <p>
+      Learn more about how the Date Line functions in our article on the <a href="/international-date-line-explained/" class="text-blue-600 dark:text-blue-400 underline font-medium">International Date Line Explained</a>.
+    </p>
+    <p>
+      The most extreme positive time zones are <strong>UTC+13:00</strong> (Samoa, Tonga) and <strong>UTC+14:00</strong> (Line Islands, Kiribati). When it is 10:00 AM on Monday in Honolulu (<a href="/utc-vs-gmt/" class="text-blue-600 dark:text-blue-400 underline font-medium">UTC-10:00</a>), it is already 10:00 AM on Tuesday in Kiribati—a full 24-hour date jump across a short distance!
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Daylight Saving Time Dynamic Shifts
+    </h3>
+    <p>
+      Twice a year, the boundaries of active time zone offsets shift across Europe, North America, and parts of Australia due to Daylight Saving Time (DST). When North America shifts to Daylight Time in March, New York moves from EST (UTC-5) to EDT (UTC-4), while London transitions from <a href="/gmt/" class="text-blue-600 dark:text-blue-400 underline font-medium">GMT</a> (UTC+0) to <a href="/bst/" class="text-blue-600 dark:text-blue-400 underline font-medium">BST</a> (UTC+1) in late March.
+    </p>
+    <p>
+      Explore our comprehensive tracking tools on <a href="/countries-that-use-dst/" class="text-blue-600 dark:text-blue-400 underline font-medium">Countries That Use DST</a>, <a href="/countries-without-dst/" class="text-blue-600 dark:text-blue-400 underline font-medium">Countries Without DST</a>, and understand the technical differences in <a href="/what-is-utc-offset/" class="text-blue-600 dark:text-blue-400 underline font-medium">What is UTC Offset</a> and <a href="/how-time-zones-work/" class="text-blue-600 dark:text-blue-400 underline font-medium">How Time Zones Work</a>.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Using the Map for Global Meeting & Travel Planning
+    </h3>
+    <p>
+      Visualizing geographic meridians helps remote teams grasp why certain overlap windows exist. When scheduling meetings across North America, Europe, and Asia:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>US West Coast (<a href="/pst/" class="text-blue-600 dark:text-blue-400 underline font-medium">PST</a>) vs Europe (<a href="/cet/" class="text-blue-600 dark:text-blue-400 underline font-medium">CET</a>):</strong> A 9-hour time gap leaves a narrow 1-hour overlap window between 8:00 AM PST and 5:00 PM CET.</li>
+      <li><strong>US East Coast (<a href="/est/" class="text-blue-600 dark:text-blue-400 underline font-medium">EST</a>) vs UK (<a href="/gmt/" class="text-blue-600 dark:text-blue-400 underline font-medium">GMT</a>):</strong> A manageable 5-hour difference allows robust collaboration during Morning EST / Afternoon GMT. Use our <a href="/gmt-to-est/" class="text-blue-600 dark:text-blue-400 underline font-medium">GMT to EST Converter</a>.</li>
+      <li><strong>Europe vs Asia:</strong> A 7-hour gap between London and Tokyo allows morning syncs in Europe that correspond to late afternoon in Japan.</li>
+    </ul>
+
+    <p>
+      For complete live tracking across all global regions, switch to our live <a href="/world-clock/" class="text-blue-600 dark:text-blue-400 underline font-medium">World Clock</a> or test meeting slots with our <a href="/meeting-planner/" class="text-blue-600 dark:text-blue-400 underline font-medium">Meeting Planner</a>.
+    </p>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="max-w-4xl mx-auto my-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
+    <div class="space-y-4">
+      {meta.faqs.map(faq => (
+        <details class="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-slate-800 dark:text-slate-100">
+            <span>{faq.q}</span>
+            <span class="ml-2 transition transform group-open:rotate-180 text-blue-600 dark:text-blue-400">▼</span>
+          </summary>
+          <div class="mt-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700/60 pt-3">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Interactive Map Script -->
+  <script is:inline>
+    (function() {
+      const currentUtcClock = document.getElementById("current-utc-clock");
+      const zoneSelect = document.getElementById("zone-select");
+      const detailOffset = document.getElementById("detail-offset");
+      const detailName = document.getElementById("detail-name");
+      const detailClock = document.getElementById("detail-clock");
+      const detailCities = document.getElementById("detail-cities");
+      const zoneBands = document.querySelectorAll(".zone-band");
+      const cityPins = document.querySelectorAll(".city-pin");
+
+      function updateUtcClock() {
+        const now = new Date();
+        const hrs = String(now.getUTCHours()).padStart(2, '0');
+        const mins = String(now.getUTCMinutes()).padStart(2, '0');
+        const secs = String(now.getUTCSeconds()).padStart(2, '0');
+        currentUtcClock.textContent = `UTC ${hrs}:${mins}:${secs}`;
+      }
+      setInterval(updateUtcClock, 1000);
+      updateUtcClock();
+
+      function updateSelectedZone(offsetStr, nameStr, citiesStr) {
+        detailOffset.textContent = offsetStr;
+        detailName.textContent = nameStr || "Custom Time Zone";
+        detailCities.textContent = citiesStr || "Global hubs in this meridian band";
+
+        // Calculate live clock for selected offset
+        const now = new Date();
+        // Extract offset hours and minutes
+        let sign = offsetStr.includes("-") ? -1 : 1;
+        let parts = offsetStr.replace("UTC", "").replace("+", "").replace("-", "").split(":");
+        let h = parseInt(parts[0], 10) || 0;
+        let m = parseInt(parts[1], 10) || 0;
+        let totalOffsetMin = sign * (h * 60 + m);
+
+        let targetTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (totalOffsetMin * 60000));
+        detailClock.textContent = targetTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+
+      zoneBands.forEach(band => {
+        band.addEventListener("click", () => {
+          const offset = band.getAttribute("data-offset");
+          const name = band.getAttribute("data-name");
+          const cities = band.getAttribute("data-cities");
+          updateSelectedZone(offset, name, cities);
+          zoneSelect.value = offset;
+        });
+      });
+
+      cityPins.forEach(pin => {
+        pin.addEventListener("click", () => {
+          const city = pin.getAttribute("data-city");
+          const tz = pin.getAttribute("data-tz");
+          const now = new Date();
+          const localStr = now.toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          detailName.textContent = `${city} Clock`;
+          detailClock.textContent = localStr;
+          detailCities.textContent = `Time Zone IANA ID: ${tz}`;
+        });
+      });
+
+      zoneSelect.addEventListener("change", (e) => {
+        const selectedVal = e.target.value;
+        const matchingBand = Array.from(zoneBands).find(b => b.getAttribute("data-offset") === selectedVal);
+        if (matchingBand) {
+          const name = matchingBand.getAttribute("data-name");
+          const cities = matchingBand.getAttribute("data-cities");
+          updateSelectedZone(selectedVal, name, cities);
+        } else {
+          updateSelectedZone(selectedVal, selectedVal, "Selected meridian offset");
+        }
+      });
+
+      // Default init
+      updateSelectedZone("UTC-05:00", "Eastern Standard Time (EST)", "New York, Toronto, Lima, Bogota");
+    })();
+  </script>
+</BaseLayout>

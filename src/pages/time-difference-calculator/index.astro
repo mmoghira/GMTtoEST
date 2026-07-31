@@ -1,0 +1,662 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "time-difference-calculator";
+const seoTitle = "Time Difference Calculator — Calculate Hour Gap Between Any 2 Cities";
+const pageDescription = "Calculate the exact time difference, hour gap, and local clock comparison between any two global cities. Features live side-by-side ticking clocks and working hour overlap.";
+
+const pubDate = "2026-07-31T00:00:00+05:00";
+const updatedDate = "2026-07-31T00:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "time difference calculator, time gap between cities, hour difference finder, local clock comparison, time zone gap, working hours overlap calculator",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is the Time Difference Calculator?",
+      a: "The Time Difference Calculator is an online utility that computes the exact hour and minute gap between any two global cities, comparing their live local clocks and working hour overlap."
+    },
+    {
+      q: "How does the tool calculate the hour gap between two locations?",
+      a: "The calculator takes the UTC offsets of both cities on the selected date (accounting for Daylight Saving Time) and subtracts City A's offset from City B's offset to return the exact gap."
+    },
+    {
+      q: "What is the time difference between New York and London?",
+      a: "London is typically 5 hours ahead of New York. When it is 9:00 AM in New York (EST), it is 2:00 PM in London (GMT/BST). Learn more on our <a href=\"/gmt-to-est\">GMT to EST Converter</a>."
+    },
+    {
+      q: "What is the time difference between Los Angeles and Tokyo?",
+      a: "Tokyo is 16 hours ahead of Los Angeles during Standard Time (or 17 hours ahead during PDT). When it is 4:00 PM in LA, it is 8:00 AM or 9:00 AM the following day in Tokyo."
+    },
+    {
+      q: "Does the time difference between two countries change throughout the year?",
+      a: "Yes! If one country observes Daylight Saving Time (DST) and the other does not—or if they shift on different dates—the hour difference between them can expand or shrink by 1 or 2 hours."
+    },
+    {
+      q: "How are fractional time zones (such as India or Adelaide) handled?",
+      a: "The tool calculates fractional offsets with minute-level precision. For example, India is UTC+5:30, resulting in a 9.5-hour gap from New York during Standard Time."
+    },
+    {
+      q: "What does 'Ahead' or 'Behind' mean in the result?",
+      a: "'Ahead' means City B's local clock reads a later time than City A (further East). 'Behind' means City B's clock reads an earlier time (further West)."
+    },
+    {
+      q: "Can I swap City A and City B quickly?",
+      a: "Yes. Click the Swap button (⇄) between the city drop-down menus to instantly reverse your comparison baseline."
+    },
+    {
+      q: "What is the maximum possible time difference on Earth?",
+      a: "The maximum theoretical time difference between populated regions is 26 hours, spanning from Howland Island (UTC-12) to the Line Islands of Kiribati (UTC+14)."
+    },
+    {
+      q: "How do I find overlapping working hours between two cities?",
+      a: "Inspect the 24-hour comparative timeline matrix generated below the calculation result. Green shaded columns represent hours when both cities fall within 9:00 AM to 5:00 PM local time."
+    },
+    {
+      q: "Why do some countries have half-hour offset gaps?",
+      a: "Nations like India, Iran, Afghanistan, and South Australia adopted 30-minute offsets during the early 20th century to better align local clocks with solar noon across their interior landmass."
+    },
+    {
+      q: "Does Nepal have a 45-minute time difference gap?",
+      a: "Yes! Nepal uses Nepal Time (NPT), which is UTC+5:45—making it 15 minutes ahead of India Standard Time (UTC+5:30)."
+    },
+    {
+      q: "How does crossing the International Date Line affect time differences?",
+      a: "Crossing the International Date Line shifts the calendar day by +24 hours (westbound) or -24 hours (eastbound) while keeping local minutes aligned."
+    },
+    {
+      q: "Can I share a direct link to my calculated time difference?",
+      a: "Yes. The URL updates dynamically with your chosen city parameters, allowing you to copy and share the result with colleagues."
+    },
+    {
+      q: "How do aviation pilots calculate time gaps for long-haul flights?",
+      a: "Pilots calculate departure local time, flight duration in UTC hours, and target destination offset to determine exact arrival local time."
+    },
+    {
+      q: "Can developers programmatically calculate timezone gaps in JavaScript?",
+      a: "Yes! Developers can parse Date objects across IANA time zone identifiers using `Intl.DateTimeFormat` or compute epoch offset differences."
+    },
+    {
+      q: "Is there any cost to using the Time Difference Calculator?",
+      a: "No, the tool is 100% free with unlimited comparisons."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Time Difference Calculator Tool",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <style>
+    .calc-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .hero-banner h1 {
+      font-size: 2.75rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+    }
+    .hero-banner p {
+      font-size: 1.25rem;
+      color: #bae6fd;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .selector-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 768px) {
+      .selector-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .city-box {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .city-box label {
+      display: block;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+    .select-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .btn-swap {
+      background: #0284c7;
+      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      margin: 0 auto;
+    }
+    .btn-swap:hover {
+      transform: rotate(180deg);
+      background: #0369a1;
+    }
+
+    .result-box {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #7dd3fc;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .result-gap {
+      font-size: 2.75rem;
+      font-weight: 900;
+      color: #0369a1;
+      margin-bottom: 0.5rem;
+    }
+    .result-subtext {
+      font-size: 1.15rem;
+      color: #0369a1;
+      font-weight: 600;
+    }
+
+    .clocks-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) {
+      .clocks-comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .clock-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .clock-city-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .clock-time {
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: #0284c7;
+      margin: 0.5rem 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .clock-date {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .timeline-matrix {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+    }
+    .timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+    .timeline-table th, .timeline-table td {
+      border: 1px solid #e2e8f0;
+      padding: 0.6rem 0.3rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .timeline-table th {
+      background: #f8fafc;
+      font-weight: 700;
+    }
+    .slot-business { background: #d1fae5; color: #065f46; font-weight: bold; }
+    .slot-off { background: #f1f5f9; color: #94a3b8; }
+
+    .article-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-top: 3rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .article-section h2 {
+      font-size: 1.85rem;
+      color: #0f172a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .article-section h3 {
+      font-size: 1.4rem;
+      color: #1e293b;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .article-section p {
+      margin-bottom: 1.25rem;
+    }
+    .article-section ul {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+
+    .faq-container {
+      margin-top: 3rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+    }
+    .faq-question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .faq-answer {
+      color: #475569;
+      margin: 0;
+    }
+  </style>
+
+  <div class="calc-container">
+    <div class="hero-banner">
+      <h1>Time Difference <span style="color: #7dd3fc;">Calculator</span></h1>
+      <p>Calculate the exact hour and minute gap between any two global cities with live clock comparisons and working hour overlaps.</p>
+    </div>
+
+    <div class="card">
+      <div class="selector-grid">
+        <div class="city-box">
+          <label for="city-a-select">City A (Origin):</label>
+          <select id="city-a-select" class="select-input"></select>
+        </div>
+
+        <button id="btn-swap" class="btn-swap" title="Swap Cities">⇄</button>
+
+        <div class="city-box">
+          <label for="city-b-select">City B (Target):</label>
+          <select id="city-b-select" class="select-input"></select>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div id="result-gap" class="result-gap">5 Hours Ahead</div>
+        <div id="result-subtext" class="result-subtext">London is 5 hours ahead of New York.</div>
+      </div>
+
+      <div class="clocks-comparison">
+        <div class="clock-card">
+          <div id="clock-a-title" class="clock-city-title">New York</div>
+          <div id="clock-a-time" class="clock-time">09:00:00 AM</div>
+          <div id="clock-a-date" class="clock-date">Fri, Jul 31 (UTC-4)</div>
+        </div>
+
+        <div class="clock-card">
+          <div id="clock-b-title" class="clock-city-title">London</div>
+          <div id="clock-b-time" class="clock-time">02:00:00 PM</div>
+          <div id="clock-b-date" class="clock-date">Fri, Jul 31 (UTC+1)</div>
+        </div>
+      </div>
+
+      <div class="card-title" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem;">
+        📊 24-Hour Working Hours Overlap Timeline
+      </div>
+
+      <div class="timeline-matrix">
+        <table class="timeline-table">
+          <thead>
+            <tr id="timeline-header">
+              <th style="min-width: 150px; text-align: left; padding-left: 1rem;">City</th>
+              <!-- 24 Hours populates via JS -->
+            </tr>
+          </thead>
+          <tbody id="timeline-body">
+            <!-- Timeline rows populates via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <article class="article-section">
+      <h2>Understanding Time Differences Across Global Time Zones</h2>
+      <p>
+        Calculating the time gap between two international locations is a fundamental requirement for remote workers, travel planners, logistics managers, and global families. While determining time gaps between standard zones like <a href="/gmt-to-est">GMT and EST</a> or <a href="/est-to-pst">EST and PST</a> appears straightforward, seasonal daylight saving changes and non-standard fractional offsets make manual calculation prone to error.
+      </p>
+
+      <h3>The Mechanics of Time Zone Offset Mathematics</h3>
+      <p>
+        Every location on Earth possesses a local standard offset relative to Coordinated Universal Time (UTC). To compute the exact gap between City A and City B:
+      </p>
+      <ul>
+        <li>Determine City A's current UTC offset (e.g. New York in EDT = UTC-4).</li>
+        <li>Determine City B's current UTC offset (e.g. London in BST = UTC+1).</li>
+        <li>Subtract City A's offset from City B's offset: <code>(UTC+1) - (UTC-4) = +5 hours</code>.</li>
+      </ul>
+      <p>
+        Because the result is positive (+5), London is 5 hours ahead of New York. If the calculation returns a negative value, City B is behind City A.
+      </p>
+
+      <h3>Handling Fractional Time Zone Gaps</h3>
+      <p>
+        While most global time zones differ by whole-hour increments, several key nations enforce fractional 30-minute or 45-minute offsets:
+      </p>
+      <ul>
+        <li><strong>India Standard Time (IST):</strong> UTC+5:30. India sits 9.5 hours ahead of US Eastern Standard Time. Explore conversions on our <a href="/delhi-time">Delhi Time Page</a>.</li>
+        <li><strong>Australian Central Standard Time (ACST):</strong> UTC+9:30. Covers Adelaide and Darwin. See <a href="/australia-time-zones">Australia Time Zones</a>.</li>
+        <li><strong>Nepal Time (NPT):</strong> UTC+5:45. Nepal enforces a unique 45-minute offset relative to UTC.</li>
+        <li><strong>Lord Howe Island (Australia):</strong> UTC+10:30 during winter, shifting by just 30 minutes to UTC+11:00 during DST.</li>
+      </ul>
+
+      <h3>Seasonal Shifts: Asymmetric Daylight Saving Time</h3>
+      <p>
+        A common cause of scheduling miscalculations occurs during seasonal Daylight Saving Time shifts. Because countries in the Northern Hemisphere enter DST between March and April—while Southern Hemisphere nations like Australia and New Zealand enter DST in October—the gap between two cities shifts twice a year.
+      </p>
+      <p>
+        For instance, the gap between <a href="/new-york-time">New York</a> and <a href="/sydney-time">Sydney</a> shrinks from 16 hours down to 14 hours depending on the month. Check our comprehensive <a href="/countries-that-use-dst">Countries That Use DST Guide</a> for detailed shift calendars.
+      </p>
+
+      <h3>Developer Code Snippet: Calculating Time Gaps in JavaScript</h3>
+      <p>
+        Software engineers building scheduling applications can programmatically compute timezone gaps using native JavaScript `Intl` APIs:
+      </p>
+
+      <pre><code>{`// Function to calculate exact timezone offset gap in hours between two IANA zones
+function calculateZoneGap(zoneA, zoneB, date = new Date()) {
+  const getTimezoneOffsetMs = (timeZone) => {
+    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+    return tzDate.getTime() - utcDate.getTime();
+  };
+
+  const offsetA = getTimezoneOffsetMs(zoneA);
+  const offsetB = getTimezoneOffsetMs(zoneB);
+  
+  const gapDiffHours = (offsetB - offsetA) / (1000 * 60 * 60);
+  return gapDiffHours;
+}
+
+console.log("NY to London Gap:", calculateZoneGap("America/New_York", "Europe/London"), "hours");
+console.log("NY to Delhi Gap:", calculateZoneGap("America/New_York", "Asia/Kolkata"), "hours");`}</code></pre>
+
+      <p>
+        For broader team planning, use our companion <a href="/meeting-planner">Global Meeting Planner</a> and <a href="/world-clock">Global World Clock</a> tools.
+      </p>
+    </article>
+
+    <div class="faq-container">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      {meta.faqs.map((faq) => (
+        <div class="faq-item">
+          <div class="faq-question">{faq.q}</div>
+          <div class="faq-answer" set:html={faq.a}></div>
+        </div>
+      ))}
+    </div>
+
+    <RelatedConvertersWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+  </div>
+
+  <script>
+    const CITIES = [
+      { name: "New York, USA", zone: "America/New_York" },
+      { name: "London, UK", zone: "Europe/London" },
+      { name: "Tokyo, Japan", zone: "Asia/Tokyo" },
+      { name: "Paris, France", zone: "Europe/Paris" },
+      { name: "Berlin, Germany", zone: "Europe/Berlin" },
+      { name: "Sydney, Australia", zone: "Australia/Sydney" },
+      { name: "Los Angeles, USA", zone: "America/Los_Angeles" },
+      { name: "Chicago, USA", zone: "America/Chicago" },
+      { name: "Singapore", zone: "Asia/Singapore" },
+      { name: "Dubai, UAE", zone: "Asia/Dubai" },
+      { name: "New Delhi, India", zone: "Asia/Kolkata" },
+      { name: "Hong Kong", zone: "Asia/Hong_Kong" },
+      { name: "Auckland, New Zealand", zone: "Pacific/Auckland" },
+      { name: "Toronto, Canada", zone: "America/Toronto" },
+      { name: "Sao Paulo, Brazil", zone: "America/Sao_Paulo" },
+      { name: "Johannesburg, South Africa", zone: "Africa/Johannesburg" },
+      { name: "Cairo, Egypt", zone: "Africa/Cairo" },
+      { name: "Bangkok, Thailand", zone: "Asia/Bangkok" },
+      { name: "Seoul, South Korea", zone: "Asia/Seoul" },
+      { name: "Honolulu, Hawaii", zone: "Pacific/Honolulu" }
+    ];
+
+    const selectA = document.getElementById("city-a-select") as HTMLSelectElement;
+    const selectB = document.getElementById("city-b-select") as HTMLSelectElement;
+    const btnSwap = document.getElementById("btn-swap") as HTMLButtonElement;
+    const resultGap = document.getElementById("result-gap") as HTMLElement;
+    const resultSubtext = document.getElementById("result-subtext") as HTMLElement;
+    
+    const clockATitle = document.getElementById("clock-a-title") as HTMLElement;
+    const clockATime = document.getElementById("clock-a-time") as HTMLElement;
+    const clockADate = document.getElementById("clock-a-date") as HTMLElement;
+    
+    const clockBTitle = document.getElementById("clock-b-title") as HTMLElement;
+    const clockBTime = document.getElementById("clock-b-time") as HTMLElement;
+    const clockBDate = document.getElementById("clock-b-date") as HTMLElement;
+
+    const timelineHeader = document.getElementById("timeline-header") as HTMLElement;
+    const timelineBody = document.getElementById("timeline-body") as HTMLElement;
+
+    // Populate selects
+    CITIES.forEach(c => {
+      const optA = document.createElement("option");
+      optA.value = c.zone;
+      optA.textContent = c.name;
+      selectA.appendChild(optA);
+
+      const optB = document.createElement("option");
+      optB.value = c.zone;
+      optB.textContent = c.name;
+      selectB.appendChild(optB);
+    });
+
+    selectA.value = "America/New_York";
+    selectB.value = "Europe/London";
+
+    btnSwap.addEventListener("click", () => {
+      const temp = selectA.value;
+      selectA.value = selectB.value;
+      selectB.value = temp;
+      calculateDifference();
+    });
+
+    selectA.addEventListener("change", calculateDifference);
+    selectB.addEventListener("change", calculateDifference);
+
+    function getZoneOffsetMs(zone: string, date: Date) {
+      const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
+      const tzDate = new Date(date.toLocaleString("en-US", { timeZone: zone }));
+      return tzDate.getTime() - utcDate.getTime();
+    }
+
+    function calculateDifference() {
+      const now = new Date();
+      const zoneA = selectA.value;
+      const zoneB = selectB.value;
+
+      const cityAObj = CITIES.find(c => c.zone === zoneA) || { name: zoneA, zone: zoneA };
+      const cityBObj = CITIES.find(c => c.zone === zoneB) || { name: zoneB, zone: zoneB };
+
+      clockATitle.textContent = cityAObj.name.split(",")[0];
+      clockBTitle.textContent = cityBObj.name.split(",")[0];
+
+      const offsetAMs = getZoneOffsetMs(zoneA, now);
+      const offsetBMs = getZoneOffsetMs(zoneB, now);
+
+      const gapMs = offsetBMs - offsetAMs;
+      const totalMinutes = Math.round(gapMs / 60000);
+      const hours = Math.floor(Math.abs(totalMinutes) / 60);
+      const minutes = Math.abs(totalMinutes) % 60;
+
+      let gapStr = "";
+      if (hours > 0) gapStr += `${hours} Hour${hours > 1 ? 's' : ''} `;
+      if (minutes > 0) gapStr += `${minutes} Minute${minutes > 1 ? 's' : ''} `;
+      if (totalMinutes === 0) gapStr = "Same Time Zone";
+      else gapStr += totalMinutes > 0 ? "Ahead" : "Behind";
+
+      resultGap.textContent = gapStr;
+
+      if (totalMinutes === 0) {
+        resultSubtext.textContent = `${cityBObj.name.split(",")[0]} has the exact same local clock time as ${cityAObj.name.split(",")[0]}.`;
+      } else if (totalMinutes > 0) {
+        resultSubtext.textContent = `${cityBObj.name.split(",")[0]} is ${gapStr.toLowerCase()} of ${cityAObj.name.split(",")[0]}.`;
+      } else {
+        resultSubtext.textContent = `${cityBObj.name.split(",")[0]} is ${gapStr.toLowerCase()} ${cityAObj.name.split(",")[0]}.`;
+      }
+
+      // Update clocks
+      const formatterTimeA = new Intl.DateTimeFormat("en-US", { timeZone: zoneA, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+      const formatterDateA = new Intl.DateTimeFormat("en-US", { timeZone: zoneA, weekday: "short", month: "short", day: "numeric" });
+      clockATime.textContent = formatterTimeA.format(now);
+      clockADate.textContent = formatterDateA.format(now);
+
+      const formatterTimeB = new Intl.DateTimeFormat("en-US", { timeZone: zoneB, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+      const formatterDateB = new Intl.DateTimeFormat("en-US", { timeZone: zoneB, weekday: "short", month: "short", day: "numeric" });
+      clockBTime.textContent = formatterTimeB.format(now);
+      clockBDate.textContent = formatterDateB.format(now);
+
+      renderTimeline(zoneA, zoneB, cityAObj.name.split(",")[0], cityBObj.name.split(",")[0]);
+    }
+
+    function renderTimeline(zoneA: string, zoneB: string, nameA: string, nameB: string) {
+      timelineHeader.innerHTML = '<th style="min-width: 150px; text-align: left; padding-left: 1rem;">City</th>';
+      for (let h = 0; h < 24; h++) {
+        const th = document.createElement("th");
+        th.textContent = `${String(h).padStart(2, "0")}:00`;
+        timelineHeader.appendChild(th);
+      }
+
+      timelineBody.innerHTML = "";
+      const baseDateStr = new Date().toISOString().split("T")[0];
+
+      // Row for City A
+      const trA = document.createElement("tr");
+      const tdLabelA = document.createElement("td");
+      tdLabelA.style.fontWeight = "bold";
+      tdLabelA.style.textAlign = "left";
+      tdLabelA.style.paddingLeft = "1rem";
+      tdLabelA.textContent = nameA;
+      trA.appendChild(tdLabelA);
+
+      // Row for City B
+      const trB = document.createElement("tr");
+      const tdLabelB = document.createElement("td");
+      tdLabelB.style.fontWeight = "bold";
+      tdLabelB.style.textAlign = "left";
+      tdLabelB.style.paddingLeft = "1rem";
+      tdLabelB.textContent = nameB;
+      trB.appendChild(tdLabelB);
+
+      for (let h = 0; h < 24; h++) {
+        // Base UTC hour
+        const utcDate = new Date(`${baseDateStr}T${String(h).padStart(2, "0")}:00:00Z`);
+
+        const hourA = parseInt(new Intl.DateTimeFormat("en-US", { timeZone: zoneA, hour: "numeric", hour12: false }).format(utcDate), 10);
+        const hourB = parseInt(new Intl.DateTimeFormat("en-US", { timeZone: zoneB, hour: "numeric", hour12: false }).format(utcDate), 10);
+
+        const isBizA = hourA >= 9 && hourA < 17;
+        const isBizB = hourB >= 9 && hourB < 17;
+
+        const tdA = document.createElement("td");
+        tdA.className = isBizA ? "slot-business" : "slot-off";
+        tdA.textContent = `${hourA}:00`;
+        trA.appendChild(tdA);
+
+        const tdB = document.createElement("td");
+        tdB.className = isBizB ? "slot-business" : "slot-off";
+        tdB.textContent = `${hourB}:00`;
+        trB.appendChild(tdB);
+      }
+
+      timelineBody.appendChild(trA);
+      timelineBody.appendChild(trB);
+    }
+
+    setInterval(calculateDifference, 1000);
+    calculateDifference();
+  </script>
+</BaseLayout>

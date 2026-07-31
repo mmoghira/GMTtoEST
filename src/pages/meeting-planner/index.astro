@@ -1,0 +1,768 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "meeting-planner";
+const seoTitle = "Global Meeting Planner — Interactive Visual Time Zone Matrix";
+const pageDescription = "Coordinate international business meetings easily across multiple time zones with our visual 24-hour matrix. Find green business hour overlaps, generate .ics calendar invites, and copy share links.";
+
+const pubDate = "2026-07-31T00:00:00+05:00";
+const updatedDate = "2026-07-31T00:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "meeting planner, global meeting planner, cross time zone meeting scheduler, time zone matrix, visual meeting planner, ICS export, shareable meeting link, golden hours",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is the Global Meeting Planner tool?",
+      a: "The Global Meeting Planner is a visual 24-hour time matrix designed to help distributed teams align meetings across international time zones. It color-codes every hour of the day into convenient business, shoulder, and night categories."
+    },
+    {
+      q: "What do the color-coded slots mean on the visual matrix?",
+      a: "<strong>Green (Business Hours):</strong> 9:00 AM to 5:00 PM local time — ideal for calls.<br/><strong>Yellow (Shoulder Hours):</strong> 7:00 AM–9:00 AM & 5:00 PM–9:00 PM — acceptable with advance notice.<br/><strong>Dark Red (Night Hours):</strong> 9:00 PM to 7:00 AM — sleeping hours, avoid scheduling."
+    },
+    {
+      q: "How do I add multiple cities to my meeting plan?",
+      a: "Select a city from the drop-down menu and click 'Add City'. You can add as many locations as necessary to reflect your global project team."
+    },
+    {
+      q: "Can I export my chosen meeting slot directly to Google Calendar or Outlook?",
+      a: "Yes! Once you select a time slot on the grid, click 'Export .ics File' to instantly download an iCalendar file compatible with Outlook, Apple Calendar, Google Calendar, and mobile devices."
+    },
+    {
+      q: "How does the 'Copy Schedule' button work?",
+      a: "Clicking 'Copy Schedule' formats the selected meeting time into a clean text summary displaying local times for every participant city, which you can directly paste into Slack, Microsoft Teams, or email."
+    },
+    {
+      q: "How do I share a pre-filled meeting matrix with colleagues?",
+      a: "Click 'Share Link' to copy a unique URL encoding your selected cities and meeting date. Anyone opening the link will see your exact visual matrix loaded."
+    },
+    {
+      q: "Does the Meeting Planner account for Daylight Saving Time (DST)?",
+      a: "Yes. The planner uses standard browser timezone engines based on IANA timezone keys, automatically adjusting offsets for DST shifts on the selected calendar date."
+    },
+    {
+      q: "What is the best time for a meeting between US East Coast and London?",
+      a: "The ideal window is between 9:00 AM and 12:00 PM EST, which corresponds to 2:00 PM to 5:00 PM GMT/BST in London. Learn more in our <a href=\"/best-time-us-europe-meetings\">US & Europe Meeting Guide</a>."
+    },
+    {
+      q: "What is the best time for a meeting between US West Coast and Tokyo?",
+      a: "The optimal window is 4:00 PM to 6:00 PM PST in North America, which translates to 9:00 AM to 11:00 AM JST the following morning in Tokyo. Read our <a href=\"/best-time-us-asia-meetings\">US & Asia Meeting Guide</a>."
+    },
+    {
+      q: "Can I remove a city after adding it?",
+      a: "Yes. Each city row in the matrix features a red removal button (×) allowing you to adjust your participant list dynamically."
+    },
+    {
+      q: "Why is visual color-coding better than standard converter tables?",
+      a: "Traditional conversion tables require mental math to check whether a time falls during a colleague's evening or early morning. Visual matrix grids instantly expose overlapping 'green' windows across all participants at a single glance."
+    },
+    {
+      q: "How do half-hour offset zones (like India or Adelaide) appear on the matrix?",
+      a: "Half-hour timezone offsets are indicated with a clear half-hour offset badge and rounded grid hours aligned accurately to UTC offsets."
+    },
+    {
+      q: "Can I change the meeting date to test future DST shifts?",
+      a: "Yes. Use the date picker at the top of the control panel to select any future date to evaluate how daylight saving shifts alter meeting windows."
+    },
+    {
+      q: "What are 'Golden Hours' in global scheduling?",
+      a: "Golden hours represent the narrow overlap when standard 9 AM - 5 PM working hours intersect across every participant's local timezone simultaneously."
+    },
+    {
+      q: "How can remote teams handle zero-overlap time zone gaps?",
+      a: "When scheduling between regions with zero business overlap (e.g. San Francisco and Singapore), teams should rotate morning/evening slots or adopt asynchronous communication tools."
+    },
+    {
+      q: "Is there a limit on how many cities I can add?",
+      a: "No hard limit exists, though 3 to 6 cities provide the cleanest visual display on desktop and tablet screens."
+    },
+    {
+      q: "Does this tool store my meeting data on a server?",
+      a: "No. All calculation and rendering occurs locally inside your client browser. No meeting metadata or team locations are stored on external servers."
+    },
+    {
+      q: "Is the Global Meeting Planner tool free to use?",
+      a: "Yes, it is 100% free with unlimited exports, links, and grid renders."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Global Meeting Planner Tool",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <style>
+    .planner-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .hero-banner h1 {
+      font-size: 2.75rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+    }
+    .hero-banner p {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .control-group label {
+      font-weight: 700;
+      color: #334155;
+    }
+    .select-input, .date-input {
+      padding: 0.6rem 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn-accent {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .btn-accent:hover {
+      background: #059669;
+    }
+
+    .legend-bar {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .color-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+    .box-green { background: #10b981; }
+    .box-yellow { background: #f59e0b; }
+    .box-red { background: #64748b; }
+
+    .matrix-wrapper {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem 0.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .matrix-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #334155;
+    }
+    .city-col-header {
+      min-width: 180px;
+      text-align: left !important;
+      padding-left: 1rem !important;
+    }
+    .hour-cell {
+      cursor: pointer;
+      font-weight: 600;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+    .hour-cell:hover {
+      opacity: 0.8;
+      outline: 2px solid #2563eb;
+    }
+    .cell-business {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .cell-shoulder {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .cell-night {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+    .cell-selected {
+      outline: 3px solid #2563eb !important;
+      font-weight: 800;
+    }
+    .btn-remove-city {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    .meeting-summary-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .summary-title {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #1e3a8a;
+      margin-bottom: 0.5rem;
+    }
+    .summary-details {
+      font-family: monospace;
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+    .summary-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .article-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-top: 3rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .article-section h2 {
+      font-size: 1.85rem;
+      color: #0f172a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .article-section h3 {
+      font-size: 1.4rem;
+      color: #1e293b;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .article-section p {
+      margin-bottom: 1.25rem;
+    }
+    .article-section ul {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+    .article-section li {
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-container {
+      margin-top: 3rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+    }
+    .faq-question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .faq-answer {
+      color: #475569;
+      margin: 0;
+    }
+  </style>
+
+  <div class="planner-container">
+    <div class="hero-banner">
+      <h1>Global <span style="color: #60a5fa;">Meeting Planner</span></h1>
+      <p>Visual 24-hour time zone matrix for multi-city team scheduling, golden hour discovery, and instant calendar export.</p>
+    </div>
+
+    <div class="card">
+      <div class="control-row">
+        <div class="control-group">
+          <label for="city-select">Add City:</label>
+          <select id="city-select" class="select-input">
+            <option value="" disabled selected>Select a city...</option>
+          </select>
+          <button id="btn-add-city" class="btn btn-primary">Add City</button>
+        </div>
+
+        <div class="control-group">
+          <label for="meeting-date">Meeting Date:</label>
+          <input type="date" id="meeting-date" class="date-input" />
+        </div>
+
+        <div class="control-group">
+          <button id="btn-share" class="btn btn-secondary">🔗 Share Link</button>
+        </div>
+      </div>
+
+      <div class="legend-bar">
+        <div class="legend-item"><div class="color-box box-green"></div> Business Hours (09:00 - 17:00)</div>
+        <div class="legend-item"><div class="color-box box-yellow"></div> Shoulder Hours (07:00-09:00 / 17:00-21:00)</div>
+        <div class="legend-item"><div class="color-box box-red"></div> Sleeping Hours (21:00 - 07:00)</div>
+      </div>
+
+      <div class="matrix-wrapper">
+        <table class="matrix-table" id="matrix-table">
+          <thead>
+            <tr id="matrix-header-row">
+              <th class="city-col-header">Location</th>
+              <!-- Hours 00 to 23 populates via JS -->
+            </tr>
+          </thead>
+          <tbody id="matrix-body">
+            <!-- City rows populate via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="summary-card" class="meeting-summary-card">
+        <div class="summary-title">📅 Proposed Meeting Schedule</div>
+        <div id="summary-text" class="summary-details">Select an hour column in the matrix above to view meeting times across all participant cities.</div>
+        <div class="summary-actions">
+          <button id="btn-copy-summary" class="btn btn-accent">📋 Copy Schedule Text</button>
+          <button id="btn-export-ics" class="btn btn-primary">📥 Export .ics Calendar Event</button>
+        </div>
+      </div>
+    </div>
+
+    <article class="article-section">
+      <h2>Mastering Global Meeting Coordination Across Time Zones</h2>
+      <p>
+        In modern remote-first companies, project teams are rarely located in a single office or time zone. A typical product engineering sync might involve a product manager in New York (<a href="/est">EST</a>), a frontend developer in London (<a href="/bst">BST</a>), a backend engineer in New Delhi (<a href="/delhi-time">IST</a>), and a QA lead in Sydney (<a href="/aest">AEST</a>). Coordinating a 45-minute call without waking team members in the middle of the night requires visual precision.
+      </p>
+
+      <h3>The Visual Matrix Advantage: Overcoming Mental Conversion Fatigue</h3>
+      <p>
+        Traditional timezone converters require doing sequential mental addition or subtraction across multiple locations. For example, converting 10:00 AM Eastern Time to British Summer Time (<a href="/est-to-bst">EST to BST</a>), Central European Time (<a href="/est-to-cet">EST to CET</a>), and Japan Standard Time (<a href="/est-to-jst">EST to JST</a>) quickly becomes taxing. 
+      </p>
+      <p>
+        Our 24-hour visual meeting matrix solves this by normalizing all participant schedules onto a single continuous grid. By color-coding local hours into green business slots (9:00 AM to 5:00 PM), yellow shoulder hours, and dark sleeping windows, you can identify overlapping "golden hours" in seconds.
+      </p>
+
+      <h3>Identifying Golden Overlap Windows Across Major Corridors</h3>
+      <p>
+        Finding acceptable meeting windows depends on the geographic dispersion of your team members:
+      </p>
+      <ul>
+        <li>
+          <strong>Transatlantic Corridor (US East Coast & Europe):</strong> The classic overlap window occurs between 9:00 AM – 12:00 PM EST, which aligns with 2:00 PM – 5:00 PM GMT/BST in Western Europe. Explore comprehensive schedules on our <a href="/best-time-us-europe-meetings">US & Europe Meeting Guide</a>.
+        </li>
+        <li>
+          <strong>Transpacific Corridor (US West Coast & East Asia):</strong> The optimal window is late afternoon in North America (4:00 PM – 6:00 PM PST), matching early morning (9:00 AM – 11:00 AM JST/SGT) the next calendar day in Tokyo, Singapore, or Hong Kong. See <a href="/best-time-us-asia-meetings">US & Asia Meeting Guide</a>.
+        </li>
+        <li>
+          <strong>Tri-Continental Hubs (US, Europe & Asia):</strong> When all three major economic zones are involved, true 3-way green overlap is physically impossible due to the 12 to 14 hour gap. In such cases, teams utilize rotating shoulder hours or our specialized <a href="/business-hours-overlap">Business Hours Overlap Tool</a>.
+        </li>
+      </ul>
+
+      <h3>Handling Asymmetric Daylight Saving Transitions</h3>
+      <p>
+        A frequent trap for international schedulers is assuming that time gaps between countries remain static throughout the year. For instance:
+      </p>
+      <ul>
+        <li>The United States enters Daylight Saving Time on the second Sunday of March, while the United Kingdom enters BST on the last Sunday of March. During this 2-3 week lag, the gap between New York and London shrinks from 5 hours to 4 hours. See our <a href="/daylight-saving-time-explained">DST Explanation Guide</a>.</li>
+        <li>Australia enters DST in October while North America leaves DST in November, causing the time difference between Sydney and New York to shift by 2 full hours within a few weeks. Check <a href="/australia-time-zones">Australia Time Zone Guide</a>.</li>
+      </ul>
+
+      <h3>Exporting iCalendar (.ics) Invites for Frictionless Scheduling</h3>
+      <p>
+        Once you click any hour column on our interactive grid, our tool dynamically generates a RFC-5545 compliant `.ics` calendar invitation file. When imported into Outlook, Apple Calendar, or Google Calendar, it automatically places the meeting into every attendee's native local calendar slot without offset calculation errors.
+      </p>
+
+      <pre><code>{`// RFC-5545 iCalendar Event Builder Example
+function generateICS(title, startDate, durationMinutes, description) {
+  const formatDateStr = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+  
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//GMTtoEST//Global Meeting Planner//EN",
+    "BEGIN:VEVENT",
+    \`SUMMARY:\${title}\`,
+    \`DTSTART:\${formatDateStr(startDate)}\`,
+    \`DTEND:\${formatDateStr(endDate)}\`,
+    \`DESCRIPTION:\${description}\`,
+    "STATUS:CONFIRMED",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\\r\\n");
+}`}</code></pre>
+
+      <p>
+        Combined with live world clock lookups on our <a href="/world-clock">World Clock Tool</a> and timezone calculation snippets in our <a href="/developer-tools">Developer Toolkit</a>, the Global Meeting Planner ensures your international collaboration remains flawless.
+      </p>
+    </article>
+
+    <div class="faq-container">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      {meta.faqs.map((faq) => (
+        <div class="faq-item">
+          <div class="faq-question">{faq.q}</div>
+          <div class="faq-answer" set:html={faq.a}></div>
+        </div>
+      ))}
+    </div>
+
+    <RelatedConvertersWidget slug={slug} />
+    <LearnMoreWidget slug={slug} />
+  </div>
+
+  <script>
+    const CITY_DATABASE = [
+      { name: "New York (EST/EDT)", zone: "America/New_York" },
+      { name: "London (GMT/BST)", zone: "Europe/London" },
+      { name: "Tokyo (JST)", zone: "Asia/Tokyo" },
+      { name: "Paris / Berlin (CET/CEST)", zone: "Europe/Paris" },
+      { name: "Sydney (AEST/AEDT)", zone: "Australia/Sydney" },
+      { name: "San Francisco (PST/PDT)", zone: "America/Los_Angeles" },
+      { name: "Chicago (CST/CDT)", zone: "America/Chicago" },
+      { name: "Singapore (SGT)", zone: "Asia/Singapore" },
+      { name: "Dubai (GST)", zone: "Asia/Dubai" },
+      { name: "New Delhi (IST)", zone: "Asia/Kolkata" },
+      { name: "Hong Kong (HKT)", zone: "Asia/Hong_Kong" },
+      { name: "Auckland (NZST/NZDT)", zone: "Pacific/Auckland" },
+      { name: "Toronto (EST/EDT)", zone: "America/Toronto" },
+      { name: "Sao Paulo (BRT)", zone: "America/Sao_Paulo" },
+      { name: "Johannesburg (SAST)", zone: "Africa/Johannesburg" }
+    ];
+
+    let selectedCities = [
+      { name: "New York (EST/EDT)", zone: "America/New_York" },
+      { name: "London (GMT/BST)", zone: "Europe/London" },
+      { name: "Tokyo (JST)", zone: "Asia/Tokyo" }
+    ];
+
+    let selectedUtcHour = 14; // Default 14:00 UTC
+    const dateInput = document.getElementById("meeting-date") as HTMLInputElement;
+    const citySelect = document.getElementById("city-select") as HTMLSelectElement;
+    const addCityBtn = document.getElementById("btn-add-city") as HTMLButtonElement;
+    const matrixHeaderRow = document.getElementById("matrix-header-row") as HTMLElement;
+    const matrixBody = document.getElementById("matrix-body") as HTMLElement;
+    const summaryText = document.getElementById("summary-text") as HTMLElement;
+    const btnCopySummary = document.getElementById("btn-copy-summary") as HTMLButtonElement;
+    const btnExportIcs = document.getElementById("btn-export-ics") as HTMLButtonElement;
+    const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
+
+    // Set default date to today
+    const todayStr = new Date().toISOString().split("T")[0];
+    dateInput.value = todayStr;
+
+    // Populate City Dropdown
+    CITY_DATABASE.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.zone;
+      opt.textContent = c.name;
+      citySelect.appendChild(opt);
+    });
+
+    addCityBtn.addEventListener("click", () => {
+      const val = citySelect.value;
+      if (!val) return;
+      const found = CITY_DATABASE.find(c => c.zone === val);
+      if (found && !selectedCities.some(sc => sc.zone === val)) {
+        selectedCities.push(found);
+        renderMatrix();
+      }
+    });
+
+    dateInput.addEventListener("change", () => {
+      renderMatrix();
+    });
+
+    btnCopySummary.addEventListener("click", () => {
+      const txt = summaryText.textContent || "";
+      navigator.clipboard.writeText(txt).then(() => {
+        const orig = btnCopySummary.textContent;
+        btnCopySummary.textContent = "✅ Copied to Clipboard!";
+        setTimeout(() => { btnCopySummary.textContent = orig; }, 2000);
+      });
+    });
+
+    btnShare.addEventListener("click", () => {
+      const zones = selectedCities.map(c => encodeURIComponent(c.zone)).join(",");
+      const url = `${window.location.origin}${window.location.pathname}?cities=${zones}&date=${dateInput.value}&hour=${selectedUtcHour}`;
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = btnShare.textContent;
+        btnShare.textContent = "✅ Share Link Copied!";
+        setTimeout(() => { btnShare.textContent = orig; }, 2000);
+      });
+    });
+
+    btnExportIcs.addEventListener("click", () => {
+      const dateVal = dateInput.value;
+      const startTime = new Date(`${dateVal}T${String(selectedUtcHour).padStart(2, '0')}:00:00Z`);
+      const endTime = new Date(startTime.getTime() + 60 * 60000); // 1 hr duration
+
+      const formatDateStr = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      
+      let summaryDetails = "Global Sync Meeting\\n";
+      selectedCities.forEach(c => {
+        const localTime = new Intl.DateTimeFormat("en-US", {
+          timeZone: c.zone,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }).format(startTime);
+        summaryDetails += `- ${c.name}: ${localTime}\\n`;
+      });
+
+      const icsContent = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//GMTtoEST//Global Meeting Planner//EN",
+        "BEGIN:VEVENT",
+        "SUMMARY:Global Sync Meeting",
+        `DTSTART:${formatDateStr(startTime)}`,
+        `DTEND:${formatDateStr(endTime)}`,
+        `DESCRIPTION:${summaryDetails}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\r\n");
+
+      const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `global_meeting_${dateVal}_${selectedUtcHour}00UTC.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    function getHourSlotClass(localHour: number) {
+      if (localHour >= 9 && localHour < 17) {
+        return "cell-business";
+      } else if ((localHour >= 7 && localHour < 9) || (localHour >= 17 && localHour < 21)) {
+        return "cell-shoulder";
+      } else {
+        return "cell-night";
+      }
+    }
+
+    function renderMatrix() {
+      // Header row
+      matrixHeaderRow.innerHTML = '<th class="city-col-header">Location</th>';
+      for (let h = 0; h < 24; h++) {
+        const th = document.createElement("th");
+        th.textContent = `${String(h).padStart(2, "0")}:00 UTC`;
+        matrixHeaderRow.appendChild(th);
+      }
+
+      // Body rows
+      matrixBody.innerHTML = "";
+      const baseDate = dateInput.value || todayStr;
+
+      selectedCities.forEach((city, cityIdx) => {
+        const tr = document.createElement("tr");
+        
+        // Location column
+        const tdLoc = document.createElement("td");
+        tdLoc.className = "city-col-header";
+        tdLoc.style.fontWeight = "bold";
+        tdLoc.innerHTML = `
+          ${city.name}
+          <button class="btn-remove-city" data-idx="${cityIdx}" title="Remove city">×</button>
+        `;
+        tr.appendChild(tdLoc);
+
+        // 24 hour cells
+        for (let utcHour = 0; utcHour < 24; utcHour++) {
+          const td = document.createElement("td");
+          const utcDateObj = new Date(`${baseDate}T${String(utcHour).padStart(2, "0")}:00:00Z`);
+
+          const localHourStr = new Intl.DateTimeFormat("en-US", {
+            timeZone: city.zone,
+            hour: "numeric",
+            hour12: false
+          }).format(utcDateObj);
+          
+          const localHour = parseInt(localHourStr, 10);
+          const slotClass = getHourSlotClass(localHour);
+
+          td.className = `hour-cell ${slotClass} ${utcHour === selectedUtcHour ? 'cell-selected' : ''}`;
+          td.textContent = `${localHour}:00`;
+          td.dataset.utcHour = String(utcHour);
+
+          td.addEventListener("click", () => {
+            selectedUtcHour = utcHour;
+            renderMatrix();
+          });
+
+          tr.appendChild(td);
+        }
+
+        matrixBody.appendChild(tr);
+      });
+
+      // Bind remove buttons
+      document.querySelectorAll(".btn-remove-city").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = parseInt((e.target as HTMLElement).getAttribute("data-idx") || "0", 10);
+          selectedCities.splice(idx, 1);
+          renderMatrix();
+        });
+      });
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const baseDate = dateInput.value || todayStr;
+      const utcDateObj = new Date(`${baseDate}T${String(selectedUtcHour).padStart(2, "0")}:00:00Z`);
+
+      let summaryLines = [
+        `Global Meeting Proposed Schedule (${baseDate})`,
+        `Selected UTC Time: ${String(selectedUtcHour).padStart(2, "0")}:00 UTC`,
+        "----------------------------------------"
+      ];
+
+      selectedCities.forEach(c => {
+        const localTimeFormatted = new Intl.DateTimeFormat("en-US", {
+          timeZone: c.zone,
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }).format(utcDateObj);
+
+        summaryLines.push(`• ${c.name}: ${localTimeFormatted}`);
+      });
+
+      summaryText.textContent = summaryLines.join("\n");
+    }
+
+    // Parse query params if present
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("cities")) {
+      const cityList = params.get("cities")?.split(",") || [];
+      const parsed = cityList.map(zone => {
+        const decoded = decodeURIComponent(zone);
+        const match = CITY_DATABASE.find(c => c.zone === decoded);
+        return match || { name: decoded.split("/").pop() || decoded, zone: decoded };
+      });
+      if (parsed.length > 0) selectedCities = parsed;
+    }
+    if (params.has("date")) dateInput.value = params.get("date") || todayStr;
+    if (params.has("hour")) selectedUtcHour = parseInt(params.get("hour") || "14", 10);
+
+    renderMatrix();
+  </script>
+</BaseLayout>

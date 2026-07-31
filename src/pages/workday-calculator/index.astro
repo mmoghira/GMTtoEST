@@ -1,0 +1,518 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "workday-calculator";
+const seoTitle = "Holiday & Business Day Calculator — Calculate Working Days & Deadlines";
+const pageDescription = "Calculate working days, exclude weekends and public holidays, and determine project deadline dates with our free interactive Business Day Calculator.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "workday calculator, business days calculator, working days between dates, project deadline calculator, holiday date counter, count business days, exclude weekends",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is a business day calculator?",
+      a: "A business day calculator determines the exact number of working days between two dates, automatically excluding weekends (Saturdays and Sundays) and optional public holidays. It can also add or subtract a specific number of business days to calculate precise project deadlines."
+    },
+    {
+      q: "How does the weekend calculation work?",
+      a: "By default, the standard 5-day work week (Monday through Friday) is used, treating Saturday and Sunday as non-working weekend days. You can also customize weekend settings to accommodate 6-day work weeks or alternative weekend schedules used in regions like the Middle East (Friday/Saturday)."
+    },
+    {
+      q: "Are public holidays automatically excluded?",
+      a: "Yes, our calculator includes built-in holiday presets for major international regions including the United States, United Kingdom, European Union, Canada, and Australia. You can toggle specific holiday presets or customize the list."
+    },
+    {
+      q: "How do I calculate a project completion date?",
+      a: "Switch to the 'Calculate Target Date' tab, enter your project start date, and input the number of business days required. The tool will skip all weekend days and selected holidays to give you the exact completion deadline date."
+    },
+    {
+      q: "Does time zone difference affect business day calculations?",
+      a: "When collaborating internationally across time zones like GMT and EST, a business day may start and end at different calendar times. Our calculator works on local calendar dates, but you can pair it with our Time Difference Calculator for cross-border deadline alignment."
+    },
+    {
+      q: "What is the difference between calendar days and business days?",
+      a: "Calendar days include every day of the week from Monday through Sunday, including holidays. Business days (or working days) only include days when commercial offices and financial markets are open, typically excluding weekends and legal public holidays."
+    },
+    {
+      q: "How many business days are in a standard month?",
+      a: "On average, a month contains 20 to 22 business days, depending on the length of the month (28 to 31 calendar days), how the weekends fall, and the presence of public holidays."
+    },
+    {
+      q: "How many business days are in a standard year?",
+      a: "A non-leap year of 365 calendar days typically contains around 260 to 262 weekdays. After subtracting 10 to 12 federal public holidays, a typical work year has approximately 249 to 252 actual business days."
+    },
+    {
+      q: "What is T+1 or T+2 settlement in business transactions?",
+      a: "T+1 and T+2 stand for 'Trade Date plus 1 business day' or 'Trade Date plus 2 business days'. Financial markets use these formulas to calculate official settlement dates, strictly skipping weekends and market holidays."
+    },
+    {
+      q: "Can I export my calculated business day schedule?",
+      a: "Yes! Click the 'Export Schedule' button to copy or download a clean breakdown of total calendar days, working days, weekends, and holidays for project reports or client billing."
+    },
+    {
+      q: "How are leap years handled?",
+      a: "Our date engine uses exact astronomical calendar math and automatically handles leap years (such as 2024 and 2028), ensuring February 29th is correctly categorized as a business day or weekend."
+    },
+    {
+      q: "Why do business day counts vary between countries?",
+      a: "Countries have different official public holiday lists and workweek structures. For example, the UK has Bank Holidays while the US observes Federal Holidays. In addition, some Middle Eastern nations observe Friday and Saturday as the weekend."
+    },
+    {
+      q: "Can I use this for SLA (Service Level Agreement) compliance?",
+      a: "Yes. Many enterprise SLAs stipulate resolution times in business hours or business days. Using this calculator helps contract managers calculate accurate turnaround deadlines without violating contract commitments."
+    },
+    {
+      q: "How does Daylight Saving Time affect working days?",
+      a: "Daylight Saving Time (DST) changes clock hours (adding or subtracting 1 hour), but it does not alter calendar business days. However, when working across DST transitions, meeting hours during working days may shift relative to other zones."
+    },
+    {
+      q: "Is this calculator free to use for commercial projects?",
+      a: "Yes, our Business Day Calculator is 100% free and requires no registration or software installation."
+    },
+    {
+      q: "Can I calculate business days backwards from a deadline?",
+      a: "Yes. In the 'Calculate Target Date' mode, enter a negative number of business days to work backward from a final delivery date to find the mandatory start date."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Holiday & Business Day Calculator",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <div class="hero-header text-center py-8 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl mb-8 shadow-xl">
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">Holiday & Working Day Calculator</h1>
+    <p class="text-lg sm:text-xl text-blue-200 max-w-3xl mx-auto px-4">
+      Accurately calculate business day counts between dates, skip weekends & public holidays, and set precise project deadlines.
+    </p>
+  </div>
+
+  <!-- Interactive Calculator App -->
+  <section class="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 mb-12">
+    <!-- Mode Switcher Tabs -->
+    <div class="flex border-b border-slate-200 dark:border-slate-700 mb-6">
+      <button id="tab-count" class="tab-btn active font-semibold py-3 px-6 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">
+        Count Days Between Dates
+      </button>
+      <button id="tab-add" class="tab-btn font-semibold py-3 px-6 text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-slate-700 dark:hover:text-slate-300">
+        Add/Subtract Business Days
+      </button>
+    </div>
+
+    <!-- Panel 1: Count Days -->
+    <div id="panel-count" class="tool-panel">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label for="start-date" class="block font-medium text-slate-700 dark:text-slate-200 mb-2">Start Date:</label>
+          <input type="date" id="start-date" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label for="end-date" class="block font-medium text-slate-700 dark:text-slate-200 mb-2">End Date:</label>
+          <input type="date" id="end-date" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Add Days -->
+    <div id="panel-add" class="tool-panel hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label for="base-date" class="block font-medium text-slate-700 dark:text-slate-200 mb-2">Start Date:</label>
+          <input type="date" id="base-date" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label for="days-to-add" class="block font-medium text-slate-700 dark:text-slate-200 mb-2">Business Days (use - for past):</label>
+          <input type="number" id="days-to-add" value="10" class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Options Section -->
+    <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-5 border border-slate-200 dark:border-slate-700 mb-6">
+      <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-3">Weekend & Holiday Settings</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <label for="weekend-rule" class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Weekend Days:</label>
+          <select id="weekend-rule" class="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+            <option value="sat-sun">Saturday & Sunday (Standard)</option>
+            <option value="fri-sat">Friday & Saturday (Middle East)</option>
+            <option value="sun-only">Sunday Only (6-day week)</option>
+            <option value="none">None (7-day week)</option>
+          </select>
+        </div>
+        <div>
+          <label for="holiday-preset" class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Public Holiday Preset:</label>
+          <select id="holiday-preset" class="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+            <option value="us">United States (Federal)</option>
+            <option value="uk">United Kingdom (Bank Holidays)</option>
+            <option value="eu">European Union (General)</option>
+            <option value="none">No Holidays (Weekends Only)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">End Date Inclusive?</label>
+          <label class="inline-flex items-center mt-2 cursor-pointer">
+            <input type="checkbox" id="include-end-date" checked class="form-checkbox text-blue-600 rounded" />
+            <span class="ml-2 text-slate-700 dark:text-slate-300">Include End Date</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output Display Card -->
+    <div id="results-display" class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-indigo-950/40 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800/50">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-indigo-100 dark:border-indigo-900/60 pb-3">
+        <h3 class="text-lg font-bold text-indigo-950 dark:text-indigo-200">Calculation Summary</h3>
+        <button id="copy-summary-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors shadow">
+          Copy Breakdown
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Business Days</span>
+          <span id="stat-business" class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">0</span>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Calendar Days</span>
+          <span id="stat-calendar" class="text-3xl font-extrabold text-slate-800 dark:text-slate-100">0</span>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Weekend Days</span>
+          <span id="stat-weekends" class="text-3xl font-extrabold text-slate-600 dark:text-slate-400">0</span>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Holidays Skipped</span>
+          <span id="stat-holidays" class="text-3xl font-extrabold text-amber-600 dark:text-amber-400">0</span>
+        </div>
+      </div>
+
+      <div id="target-date-result" class="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-900/60 hidden text-center">
+        <p class="text-sm text-slate-600 dark:text-slate-400">Target Completion Date:</p>
+        <p id="target-date-str" class="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mt-1">-</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Educational Article -->
+  <section class="max-w-4xl mx-auto article-container text-slate-800 dark:text-slate-200 space-y-6 leading-relaxed">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-3">
+      Mastering Business Day Calculations in Project Management & Finance
+    </h2>
+    <p>
+      Whether you are calculating project milestones, financial settlement windows, contract fulfillment periods, or payroll cycles, accurate calculation of <strong>business days</strong> (working days) is fundamental to professional management. Unlike simple calendar day counts, working day calculations must meticulously skip non-operational periods—specifically weekends and legal public holidays.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      The Anatomy of a Working Day Calculation
+    </h3>
+    <p>
+      A standard calendar year contains 365 days (or 366 in leap years). In a standard 5-day Monday through Friday workweek, there are 52 full weekends accounting for 104 weekend days. This leaves approximately 261 potential working weekdays.
+    </p>
+    <p>
+      However, legal public holidays further reduce the total number of business days. For example, in the United States, federal employees observe 11 official public holidays. In the United Kingdom, Bank Holidays reduce the annual working day pool by 8 to 10 days. Therefore, a typical business year in Western economies contains between <strong>249 and 252 actual working days</strong>.
+    </p>
+
+    <div class="my-6 p-4 bg-slate-100 dark:bg-slate-800/80 rounded-xl border-l-4 border-blue-500">
+      <h4 class="font-bold text-blue-900 dark:text-blue-300 mb-1">Key Formula:</h4>
+      <p class="text-sm font-mono text-slate-700 dark:text-slate-300">
+        Total Business Days = Total Calendar Days - Weekend Days - Observed Public Holidays (excluding overlaps)
+      </p>
+    </div>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Cross-Border Workweek Conventions
+    </h3>
+    <p>
+      International scheduling requires awareness of varying weekend structures around the globe:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>Western Standard (Mon - Fri):</strong> Used throughout the Americas, Europe, East Asia, and Oceania. Weekends fall on Saturday and Sunday.</li>
+      <li><strong>Middle East & Gulf States (Sun - Thu or Mon - Fri):</strong> Historically observed Friday and Saturday as weekends. In recent years, countries like the UAE transitioned to a Monday–Friday half-day structure, while Saudi Arabia operates Sunday through Thursday.</li>
+      <li><strong>6-Day Workweeks:</strong> Operating in parts of Latin America, South Asia, and manufacturing sectors where Saturday is considered a full or half business day.</li>
+    </ul>
+
+    <p>
+      When managing remote teams across regions like <a href="/gmt-to-est/" class="text-blue-600 dark:text-blue-400 underline font-medium">GMT to EST</a> or <a href="/est/" class="text-blue-600 dark:text-blue-400 underline font-medium">EST to IST</a>, aligning business day expectations is critical to avoiding missed delivery commitments. You can combine this tool with our <a href="/business-hours-overlap/" class="text-blue-600 dark:text-blue-400 underline font-medium">Business Hours Overlap Tool</a> and <a href="/meeting-planner/" class="text-blue-600 dark:text-blue-400 underline font-medium">Meeting Planner</a> for full workflow alignment.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Financial Markets: T+1 & T+2 Settlement Rules
+    </h3>
+    <p>
+      In global financial markets (such as the NYSE, NASDAQ, and LSE), security transactions rely on business day conventions known as <strong>Trade Date plus N days</strong> (e.g., T+1). When equities or bonds are traded on Friday, a T+1 settlement occurs on Monday (skipping Saturday and Sunday). If Monday is a market holiday, such as Labor Day or Christmas, settlement shifts to Tuesday.
+    </p>
+    <p>
+      Understanding these rules is essential for financial analysts tracking cash flow liquidity and trade settlement schedules across major zones like <a href="/gmt/" class="text-blue-600 dark:text-blue-400 underline font-medium font-semibold">GMT</a>, <a href="/pst/" class="text-blue-600 dark:text-blue-400 underline font-medium">PST</a>, <a href="/cst/" class="text-blue-600 dark:text-blue-400 underline font-medium font-semibold">CST</a>, and <a href="/cet/" class="text-blue-600 dark:text-blue-400 underline font-medium">CET</a>.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Impact of Time Zones and Daylight Saving Time (DST)
+    </h3>
+    <p>
+      While Daylight Saving Time (DST) alters local clock times by 1 hour, it does not change the calendar date count. However, when working with international deadlines across borders (e.g., London and New York), DST transitions can shift the relative cutoff time. For example, during the 2-week window in March when the US has started DST but the UK has not yet shifted to <a href="/bst/" class="text-blue-600 dark:text-blue-400 underline font-medium">BST</a>, the standard 5-hour time difference compresses to 4 hours.
+    </p>
+    <p>
+      To learn more about how global shifts affect team deadlines, read our guides on <a href="/countries-that-use-dst/" class="text-blue-600 dark:text-blue-400 underline font-medium">Countries That Use DST</a>, <a href="/countries-without-dst/" class="text-blue-600 dark:text-blue-400 underline font-medium">Countries Without DST</a>, and explore standard date formatting in <a href="/iso-8601-date-time-format/" class="text-blue-600 dark:text-blue-400 underline font-medium">ISO 8601 Date Format</a> or epoch tracking in <a href="/unix-time-explained/" class="text-blue-600 dark:text-blue-400 underline font-medium">Unix Time Explained</a>.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      Best Practices for Project Deadline Planning
+    </h3>
+    <ol class="list-decimal pl-6 space-y-2">
+      <li><strong>Always Buffer for Unplanned Holidays:</strong> Build a 5% to 10% business day buffer into major software deliverables to account for unexpected regional outages or emergency holidays.</li>
+      <li><strong>Confirm Regional Holidays Early:</strong> In distributed teams spanning cities like <a href="/chicago-time/" class="text-blue-600 dark:text-blue-400 underline font-medium">Chicago</a>, London, and <a href="/aest/" class="text-blue-600 dark:text-blue-400 underline font-medium">Sydney</a>, document public holiday schedules at the start of each quarter.</li>
+      <li><strong>Standardize Deliverable Cutoffs:</strong> State deadlines in standardized UTC terms or explicit local timezone hours (e.g., 5:00 PM EST). Refer to <a href="/time-difference-calculator/" class="text-blue-600 dark:text-blue-400 underline font-medium">Time Difference Calculator</a> for exact conversions.</li>
+      <li><strong>Review Contract SLAs:</strong> Differentiate clearly between "24 Calendar Hours" and "1 Business Day" in customer service agreements to avoid breach of service level guarantees. See our advice in <a href="/remote-team-scheduling/" class="text-blue-600 dark:text-blue-400 underline font-medium">Remote Team Scheduling</a> and <a href="/time-zones-for-freelancers/" class="text-blue-600 dark:text-blue-400 underline font-medium">Time Zones for Freelancers</a>.</li>
+    </ol>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="max-w-4xl mx-auto my-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
+    <div class="space-y-4">
+      {meta.faqs.map(faq => (
+        <details class="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-slate-800 dark:text-slate-100">
+            <span>{faq.q}</span>
+            <span class="ml-2 transition transform group-open:rotate-180 text-blue-600 dark:text-blue-400">▼</span>
+          </summary>
+          <div class="mt-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700/60 pt-3">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Script for Interactive Calculator -->
+  <script is:inline>
+    (function() {
+      const US_HOLIDAYS_2026 = [
+        "2026-01-01", "2026-01-19", "2026-02-16", "2026-05-25",
+        "2026-06-19", "2026-07-04", "2026-09-07", "2026-10-12",
+        "2026-11-11", "2026-11-26", "2026-12-25"
+      ];
+      const UK_HOLIDAYS_2026 = [
+        "2026-01-01", "2026-04-03", "2026-04-06", "2026-05-04",
+        "2026-05-25", "2026-08-31", "2026-12-25", "2026-12-28"
+      ];
+      const EU_HOLIDAYS_2026 = [
+        "2026-01-01", "2026-04-03", "2026-04-06", "2026-05-01",
+        "2026-05-14", "2026-05-25", "2026-11-01", "2026-12-25", "2026-12-26"
+      ];
+
+      let activeTab = "count";
+
+      const tabCount = document.getElementById("tab-count");
+      const tabAdd = document.getElementById("tab-add");
+      const panelCount = document.getElementById("panel-count");
+      const panelAdd = document.getElementById("panel-add");
+      const targetDateResult = document.getElementById("target-date-result");
+
+      const startDateInput = document.getElementById("start-date");
+      const endDateInput = document.getElementById("end-date");
+      const baseDateInput = document.getElementById("base-date");
+      const daysToAddInput = document.getElementById("days-to-add");
+      const weekendRuleInput = document.getElementById("weekend-rule");
+      const holidayPresetInput = document.getElementById("holiday-preset");
+      const includeEndDateInput = document.getElementById("include-end-date");
+
+      const statBusiness = document.getElementById("stat-business");
+      const statCalendar = document.getElementById("stat-calendar");
+      const statWeekends = document.getElementById("stat-weekends");
+      const statHolidays = document.getElementById("stat-holidays");
+      const targetDateStr = document.getElementById("target-date-str");
+      const copyBtn = document.getElementById("copy-summary-btn");
+
+      // Set default dates
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+      
+      const futureDate = new Date();
+      futureDate.setDate(today.getDate() + 14);
+      const futureStr = futureDate.toISOString().split("T")[0];
+
+      startDateInput.value = todayStr;
+      endDateInput.value = futureStr;
+      baseDateInput.value = todayStr;
+
+      function isWeekend(date, rule) {
+        const day = date.getDay(); // 0 = Sun, 1 = Mon, ... 6 = Sat
+        if (rule === "sat-sun") return day === 0 || day === 6;
+        if (rule === "fri-sat") return day === 5 || day === 6;
+        if (rule === "sun-only") return day === 0;
+        return false; // 'none'
+      }
+
+      function getHolidayList(preset) {
+        if (preset === "us") return US_HOLIDAYS_2026;
+        if (preset === "uk") return UK_HOLIDAYS_2026;
+        if (preset === "eu") return EU_HOLIDAYS_2026;
+        return [];
+      }
+
+      function calculate() {
+        const weekendRule = weekendRuleInput.value;
+        const holidayPreset = holidayPresetInput.value;
+        const holidays = getHolidayList(holidayPreset);
+        const includeEnd = includeEndDateInput.checked;
+
+        if (activeTab === "count") {
+          targetDateResult.classList.add("hidden");
+          const sVal = startDateInput.value;
+          const eVal = endDateInput.value;
+          if (!sVal || !eVal) return;
+
+          let d1 = new Date(sVal + "T00:00:00");
+          let d2 = new Date(eVal + "T00:00:00");
+          if (d1 > d2) {
+            const temp = d1; d1 = d2; d2 = temp;
+          }
+
+          let businessCount = 0;
+          let calendarCount = 0;
+          let weekendCount = 0;
+          let holidayCount = 0;
+
+          const curr = new Date(d1);
+          while (curr < d2 || (includeEnd && curr.getTime() === d2.getTime())) {
+            calendarCount++;
+            const iso = curr.toISOString().split("T")[0];
+            const we = isWeekend(curr, weekendRule);
+            const hol = holidays.includes(iso);
+
+            if (we) {
+              weekendCount++;
+            } else if (hol) {
+              holidayCount++;
+            } else {
+              businessCount++;
+            }
+
+            curr.setDate(curr.getDate() + 1);
+          }
+
+          statBusiness.textContent = businessCount;
+          statCalendar.textContent = calendarCount;
+          statWeekends.textContent = weekendCount;
+          statHolidays.textContent = holidayCount;
+
+        } else {
+          // Add/Subtract Business Days
+          targetDateResult.classList.remove("hidden");
+          const bVal = baseDateInput.value;
+          const numToAdd = parseInt(daysToAddInput.value, 10) || 0;
+          if (!bVal) return;
+
+          let curr = new Date(bVal + "T00:00:00");
+          let added = 0;
+          let step = numToAdd >= 0 ? 1 : -1;
+          let target = Math.abs(numToAdd);
+
+          let totalCalendar = 0;
+          let totalWeekends = 0;
+          let totalHolidays = 0;
+
+          while (added < target) {
+            curr.setDate(curr.getDate() + step);
+            totalCalendar++;
+            const iso = curr.toISOString().split("T")[0];
+            const we = isWeekend(curr, weekendRule);
+            const hol = holidays.includes(iso);
+
+            if (we) {
+              totalWeekends++;
+            } else if (hol) {
+              totalHolidays++;
+            } else {
+              added++;
+            }
+          }
+
+          statBusiness.textContent = numToAdd;
+          statCalendar.textContent = totalCalendar;
+          statWeekends.textContent = totalWeekends;
+          statHolidays.textContent = totalHolidays;
+
+          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+          targetDateStr.textContent = curr.toLocaleDateString('en-US', options);
+        }
+      }
+
+      // Tab switching
+      tabCount.addEventListener("click", () => {
+        activeTab = "count";
+        tabCount.classList.add("active", "text-blue-600", "dark:text-blue-400", "border-blue-600", "dark:border-blue-400");
+        tabCount.classList.remove("text-slate-500", "dark:text-slate-400", "border-transparent");
+        tabAdd.classList.remove("active", "text-blue-600", "dark:text-blue-400", "border-blue-600", "dark:border-blue-400");
+        tabAdd.classList.add("text-slate-500", "dark:text-slate-400", "border-transparent");
+
+        panelCount.classList.remove("hidden");
+        panelAdd.classList.add("hidden");
+        calculate();
+      });
+
+      tabAdd.addEventListener("click", () => {
+        activeTab = "add";
+        tabAdd.classList.add("active", "text-blue-600", "dark:text-blue-400", "border-blue-600", "dark:border-blue-400");
+        tabAdd.classList.remove("text-slate-500", "dark:text-slate-400", "border-transparent");
+        tabCount.classList.remove("active", "text-blue-600", "dark:text-blue-400", "border-blue-600", "dark:border-blue-400");
+        tabCount.classList.add("text-slate-500", "dark:text-slate-400", "border-transparent");
+
+        panelAdd.classList.remove("hidden");
+        panelCount.classList.add("hidden");
+        calculate();
+      });
+
+      // Event listeners
+      [startDateInput, endDateInput, baseDateInput, daysToAddInput, weekendRuleInput, holidayPresetInput, includeEndDateInput].forEach(el => {
+        el.addEventListener("input", calculate);
+        el.addEventListener("change", calculate);
+      });
+
+      copyBtn.addEventListener("click", () => {
+        const b = statBusiness.textContent;
+        const c = statCalendar.textContent;
+        const w = statWeekends.textContent;
+        const h = statHolidays.textContent;
+        let text = `Workday Calculation Summary:\n- Business Days: ${b}\n- Total Calendar Days: ${c}\n- Weekend Days: ${w}\n- Holidays Skipped: ${h}`;
+        if (activeTab === "add") {
+          text += `\n- Target Date: ${targetDateStr.textContent}`;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = copyBtn.textContent;
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => copyBtn.textContent = orig, 2000);
+        });
+      });
+
+      calculate();
+    })();
+  </script>
+</BaseLayout>

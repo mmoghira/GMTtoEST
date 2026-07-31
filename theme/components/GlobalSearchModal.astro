@@ -1,0 +1,341 @@
+---
+// Global Search Modal Component (Module 14 - Intelligent Search)
+---
+<div id="global-search-modal" class="search-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+  <div class="search-modal-container">
+    <div class="search-modal-header">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          id="global-search-input" 
+          placeholder="Search cities, time zones, converters, or guides... (e.g. London, EST, Python)" 
+          autocomplete="off" 
+          spellcheck="false"
+        />
+        <button id="search-modal-close" class="close-btn" aria-label="Close search">
+          <kbd>ESC</kbd>
+        </button>
+      </div>
+    </div>
+
+    <div class="search-modal-body">
+      <div id="search-quick-links" class="search-categories">
+        <div class="category-title">Popular Tools &amp; Features</div>
+        <div class="quick-tags">
+          <a href="/world-clock/" class="search-tag">🌐 World Clock</a>
+          <a href="/meeting-planner/" class="search-tag">📅 Meeting Planner</a>
+          <a href="/time-difference-calculator/" class="search-tag">⏱️ Time Diff Calc</a>
+          <a href="/developer-tools/" class="search-tag">👨‍💻 Developer Tools</a>
+          <a href="/time-zone-map/" class="search-tag">🗺️ Interactive Map</a>
+          <a href="/travel-time-planner/" class="search-tag">✈️ Travel Planner</a>
+        </div>
+      </div>
+
+      <div id="search-results-list" class="results-list" role="listbox"></div>
+    </div>
+
+    <div class="search-modal-footer">
+      <span>Navigation: <kbd>↑</kbd> <kbd>↓</kbd> to select</span>
+      <span>Open: <kbd>↵ Enter</kbd></span>
+      <span>Close: <kbd>ESC</kbd></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .search-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .search-modal-backdrop.is-open {
+    display: flex;
+    opacity: 1;
+  }
+
+  .search-modal-container {
+    background: var(--panel, #1e293b);
+    border: 1px solid var(--line, rgba(255,255,255,0.15));
+    border-radius: 12px;
+    width: 90%;
+    max-width: 680px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    color: var(--text, #f8fafc);
+  }
+
+  .search-modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line, rgba(255,255,255,0.1));
+  }
+
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--background, #0f172a);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line, rgba(255,255,255,0.1));
+  }
+
+  .search-icon {
+    color: var(--muted, #94a3b8);
+    flex-shrink: 0;
+  }
+
+  #global-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text, #f8fafc);
+    font-size: 1.05rem;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--muted, #94a3b8);
+  }
+
+  kbd {
+    background: var(--panel, #334155);
+    color: var(--muted, #cbd5e1);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--line, #475569);
+    font-family: monospace;
+  }
+
+  .search-modal-body {
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: 55vh;
+  }
+
+  .category-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted, #94a3b8);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .search-tag {
+    background: var(--background, #0f172a);
+    border: 1px solid var(--line, rgba(255,255,255,0.1));
+    color: var(--text, #f8fafc);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .search-tag:hover {
+    border-color: var(--accent, #38bdf8);
+    color: var(--accent, #38bdf8);
+  }
+
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--background, #0f172a);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text, #f8fafc);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  .result-item:hover, .result-item.is-selected {
+    border-color: var(--accent, #38bdf8);
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  .result-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .result-desc {
+    font-size: 0.8rem;
+    color: var(--muted, #94a3b8);
+  }
+
+  .result-badge {
+    font-size: 0.75rem;
+    background: var(--panel, #334155);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--accent, #38bdf8);
+  }
+
+  .search-modal-footer {
+    padding: 0.75rem 1rem;
+    background: var(--background, #0f172a);
+    border-top: 1px solid var(--line, rgba(255,255,255,0.1));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted, #94a3b8);
+  }
+</style>
+
+<script>
+  // Search Database Index
+  const SEARCH_INDEX = [
+    { title: "Global World Clock", url: "/world-clock/", desc: "Live clocks & offsets for 50+ world cities", category: "Tool" },
+    { title: "Global Meeting Planner", url: "/meeting-planner/", desc: "Compare working hours & schedule multi-city syncs", category: "Tool" },
+    { title: "Time Difference Calculator", url: "/time-difference-calculator/", desc: "Calculate exact time gap between any 2 locations", category: "Tool" },
+    { title: "Event Time Converter", url: "/event-time-converter/", desc: "Create shareable event links & export .ics calendar events", category: "Tool" },
+    { title: "Business Hours Overlap Tool", url: "/business-hours-overlap/", desc: "Visualize remote team working hours & optimal windows", category: "Tool" },
+    { title: "Daylight Saving Time Calendar", url: "/dst-calendar-tool/", desc: "DST start/end dates, countdowns & country rules", category: "Tool" },
+    { title: "Holiday & Working Day Calculator", url: "/workday-calculator/", desc: "Business day count between dates excluding weekends/holidays", category: "Tool" },
+    { title: "Interactive Time Zone Map", url: "/time-zone-map/", desc: "SVG world map with timezone meridians & day/night line", category: "Tool" },
+    { title: "Travel Planner & Jet Lag Minimizer", url: "/travel-time-planner/", desc: "Arrival time, jet lag score & circadian reset protocol", category: "Tool" },
+    { title: "Developer Toolkit", url: "/developer-tools/", desc: "Unix timestamp converter, ISO 8601 builder & code snippets", category: "Tool" },
+    { title: "Embeddable Widgets", url: "/widgets/", desc: "Free live clock & time converter widgets for webmasters", category: "Tool" },
+    { title: "Download Center", url: "/downloads/", desc: "Printable PDF conversion charts & timezone reference guides", category: "Tool" },
+
+    // Primary Converters & Guides
+    { title: "GMT to EST Converter", url: "/gmt-to-est/", desc: "Greenwich Mean Time to Eastern Standard Time", category: "Converter" },
+    { title: "EST to GMT Converter", url: "/est-to-gmt/", desc: "Eastern Standard Time to Greenwich Mean Time", category: "Converter" },
+    { title: "GMT to PST Converter", url: "/gmt-to-pst/", desc: "Greenwich Mean Time to Pacific Standard Time", category: "Converter" },
+    { title: "GMT to CST Converter", url: "/gmt-to-cst/", desc: "Greenwich Mean Time to Central Standard Time", category: "Converter" },
+    { title: "GMT to UTC Converter", url: "/gmt-to-utc/", desc: "Greenwich Mean Time to Universal Coordinated Time", category: "Converter" },
+    { title: "IST to EST Guide", url: "/ist-to-est/", desc: "India Standard Time to Eastern Standard Time", category: "Converter" },
+    { title: "BST to EST Guide", url: "/bst-to-est/", desc: "British Summer Time to Eastern Standard Time", category: "Converter" },
+    { title: "CET to EST Guide", url: "/cet-to-est/", desc: "Central European Time to Eastern Standard Time", category: "Converter" },
+
+    // City Clocks
+    { title: "London Time Clock", url: "/london-time/", desc: "Current local time in London, United Kingdom (GMT/BST)", category: "City" },
+    { title: "New York Time Clock", url: "/new-york-time/", desc: "Current local time in New York City, USA (EST/EDT)", category: "City" },
+    { title: "Tokyo Time Clock", url: "/tokyo-time/", desc: "Current local time in Tokyo, Japan (JST)", category: "City" },
+    { title: "Paris Time Clock", url: "/paris-time/", desc: "Current local time in Paris, France (CET/CEST)", category: "City" },
+    { title: "Dubai Time Clock", url: "/dubai-time/", desc: "Current local time in Dubai, UAE (GST)", category: "City" },
+
+    // Educational Guides
+    { title: "What is UTC?", url: "/what-is-utc/", desc: "Coordinated Universal Time primary standard guide", category: "Guide" },
+    { title: "What is EST?", url: "/what-is-est/", desc: "Eastern Standard Time (UTC-5) complete breakdown", category: "Guide" },
+    { title: "How Time Zones Work", url: "/how-time-zones-work/", desc: "Physics of axial rotation, longitudinal meridians & solar noon", category: "Guide" },
+    { title: "Handling Time Zones in JavaScript", url: "/handling-time-zones-javascript/", desc: "Native Intl API, Luxon, Day.js & Temporal API guide", category: "Developer" }
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('global-search-modal');
+    const input = document.getElementById('global-search-input') as HTMLInputElement;
+    const resultsContainer = document.getElementById('search-results-list');
+    const closeBtn = document.getElementById('search-modal-close');
+
+    if (!modal || !input || !resultsContainer) return;
+
+    // Open Search Modal (Command+K or Ctrl+K or Search Triggers)
+    const openSearch = () => {
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      setTimeout(() => input.focus(), 50);
+    };
+
+    const closeSearch = () => {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      input.value = '';
+      resultsContainer.innerHTML = '';
+    };
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        modal.classList.contains('is-open') ? closeSearch() : openSearch();
+      } else if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        closeSearch();
+      }
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeSearch();
+    });
+
+    // Attach search triggers across site
+    document.querySelectorAll('.trigger-global-search').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        openSearch();
+      });
+    });
+
+    // Perform Search Query
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLowerCase();
+      if (!query) {
+        resultsContainer.innerHTML = '';
+        return;
+      }
+
+      const filtered = SEARCH_INDEX.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.desc.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      ).slice(0, 8);
+
+      if (filtered.length === 0) {
+        resultsContainer.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--muted);">No matching results found for "${query}"</div>`;
+        return;
+      }
+
+      resultsContainer.innerHTML = filtered.map(item => `
+        <a href="${item.url}" class="result-item">
+          <div>
+            <div class="result-title">${item.title}</div>
+            <div class="result-desc">${item.desc}</div>
+          </div>
+          <span class="result-badge">${item.category}</span>
+        </a>
+      `).join('');
+    });
+  });
+</script>

@@ -28,6 +28,21 @@ export const educationalPages: ClusterLink[] = [
   { href: "/time-zone-abbreviations/", label: "Time Zone Abbreviations", description: "Glossary of global timezone acronyms (EST, PST, BST, IST, CET)." },
 ];
 
+export const toolsPages: ClusterLink[] = [
+  { href: "/world-clock/", label: "Global World Clock", description: "Live clocks and offsets for 50+ major cities worldwide." },
+  { href: "/meeting-planner/", label: "Global Meeting Planner", description: "Multi-city business hours overlap matrix and schedule exporter." },
+  { href: "/event-time-converter/", label: "Event Time Converter", description: "Convert host events to local attendee times and generate .ics calendar downloads." },
+  { href: "/time-difference-calculator/", label: "Time Difference Calculator", description: "Exact hour and minute difference between any two cities." },
+  { href: "/business-hours-overlap/", label: "Business Hours Overlap Tool", description: "Visualize team work windows and find optimal meeting slots." },
+  { href: "/dst-calendar-tool/", label: "DST Calendar Tool", description: "Countdown timers and country transition rules." },
+  { href: "/workday-calculator/", label: "Holiday & Working Day Calculator", description: "Calculate business days between dates excluding weekends." },
+  { href: "/time-zone-map/", label: "Interactive Time Zone Map", description: "SVG world map with active time zones and day/night line." },
+  { href: "/travel-time-planner/", label: "Travel Planner & Jet Lag Minimizer", description: "Arrival local times, jet lag score, and circadian adjustment protocol." },
+  { href: "/developer-tools/", label: "Developer Toolkit", description: "Unix timestamp converter, ISO 8601 builder, and code snippets." },
+  { href: "/widgets/", label: "Embeddable Widgets Generator", description: "Free customizable clocks and converters for external websites." },
+  { href: "/downloads/", label: "Download Center", description: "Printable PDF conversion charts and world time reference sheets." },
+];
+
 export const dstPages: ClusterLink[] = [
   { href: "/what-is-daylight-saving-time/", label: "What is Daylight Saving Time?", description: "Complete guide to DST origin, purpose, and energy savings." },
   { href: "/dst-start-end-dates/", label: "DST Start & End Dates", description: "Global transition schedules for spring forward and fall back." },

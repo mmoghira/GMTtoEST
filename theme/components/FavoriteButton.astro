@@ -1,0 +1,64 @@
+---
+type Props = {
+  timezone: string;
+  size?: 'sm' | 'md';
+};
+const { timezone, size = 'md' } = Astro.props;
+---
+<button class={`favorite-btn size-${size}`} data-timezone={timezone} aria-label="Toggle favorite">
+  <span class="star-icon">☆</span>
+</button>
+
+<script>
+  function updateFavoriteVisuals() {
+    try {
+      const prefs = JSON.parse(localStorage.getItem('gmt2est_preferences') || '{"favorites":[]}');
+      const favorites = prefs.favorites || [];
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const tz = btn.getAttribute('data-timezone');
+        if (favorites.includes(tz)) {
+          btn.classList.add('active');
+          const icon = btn.querySelector('.star-icon');
+          if (icon) icon.textContent = '★';
+        } else {
+          btn.classList.remove('active');
+          const icon = btn.querySelector('.star-icon');
+          if (icon) icon.textContent = '☆';
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateFavoriteVisuals();
+    
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLButtonElement;
+        const tz = target.getAttribute('data-timezone');
+        if (!tz) return;
+        
+        try {
+          const prefs = JSON.parse(localStorage.getItem('gmt2est_preferences') || '{"favorites":[]}');
+          let favorites = prefs.favorites || [];
+          
+          if (favorites.includes(tz)) {
+            favorites = favorites.filter((f: string) => f !== tz);
+          } else {
+            favorites.push(tz);
+          }
+          
+          prefs.favorites = favorites;
+          localStorage.setItem('gmt2est_preferences', JSON.stringify(prefs));
+          
+          updateFavoriteVisuals();
+          document.dispatchEvent(new CustomEvent('favorite-changed', { detail: { timezone: tz, favorites } }));
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+  });
+</script>

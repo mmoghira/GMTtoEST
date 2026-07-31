@@ -1,0 +1,46 @@
+---
+type Props = {
+  id: string;
+  placeholder?: string;
+  onSelect?: string;
+  multiple?: boolean;
+  maxSelections?: number;
+};
+
+const { id, placeholder = "Search cities or time zones...", onSelect, multiple = false, maxSelections = 8 } = Astro.props;
+---
+
+<div class="search-autocomplete" data-id={id} data-multiple={multiple} data-max={maxSelections} data-onselect={onSelect}>
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" id={id} class="city-search-input" placeholder={placeholder} role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls={`${id}-listbox`} />
+  </div>
+  <ul id={`${id}-listbox`} class="search-autocomplete-list" role="listbox" hidden></ul>
+  {multiple && <div class="city-chips" id={`${id}-chips`}></div>}
+</div>
+
+<script>
+  document.querySelectorAll('.search-autocomplete').forEach((container) => {
+    const input = container.querySelector('input');
+    const listbox = container.querySelector('ul');
+    const chipsContainer = container.querySelector('.city-chips');
+    const onSelectFnName = container.getAttribute('data-onselect');
+    const isMultiple = container.getAttribute('data-multiple') === 'true';
+    const maxSelections = parseInt(container.getAttribute('data-max') || '8', 10);
+    
+    let selectedCities = [];
+    
+    input?.addEventListener('input', (e) => {
+      const val = (e.target as HTMLInputElement).value.toLowerCase();
+      // Logic to fetch/filter cities would go here
+      // This is a stub for the autocomplete functionality
+    });
+    
+    listbox?.addEventListener('click', (e) => {
+      const item = (e.target as HTMLElement).closest('.search-autocomplete-item');
+      if (item && onSelectFnName && typeof window[onSelectFnName] === 'function') {
+        window[onSelectFnName](item.getAttribute('data-value'));
+      }
+    });
+  });
+</script>

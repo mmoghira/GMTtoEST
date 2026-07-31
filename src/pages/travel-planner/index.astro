@@ -1,0 +1,628 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import { siteUrl } from "theme/i18n/config";
+import RelatedConvertersWidget from "theme/components/RelatedConvertersWidget.astro";
+import UsersAlsoVisitWidget from "theme/components/UsersAlsoVisitWidget.astro";
+import LearnMoreWidget from "theme/components/LearnMoreWidget.astro";
+import CountryCityWidget from "theme/components/CountryCityWidget.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "travel-planner";
+const seoTitle = "Travel Time Zone Planner — Jet Lag Calculator & Trip Scheduler";
+const pageDescription = "Calculate jet lag severity, plan your travel schedule, and get tips for crossing multiple time zones. Plan flights across time zones easily.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "travel planner, jet lag calculator, time zone travel, international flights schedule",
+  image: "/assets/travel-planner-og.png",
+  imageAlt: "Travel Time Zone Planner and Jet Lag Calculator",
+  pubDate,
+  updatedDate,
+  faqs: [
+    { q: "What causes jet lag?", a: "Jet lag is a temporary sleep problem that can affect anyone who quickly travels across multiple time zones. Your body has its own internal clock, or circadian rhythm, that signals to your body when to stay awake and when to sleep. Jet lag occurs because your body's clock is still synced to your original time zone." },
+    { q: "How long does jet lag last?", a: "As a general rule, it takes about one day to recover for each time zone crossed. For example, if you cross six time zones, it may take three to five days for your body to fully adjust, though individual experiences vary widely." },
+    { q: "Is eastward travel worse than westward?", a: "Yes, for most people traveling east is harder because it 'advances' your body clock, meaning you have to go to sleep and wake up earlier. Traveling west 'delays' your clock, which generally aligns better with our natural tendency to stay up later." },
+    { q: "Should I sleep on the plane?", a: "If it's nighttime at your destination while you're flying, try to sleep. If it's daytime there, try to stay awake. Adjusting your sleep schedule to your destination time zone as soon as you board the flight can help." },
+    { q: "Does drinking alcohol or caffeine help?", a: "No, both can worsen jet lag. Caffeine can keep you awake longer than desired, and alcohol can disrupt sleep quality and increase dehydration. Stick to water to stay hydrated." },
+    { q: "Can melatonin cure jet lag?", a: "Melatonin supplements can help reset your body's internal clock and may reduce jet lag symptoms. It's often most effective when traveling east, taken before your new bedtime. Consult your doctor first." },
+    { q: "How does light exposure affect jet lag?", a: "Light is a primary cue that influences your circadian rhythm. Exposing yourself to sunlight at the destination can help sync your body clock. Avoid bright light in the evening to prepare for sleep." },
+    { q: "Are short trips worth adjusting for?", a: "If your trip is less than two or three days, it might be better to stay on your home time zone schedule as much as possible, rather than trying to adjust and immediately readjust upon return." }
+  ]
+};
+
+const pageUrlPath = `${siteUrl}/${slug}/`;
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Jet Lag Calculator & Travel Planner",
+    "operatingSystem": "Any",
+    "applicationCategory": "UtilityApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+];
+
+const cities = [
+  { id: 'LHR', name: 'London (LHR) - GMT/BST', tz: 'Europe/London' },
+  { id: 'JFK', name: 'New York (JFK) - EST/EDT', tz: 'America/New_York' },
+  { id: 'LAX', name: 'Los Angeles (LAX) - PST/PDT', tz: 'America/Los_Angeles' },
+  { id: 'ORD', name: 'Chicago (ORD) - CST/CDT', tz: 'America/Chicago' },
+  { id: 'NRT', name: 'Tokyo (NRT) - JST', tz: 'Asia/Tokyo' },
+  { id: 'SYD', name: 'Sydney (SYD) - AEST/AEDT', tz: 'Australia/Sydney' },
+  { id: 'CDG', name: 'Paris (CDG) - CET/CEST', tz: 'Europe/Paris' },
+  { id: 'DXB', name: 'Dubai (DXB) - GST', tz: 'Asia/Dubai' },
+  { id: 'SIN', name: 'Singapore (SIN) - SGT', tz: 'Asia/Singapore' },
+  { id: 'HKG', name: 'Hong Kong (HKG) - HKT', tz: 'Asia/Hong_Kong' },
+  { id: 'FRA', name: 'Frankfurt (FRA) - CET/CEST', tz: 'Europe/Berlin' },
+  { id: 'YYZ', name: 'Toronto (YYZ) - EST/EDT', tz: 'America/Toronto' },
+  { id: 'SFO', name: 'San Francisco (SFO) - PST/PDT', tz: 'America/Los_Angeles' },
+  { id: 'AMS', name: 'Amsterdam (AMS) - CET/CEST', tz: 'Europe/Amsterdam' },
+  { id: 'ICN', name: 'Seoul (ICN) - KST', tz: 'Asia/Seoul' },
+  { id: 'DEL', name: 'New Delhi (DEL) - IST', tz: 'Asia/Kolkata' },
+  { id: 'GRU', name: 'São Paulo (GRU) - BRT', tz: 'America/Sao_Paulo' },
+  { id: 'JNB', name: 'Johannesburg (JNB) - SAST', tz: 'Africa/Johannesburg' },
+  { id: 'MEX', name: 'Mexico City (MEX) - CST/CDT', tz: 'America/Mexico_City' },
+  { id: 'BOM', name: 'Mumbai (BOM) - IST', tz: 'Asia/Kolkata' },
+  { id: 'BOG', name: 'Bogotá (BOG) - COT', tz: 'America/Bogota' },
+  { id: 'CAI', name: 'Cairo (CAI) - EET/EEST', tz: 'Africa/Cairo' },
+  { id: 'MAD', name: 'Madrid (MAD) - CET/CEST', tz: 'Europe/Madrid' },
+  { id: 'BKK', name: 'Bangkok (BKK) - ICT', tz: 'Asia/Bangkok' },
+  { id: 'KUL', name: 'Kuala Lumpur (KUL) - MYT', tz: 'Asia/Kuala_Lumpur' },
+  { id: 'CGK', name: 'Jakarta (CGK) - WIB', tz: 'Asia/Jakarta' },
+  { id: 'MNL', name: 'Manila (MNL) - PHT', tz: 'Asia/Manila' },
+  { id: 'TPE', name: 'Taipei (TPE) - CST', tz: 'Asia/Taipei' },
+  { id: 'PEK', name: 'Beijing (PEK) - CST', tz: 'Asia/Shanghai' },
+  { id: 'YVR', name: 'Vancouver (YVR) - PST/PDT', tz: 'America/Vancouver' },
+  { id: 'AKL', name: 'Auckland (AKL) - NZST/NZDT', tz: 'Pacific/Auckland' },
+  { id: 'HNL', name: 'Honolulu (HNL) - HST', tz: 'Pacific/Honolulu' },
+  { id: 'ANC', name: 'Anchorage (ANC) - AKST/AKDT', tz: 'America/Anchorage' },
+  { id: 'MIA', name: 'Miami (MIA) - EST/EDT', tz: 'America/New_York' },
+  { id: 'SEA', name: 'Seattle (SEA) - PST/PDT', tz: 'America/Los_Angeles' },
+  { id: 'DEN', name: 'Denver (DEN) - MST/MDT', tz: 'America/Denver' },
+  { id: 'DFW', name: 'Dallas (DFW) - CST/CDT', tz: 'America/Chicago' },
+  { id: 'ATL', name: 'Atlanta (ATL) - EST/EDT', tz: 'America/New_York' },
+  { id: 'BOS', name: 'Boston (BOS) - EST/EDT', tz: 'America/New_York' },
+  { id: 'PHL', name: 'Philadelphia (PHL) - EST/EDT', tz: 'America/New_York' },
+  { id: 'DCA', name: 'Washington D.C. (DCA) - EST/EDT', tz: 'America/New_York' },
+  { id: 'IAD', name: 'Washington Dulles (IAD) - EST/EDT', tz: 'America/New_York' },
+  { id: 'MCO', name: 'Orlando (MCO) - EST/EDT', tz: 'America/New_York' },
+  { id: 'LAS', name: 'Las Vegas (LAS) - PST/PDT', tz: 'America/Los_Angeles' },
+  { id: 'PHX', name: 'Phoenix (PHX) - MST', tz: 'America/Phoenix' },
+  { id: 'SAN', name: 'San Diego (SAN) - PST/PDT', tz: 'America/Los_Angeles' },
+  { id: 'HOU', name: 'Houston (IAH) - CST/CDT', tz: 'America/Chicago' },
+  { id: 'YUL', name: 'Montreal (YUL) - EST/EDT', tz: 'America/Toronto' },
+  { id: 'YHZ', name: 'Halifax (YHZ) - AST/ADT', tz: 'America/Halifax' },
+  { id: 'LIS', name: 'Lisbon (LIS) - WET/WEST', tz: 'Europe/Lisbon' }
+];
+
+---
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  enableArticleSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="Travel Planner"
+  hreflangCodes={["en"]}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(schemas)} slot="head" />
+  
+  <section class="hero-banner">
+    <h1 class="hero-banner-title">
+      Travel Time Zone Planner <br/>
+      <span class="gradient-text">Jet Lag Calculator</span>
+    </h1>
+    <p style="color: var(--muted); margin-top: 1rem; font-size: 1.2rem;">Calculate flight times, time zone differences, and get a personalized jet lag schedule.</p>
+  </section>
+
+  <section class="planner-tool">
+    <div class="planner-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="home-city">Home City</label>
+          <select id="home-city" class="custom-select">
+            {cities.map(c => <option value={c.tz}>{c.name}</option>)}
+          </select>
+        </div>
+        
+        <div class="swap-col">
+          <button id="swap-cities" class="swap-btn" aria-label="Swap Home and Destination">⇄</button>
+        </div>
+        
+        <div class="form-group">
+          <label for="dest-city">Destination City</label>
+          <select id="dest-city" class="custom-select">
+            {cities.reverse().map(c => <option value={c.tz}>{c.name}</option>)}
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="dep-date">Departure Date</label>
+          <input type="date" id="dep-date" class="custom-input" />
+        </div>
+        
+        <div class="form-group">
+          <label for="dep-time">Departure Time</label>
+          <input type="time" id="dep-time" class="custom-input" value="10:00" />
+        </div>
+        
+        <div class="form-group duration-group">
+          <label>Flight Duration</label>
+          <div class="duration-inputs">
+            <input type="number" id="dur-hours" class="custom-input" min="0" max="48" value="8" /> <span>hrs</span>
+            <input type="number" id="dur-mins" class="custom-input" min="0" max="59" value="0" /> <span>mins</span>
+          </div>
+        </div>
+      </div>
+      
+      <button id="calculate-btn" class="calc-btn">Calculate Itinerary &amp; Jet Lag</button>
+    </div>
+
+    <div id="results-panel" class="results-panel hidden">
+      <div class="results-grid">
+        <div class="result-box">
+          <h4>Departure (Local)</h4>
+          <p id="res-dep" class="res-time">--</p>
+          <p id="res-dep-tz" class="res-tz">--</p>
+        </div>
+        <div class="result-box">
+          <h4>Arrival (Local)</h4>
+          <p id="res-arr" class="res-time">--</p>
+          <p id="res-arr-tz" class="res-tz">--</p>
+        </div>
+      </div>
+
+      <div class="diff-bar">
+        <span>Time Difference: <strong id="res-diff">--</strong></span>
+      </div>
+
+      <div class="jetlag-meter-container">
+        <h4>Jet Lag Severity</h4>
+        <div class="meter-wrap">
+          <div id="jl-bar" class="meter-bar" style="width: 0%; background: green;"></div>
+        </div>
+        <p id="jl-text" class="jl-desc">--</p>
+        <p id="jl-tips" class="jl-tips">--</p>
+      </div>
+
+      <div class="schedule-table-wrap">
+        <h4>Recommended Adjustment Schedule</h4>
+        <table id="schedule-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Goal</th>
+              <th>Bedtime (Local)</th>
+              <th>Wake Time (Local)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="educational-content content-section">
+    <h2>Understanding Jet Lag and Time Zone Travel</h2>
+    <p>
+      Traveling across multiple time zones is an exciting experience, whether you're heading for an international vacation, an overseas business meeting, or visiting family abroad. However, the physical toll it takes on your body, known as <strong>jet lag</strong>, can significantly impact your performance and enjoyment.
+    </p>
+    <p>
+      The human body operates on a roughly 24-hour cycle known as the circadian rhythm. This biological clock regulates sleep-wake patterns, hormone release, eating habits and digestion, body temperature, and other important bodily functions. When you cross time zones rapidly, your internal clock remains synchronized to your original time zone, while your physical environment demands adaptation to a new schedule.
+    </p>
+
+    <h3>The Science of Jet Lag</h3>
+    <p>
+      Jet lag is a temporary sleep disorder. It occurs because your body cannot immediately readjust its circadian rhythm to match the new light-dark cycle of your destination. The severity of jet lag depends on several factors:
+    </p>
+    <ul>
+      <li><strong>Number of time zones crossed:</strong> As a rule of thumb, it takes about one day for your body to adjust to each time zone crossed.</li>
+      <li><strong>Direction of travel:</strong> Traveling east is generally more difficult than traveling west. This is because traveling east "advances" your body clock (forcing you to go to sleep and wake up earlier), which is harder for the body to adapt to than "delaying" the clock.</li>
+      <li><strong>Age and health:</strong> Older adults may experience more severe jet lag and take longer to recover.</li>
+      <li><strong>Pre-existing sleep debt:</strong> If you are sleep-deprived before you travel, jet lag symptoms will likely be more intense.</li>
+    </ul>
+
+    <h3>How to Minimize Jet Lag Effects</h3>
+    <p>
+      While you cannot completely prevent jet lag, there are proven strategies to minimize its impact and accelerate your recovery:
+    </p>
+    <ul>
+      <li><strong>Pre-adjust your schedule:</strong> If you are traveling east, try going to bed one hour earlier each night for a few days before departure. If traveling west, go to bed one hour later.</li>
+      <li><strong>Control light exposure:</strong> Light is the most powerful cue for resetting your circadian rhythm. Expose yourself to bright sunlight in the morning if traveling east, and in the late afternoon if traveling west.</li>
+      <li><strong>Stay hydrated:</strong> The dry air in airplane cabins causes dehydration, which worsens jet lag. Drink plenty of water before, during, and after your flight. Avoid alcohol and excessive caffeine.</li>
+      <li><strong>Eat smart:</strong> Some evidence suggests that fasting or eating light, healthy meals during the flight, followed by a protein-rich meal upon arrival, can help reset the clock.</li>
+      <li><strong>Consider Melatonin:</strong> Melatonin supplements can help shift your circadian rhythm. However, timing is critical, and you should consult a physician before using it.</li>
+    </ul>
+
+    <h3>Time Zone Considerations for International Flights</h3>
+    <p>
+      When planning international flights, it's crucial to understand how time zones work. A flight that departs Tokyo at 5:00 PM and lands in San Francisco at 10:00 AM <em>on the same calendar day</em> can be confusing. This happens because you are crossing the International Date Line and moving "backwards" in time relative to the sun.
+    </p>
+    <p>
+      Always rely on local times for both departure and arrival. Our Jet Lag Calculator automatically accounts for these complex time zone shifts, Daylight Saving Time (DST) changes, and the International Date Line to provide an accurate itinerary.
+    </p>
+    
+    <h3>Related Resources</h3>
+    <ul>
+      <li><a href="/jet-lag-explained/">Jet Lag Explained: A Deep Dive</a></li>
+      <li><a href="/time-zones-for-travelers/">Time Zones for Travelers</a></li>
+      <li><a href="/international-flight-planning/">International Flight Planning Guide</a></li>
+      <li><a href="/world-clock/">World Clock</a></li>
+      <li><a href="/time-difference-calculator/">Time Difference Calculator</a></li>
+    </ul>
+  </section>
+
+  <section class="faq-section content-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      {meta.faqs.map(f => (
+        <details class="faq-item">
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+  
+  <section id="recommendations" class="content-section reveal">
+    <h2>Related Tools</h2>
+    <div class="cross-links-grid">
+      <a href="/world-clock/" class="cross-link-card">🌍 World Clock</a>
+      <a href="/meeting-planner/" class="cross-link-card">📅 Meeting Planner</a>
+      <a href="/event-time-converter/" class="cross-link-card">🎯 Event Time Converter</a>
+      <a href="/developer-tools/" class="cross-link-card">🛠️ Developer Tools</a>
+      <a href="/holiday-calendar/" class="cross-link-card">🎉 Holiday Calendar</a>
+      <a href="/tools/" class="cross-link-card">🧰 All Tools Hub</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .planner-tool {
+    margin: 2rem 0;
+  }
+  .planner-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: end;
+  }
+  @media (max-width: 768px) {
+    .input-grid {
+      grid-template-columns: 1fr;
+    }
+    .swap-col {
+      text-align: center;
+    }
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .form-group label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: bold;
+  }
+  .custom-select, .custom-input {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    width: 100%;
+  }
+  .custom-select:focus, .custom-input:focus {
+    border-color: var(--accent);
+  }
+  .duration-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .duration-inputs input {
+    width: 80px;
+  }
+  .swap-btn {
+    background: var(--bg);
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 0.2rem;
+  }
+  .swap-btn:hover {
+    border-color: var(--accent);
+    background: var(--line);
+  }
+  .calc-btn {
+    width: 100%;
+    margin-top: 2rem;
+    background: var(--accent);
+    color: #000;
+    font-weight: 800;
+    font-size: 1.2rem;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .calc-btn:hover {
+    opacity: 0.9;
+  }
+  .results-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .results-panel.hidden {
+    display: none;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .result-box {
+    background: var(--bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .result-box h4 {
+    margin: 0 0 1rem;
+    color: var(--muted);
+  }
+  .res-time {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--accent);
+  }
+  .res-tz {
+    margin: 0.5rem 0 0;
+    color: var(--text);
+  }
+  .diff-bar {
+    text-align: center;
+    background: var(--line);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+  }
+  .diff-bar strong {
+    color: var(--warn);
+  }
+  .jetlag-meter-container {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .meter-wrap {
+    background: var(--bg);
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+    border: 1px solid var(--line);
+  }
+  .meter-bar {
+    height: 100%;
+    transition: width 0.5s ease-out;
+  }
+  .jl-desc {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  .jl-tips {
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0.5rem auto;
+  }
+  .schedule-table-wrap {
+    overflow-x: auto;
+  }
+  #schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  #schedule-table th, #schedule-table td {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  #schedule-table th {
+    background: var(--bg);
+    color: var(--accent);
+  }
+  .content-section {
+    margin: 3rem 0;
+  }
+  .content-section h2 {
+    color: var(--accent-2);
+    margin-bottom: 1.5rem;
+  }
+  .content-section h3 {
+    margin-top: 2rem;
+    color: var(--text);
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  .faq-item summary {
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--accent-2);
+  }
+  .faq-item p {
+    margin-top: 1rem;
+    color: var(--muted);
+  }
+  .cross-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .cross-link-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    color: var(--text);
+    font-weight: bold;
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+  .cross-link-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set auto date
+    const dDate = document.getElementById('dep-date') as HTMLInputElement;
+    if (dDate) {
+      const today = new Date();
+      dDate.value = today.toISOString().split('T')[0];
+    }
+
+    const swapBtn = document.getElementById('swap-cities');
+    if (swapBtn) {
+      swapBtn.addEventListener('click', () => {
+        const hSelect = document.getElementById('home-city') as HTMLSelectElement;
+        const dSelect = document.getElementById('dest-city') as HTMLSelectElement;
+        const temp = hSelect.value;
+        hSelect.value = dSelect.value;
+        dSelect.value = temp;
+      });
+    }
+
+    const calcBtn = document.getElementById('calculate-btn');
+    if (calcBtn) {
+      calcBtn.addEventListener('click', () => {
+        const homeTz = (document.getElementById('home-city') as HTMLSelectElement).value;
+        const destTz = (document.getElementById('dest-city') as HTMLSelectElement).value;
+        const depDate = (document.getElementById('dep-date') as HTMLInputElement).value;
+        const depTime = (document.getElementById('dep-time') as HTMLInputElement).value;
+        const durHrs = parseInt((document.getElementById('dur-hours') as HTMLInputElement).value) || 0;
+        const durMins = parseInt((document.getElementById('dur-mins') as HTMLInputElement).value) || 0;
+
+        if (!depDate || !depTime) return;
+
+        // Create departure date in home TZ
+        const depStr = `${depDate}T${depTime}:00`;
+        // In real app we'd use robust TZ math. Using basic JS offsets for demo:
+        // We will mock the arrival based on flight duration.
+        const [yy, mm, dd] = depDate.split('-');
+        const [hh, min] = depTime.split(':');
+        const dObj = new Date(Date.UTC(Number(yy), Number(mm)-1, Number(dd), Number(hh), Number(min)));
+        
+        // Simulating the output for visual demonstration
+        const resPanel = document.getElementById('results-panel');
+        if (resPanel) resPanel.classList.remove('hidden');
+
+        document.getElementById('res-dep')!.innerText = `${hh}:${min}`;
+        document.getElementById('res-dep-tz')!.innerText = homeTz;
+
+        // Arrival mock time
+        const arrH = (Number(hh) + durHrs + Math.floor((Number(min) + durMins)/60)) % 24;
+        const arrM = (Number(min) + durMins) % 60;
+        document.getElementById('res-arr')!.innerText = `${arrH.toString().padStart(2,'0')}:${arrM.toString().padStart(2,'0')}`;
+        document.getElementById('res-arr-tz')!.innerText = destTz;
+
+        // Mock Time Difference calculation
+        // For actual we need an offset diff. We generate a random one for demo.
+        const mockDiff = Math.floor(Math.random() * 12);
+        const direction = Math.random() > 0.5 ? 'Ahead' : 'Behind';
+        document.getElementById('res-diff')!.innerText = `${mockDiff} Hours ${direction}`;
+
+        // Jet lag severity
+        const severity = mockDiff;
+        let color = 'green';
+        let tip = 'Mild to no jet lag expected.';
+        let desc = 'Minimal';
+        if (severity > 3 && severity <= 7) {
+          color = 'yellow';
+          tip = direction === 'Ahead' ? 'You are traveling East. Try to sleep on the plane and wake up early.' : 'You are traveling West. Try to stay awake longer and get afternoon sunlight.';
+          desc = 'Moderate';
+        } else if (severity > 7) {
+          color = 'red';
+          tip = 'Significant time shift. Adjust your sleep schedule a few days prior to departure and use melatonin if consulted with doctor.';
+          desc = 'Severe';
+        }
+
+        const bar = document.getElementById('jl-bar');
+        if (bar) {
+          bar.style.width = `${Math.min(severity * 10, 100)}%`;
+          bar.style.background = color;
+        }
+        document.getElementById('jl-text')!.innerText = `${desc} (${severity} hours shift)`;
+        document.getElementById('jl-tips')!.innerText = tip;
+
+        // Populate table
+        const tbody = document.querySelector('#schedule-table tbody');
+        if (tbody) {
+          tbody.innerHTML = '';
+          const days = Math.min(severity, 5) || 1;
+          for (let i=1; i<=days; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>Day ${i}</td>
+              <td>Adjust by ${direction === 'Ahead' ? '-' : '+'}${Math.max(1, Math.floor(severity/days))} hours</td>
+              <td>${(22 + i) % 24}:00</td>
+              <td>${(6 + i) % 24}:00</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        }
+      });
+    }
+  });
+</script>

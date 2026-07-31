@@ -1,0 +1,472 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "developer-tools";
+const seoTitle = "Developer Toolkit — Unix Timestamp, ISO 8601 & Time Zone Code Snippets";
+const pageDescription = "Essential developer utilities: live Unix timestamp sec/ms converter, ISO 8601 string generator, offset calculator, and copyable code snippets in JS, Python, PHP, Java, Go, Rust, C#.";
+
+const pubDate = "2026-07-30T15:00:00+05:00";
+const updatedDate = "2026-07-30T15:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "developer tools time zone, unix timestamp converter, iso 8601 generator, timezone offset calculator, python datetime timezone, javascript date converter, go time conversion",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is the Developer Toolkit for Time Zones?",
+      a: "The Developer Toolkit provides software engineers with essential date-time utilities including a live Unix timestamp converter (seconds and milliseconds), an ISO 8601 string formatter, offset calculator, and production-ready code snippets in 7 programming languages."
+    },
+    {
+      q: "What is a Unix timestamp (Epoch time)?",
+      a: "A Unix timestamp (or Epoch time) represents the total number of seconds (or milliseconds) that have elapsed since 00:00:00 UTC on January 1, 1970, excluding leap seconds."
+    },
+    {
+      q: "What is the Year 2038 problem (Y2K38)?",
+      a: "The Year 2038 problem occurs on January 19, 2038, when 32-bit signed integers wrapping Unix timestamps overflow from 2,147,483,647 to -2,147,483,648. Upgrading systems to 64-bit integers resolves this issue."
+    },
+    {
+      q: "What is the difference between ISO 8601 and RFC 3339?",
+      a: "ISO 8601 is the international umbrella standard for date and time representation (e.g., 2026-07-31T12:00:00Z). RFC 3339 is a specific internet profile of ISO 8601 that strictly mandates offset formats (like Z or +00:00) for web applications and APIs."
+    },
+    {
+      q: "Why should backend databases always store timestamps in UTC?",
+      a: "Storing timestamps in UTC eliminates ambiguity caused by Daylight Saving Time shifts, local timezone changes, and server migration across geographic regions, making data querying and cross-border synchronization reliable."
+    },
+    {
+      q: "How does Javascript handle timezone offsets?",
+      a: "JavaScript's native Date object stores time as milliseconds since Unix epoch (UTC). Methods like getTimezoneOffset() return local offsets in minutes, while Intl.DateTimeFormat provides regional timezone rendering."
+    },
+    {
+      q: "How do I parse IANA timezone strings in Python?",
+      a: "In Python 3.9+, use the built-in `zoneinfo` module (e.g., `from zoneinfo import ZoneInfo`) to localize `datetime` objects using official IANA timezone identifiers like 'America/New_York' or 'Europe/London'."
+    },
+    {
+      q: "What is the IANA Time Zone Database (Olson Database)?",
+      a: "The IANA Time Zone Database is a collaborative historical repository containing daylight saving rules, offset histories, and geopolitical boundaries for thousands of global locations, updated multiple times per year."
+    },
+    {
+      q: "How do leap seconds impact Unix time?",
+      a: "Unix timestamps intentionally ignore leap seconds by treating every calendar day as having exactly 86,400 seconds. When a leap second is added, systems usually repeat or smear the 86,400th second."
+    },
+    {
+      q: "How can I convert GMT to EST in code?",
+      a: "In modern programming languages, format a UTC timestamp using the target IANA timezone key ('America/New_York'). Modern timezone libraries automatically determine whether standard time (EST, UTC-5) or daylight time (EDT, UTC-4) applies."
+    },
+    {
+      q: "How do I format an ISO 8601 string in Java?",
+      a: "In Java 8+, use `ZonedDateTime` or `OffsetDateTime` paired with `DateTimeFormatter.ISO_OFFSET_DATE_TIME` or `Instant.now().toString()`."
+    },
+    {
+      q: "What is the best way to handle timezone conversions in Go?",
+      a: "Use Go's `time.LoadLocation(\"America/New_York\")` to load location data, then call `t.In(loc)` on a `time.Time` struct."
+    },
+    {
+      q: "How does PHP handle timezones in modern code?",
+      a: "In PHP 8+, construct a `DateTimeImmutable` object and pass a `DateTimeZone` instance (e.g., `new DateTimeZone('Europe/London')`)."
+    },
+    {
+      q: "How do I perform UTC conversion in Rust?",
+      a: "Use the `chrono` crate paired with `chrono-tz`. Parse timestamps into `DateTime<Utc>` and convert using `.with_timezone(&America::New_York)`."
+    },
+    {
+      q: "What is the C# DateTimeOffset structure?",
+      a: "In C# / .NET, `DateTimeOffset` stores an absolute point in time along with an explicit offset from UTC, making it superior to `DateTime` for cross-timezone financial and API data."
+    },
+    {
+      q: "Can I convert epoch seconds to milliseconds automatically?",
+      a: "Yes! Epoch seconds are 10-digit integers (e.g., 1785480000), while milliseconds are 13-digit integers (e.g., 1785480000000). Our tool automatically detects the precision."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Developer Toolkit for Time Zones",
+    "operatingSystem": "All",
+    "applicationCategory": "UtilitiesApplication",
+    "offers": { "@type": "Offer", "price": "0" }
+  })} />
+
+  <div class="hero-header text-center py-8 bg-gradient-to-r from-slate-900 via-purple-950 to-blue-900 text-white rounded-2xl mb-8 shadow-xl">
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">Developer Time Zone Toolkit</h1>
+    <p class="text-lg sm:text-xl text-purple-200 max-w-3xl mx-auto px-4">
+      Live Unix timestamp converters, ISO 8601 generators, offset math, and production code snippets in 7 programming languages.
+    </p>
+  </div>
+
+  <!-- Interactive Developer Utilities -->
+  <section class="max-w-5xl mx-auto bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-800 mb-12">
+    <!-- Live Unix Clock Ticker -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800 mb-8">
+      <div>
+        <span class="text-xs uppercase tracking-wider text-purple-400 font-semibold">Live System Unix Timestamp (UTC Epoch)</span>
+        <div class="flex items-center gap-4 mt-1">
+          <span id="live-epoch-sec" class="text-2xl sm:text-3xl font-mono font-bold text-green-400">1785480000</span>
+          <span class="text-xs text-slate-400">sec</span>
+          <span id="live-epoch-ms" class="text-lg sm:text-xl font-mono text-slate-300">1785480000000</span>
+          <span class="text-xs text-slate-400">ms</span>
+        </div>
+      </div>
+      <button id="copy-live-epoch" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 font-semibold text-xs rounded-lg transition-colors">
+        Copy Epoch Sec
+      </button>
+    </div>
+
+    <!-- Utility Tabs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <!-- Tool 1: Unix Converter -->
+      <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 space-y-4">
+        <h3 class="text-lg font-bold text-purple-300 flex items-center gap-2">
+          <span>⏱️ Epoch Timestamp Converter</span>
+        </h3>
+        <div>
+          <label for="epoch-input" class="block text-sm text-slate-300 mb-1">Enter Timestamp (sec or ms):</label>
+          <input type="text" id="epoch-input" value="1785480000" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 font-mono text-green-400 focus:ring-2 focus:ring-purple-500" />
+        </div>
+        <div class="space-y-2 text-xs font-mono bg-slate-950 p-3 rounded-lg border border-slate-800">
+          <div><span class="text-slate-400">UTC Date:</span> <span id="out-utc" class="text-white font-semibold">-</span></div>
+          <div><span class="text-slate-400">Local Date:</span> <span id="out-local" class="text-white font-semibold">-</span></div>
+          <div><span class="text-slate-400">ISO 8601:</span> <span id="out-iso" class="text-purple-300 font-semibold">-</span></div>
+        </div>
+      </div>
+
+      <!-- Tool 2: ISO Builder -->
+      <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 space-y-4">
+        <h3 class="text-lg font-bold text-purple-300 flex items-center gap-2">
+          <span>📅 ISO 8601 String Builder</span>
+        </h3>
+        <div>
+          <label for="iso-date-input" class="block text-sm text-slate-300 mb-1">Select Date & Time:</label>
+          <input type="datetime-local" id="iso-date-input" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white focus:ring-2 focus:ring-purple-500" />
+        </div>
+        <div>
+          <label for="iso-offset-select" class="block text-sm text-slate-300 mb-1">Target Offset:</label>
+          <select id="iso-offset-select" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <option value="Z">UTC (Z)</option>
+            <option value="-05:00" selected>EST (-05:00)</option>
+            <option value="-04:00">EDT (-04:00)</option>
+            <option value="+00:00">GMT (+00:00)</option>
+            <option value="+01:00">CET (+01:00)</option>
+            <option value="+05:30">IST (+05:30)</option>
+            <option value="+09:00">JST (+09:00)</option>
+          </select>
+        </div>
+        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 font-mono text-xs text-green-400 flex items-center justify-between">
+          <span id="res-iso-str">2026-07-31T12:00:00-05:00</span>
+          <button id="copy-iso-btn" class="text-xs text-purple-400 hover:underline">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code Snippets Gallery -->
+    <div class="bg-slate-800/90 rounded-xl p-6 border border-slate-700">
+      <h3 class="text-xl font-bold text-white mb-4">Multi-Language Code Snippets (GMT to EST Conversion)</h3>
+      
+      <!-- Language Tabs -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-700 pb-3 mb-4 text-xs font-semibold">
+        <button data-lang="js" class="lang-tab active px-3 py-1.5 rounded-md bg-purple-600 text-white">JavaScript</button>
+        <button data-lang="python" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">Python</button>
+        <button data-lang="php" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">PHP</button>
+        <button data-lang="java" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">Java</button>
+        <button data-lang="go" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">Go</button>
+        <button data-lang="rust" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">Rust</button>
+        <button data-lang="csharp" class="lang-tab px-3 py-1.5 rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600">C#</button>
+      </div>
+
+      <!-- Code Blocks -->
+      <div id="code-container" class="relative">
+        <div id="code-js" class="code-block">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`// JavaScript (Node.js & Browser) GMT to EST/EDT Conversion
+const utcDate = new Date(); // Current UTC time
+
+const estFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  dateStyle: 'full',
+  timeStyle: 'long'
+});
+
+console.log("EST/EDT Time:", estFormatter.format(utcDate));
+console.log("Unix Epoch (ms):", utcDate.getTime());`}</code></pre>
+        </div>
+
+        <div id="code-python" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# Python 3.9+ GMT to EST/EDT
+utc_now = datetime.now(ZoneInfo("UTC"))
+est_now = utc_now.astimezone(ZoneInfo("America/New_York"))
+
+print("UTC Time:", utc_now.isoformat())
+print("EST/EDT Time:", est_now.isoformat())
+print("Unix Timestamp:", int(utc_now.timestamp()))`}</code></pre>
+        </div>
+
+        <div id="code-php" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`<?php
+// PHP 8+ GMT to EST/EDT Conversion
+$utc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+$est = $utc->setTimezone(new DateTimeZone('America/New_York'));
+
+echo "UTC: " . $utc->format(DateTimeInterface::ATOM) . "\n";
+echo "EST: " . $est->format(DateTimeInterface::ATOM) . "\n";
+echo "Timestamp: " . $utc->getTimestamp() . "\n";
+?>`}</code></pre>
+        </div>
+
+        <div id="code-java" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+public class TimeZoneConverter {
+    public static void main(String[] args) {
+        ZonedDateTime utcNow = ZonedDateTime.now(ZoneId.of("UTC"));
+        ZonedDateTime estNow = utcNow.withZoneSameInstant(ZoneId.of("America/New_York"));
+        
+        System.out.println("UTC: " + utcNow.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        System.out.println("EST: " + estNow.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        System.out.println("Epoch Sec: " + utcNow.toEpochSecond());
+    }
+}`}</code></pre>
+        </div>
+
+        <div id="code-go" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	now := time.Now().UTC()
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		panic(err)
+	}
+
+	estTime := now.In(loc)
+	fmt.Println("UTC:", now.Format(time.RFC3339))
+	fmt.Println("EST:", estTime.Format(time.RFC3339))
+	fmt.Println("Unix:", now.Unix())
+}`}</code></pre>
+        </div>
+
+        <div id="code-rust" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`use chrono::{Utc};
+use chrono_tz::America::New_York;
+
+fn main() {
+    let utc_now = Utc::now();
+    let est_now = utc_now.with_timezone(&New_York);
+
+    println!("UTC: {}", utc_now.to_rfc3339());
+    println!("EST: {}", est_now.to_rfc3339());
+    println!("Unix Epoch: {}", utc_now.timestamp());
+}`}</code></pre>
+        </div>
+
+        <div id="code-csharp" class="code-block hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-xs text-green-300 font-mono"><code>{`using System;
+
+class Program {
+    static void Main() {
+        DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+        TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset estNow = TimeZoneInfo.ConvertTime(utcNow, estZone);
+
+        Console.WriteLine($"UTC: {utcNow:o}");
+        Console.WriteLine($"EST: {estNow:o}");
+        Console.WriteLine($"Unix Sec: {utcNow.ToUnixTimeSeconds()}");
+    }
+}`}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Educational Article -->
+  <section class="max-w-4xl mx-auto article-container text-slate-800 dark:text-slate-200 space-y-6 leading-relaxed">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-3">
+      The Software Engineer's Definitive Guide to Time Zones, Epochs, and ISO Standards
+    </h2>
+    <p>
+      Time measurement in software engineering is notorious for subtle bugs, edge cases, and unexpected failures. From Daylight Saving Time transitions to leap seconds, 32-bit integer overflows, and database serialization mismatches, date-time management requires strict architectural discipline.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      1. POSIX Unix Epoch Time
+    </h3>
+    <p>
+      The <strong>Unix Epoch</strong> is defined as 00:00:00 UTC on January 1, 1970. Unix timestamps count elapsed seconds monotonically from this baseline. Because Unix time is inherently UTC-based, it is completely immune to local timezone variations.
+    </p>
+    <p>
+      Learn more in our detailed guide on <a href="/unix-time-explained/" class="text-purple-600 dark:text-purple-400 underline font-medium">Unix Time Explained</a>.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      2. The Year 2038 Problem (Y2K38)
+    </h3>
+    <p>
+      Legacy systems using 32-bit signed integers to store Unix timestamps will experience overflow on <strong>January 19, 2038 at 03:14:07 UTC</strong>. At that instant, the integer value reaches <code>2,147,483,647</code> and wraps around to <code>-2,147,483,648</code>, interpreting the date as December 13, 1901. Modern operating systems and 64-bit databases use 64-bit integers, extending valid time tracking for over 292 billion years.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      3. ISO 8601 & RFC 3339 Standard Formats
+    </h3>
+    <p>
+      Data interchange across REST APIs, microservices, and databases demands unambiguous string representations. The <strong>ISO 8601</strong> standard defines string layouts like:
+    </p>
+
+    <div class="my-6 p-4 bg-slate-100 dark:bg-slate-800/80 rounded-xl border-l-4 border-purple-500 font-mono text-sm">
+      YYYY-MM-DDTHH:mm:ss.sssZ &nbsp;&nbsp;&nbsp;(UTC)<br/>
+      YYYY-MM-DDTHH:mm:ss.sss-05:00 (EST Offset)
+    </div>
+
+    <p>
+      Review our technical breakdown on <a href="/iso-8601-date-time-format/" class="text-purple-600 dark:text-purple-400 underline font-medium">ISO 8601 Date Time Format</a> and <a href="/what-is-utc-offset/" class="text-purple-600 dark:text-purple-400 underline font-medium">What is UTC Offset</a>.
+    </p>
+
+    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-6 mb-3">
+      4. Database Architecture Golden Rules
+    </h3>
+    <ol class="list-decimal pl-6 space-y-2">
+      <li><strong>Store UTC in Storage Engine:</strong> Store all persistent timestamps in UTC or as raw Unix epoch integers in PostgreSQL, MySQL, or MongoDB.</li>
+      <li><strong>Convert at Presentation Layer:</strong> Convert UTC timestamps to local user time zones (e.g., <a href="/gmt-to-est/" class="text-purple-600 dark:text-purple-400 underline font-medium">GMT to EST</a>, <a href="/pst/" class="text-purple-600 dark:text-purple-400 underline font-medium">PST</a>, or <a href="/cet/" class="text-purple-600 dark:text-purple-400 underline font-medium">CET</a>) at the frontend UI layer using browser IANA detectors.</li>
+      <li><strong>Use IANA Database Identifiers:</strong> Store timezone identifiers as full string names like <code>America/New_York</code> or <code>Europe/London</code> rather than static offset names like <code>EST</code> or <code>BST</code>, which change seasonally during Daylight Saving transitions.</li>
+    </ol>
+
+    <p>
+      For broader time zone operations, utilize our <a href="/time-difference-calculator/" class="text-purple-600 dark:text-purple-400 underline font-medium">Time Difference Calculator</a> and <a href="/meeting-planner/" class="text-purple-600 dark:text-purple-400 underline font-medium">Meeting Planner</a>.
+    </p>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="max-w-4xl mx-auto my-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 text-center">Frequently Asked Questions</h2>
+    <div class="space-y-4">
+      {meta.faqs.map(faq => (
+        <details class="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-slate-800 dark:text-slate-100">
+            <span>{faq.q}</span>
+            <span class="ml-2 transition transform group-open:rotate-180 text-purple-600 dark:text-purple-400">▼</span>
+          </summary>
+          <div class="mt-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700/60 pt-3">
+            <p>{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Script for Developer Tools -->
+  <script is:inline>
+    (function() {
+      // Live Ticker
+      const liveSec = document.getElementById("live-epoch-sec");
+      const liveMs = document.getElementById("live-epoch-ms");
+      const copyLiveBtn = document.getElementById("copy-live-epoch");
+
+      function updateLiveEpoch() {
+        const now = Date.now();
+        liveMs.textContent = String(now);
+        liveSec.textContent = String(Math.floor(now / 1000));
+      }
+      setInterval(updateLiveEpoch, 1000);
+      updateLiveEpoch();
+
+      copyLiveBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(liveSec.textContent).then(() => {
+          const orig = copyLiveBtn.textContent;
+          copyLiveBtn.textContent = "Copied!";
+          setTimeout(() => copyLiveBtn.textContent = orig, 2000);
+        });
+      });
+
+      // Epoch Converter Input
+      const epochInput = document.getElementById("epoch-input");
+      const outUtc = document.getElementById("out-utc");
+      const outLocal = document.getElementById("out-local");
+      const outIso = document.getElementById("out-iso");
+
+      function convertEpoch() {
+        let val = parseInt(epochInput.value.trim(), 10);
+        if (isNaN(val)) return;
+        if (val < 100000000000) val = val * 1000; // convert sec to ms
+
+        const d = new Date(val);
+        outUtc.textContent = d.toUTCString();
+        outLocal.textContent = d.toString();
+        outIso.textContent = d.toISOString();
+      }
+      epochInput.addEventListener("input", convertEpoch);
+      convertEpoch();
+
+      // ISO Builder
+      const isoDateInput = document.getElementById("iso-date-input");
+      const isoOffsetSelect = document.getElementById("iso-offset-select");
+      const resIsoStr = document.getElementById("res-iso-str");
+      const copyIsoBtn = document.getElementById("copy-iso-btn");
+
+      const now = new Date();
+      const isoLocal = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      isoDateInput.value = isoLocal;
+
+      function updateIsoStr() {
+        const dt = isoDateInput.value;
+        const off = isoOffsetSelect.value;
+        if (!dt) return;
+        resIsoStr.textContent = `${dt}:00${off}`;
+      }
+      isoDateInput.addEventListener("input", updateIsoStr);
+      isoOffsetSelect.addEventListener("change", updateIsoStr);
+      updateIsoStr();
+
+      copyIsoBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(resIsoStr.textContent).then(() => {
+          const orig = copyIsoBtn.textContent;
+          copyIsoBtn.textContent = "Copied!";
+          setTimeout(() => copyIsoBtn.textContent = orig, 2000);
+        });
+      });
+
+      // Code Gallery Tabs
+      const langTabs = document.querySelectorAll(".lang-tab");
+      const codeBlocks = document.querySelectorAll(".code-block");
+
+      langTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const lang = tab.getAttribute("data-lang");
+          langTabs.forEach(t => {
+            t.classList.remove("active", "bg-purple-600", "text-white");
+            t.classList.add("bg-slate-700", "text-slate-300");
+          });
+          tab.classList.add("active", "bg-purple-600", "text-white");
+
+          codeBlocks.forEach(cb => cb.classList.add("hidden"));
+          const target = document.getElementById(`code-${lang}`);
+          if (target) target.classList.remove("hidden");
+        });
+      });
+    })();
+  </script>
+</BaseLayout>

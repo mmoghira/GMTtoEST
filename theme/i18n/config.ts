@@ -139,6 +139,15 @@ export const pages: any[] = [
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
+  { slug: "tools", kind: "tool", labelKey: "tools" },
+  { slug: "world-clock", kind: "tool", labelKey: "worldClock" },
+  { slug: "meeting-planner", kind: "tool", labelKey: "meetingPlanner" },
+  { slug: "event-time-converter", kind: "tool", labelKey: "eventTimeConverter" },
+  { slug: "time-difference-calculator", kind: "tool", labelKey: "timeDifferenceCalculator" },
+  { slug: "business-hours-overlap", kind: "tool", labelKey: "businessHoursOverlap" },
+  { slug: "holiday-calendar", kind: "tool", labelKey: "holidayCalendar" },
+  { slug: "travel-planner", kind: "tool", labelKey: "travelPlanner" },
+  { slug: "developer-tools", kind: "tool", labelKey: "developerTools" },
   ...extraPages
 ];
 
