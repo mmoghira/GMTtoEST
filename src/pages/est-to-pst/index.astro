@@ -1,0 +1,237 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "est-to-pst";
+const t = getTranslation(lang);
+
+const pageTitle = "EST to PST Converter";
+const seoTitle = "EST to PST Converter – Eastern Standard Time to Pacific Standard Time";
+const pageDescription = "Convert EST to PST instantly. Calculate the exact 3-hour time difference between Eastern Standard Time (UTC-5) and Pacific Standard Time (UTC-8) with live clocks, conversion tables, and meeting planner.";
+
+const context = {
+  from: "EST",
+  to: "PST",
+  fromZone: "America/New_York",
+  toZone: "America/Los_Angeles"
+};
+
+const canonical = `${siteUrl}/est-to-pst/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA (EST → PST = EST - 3 hours)
+// ═══════════════════════════════════════════════════════════════════════════
+const conversionRows = [
+  { est: "12:00 AM (Midnight)", pst: "9:00 PM PST (Prev Day)", note: "Late evening on US West Coast, midnight in New York", day: "Previous day" },
+  { est: "1:00 AM EST", pst: "10:00 PM PST (Prev Day)", note: "Late night in Los Angeles & San Francisco", day: "Previous day" },
+  { est: "2:00 AM EST", pst: "11:00 PM PST (Prev Day)", note: "Nighttime hours across Pacific time zone", day: "Previous day" },
+  { est: "3:00 AM EST", pst: "12:00 AM (Midnight) PST", note: "Midnight transition in Seattle & Vancouver", day: "Same day" },
+  { est: "4:00 AM EST", pst: "1:00 AM PST", note: "Deep night sleeping hours on West Coast", day: "Same day" },
+  { est: "5:00 AM EST", pst: "2:00 AM PST", note: "Overnight batch processing & system backups", day: "Same day" },
+  { est: "6:00 AM EST", pst: "3:00 AM PST", note: "Early risers in New York, quiet pre-dawn in LA", day: "Same day" },
+  { est: "7:00 AM EST", pst: "4:00 AM PST", note: "East Coast morning commute commencement", day: "Same day" },
+  { est: "8:00 AM EST", pst: "5:00 AM PST", note: "East Coast office arrival & email check", day: "Same day" },
+  { est: "9:00 AM EST", pst: "6:00 AM PST", note: "Wall Street pre-market prep & West Coast morning wake-up", day: "Same day" },
+  { est: "9:30 AM EST", pst: "6:30 AM PST", note: "NYSE & NASDAQ stock exchanges opening bell", day: "Same day" },
+  { est: "10:00 AM EST", pst: "7:00 AM PST", note: "East Coast morning meeting & West Coast early start", day: "Same day" },
+  { est: "11:00 AM EST", pst: "8:00 AM PST", note: "Transcontinental business collaboration window opens", day: "Same day" },
+  { est: "12:00 PM (Noon) EST", pst: "9:00 AM PST", note: "East Coast lunch start / West Coast workday start", day: "Same day" },
+  { est: "1:00 PM EST", pst: "10:00 AM PST", note: "Primary morning-to-afternoon cross-coast meeting slot", day: "Same day" },
+  { est: "2:00 PM EST", pst: "11:00 AM PST", note: "Peak business collaboration & executive briefings", day: "Same day" },
+  { est: "3:00 PM EST", pst: "12:00 PM (Noon) PST", note: "East Coast afternoon wrap / West Coast lunch hour", day: "Same day" },
+  { est: "4:00 PM EST", pst: "1:00 PM PST", note: "US stock market close (NYSE / NASDAQ) / West Coast afternoon kickoff", day: "Same day" },
+  { est: "5:00 PM EST", pst: "2:00 PM PST", note: "East Coast office wrap-up & day-end handoff", day: "Same day" },
+  { est: "6:00 PM EST", pst: "3:00 PM PST", note: "East Coast evening relaxation / West Coast late afternoon", day: "Same day" },
+  { est: "7:00 PM EST", pst: "4:00 PM PST", note: "Prime time broadcasting kickoff & West Coast workday close", day: "Same day" },
+  { est: "8:00 PM EST", pst: "5:00 PM PST", note: "East Coast dinner hour / West Coast office close", day: "Same day" },
+  { est: "9:00 PM EST", pst: "6:00 PM PST", note: "Evening webinars & national sports broadcasts", day: "Same day" },
+  { est: "10:00 PM EST", pst: "7:00 PM PST", note: "Late evening entertainment & streaming", day: "Same day" },
+  { est: "11:00 PM EST", pst: "8:00 PM PST", note: "Late night in New York / West Coast evening prime time", day: "Same day" }
+];
+
+// Targeted FAQs
+const faqs = [
+  {
+    q: "What is the time difference between EST and PST?",
+    a: "Pacific Standard Time (PST, UTC-8) is exactly 3 hours behind Eastern Standard Time (EST, UTC-5). When it is 12:00 PM (Noon) in New York or Toronto (EST), it is 9:00 AM in Los Angeles or Vancouver (PST)."
+  },
+  {
+    q: "What is 10 AM EST in PST?",
+    a: "10:00 AM EST converts to 7:00 AM PST. This early morning hour on the West Coast marks the opening of the transcontinental business day."
+  },
+  {
+    q: "What is 1 PM EST in PST?",
+    a: "1:00 PM EST converts to 10:00 AM PST. This is the primary morning meeting slot connecting Wall Street and Silicon Valley offices."
+  },
+  {
+    q: "What is 4 PM EST in PST?",
+    a: "4:00 PM EST converts to 1:00 PM PST. This coincides with the official 4:00 PM EDT/EST closing bell of the US stock exchanges (NYSE and NASDAQ)."
+  },
+  {
+    q: "What is 5 PM EST in PST?",
+    a: "5:00 PM EST converts to 2:00 PM PST."
+  },
+  {
+    q: "Do EST and PST observe Daylight Saving Time on the same dates?",
+    a: "Yes. In North America, both the Eastern Time Zone and Pacific Time Zone switch to Daylight Saving Time (EDT UTC-4 and PDT UTC-7) on the second Sunday of March and fall back to standard time on the first Sunday of November. The 3-hour time difference remains active year-round."
+  },
+  {
+    q: "Which major cities operate on EST and PST?",
+    a: "Major EST cities include New York, Toronto, Miami, Atlanta, Boston, and Washington D.C. Major PST cities include Los Angeles, San Francisco, Seattle, San Diego, San Jose, and Vancouver."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "EST to PST, 10 AM EST to PST, 1 PM EST to PST, 4 PM EST to PST, 5 PM EST to PST, Eastern Standard Time to Pacific Standard Time, New York to Los Angeles time difference, 3 hour time gap, EST PST converter",
+  image: "/assets/est-to-pst-converter-interface.png",
+  imageAlt: "EST to PST Time Zone Converter",
+  faqs,
+  appDescription: "Convert Eastern Standard Time (EST) to Pacific Standard Time (PST) with real-time accuracy, 24-hour conversion tables, DST detection, and meeting planner tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert EST to PST",
+  howToDescription: "Simple steps to calculate Pacific Standard Time from Eastern Standard Time.",
+  howToSteps: [
+    { name: "Identify the EST time", text: "Note your target time in Eastern Standard Time (EST, UTC-5)." },
+    { name: "Subtract 3 hours", text: "Subtract exactly 3 hours to calculate Pacific Standard Time (PST, UTC-8)." },
+    { name: "Verify seasonal DST rules", text: "Confirm whether EDT (UTC-4) or PDT (UTC-7) is active during summer." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="EST to PST"
+  hreflangCodes={["en"]}
+>
+  <!-- Hero Banner -->
+  <header class="hero-banner">
+    <div class="hero-content">
+      <span class="eyebrow">US Transcontinental Reverse Time Converter</span>
+      <h1 class="hero-banner-title">EST to PST <span class="gradient-text">Converter</span></h1>
+      <p class="hero-subtitle">
+        Accurately calculate Eastern Standard Time (UTC-5) to Pacific Standard Time (UTC-8) with instant 3-hour backward time alignment, live clocks, and interactive meeting tools.
+      </p>
+    </div>
+  </header>
+
+  <!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
+  <div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+    <Converter intent="dynamic" t={t} context={context} />
+    
+    <!-- LIVE CLOCKS -->
+    <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+      <h2>Live Clocks</h2>
+      <div class="clock-card">
+        <span class="eyebrow">Current Eastern Time (EST/EDT)</span>
+        <strong id="gmtClock">--:--:--</strong>
+      </div>
+      <div class="clock-card">
+        <span class="eyebrow">Current Pacific Time (PST/PDT)</span>
+        <strong id="estClock">--:--:--</strong>
+        <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Active Zone: <em id="estZone">PT</em></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Feature Strip -->
+  <div class="feature-strip">
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>3-Hour Time Gap</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>New York to Los Angeles</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>UTC-5 to UTC-8</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Synchronized DST Shift</span>
+    </div>
+  </div>
+
+  <!-- QUICK OVERVIEW -->
+  <section class="content-section" id="quick-overview" aria-labelledby="quick-overview-heading">
+    <h2 id="quick-overview-heading">Quick EST to PST Overview</h2>
+    <p>
+      Converting <strong>Eastern Standard Time (EST) to Pacific Standard Time (PST)</strong> is a fundamental daily requirement for business, trading, and communications across North America. Pacific Standard Time is <strong>exactly 3 hours behind Eastern Standard Time</strong>. Because EST is designated as UTC-5 and PST as UTC-8, calculating local time in Los Angeles, San Francisco, or Seattle from New York, Toronto, or Miami simply requires subtracting 3 hours from your local Eastern time.
+    </p>
+  </section>
+
+  <!-- 24-HOUR CONVERSION TABLE -->
+  <section class="examples-section content-section" id="conversion-chart" aria-labelledby="chart-heading">
+    <div>
+      <h2 id="chart-heading">Popular EST to PST Conversion Table</h2>
+      <p>
+        Use the comprehensive reference table below to look up any hour of Eastern Standard Time (EST) and find its exact equivalent in Pacific Standard Time (PST).
+      </p>
+
+      <div class="table-wrap">
+        <table aria-label="EST to PST 24-hour conversion table">
+          <caption class="sr-only">24-hour hour-by-hour EST to PST conversion chart</caption>
+          <thead>
+            <tr>
+              <th>Eastern Standard Time (EST, UTC-5)</th>
+              <th>Pacific Standard Time (PST, UTC-8)</th>
+              <th>Calendar Day Note</th>
+              <th>Practical Business &amp; Everyday Context</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td><strong>{row.est}</strong></td>
+                <td>{row.pst}</td>
+                <td>{row.day}</td>
+                <td>{row.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTEXTUAL INTERNAL LINKS -->
+  <section class="content-section" aria-label="Related Time Converters">
+    <h2>Related Time Zone Converters</h2>
+    <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; list-style: none; padding: 0;">
+      <li><a href="/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Homepage (GMT to EST)</a></li>
+      <li><a href="/est-to-gmt/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">EST to GMT Converter</a></li>
+      <li><a href="/cst-to-est/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">CST to EST Converter</a></li>
+      <li><a href="/pdt-to-est/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">PDT to EST Converter</a></li>
+      <li><a href="/time-zone-guide/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Time Zone Guide</a></li>
+    </ul>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="faq-section content-section" id="faq" aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Frequently Asked Questions (FAQ)</h2>
+    <div class="faq-grid">
+      {faqs.map((item) => (
+        <details class="faq-item">
+          <summary class="faq-question"><strong>{item.q}</strong></summary>
+          <div class="faq-answer"><p>{item.a}</p></div>
+        </details>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

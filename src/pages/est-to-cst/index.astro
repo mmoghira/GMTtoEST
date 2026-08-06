@@ -1,0 +1,220 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "est-to-cst";
+const t = getTranslation(lang);
+
+const pageTitle = "EST to CST Converter";
+const seoTitle = "EST to CST Converter – Eastern Standard Time to Central Standard Time";
+const pageDescription = "Convert EST to CST instantly. Calculate the exact 1-hour time difference between Eastern Standard Time (UTC-5) and Central Standard Time (UTC-6) with live clocks, conversion tables, and meeting planner.";
+
+const context = {
+  from: "EST",
+  to: "CST",
+  fromZone: "America/New_York",
+  toZone: "America/Chicago"
+};
+
+const canonical = `${siteUrl}/est-to-cst/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA (EST → CST = EST - 1 hour)
+// ═══════════════════════════════════════════════════════════════════════════
+const conversionRows = [
+  { est: "12:00 AM (Midnight)", cst: "11:00 PM CST (Prev Day)", note: "Late evening in Chicago & Dallas, midnight in New York", day: "Previous day" },
+  { est: "1:00 AM EST", cst: "12:00 AM (Midnight) CST", note: "Midnight transition in Central Time Zone", day: "Same day" },
+  { est: "2:00 AM EST", cst: "1:00 AM CST", note: "Overnight batch server processing", day: "Same day" },
+  { est: "3:00 AM EST", cst: "2:00 AM CST", note: "Quiet technical maintenance window", day: "Same day" },
+  { est: "4:00 AM EST", cst: "3:00 AM CST", note: "Early logistics dispatch & freight sync", day: "Same day" },
+  { est: "5:00 AM EST", cst: "4:00 AM CST", note: "East Coast early risers & market prep", day: "Same day" },
+  { est: "6:00 AM EST", cst: "5:00 AM CST", note: "New York morning news & wake-up window", day: "Same day" },
+  { est: "7:00 AM EST", cst: "6:00 AM CST", note: "East Coast commute start / Central morning wake-up", day: "Same day" },
+  { est: "8:00 AM EST", cst: "7:00 AM CST", note: "East Coast office arrival & email check", day: "Same day" },
+  { est: "9:00 AM EST", cst: "8:00 AM CST", note: "Wall Street pre-market prep & Central workday start", day: "Same day" },
+  { est: "9:30 AM EST", cst: "8:30 AM CST", note: "NYSE & NASDAQ stock exchanges opening bell", day: "Same day" },
+  { est: "10:00 AM EST", cst: "9:00 AM CST", note: "Peak business collaboration window opens", day: "Same day" },
+  { est: "11:00 AM EST", cst: "10:00 AM CST", note: "Primary morning meeting & corporate call slot", day: "Same day" },
+  { est: "12:00 PM (Noon) EST", cst: "11:00 AM CST", note: "East Coast lunch start / Central morning wrap", day: "Same day" },
+  { est: "1:00 PM EST", cst: "12:00 PM (Noon) CST", note: "Central lunch hour / East Coast afternoon kickoff", day: "Same day" },
+  { est: "2:00 PM EST", cst: "1:00 PM CST", note: "Afternoon cross-regional collaboration window", day: "Same day" },
+  { est: "3:00 PM EST", cst: "2:00 PM CST", note: "Executive briefings & project reviews", day: "Same day" },
+  { est: "4:00 PM EST", cst: "3:00 PM CST", note: "US stock exchanges market close (NYSE / NASDAQ)", day: "Same day" },
+  { est: "5:00 PM EST", cst: "4:00 PM CST", note: "East Coast office wrap-up & day-end handoff", day: "Same day" },
+  { est: "6:00 PM EST", cst: "5:00 PM CST", note: "Central office wrap-up / East Coast evening relaxation", day: "Same day" },
+  { est: "7:00 PM EST", cst: "6:00 PM CST", note: "Evening webinar & prime time broadcasting slot", day: "Same day" },
+  { est: "8:00 PM EST", cst: "7:00 PM CST", note: "Prime time entertainment & sports kickoff", day: "Same day" },
+  { est: "9:00 PM EST", cst: "8:00 PM CST", note: "Late evening consumer activity & streaming", day: "Same day" },
+  { est: "10:00 PM EST", cst: "9:00 PM CST", note: "Late night in New York / Central evening wrap-up", day: "Same day" },
+  { est: "11:00 PM EST", cst: "10:00 PM CST", note: "Overnight telemetry & server maintenance", day: "Same day" }
+];
+
+// Targeted FAQs
+const faqs = [
+  {
+    q: "What is the time difference between EST and CST?",
+    a: "Central Standard Time (CST, UTC-6) is exactly 1 hour behind Eastern Standard Time (EST, UTC-5). When it is 10:00 AM in New York (EST), it is 9:00 AM in Chicago or Dallas (CST)."
+  },
+  {
+    q: "What is 10 AM EST in CST?",
+    a: "10:00 AM EST converts to 9:00 AM CST."
+  },
+  {
+    q: "What is 1 PM EST in CST?",
+    a: "1:00 PM EST converts to 12:00 PM (Noon) CST."
+  },
+  {
+    q: "What is 4 PM EST in CST?",
+    a: "4:00 PM EST converts to 3:00 PM CST, coinciding with Wall Street market close."
+  },
+  {
+    q: "Do EST and CST observe Daylight Saving Time on the same dates?",
+    a: "Yes. Both Eastern Time and Central Time switch to Daylight Saving Time (EDT and CDT) on the second Sunday of March and return to standard time on the first Sunday of November, preserving the 1-hour gap all year."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "EST to CST, 10 AM EST to CST, 1 PM EST to CST, 4 PM EST to CST, Eastern Standard Time to Central Standard Time, New York to Chicago time difference, 1 hour time gap, EST CST converter",
+  image: "/assets/est-to-cst-converter-interface.png",
+  imageAlt: "EST to CST Time Zone Converter",
+  faqs,
+  appDescription: "Convert Eastern Standard Time (EST) to Central Standard Time (CST) with real-time accuracy, 24-hour conversion tables, DST detection, and meeting planner tools.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert EST to CST",
+  howToDescription: "Simple steps to calculate Central Standard Time from Eastern Standard Time.",
+  howToSteps: [
+    { name: "Identify the EST time", text: "Note your target time in Eastern Standard Time (EST, UTC-5)." },
+    { name: "Subtract 1 hour", text: "Subtract exactly 1 hour to calculate Central Standard Time (CST, UTC-6)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="EST to CST"
+  hreflangCodes={["en"]}
+>
+  <!-- Hero Banner -->
+  <header class="hero-banner">
+    <div class="hero-content">
+      <span class="eyebrow">North American Cross-Regional Reverse Converter</span>
+      <h1 class="hero-banner-title">EST to CST <span class="gradient-text">Converter</span></h1>
+      <p class="hero-subtitle">
+        Accurately calculate Eastern Standard Time (UTC-5) to Central Standard Time (UTC-6) with instant 1-hour backward time alignment, live clocks, and interactive meeting tools.
+      </p>
+    </div>
+  </header>
+
+  <!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
+  <div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+    <Converter intent="dynamic" t={t} context={context} />
+    
+    <!-- LIVE CLOCKS -->
+    <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+      <h2>Live Clocks</h2>
+      <div class="clock-card">
+        <span class="eyebrow">Current Eastern Time (EST/EDT)</span>
+        <strong id="gmtClock">--:--:--</strong>
+      </div>
+      <div class="clock-card">
+        <span class="eyebrow">Current Central Time (CST/CDT)</span>
+        <strong id="estClock">--:--:--</strong>
+        <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Active Zone: <em id="estZone">CT</em></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Feature Strip -->
+  <div class="feature-strip">
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>1-Hour Time Gap</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>New York to Chicago</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>UTC-5 to UTC-6</span>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Synchronized DST Rules</span>
+    </div>
+  </div>
+
+  <!-- 24-HOUR CONVERSION TABLE -->
+  <section class="examples-section content-section" id="conversion-chart" aria-labelledby="chart-heading">
+    <div>
+      <h2 id="chart-heading">Popular EST to CST Conversion Table</h2>
+      <p>
+        Use the reference table below to look up any hour of Eastern Standard Time (EST) and find its exact equivalent in Central Standard Time (CST).
+      </p>
+
+      <div class="table-wrap">
+        <table aria-label="EST to CST 24-hour conversion table">
+          <caption class="sr-only">24-hour hour-by-hour EST to CST conversion chart</caption>
+          <thead>
+            <tr>
+              <th>Eastern Standard Time (EST, UTC-5)</th>
+              <th>Central Standard Time (CST, UTC-6)</th>
+              <th>Calendar Day Note</th>
+              <th>Practical Business &amp; Everyday Context</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td><strong>{row.est}</strong></td>
+                <td>{row.cst}</td>
+                <td>{row.day}</td>
+                <td>{row.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTEXTUAL INTERNAL LINKS -->
+  <section class="content-section" aria-label="Related Time Converters">
+    <h2>Related Time Zone Converters</h2>
+    <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; list-style: none; padding: 0;">
+      <li><a href="/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Homepage (GMT to EST)</a></li>
+      <li><a href="/cst-to-est/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">CST to EST Converter</a></li>
+      <li><a href="/pdt-to-est/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">PDT to EST Converter</a></li>
+      <li><a href="/cdt-to-est/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">CDT to EST Converter</a></li>
+      <li><a href="/time-zone-guide/" class="button-link" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Time Zone Guide</a></li>
+    </ul>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="faq-section content-section" id="faq" aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Frequently Asked Questions (FAQ)</h2>
+    <div class="faq-grid">
+      {faqs.map((item) => (
+        <details class="faq-item">
+          <summary class="faq-question"><strong>{item.q}</strong></summary>
+          <div class="faq-answer"><p>{item.a}</p></div>
+        </details>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
