@@ -95,15 +95,6 @@ export default defineConfig({
           }
         }
         
-        // Exclude noindex non-main localized converter pages for languages other than 'es'
-        if (lang !== "en" && lang !== "es" && !mainPaths.includes(cleanPath)) {
-          const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
-          const tzToEstRegex = /^\/[a-z0-9]+-to-est(\/)?$/i;
-          if (gmtToTzRegex.test(cleanPath) || tzToEstRegex.test(cleanPath)) {
-            return false;
-          }
-        }
-        
         return true;
       },
       i18n: {
