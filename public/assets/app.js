@@ -170,19 +170,11 @@
     setText("#offsetBadge", diffHours + "h difference - " + zoneName(date, targetZone));
   }
 
-  let clocksCache = null;
   function tick() {
     const now = new Date();
-    if (!clocksCache) {
-      clocksCache = {
-        gmt: qs("#gmtClock"),
-        est: qs("#estClock"),
-        zone: qs("#estZone")
-      };
-    }
-    if (clocksCache.gmt) clocksCache.gmt.textContent = compact(now, sourceZone);
-    if (clocksCache.est) clocksCache.est.textContent = compact(now, targetZone);
-    if (clocksCache.zone) clocksCache.zone.textContent = zoneName(now, targetZone);
+    qsa("#gmtClock, .top-gmt-clock").forEach(el => { el.textContent = compact(now, sourceZone); });
+    qsa("#estClock, .top-est-clock").forEach(el => { el.textContent = compact(now, targetZone); });
+    qsa("#estZone, .top-est-zone").forEach(el => { el.textContent = zoneName(now, targetZone); });
   }
 
   function buildTable() {

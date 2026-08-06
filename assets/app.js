@@ -159,12 +159,9 @@
 
   function tick() {
     const now = new Date();
-    const gmtClock = qs("#gmtClock");
-    if (gmtClock) gmtClock.textContent = compact(now, sourceZone);
-    const estClock = qs("#estClock");
-    if (estClock) estClock.textContent = compact(now, easternZone);
-    const estZone = qs("#estZone");
-    if (estZone) estZone.textContent = zoneName(now, easternZone);
+    qsa("#gmtClock, .top-gmt-clock").forEach(el => { el.textContent = compact(now, sourceZone); });
+    qsa("#estClock, .top-est-clock").forEach(el => { el.textContent = compact(now, easternZone); });
+    qsa("#estZone, .top-est-zone").forEach(el => { el.textContent = zoneName(now, easternZone); });
   }
 
   function formatHourOnly(date, timeZone) {
