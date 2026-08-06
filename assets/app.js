@@ -1,12 +1,16 @@
 (() => {
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => [...document.querySelectorAll(s)];
-  const sourceZone = qs("#converter")?.dataset.sourceZone || "UTC";
-  const easternZone = qs("#converter")?.dataset.targetZone || "America/New_York";
+  const getConverterNode = () => qs(".converter[data-source-zone]") || qs("#converter") || qs(".converter");
+  const getSourceZone = () => getConverterNode()?.dataset.sourceZone || "UTC";
+  const getTargetZone = () => getConverterNode()?.dataset.targetZone || "America/New_York";
+  const easternZone = getTargetZone();
+  const sourceZone = getSourceZone();
+
   const state = {
-    mode: qs("#converter")?.dataset.startMode || document.body.dataset.mode || "gmt-est",
-    intent: qs("#converter")?.dataset.intent || "converter",
-    labels: JSON.parse(qs("#converter")?.dataset.labels || "{}"),
+    mode: getConverterNode()?.dataset.startMode || document.body.dataset.mode || "gmt-est",
+    intent: getConverterNode()?.dataset.intent || "converter",
+    labels: JSON.parse(getConverterNode()?.dataset.labels || "{}"),
     use24: true,
     lastText: ""
   };
@@ -158,10 +162,24 @@
   }
 
   function tick() {
-    const now = new Date();
-    qsa("#gmtClock, .top-gmt-clock").forEach(el => { el.textContent = compact(now, sourceZone); });
-    qsa("#estClock, .top-est-clock").forEach(el => { el.textContent = compact(now, easternZone); });
-    qsa("#estZone, .top-est-zone").forEach(el => { el.textContent = zoneName(now, easternZone); });
+    try {
+      const now = new Date();
+      const sZone = getSourceZone();
+      const tZone = getTargetZone();
+      const sText = compact(now, sZone);
+      const tText = compact(now, tZone);
+      const sAbbr = zoneName(now, sZone);
+      const tAbbr = zoneName(now, tZone);
+
+      qsa("#gmtClock, .top-gmt-clock").forEach(el => { el.textContent = sText; });
+      qsa("#estClock, .top-est-clock").forEach(el => { el.textContent = tText; });
+      qsa("#estZone, .top-est-zone").forEach(el => { el.textContent = tAbbr; });
+
+      qsa(".top-source-label").forEach(el => { el.textContent = "Live " + sAbbr + " Time"; });
+      qsa(".top-target-label").forEach(el => { el.textContent = "Live " + tAbbr + " Time"; });
+    } catch (e) {
+      console.error("Tick error:", e);
+    }
   }
 
   function formatHourOnly(date, timeZone) {
