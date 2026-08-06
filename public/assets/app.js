@@ -177,15 +177,14 @@
       const tZone = getTargetZone();
       const sText = compact(now, sZone);
       const tText = compact(now, tZone);
-      const sAbbr = zoneName(now, sZone);
-      const tAbbr = zoneName(now, tZone);
+      const tZoneAbbr = zoneName(now, tZone);
 
-      qsa("#gmtClock, .top-gmt-clock").forEach(el => { el.textContent = sText; });
-      qsa("#estClock, .top-est-clock").forEach(el => { el.textContent = tText; });
-      qsa("#estZone, .top-est-zone").forEach(el => { el.textContent = tAbbr; });
-
-      qsa(".top-source-label").forEach(el => { el.textContent = "Live " + sAbbr + " Time"; });
-      qsa(".top-target-label").forEach(el => { el.textContent = "Live " + tAbbr + " Time"; });
+      const gmtClock = qs("#gmtClock");
+      if (gmtClock) gmtClock.textContent = sText;
+      const estClock = qs("#estClock");
+      if (estClock) estClock.textContent = tText;
+      const estZone = qs("#estZone");
+      if (estZone) estZone.textContent = tZoneAbbr;
     } catch (e) {
       console.error("Tick error:", e);
     }
@@ -271,10 +270,13 @@
       qsa(".mode[data-mode='gmt-est'] small").forEach(b => b.textContent = "to " + targetAbbr);
       qsa(".mode[data-mode='est-gmt'] b").forEach(b => b.textContent = targetAbbr);
       qsa(".mode[data-mode='est-gmt'] small").forEach(b => b.textContent = "to " + sourceAbbr);
+      
+      const clockCards = qsa(".clock-card span.eyebrow, .clock-card span");
+      if (clockCards.length >= 2) {
+        clockCards[0].textContent = "Current " + sourceAbbr;
+        clockCards[1].textContent = "Current " + targetAbbr;
+      }
     }
-
-    qsa(".top-source-label").forEach(el => { el.textContent = "Live " + zoneName(new Date(), sZone) + " Time"; });
-    qsa(".top-target-label").forEach(el => { el.textContent = "Live " + zoneName(new Date(), tZone) + " Time"; });
 
     setInputFromDate(new Date(), state.mode === "gmt-est" ? sZone : tZone);
     convert();
