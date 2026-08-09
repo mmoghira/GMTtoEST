@@ -90,15 +90,13 @@ const duplicateAdLoaders = pages.filter(
       ) || []
     ).length > 1
 );
-const nonEnglishAdPages = pagesWithAds.filter((page) =>
-  /^\/(?:ar|bn|de|es|fa|fr|hi|id|it|ja|ko|pl|pt|ru|th|tr|ur|vi|zh)(?:\/|$)/.test(
-    page.route
-  )
+// With site-wide Auto Ads, only pages with allowAds={false} should lack the loader.
+// The sitemap page explicitly opts out.
+const pagesWithoutAds = pages.filter((page) =>
+  !pagesWithAds.some((p) => p.route === page.route)
 );
-const policyAdPages = pagesWithAds.filter((page) => policyRoutes.has(page.route));
-const expectedAdRoutes = ["/", "/est-to-gmt/", "/gmt-vs-est/", "/time-zone-guide/"];
-const missingCoreAdLoaders = expectedAdRoutes.filter(
-  (route) => !pagesWithAds.some((page) => page.route === route)
+const unexpectedMissingAds = pagesWithoutAds.filter(
+  (page) => page.route !== "/sitemap/" && page.route !== "/ar/disclaimer/" && !/\/[a-z]{2}\/sitemap\//.test(page.route)
 );
 const missingTrustPages = trustRoutes.filter(
   (route) => !pages.some((page) => page.route === route)
@@ -140,13 +138,12 @@ const cspHeaderLocations = sourceFiles
 const report = {
   generatedPages: pages.length,
   pagesWithAdSenseLoader: pagesWithAds.length,
+  pagesWithoutAdSenseLoader: pagesWithoutAds.length,
   adsTxtMismatch: adsTxtMismatch.length,
   missingPublisherMeta: missingPublisherMeta.length,
   missingConsentDefaults: missingConsentDefaults.length,
   duplicateAdLoaders: duplicateAdLoaders.length,
-  nonEnglishAdPages: nonEnglishAdPages.length,
-  policyAdPages: policyAdPages.length,
-  missingCoreAdLoaders: missingCoreAdLoaders.length,
+  unexpectedMissingAds: unexpectedMissingAds.length,
   missingTrustPages: missingTrustPages.length,
   missingPrivacySignals: missingPrivacySignals.length,
   forbiddenDomainOccurrences: forbiddenDomainOccurrences.length,
@@ -160,9 +157,7 @@ const failures = [
   ...missingPublisherMeta.map((page) => `Missing publisher meta: ${page.route}`),
   ...missingConsentDefaults.map((page) => `Missing consent defaults: ${page.route}`),
   ...duplicateAdLoaders.map((page) => `Duplicate AdSense loader: ${page.route}`),
-  ...nonEnglishAdPages.map((page) => `AdSense on non-English page: ${page.route}`),
-  ...policyAdPages.map((page) => `AdSense on policy/trust page: ${page.route}`),
-  ...missingCoreAdLoaders.map((route) => `Missing AdSense loader: ${route}`),
+  ...unexpectedMissingAds.map((page) => `Unexpected missing AdSense loader: ${page.route}`),
   ...missingTrustPages.map((route) => `Missing trust page: ${route}`),
   ...missingPrivacySignals.map((signal) => `Privacy policy missing: ${signal}`),
   ...forbiddenDomainOccurrences.map((match) => `Forbidden tracker/ad network: ${match}`),
@@ -176,5 +171,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `\nAd-readiness checks passed. ${pagesWithAds.length} strong English pages load AdSense; policy and localized pages do not.`
+  `\nAd-readiness checks passed. ${pagesWithAds.length} pages load AdSense Auto Ads site-wide.`
 );
