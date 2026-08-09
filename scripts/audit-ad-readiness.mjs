@@ -6,10 +6,6 @@ const publisherId = "ca-pub-3364858473460532";
 const sellerId = publisherId.replace("ca-", "");
 const expectedAdsTxt = `google.com, ${sellerId}, DIRECT, f08c47fec0942fa0`;
 const forbiddenDomains = [
-  "effectivecpmnetwork.com",
-  "sleepoverlimitprofound.com",
-  "fizzyacerbitymellow.com",
-  "protrafficinspector.com",
   "clarity.ms",
 ];
 const trustRoutes = [
