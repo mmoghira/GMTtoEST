@@ -68,7 +68,10 @@ export default defineConfig({
           return false;
         }
         
-        const mainPaths = ["/", "/gmt-to-est/", "/est-to-gmt/", "/gmt-vs-est/", "/time-zone-guide/"];
+        const mainPaths = new Set(["/", "/gmt-to-est/", "/est-to-gmt/", "/gmt-vs-est/", "/time-zone-guide/"]);
+        if (mainPaths.has(cleanPath)) {
+          return true;
+        }
         
         // Exclude dynamic timezone converter pages that redirect to the homepage,
         // while keeping activated converter landing pages indexable.
