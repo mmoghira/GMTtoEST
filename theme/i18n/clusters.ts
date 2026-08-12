@@ -7,7 +7,7 @@ export interface ClusterLink {
 }
 
 export const educationalPages: ClusterLink[] = [
-  { href: "/what-is-gmt/", label: "What is GMT?", description: "Learn about Greenwich Mean Time, UTC+0 offset, and history." },
+  { href: "/blog/what-is-gmt/", label: "What is GMT?", description: "Learn about Greenwich Mean Time, UTC+0 offset, and history." },
   { href: "/what-is-utc/", label: "What is UTC?", description: "Complete guide to Coordinated Universal Time standard." },
   { href: "/what-is-est/", label: "What is EST?", description: "Complete guide to Eastern Standard Time (UTC-5) and cities." },
   { href: "/what-is-edt/", label: "What is EDT?", description: "Eastern Daylight Time rules, transition dates, and cities." },
