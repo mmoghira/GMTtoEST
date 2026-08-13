@@ -1,0 +1,734 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "hdt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "HDT to EST Converter";
+const seoTitle = "HDT to EST Converter – Convert Hawaii-Aleutian Time to EST";
+const pageDescription = "Convert HDT to EST with our free timezone converter. HDT is UTC-9 and EST is UTC-5, making EST 4 hours ahead. See conversion examples, tables, and time zone details.";
+
+const context = {
+  from: "HDT",
+  to: "EST",
+  fromZone: "America/Adak",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: HDT (UTC-9) → EST (UTC-5) = add 4 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour + 4;
+  const nextDay = estHour >= 24;
+  if (nextDay) estHour -= 24;
+  return {
+    hdt: formatHour12(hour),
+    est: `${formatHour12(estHour)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "How many hours is HDT behind EST?",
+    a: "HDT (Hawaii-Aleutian Daylight Time, UTC-9) is 4 hours behind EST (Eastern Standard Time, UTC-5). When it is 12:00 PM HDT, it is 4:00 PM EST on the same day."
+  },
+  {
+    q: "How do I convert HDT to EST?",
+    a: "To convert HDT to EST, add 4 hours to the HDT time. For example, 8:00 AM HDT plus 4 hours equals 12:00 PM (noon) EST."
+  },
+  {
+    q: "What does HDT stand for?",
+    a: "HDT stands for Hawaii-Aleutian Daylight Time. It operates at UTC-9 during daylight saving time in parts of the Hawaii-Aleutian time zone, such as the Aleutian Islands of Alaska."
+  },
+  {
+    q: "What does EST stand for?",
+    a: "EST stands for Eastern Standard Time. It operates at UTC-5 during winter standard time in the US Eastern Time Zone."
+  },
+  {
+    q: "What is the difference between HDT and HST?",
+    a: "HDT is Hawaii-Aleutian Daylight Time (UTC-9), while HST is Hawaii Standard Time (UTC-10). HDT is one hour ahead of HST."
+  },
+  {
+    q: "Does Hawaii observe daylight saving time?",
+    a: "No. The state of Hawaii does not observe daylight saving time and stays on Hawaii Standard Time (HST, UTC-10) year-round. Only the Aleutian Islands in Alaska (west of 169.5° W) observe daylight saving time (HDT, UTC-9) within the Hawaii-Aleutian time zone."
+  },
+  {
+    q: "Is HDT the same as HST?",
+    a: "No. HDT is UTC-9 (daylight time) and HST is UTC-10 (standard time). HDT is 1 hour ahead of HST."
+  },
+  {
+    q: "Is EST the same as Eastern Time?",
+    a: "Eastern Time is the overall time zone name. EST (Eastern Standard Time, UTC-5) is observed in winter, while EDT (Eastern Daylight Time, UTC-4) is observed in summer."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST is UTC-5 (standard time from November to March), whereas EDT is UTC-4 (daylight time from March to November). EDT is 1 hour ahead of EST."
+  },
+  {
+    q: "Does HDT to EST change the date?",
+    a: "Yes, for late evening HDT times. Times from 8:00 PM HDT to 11:59 PM HDT roll over to the early morning of the next calendar day in EST (8:00 PM HDT = 12:00 AM EST next day)."
+  },
+  {
+    q: "What time is 12 PM HDT in EST?",
+    a: "12:00 PM (noon) HDT is 4:00 PM EST on the same day."
+  },
+  {
+    q: "What time is 8 PM HDT in EST?",
+    a: "8:00 PM HDT is 12:00 AM (midnight) EST on the next calendar day."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "hdt to est, HDT to EST converter, Hawaii-Aleutian Daylight Time to Eastern Standard Time, convert HDT to EST, HDT EST time difference, HDT vs EST, Hawaii daylight time to EST, HDT UTC-9 to EST UTC-5",
+  image: "/assets/hdt-to-est-converter.webp",
+  imageAlt: "HDT to EST converter comparing Hawaii-Aleutian Daylight Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online HDT to EST converter with real-time clocks, 24-hour conversion charts, DST explanations, and team meeting planner between Hawaii-Aleutian Daylight Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/hdt-to-est-converter.webp",
+  preloadImageSrcset: "/assets/hdt-to-est-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert HDT to EST",
+  howToDescription: "Steps to convert Hawaii-Aleutian Daylight Time (HDT) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter HDT Date and Time", text: "Select the date and time in Hawaii-Aleutian Daylight Time (UTC-9)." },
+    { name: "Add 4 Hours", text: "Because EST (UTC-5) is 4 hours ahead of HDT (UTC-9), add 4 hours to the HDT time." },
+    { name: "Check Date Rollover", text: "If the time exceeds 11:59 PM, the date advances to the next calendar day in EST." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/hst-to-est/", label: "HST to EST Converter", desc: "Convert Hawaii Standard Time (UTC-10) to Eastern Standard Time (UTC-5)." },
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time (UTC+0) to Eastern Standard Time (UTC-5)." },
+  { href: "/akdt-to-est/", label: "AKDT to EST Converter", desc: "Convert Alaska Daylight Time (UTC-8) to Eastern Standard Time (UTC-5)." },
+  { href: "/pdt-to-est/", label: "PDT to EST Converter", desc: "Convert Pacific Daylight Time (UTC-7) to Eastern Standard Time (UTC-5)." },
+  { href: "/cdt-to-est/", label: "CDT to EST Converter", desc: "Convert Central Daylight Time (UTC-5) to Eastern Standard Time (UTC-5)." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time (UTC-5) to Greenwich Mean Time (UTC+0)." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="HDT to EST"
+  hreflangCodes={["en"]}
+>
+  <main class="converter-page">
+    <header class="page-header">
+      <h1>{pageTitle}</h1>
+      <p class="lead">
+        Convert Hawaii-Aleutian Daylight Time (HDT, UTC-9) to Eastern Standard Time (EST, UTC-5) instantly. 
+        EST is <strong>4 hours ahead of HDT</strong>. Our interactive converter calculates time differences, 
+        24-hour schedules, and calendar date rollovers accurately.
+      </p>
+    </header>
+
+    <section class="converter-section" aria-label="Interactive Time Converter">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <section class="status-card-section">
+      <div class="status-card">
+        <div class="status-item">
+          <span class="status-label">HDT Time Zone</span>
+          <span class="status-value">UTC-9</span>
+        </div>
+        <div class="status-arrow">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          <span class="status-diff">+4 HRS</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Eastern Standard Time</span>
+          <span class="status-value">UTC-5</span>
+        </div>
+      </div>
+      <p class="status-note">
+        Eastern Standard Time (UTC-5) is 4 hours ahead of Hawaii-Aleutian Daylight Time (UTC-9). Add 4 hours to convert HDT to EST.
+      </p>
+    </section>
+
+    <figure class="hero-image">
+      <img 
+        src="/assets/hdt-to-est-converter.webp" 
+        alt="HDT to EST converter comparing Hawaii-Aleutian Daylight Time and Eastern Standard Time" 
+        width="1200" 
+        height="630" 
+        loading="eager"
+      />
+      <figcaption>Comparing Hawaii-Aleutian Daylight Time (HDT, UTC-9) with Eastern Standard Time (EST, UTC-5).</figcaption>
+    </figure>
+
+    <article class="content-body">
+      <h2>HDT to EST Time Difference</h2>
+      <p>
+        The time difference between Hawaii-Aleutian Daylight Time (HDT) and Eastern Standard Time (EST) is exactly <strong>4 hours</strong>. 
+        HDT operates at <strong>UTC-9</strong>, while EST operates at <strong>UTC-5</strong>. Because UTC-5 is 4 hours ahead of UTC-9, 
+        Eastern Standard Time is always 4 hours ahead of Hawaii-Aleutian Daylight Time.
+      </p>
+      <div class="formula-box">
+        <code>EST = HDT + 4 hours</code>
+      </div>
+      <p>
+        Here are quick practical conversion examples:
+      </p>
+      <ul class="example-list">
+        <li><strong>8:00 AM HDT</strong> = <strong>12:00 PM EST</strong> (Same day)</li>
+        <li><strong>12:00 PM HDT</strong> = <strong>4:00 PM EST</strong> (Same day)</li>
+        <li><strong>4:00 PM HDT</strong> = <strong>8:00 PM EST</strong> (Same day)</li>
+        <li><strong>8:00 PM HDT</strong> = <strong>12:00 AM EST</strong> (Next day)</li>
+        <li><strong>10:00 PM HDT</strong> = <strong>2:00 AM EST</strong> (Next day)</li>
+      </ul>
+
+      <figure class="content-image">
+        <img 
+          src="/assets/hdt-to-est-time-difference.webp" 
+          alt="Dual clock setup comparing HDT at 2:00 PM with EST at 6:00 PM showing a 4-hour difference" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>EST is 4 hours ahead of HDT: 2:00 PM HDT corresponds to 6:00 PM EST.</figcaption>
+      </figure>
+
+      <h2>How to Convert HDT to EST</h2>
+      <p>
+        Converting HDT to <a href="/what-is-est/">Eastern Standard Time (EST)</a> is straightforward. Follow these steps:
+      </p>
+      <ol class="step-list">
+        <li><strong>Identify the HDT time:</strong> Start with the date and time in Hawaii-Aleutian Daylight Time (UTC-9).</li>
+        <li><strong>Add 4 hours:</strong> Add 4 hours to the HDT value to obtain the EST time.</li>
+        <li><strong>Check for date rollover:</strong> If the addition pushes the hour past 11:59 PM (23:59), the date advances to the next calendar day in EST.</li>
+      </ol>
+
+      <h2>HDT to EST Conversion Table (24 Hours)</h2>
+      <p>
+        This 24-hour chart displays every hour in Hawaii-Aleutian Daylight Time alongside its equivalent in Eastern Standard Time.
+      </p>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Hawaii-Aleutian Daylight Time (HDT)</th>
+              <th>Eastern Standard Time (EST)</th>
+              <th>Calendar Day Shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map(row => (
+              <tr>
+                <td>{row.hdt}</td>
+                <td><strong>{row.est}</strong></td>
+                <td><span class={`tag ${row.dayNote === 'Next day' ? 'tag-next' : 'tag-same'}`}>{row.dayNote}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>What Is HDT?</h2>
+      <p>
+        <strong>HDT</strong> stands for <strong>Hawaii-Aleutian Daylight Time</strong>. It operates at an offset of <strong>UTC-9</strong>. 
+        HDT is used in parts of the Hawaii-Aleutian Time Zone that observe daylight saving time, specifically the 
+        <strong>Aleutian Islands of Alaska</strong> (west of 169.5° W longitude, such as Adak Island) during the summer months 
+        (from the second Sunday in March to the first Sunday in November). The IANA timezone database represents HDT under the key <code>America/Adak</code>.
+      </p>
+
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>EST</strong> stands for <strong>Eastern Standard Time</strong>. It operates at an offset of <strong>UTC-5</strong>. 
+        EST is observed in the US Eastern Time zone during winter standard time (from the first Sunday in November to the second Sunday in March). 
+        Major cities in EST include New York, Washington D.C., Atlanta, Miami, and Toronto in Canada. The IANA timezone identifier is <code>America/New_York</code>.
+      </p>
+
+      <h2>HDT vs EST Comparison</h2>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>HDT</th>
+              <th>EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Full Name</strong></td>
+              <td>Hawaii-Aleutian Daylight Time</td>
+              <td>Eastern Standard Time</td>
+            </tr>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC-9</td>
+              <td>UTC-5</td>
+            </tr>
+            <tr>
+              <td><strong>Difference</strong></td>
+              <td colspan="2">EST is 4 hours ahead of HDT</td>
+            </tr>
+            <tr>
+              <td><strong>Season</strong></td>
+              <td>Summer (Daylight Time)</td>
+              <td>Winter (Standard Time)</td>
+            </tr>
+            <tr>
+              <td><strong>IANA Identifier</strong></td>
+              <td>America/Adak</td>
+              <td>America/New_York</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>HDT vs HST: Crucial Differences</h2>
+      <p>
+        It is vital not to confuse HDT (Hawaii-Aleutian Daylight Time, UTC-9) with HST (<a href="/hst-to-est/">Hawaii Standard Time</a>, UTC-10).
+      </p>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Time Zone</th>
+              <th>Abbreviation</th>
+              <th>UTC Offset</th>
+              <th>Observed In</th>
+              <th>DST Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hawaii Standard Time</td>
+              <td>HST</td>
+              <td>UTC-10</td>
+              <td>State of Hawaii</td>
+              <td>No DST observed (Year-round UTC-10)</td>
+            </tr>
+            <tr>
+              <td>Hawaii-Aleutian Daylight Time</td>
+              <td>HDT</td>
+              <td>UTC-9</td>
+              <td>Aleutian Islands, Alaska</td>
+              <td>Summer Daylight Time (March–November)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Is Hawaii on HDT or HST?</h2>
+      <p>
+        <strong>Hawaii is on HST (Hawaii Standard Time, UTC-10) year-round.</strong> The state of Hawaii passed legislation under the Uniform Time Act of 1966 to opt out of Daylight Saving Time. As a result, Hawaii never switches to HDT. If you are converting time for Honolulu, Maui, or Hilo, use our dedicated <a href="/hst-to-est/">HST to EST Converter</a> (5-hour difference with EST). HDT applies specifically to the Aleutian Islands in Alaska during summer.
+      </p>
+
+      <h2>Does Hawaii Observe Daylight Saving Time?</h2>
+      <p>
+        No. Hawaii does not observe daylight saving time. Due to Hawaii's tropical latitude near the equator (20°N), daylight hours remain virtually constant throughout the year, making clock adjustments unnecessary. Arizona (except the Navajo Nation) and Hawaii are the only two US states that do not observe DST.
+      </p>
+
+      <figure class="content-image">
+        <img 
+          src="/assets/hdt-est-hst-edt-time-zone-comparison.webp" 
+          alt="Infographic comparing HDT (UTC-9), EST (UTC-5), HST (UTC-10), and EDT (UTC-4)" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>Comparing HDT (UTC-9), EST (UTC-5), HST (UTC-10), and EDT (UTC-4).</figcaption>
+      </figure>
+
+      <h2>EST vs EDT: Standard vs Daylight in Eastern US</h2>
+      <p>
+        "Eastern Time" is the umbrella term for the US Eastern region. It alternates between two offsets:
+      </p>
+      <ul>
+        <li><strong>EST (Eastern Standard Time):</strong> UTC-5 (observed November to March). EST is 4 hours ahead of HDT.</li>
+        <li><strong>EDT (Eastern Daylight Time):</strong> UTC-4 (observed March to November). EDT is 5 hours ahead of HDT.</li>
+      </ul>
+
+      <h2>HDT to Eastern Time</h2>
+      <p>
+        When converting HDT to Eastern Time, the relative offset depends on whether Eastern Time is in EST (UTC-5) or EDT (UTC-4):
+      </p>
+      <div class="grid-cards two-col">
+        <div class="card highlight-blue">
+          <h3>HDT to EST (Winter)</h3>
+          <p><strong>EST is 4 hours ahead of HDT</strong></p>
+          <p>UTC-5 minus UTC-9 = +4 hours</p>
+        </div>
+        <div class="card highlight-amber">
+          <h3>HDT to EDT (Summer)</h3>
+          <p><strong>EDT is 5 hours ahead of HDT</strong></p>
+          <p>UTC-4 minus UTC-9 = +5 hours</p>
+        </div>
+      </div>
+      <p>
+        Because both HDT and EDT operate during the summer months, a summer meeting between the Aleutian Islands (HDT) and New York (EDT) involves a 5-hour difference. Our converter handles exact dates automatically.
+      </p>
+
+      <h2>HDT to New York Time</h2>
+      <p>
+        New York City operates on Eastern Time. When New York observes EST (UTC-5) in winter, it is 4 hours ahead of HDT. When New York observes EDT (UTC-4) in summer, it is 5 hours ahead of HDT.
+      </p>
+
+      <h2>Does HDT to EST Change the Date?</h2>
+      <p>
+        Yes. Because EST is 4 hours ahead of HDT, evening times in HDT advance into the next calendar day in EST:
+      </p>
+      <ul>
+        <li><strong>8:00 PM HDT</strong> ➔ <strong>12:00 AM (Midnight) EST next day</strong></li>
+        <li><strong>9:00 PM HDT</strong> ➔ <strong>1:00 AM EST next day</strong></li>
+        <li><strong>10:00 PM HDT</strong> ➔ <strong>2:00 AM EST next day</strong></li>
+        <li><strong>11:00 PM HDT</strong> ➔ <strong>3:00 AM EST next day</strong></li>
+      </ul>
+
+      <h2>Practical Uses of HDT to EST Conversion</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <h4>Maritime & Fishing Industries</h4>
+          <p>Commercial fishing fleets and shipping vessels in the Aleutian Islands coordinate logistics and cargo schedules with US East Coast headquarters.</p>
+        </div>
+        <div class="card">
+          <h4>Military & Coast Guard</h4>
+          <p>US Coast Guard bases and military installations in Alaska sync communication logs with the Pentagon and Eastern Command.</p>
+        </div>
+        <div class="card">
+          <h4>Aviation Scheduling</h4>
+          <p>Transpacific flight operations between North Pacific island airports and East Coast hubs track flight times in universal coordinates.</p>
+        </div>
+        <div class="card">
+          <h4>Remote Business Operations</h4>
+          <p>Distributed research teams and weather monitoring stations in the North Pacific maintain real-time sync with East Coast data centers.</p>
+        </div>
+      </div>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-container">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary class="faq-question">{faq.q}</summary>
+            <div class="faq-answer"><p>{faq.a}</p></div>
+          </details>
+        ))}
+      </div>
+
+      <div class="related-converters">
+        <h2>Related Time Zone Converters</h2>
+        <div class="converter-grid">
+          {relatedConverters.map(link => (
+            <a href={link.href} class="converter-link-card">
+              <span class="converter-label">{link.label}</span>
+              <span class="converter-desc">{link.desc}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .converter-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .lead {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .converter-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--panel);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--line);
+  }
+  .status-card-section {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .status-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .status-label {
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .status-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .status-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--accent);
+  }
+  .status-diff {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+  .status-note {
+    font-size: 0.875rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero-image, .content-image {
+    margin: 3rem 0;
+    text-align: center;
+  }
+  .hero-image img, .content-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .hero-image figcaption, .content-image figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .content-body {
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .content-body h2 {
+    font-size: 1.75rem;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .content-body h3 {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  .content-body p {
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .content-body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .content-body a:hover {
+    opacity: 0.85;
+  }
+  .formula-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    margin: 1.5rem 0;
+    font-size: 1.125rem;
+  }
+  .formula-box code {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .example-list, .step-list {
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+  }
+  .example-list li, .step-list li {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .table-container {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .time-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .time-table th {
+    background: var(--panel);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--line);
+  }
+  .time-table td {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+  }
+  .time-table tr:hover {
+    background: var(--panel);
+  }
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .tag-same {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+  }
+  .tag-next {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .grid-cards.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .card h3, .card h4 {
+    margin-top: 0;
+    font-size: 1.125rem;
+    color: var(--accent);
+  }
+  .highlight-blue {
+    border-left: 4px solid #3b82f6;
+  }
+  .highlight-amber {
+    border-left: 4px solid #f59e0b;
+  }
+  .faq-container {
+    margin: 1.5rem 0;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  .faq-question {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+  .faq-question::before {
+    content: "▸ ";
+    color: var(--accent);
+  }
+  .faq-item[open] .faq-question::before {
+    content: "▾ ";
+  }
+  .faq-answer {
+    padding: 0 1.25rem 1rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .related-converters {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .converter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .converter-link-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .converter-link-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .converter-label {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+  .converter-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  @media (max-width: 768px) {
+    .page-header h1 { font-size: 1.75rem; }
+    .content-body h2 { font-size: 1.375rem; }
+    .status-card { flex-direction: column; gap: 1rem; }
+    .grid-cards { grid-template-columns: 1fr; }
+    .converter-grid { grid-template-columns: 1fr; }
+  }
+</style>
