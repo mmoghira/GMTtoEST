@@ -127,6 +127,7 @@ export const pages: any[] = [
   { slug: "wet-to-est", kind: "dynamic", labelKey: "wetToEst", context: { from: "WET", to: "EST", fromZone: "Europe/Lisbon", toZone: "America/New_York" } },
   { slug: "msk-to-est", kind: "dynamic", labelKey: "mskToEst", context: { from: "MSK", to: "EST", fromZone: "Europe/Moscow", toZone: "America/New_York" } },
   { slug: "nzst-to-est", kind: "dynamic", labelKey: "nzstToEst", context: { from: "NZST", to: "EST", fromZone: "Pacific/Auckland", toZone: "America/New_York" } },
+  { slug: "nzdt-to-est", kind: "dynamic", labelKey: "nzdtToEst", context: { from: "NZDT", to: "EST", fromZone: "Pacific/Auckland", toZone: "America/New_York" } },
   { slug: "akdt-to-est", kind: "dynamic", labelKey: "akdtToEst", context: { from: "AKDT", to: "EST", fromZone: "America/Anchorage", toZone: "America/New_York" } },
   { slug: "wat-to-est", kind: "dynamic", labelKey: "watToEst", context: { from: "WAT", to: "EST", fromZone: "Africa/Lagos", toZone: "America/New_York" } },
   { slug: "acdt-to-est", kind: "dynamic", labelKey: "acdtToEst", context: { from: "ACDT", to: "EST", fromZone: "Australia/Adelaide", toZone: "America/New_York" } },

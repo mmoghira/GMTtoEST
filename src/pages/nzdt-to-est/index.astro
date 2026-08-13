@@ -1,0 +1,889 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "nzdt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "NZDT to EST Converter";
+const seoTitle = "NZDT to EST Converter – New Zealand Daylight Time to EST";
+const pageDescription = "Convert NZDT to EST instantly. See the 18-hour time difference, conversion table, real-world examples, and daylight saving information for New Zealand and U.S. Eastern Time.";
+
+const context = {
+  from: "NZDT",
+  to: "EST",
+  fromZone: "Pacific/Auckland",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 18;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  return {
+    nzdt: formatHour12(hour),
+    est: `${formatHour12(estNormalized)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    question: "What is the time difference between NZDT and EST?",
+    answer: "NZDT (New Zealand Daylight Time) is 18 hours ahead of EST (Eastern Standard Time). When it is 12:00 PM in NZDT, it is 6:00 PM the previous day in EST."
+  },
+  {
+    question: "How do I convert NZDT to EST?",
+    answer: "To convert NZDT to EST, simply subtract 18 hours from the NZDT time. For example, if it is 9:00 AM NZDT, subtracting 18 hours gives you 3:00 PM the previous day in EST."
+  },
+  {
+    question: "Is NZDT 18 hours ahead of EST?",
+    answer: "Yes, NZDT is exactly 18 hours ahead of EST. This offset is specific to the period when New Zealand is on daylight saving time (UTC+13) and the US East Coast is on standard time (UTC-5)."
+  },
+  {
+    question: "Does the NZDT to EST time difference change?",
+    answer: "Yes, the gap changes throughout the year due to Daylight Saving Time. The 18-hour gap occurs when New Zealand is on NZDT and the US is on EST. At other times, it can be 16 or 17 hours depending on which regions are observing daylight saving time."
+  },
+  {
+    question: "What is the difference between NZDT and NZST?",
+    answer: "NZST (New Zealand Standard Time) is UTC+12, while NZDT (New Zealand Daylight Time) is UTC+13. NZDT is observed during the warmer months, roughly from late September to early April."
+  },
+  {
+    question: "What is the difference between EST and EDT?",
+    answer: "EST (Eastern Standard Time) is UTC-5 and is observed during the winter months in North America. EDT (Eastern Daylight Time) is UTC-4 and is observed during the summer months."
+  },
+  {
+    question: "Does NZDT to EST conversion change the date?",
+    answer: "Yes, for times between 12:00 AM and 5:59 PM in NZDT, the EST equivalent will be on the previous calendar day."
+  },
+  {
+    question: "What time is 12 PM NZDT in EST?",
+    answer: "12:00 PM (noon) NZDT is 6:00 PM EST on the previous day."
+  },
+  {
+    question: "Is New Zealand ahead of New York?",
+    answer: "Yes, New Zealand is significantly ahead of New York. During NZDT and EST, New Zealand is 18 hours ahead."
+  },
+  {
+    question: "Which cities observe NZDT?",
+    answer: "Major cities observing NZDT include Auckland, Wellington, Christchurch, and Hamilton in New Zealand."
+  },
+  {
+    question: "When does New Zealand switch between NZDT and NZST?",
+    answer: "New Zealand switches to NZDT (forward one hour) on the last Sunday in September and switches back to NZST (back one hour) on the first Sunday in April."
+  },
+  {
+    question: "What is the best time to call from Auckland to New York?",
+    answer: "The best overlapping window is early morning in Auckland (e.g., 7:00 AM - 9:00 AM NZDT) and afternoon in New York (1:00 PM - 3:00 PM EST the previous day)."
+  },
+  {
+    question: "Does EST observe daylight saving?",
+    answer: "Regions in the Eastern Time Zone switch to EDT (Eastern Daylight Time) during the summer. However, EST itself refers specifically to standard time (UTC-5)."
+  },
+  {
+    question: "What IANA timezone is used for New Zealand?",
+    answer: "The standard IANA timezone identifier for New Zealand is Pacific/Auckland."
+  },
+  {
+    question: "Is this converter accurate for future dates?",
+    answer: "Yes, our converter takes into account historical and upcoming daylight saving time rules to ensure accurate conversions for past and future dates."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "nzdt to est, NZDT to EST converter, New Zealand Daylight Time to Eastern Standard Time, NZDT EST conversion, NZDT EST time difference, convert NZDT to EST, New Zealand time to EST, NZDT to New York time, Auckland to New York time",
+  image: "/assets/nzdt-to-est-converter.webp",
+  imageAlt: "NZDT to EST time zone conversion showing New Zealand and Eastern Time",
+  faqs,
+  appDescription: "Free online NZDT to EST converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between New Zealand Daylight Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/nzdt-to-est-converter.webp",
+  preloadImageSrcset: "/assets/nzdt-to-est-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert NZDT to EST",
+  howToDescription: "Steps to convert New Zealand Daylight Time (NZDT) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Note the Current NZDT Time", text: "Identify the NZDT time you want to convert, along with the date." },
+    { name: "Subtract 18 Hours", text: "When both NZDT and EST are active, subtract 18 hours from the NZDT time. If the result is negative, roll back to the previous calendar day." },
+    { name: "Verify DST Status", text: "Check whether both New Zealand and the U.S. Eastern region are observing their respective standard or daylight saving offsets for the chosen date, as the gap can vary." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time." },
+  { href: "/nzst-to-est/", label: "NZST to EST Converter", desc: "Convert New Zealand Standard Time (UTC+12) to Eastern Standard Time." },
+  { href: "/gmt-to-nzst/", label: "GMT to NZST Converter", desc: "Convert Greenwich Mean Time to New Zealand Standard Time." },
+  { href: "/aest-to-est/", label: "AEST to EST Converter", desc: "Convert Australian Eastern Standard Time to EST." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time." },
+  { href: "/gmt-to-aedt/", label: "GMT to AEDT Converter", desc: "Convert GMT to Australian Eastern Daylight Time." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="NZDT to EST"
+  hreflangCodes={["en"]}
+>
+  <main class="converter-page">
+    <header class="page-header">
+      <h1>{pageTitle}</h1>
+      <p class="lead">
+        Convert NZDT (New Zealand Daylight Time) to EST (Eastern Standard Time) effortlessly. 
+        Determine the 18-hour time difference, view conversion charts, and find the best overlap for meetings.
+      </p>
+    </header>
+
+    <section class="converter-section">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <div class="live-status-card">
+      <div class="status-grid">
+        <div class="status-box">
+          <span class="status-label">NZDT</span>
+          <span class="status-offset">UTC+13</span>
+          <span class="status-desc">New Zealand Daylight Time</span>
+        </div>
+        <div class="status-divider">
+          <span class="divider-text">18 HOURS AHEAD</span>
+        </div>
+        <div class="status-box">
+          <span class="status-label">EST</span>
+          <span class="status-offset">UTC-5</span>
+          <span class="status-desc">Eastern Standard Time</span>
+        </div>
+      </div>
+      <p class="dst-seasonal-note">
+        <strong>Note:</strong> This exact 18-hour gap applies primarily when New Zealand is on NZDT and the Eastern U.S. is on EST. Time gaps will vary during NZST and EDT periods.
+      </p>
+    </div>
+
+    <figure class="page-visual">
+      <img src="/assets/nzdt-to-est-converter.webp" alt="NZDT to EST time zone conversion showing New Zealand and Eastern Time" width="1200" height="630" loading="eager" />
+    </figure>
+
+    <section class="content-section">
+      <h2>Understanding the NZDT to EST Time Difference</h2>
+      <p>
+        The time difference between New Zealand Daylight Time (NZDT) and Eastern Standard Time (EST) is <strong>18 hours</strong>. 
+        Because New Zealand is positioned far ahead of the Eastern Americas along the global timeline, NZDT operates 18 hours ahead of EST.
+      </p>
+      
+      <div class="example-box">
+        <p class="formula">EST Time = NZDT Time − 18 Hours</p>
+        <ul>
+          <li><strong>12:00 AM NZDT</strong> = 6:00 AM EST (Previous day)</li>
+          <li><strong>6:00 AM NZDT</strong> = 12:00 PM EST (Previous day)</li>
+          <li><strong>12:00 PM NZDT</strong> = 6:00 PM EST (Previous day)</li>
+          <li><strong>6:00 PM NZDT</strong> = 12:00 AM EST (Same day)</li>
+          <li><strong>11:00 PM NZDT</strong> = 5:00 AM EST (Same day)</li>
+        </ul>
+      </div>
+
+      <figure class="page-visual">
+        <img src="/assets/nzdt-est-time-difference.webp" alt="Split screen world clock displaying NZDT time in Auckland and EST time in New York with calendar date shift" width="1200" height="630" loading="lazy" />
+        <figcaption>Visual breakdown of the 18-hour time difference and date shift between Auckland (NZDT) and New York (EST).</figcaption>
+      </figure>
+    </section>
+
+    <section class="content-section">
+      <h2>24-Hour NZDT to EST Conversion Table</h2>
+      <p>
+        Use this quick reference table to find matching hours between NZDT and EST. 
+        <em>Note that for many morning and afternoon hours in NZDT, the EST equivalent falls on the previous calendar day.</em>
+      </p>
+      
+      <div class="table-container">
+        <table class="conversion-table">
+          <thead>
+            <tr>
+              <th>NZDT (New Zealand)</th>
+              <th>EST (US East Coast)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td>{row.nzdt}</td>
+                <td>
+                  {row.est}
+                  {row.dayNote === "Previous day" && <span class="day-tag prev-day">Previous Day</span>}
+                  {row.dayNote === "Same day" && <span class="day-tag same-day">Same Day</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Common NZDT to EST Conversions</h2>
+      <div class="grid-list">
+        <div class="grid-card">
+          <h3>Morning in NZDT</h3>
+          <ul class="card-times">
+            <li><span>7:00 AM NZDT</span> = 1:00 PM EST (-1 day)</li>
+            <li><span>8:00 AM NZDT</span> = 2:00 PM EST (-1 day)</li>
+            <li><span>9:00 AM NZDT</span> = 3:00 PM EST (-1 day)</li>
+          </ul>
+        </div>
+        <div class="grid-card">
+          <h3>Afternoon in NZDT</h3>
+          <ul class="card-times">
+            <li><span>12:00 PM NZDT</span> = 6:00 PM EST (-1 day)</li>
+            <li><span>2:00 PM NZDT</span> = 8:00 PM EST (-1 day)</li>
+            <li><span>4:00 PM NZDT</span> = 10:00 PM EST (-1 day)</li>
+          </ul>
+        </div>
+        <div class="grid-card">
+          <h3>Evening in NZDT</h3>
+          <ul class="card-times">
+            <li><span>6:00 PM NZDT</span> = 12:00 AM EST</li>
+            <li><span>8:00 PM NZDT</span> = 2:00 AM EST</li>
+            <li><span>10:00 PM NZDT</span> = 4:00 AM EST</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>New Zealand Daylight Time (NZDT) vs. Eastern Standard Time (EST)</h2>
+      
+      <h3>What Is NZDT?</h3>
+      <p>
+        <strong>NZDT (New Zealand Daylight Time)</strong> is 13 hours ahead of Coordinated Universal Time (UTC+13). 
+        It is observed during the warmer months in New Zealand (from the last Sunday in September to the first Sunday in April).
+        This includes major cities like Auckland, Wellington, and Christchurch. 
+        For more about Auckland's time changes, see our <a href="/auckland-time/">Auckland time guide</a>.
+      </p>
+
+      <h3>What Is EST?</h3>
+      <p>
+        <strong>EST (<a href="/what-is-est/">Eastern Standard Time</a>)</strong> is 5 hours behind Coordinated Universal Time (UTC-5).
+        It is the standard time used by the East Coast of North America, including cities like New York, Washington D.C., and Toronto, during the winter months (November to March).
+      </p>
+
+      <h3>NZDT vs EST Comparison</h3>
+      <div class="table-container">
+        <table class="state-breakdown">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>NZDT</th>
+              <th>EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Full Name</strong></td>
+              <td>New Zealand Daylight Time</td>
+              <td>Eastern Standard Time</td>
+            </tr>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC+13</td>
+              <td>UTC-5</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Region</strong></td>
+              <td>New Zealand</td>
+              <td>Eastern North America</td>
+            </tr>
+            <tr>
+              <td><strong>DST Status</strong></td>
+              <td>Daylight Saving Time</td>
+              <td>Standard Time</td>
+            </tr>
+            <tr>
+              <td><strong>IANA Identifier</strong></td>
+              <td>Pacific/Auckland</td>
+              <td>America/New_York</td>
+            </tr>
+            <tr>
+              <td><strong>Hemisphere</strong></td>
+              <td>Southern</td>
+              <td>Northern</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Daylight Saving and the Changing Time Gap</h3>
+      <p>
+        The time gap between New Zealand and the Eastern United States isn't always 18 hours. 
+        Because the two regions are in opposite hemispheres, they observe Daylight Saving Time at different times of the year:
+      </p>
+      <ul>
+        <li><strong>New Zealand DST:</strong> Last Sunday in September to first Sunday in April.</li>
+        <li><strong>US Eastern DST:</strong> Second Sunday in March to first Sunday in November.</li>
+      </ul>
+      <p>
+        During parts of March, both regions are on Daylight Saving Time (NZDT and EDT), making the gap 17 hours. 
+        During parts of November, neither is on DST (NZST and EST), yielding a 17-hour gap. 
+        The 18-hour gap is most prominent during the Northern Hemisphere winter when NZ is on NZDT and the US is on EST.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Does NZDT to EST Conversion Change the Date?</h2>
+      <p>
+        Yes, calculating the EST equivalent for most of the NZDT daytime hours will push the result into the previous calendar day.
+      </p>
+      <ul>
+        <li><strong>12:00 AM to 5:59 PM NZDT:</strong> The EST time will fall on the <strong>previous calendar day</strong>.</li>
+        <li><strong>6:00 PM to 11:59 PM NZDT:</strong> The EST time will fall on the <strong>same calendar day</strong>.</li>
+      </ul>
+    </section>
+
+    <section class="content-section">
+      <h2>When Is NZDT to EST Conversion Useful?</h2>
+      <div class="grid-list">
+        <div class="grid-card">
+          <h3>International Business</h3>
+          <p>Coordinating meetings between New Zealand enterprises and East Coast corporate offices.</p>
+        </div>
+        <div class="grid-card">
+          <h3>Travel Planning</h3>
+          <p>Tracking flight arrival times and layovers for travel between Auckland and New York.</p>
+        </div>
+        <div class="grid-card">
+          <h3>Software Development</h3>
+          <p>Synchronizing global development teams operating across the Pacific.</p>
+        </div>
+        <div class="grid-card">
+          <h3>Live Events</h3>
+          <p>Watching live sports or broadcasts airing in New Zealand from the United States.</p>
+        </div>
+        <div class="grid-card">
+          <h3>Financial Markets</h3>
+          <p>Understanding the gap between the close of Wall Street and the opening of New Zealand markets.</p>
+        </div>
+        <div class="grid-card">
+          <h3>Family Communication</h3>
+          <p>Finding a reasonable hour to call friends and family living across the globe without waking them up.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Best Meeting Times Between New Zealand and the U.S. East Coast</h2>
+      <div class="meeting-window">
+        <p>Finding a convenient meeting time across an 18-hour gap requires careful planning. Here is the most common overlapping window for business hours:</p>
+        <div class="overlap-grid">
+          <div class="overlap-card">
+            <h4>Auckland, NZ (NZDT)</h4>
+            <span class="overlap-time">7:00 AM – 11:00 AM</span>
+            <span class="overlap-day">Next Day</span>
+          </div>
+          <div class="overlap-divider">🤝</div>
+          <div class="overlap-card">
+            <h4>New York, USA (EST)</h4>
+            <span class="overlap-time">1:00 PM – 5:00 PM</span>
+            <span class="overlap-day">Current Day</span>
+          </div>
+        </div>
+        <p class="overlap-note">
+          For example, a Monday 3:00 PM meeting in EST takes place at 9:00 AM on Tuesday in NZDT.
+        </p>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Related Time Zone & Conversion Resources</h2>
+      <ul class="resource-links">
+        <li><a href="/">GMT to EST Converter</a></li>
+        <li><a href="/gmt-vs-utc/">GMT vs UTC Guide</a></li>
+        <li><a href="/what-is-est/">What is EST?</a></li>
+        <li><a href="/auckland-time/">Auckland Time Guide</a></li>
+        <li><a href="/gmt-to-nzst/">GMT to NZST Converter</a></li>
+        <li><a href="/nzst-to-est/">NZST to EST Converter</a></li>
+        <li><a href="/australia-time-zones/">Australia Time Zones</a></li>
+        <li><a href="/how-time-zones-work/">How Time Zones Work</a></li>
+        <li><a href="/world-time-zones-guide/">World Time Zones Guide</a></li>
+        <li><a href="/est-vs-edt/">EST vs EDT</a></li>
+        <li><a href="/what-is-daylight-saving-time/">Daylight Saving Time</a></li>
+      </ul>
+    </section>
+
+    <section class="content-section">
+      <h2>Frequently Asked Questions: NZDT to EST</h2>
+      <div class="faq-list">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary>{faq.question}</summary>
+            <div class="faq-answer">{faq.answer}</div>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Related Converters</h2>
+      <div class="related-grid">
+        {relatedConverters.map((link) => (
+          <a href={link.href} class="related-card">
+            <h3>{link.label}</h3>
+            <p>{link.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .converter-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-6) var(--spacing-4);
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .lead {
+    font-size: 1.25rem;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .converter-section {
+    margin-bottom: var(--spacing-8);
+  }
+
+  .live-status-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
+    text-align: center;
+  }
+
+  .status-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .status-box {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .status-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .status-offset {
+    font-size: 1.125rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .status-desc {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .status-divider {
+    position: relative;
+    padding: 0 var(--spacing-4);
+  }
+
+  .status-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    right: -20px;
+    height: 2px;
+    background: var(--line);
+    z-index: 1;
+  }
+
+  .divider-text {
+    position: relative;
+    background: var(--panel);
+    padding: 0 var(--spacing-2);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--muted);
+    z-index: 2;
+  }
+
+  .dst-seasonal-note {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: var(--spacing-4);
+  }
+
+  .page-visual {
+    margin-bottom: var(--spacing-8);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .page-visual img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .page-visual figcaption {
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--panel);
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+
+  .content-section {
+    margin-bottom: var(--spacing-8);
+  }
+
+  .content-section h2 {
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .content-section h3 {
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-top: var(--spacing-6);
+    margin-bottom: var(--spacing-3);
+  }
+
+  .content-section p {
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .content-section ul {
+    list-style-type: disc;
+    margin-left: var(--spacing-6);
+    margin-bottom: var(--spacing-4);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  
+  .content-section li {
+    margin-bottom: var(--spacing-2);
+  }
+
+  .example-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-6);
+    margin-top: var(--spacing-4);
+  }
+
+  .formula {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table-container {
+    overflow-x: auto;
+    margin-top: var(--spacing-4);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: var(--spacing-3) var(--spacing-4);
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  td {
+    color: var(--text);
+  }
+
+  .day-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: var(--spacing-2);
+  }
+
+  .prev-day {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+
+  .same-day {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+  }
+
+  .grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-4);
+  }
+
+  .grid-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-5);
+  }
+
+  .grid-card h3 {
+    font-size: 1.25rem;
+    color: var(--text);
+    margin-bottom: var(--spacing-4);
+    margin-top: 0;
+  }
+
+  .card-times {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .card-times li {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .card-times li:last-child {
+    border-bottom: none;
+  }
+
+  .card-times span {
+    font-weight: 600;
+  }
+
+  .meeting-window {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+  }
+
+  .overlap-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.02);
+    padding: var(--spacing-6);
+    border-radius: var(--radius-md);
+    margin: var(--spacing-6) 0;
+  }
+
+  .overlap-card {
+    text-align: center;
+    flex: 1;
+  }
+
+  .overlap-card h4 {
+    margin: 0 0 var(--spacing-2);
+    color: var(--text);
+  }
+
+  .overlap-time {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: var(--spacing-2);
+  }
+
+  .overlap-day {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--accent-2);
+    color: white;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .overlap-divider {
+    font-size: 2rem;
+    padding: 0 var(--spacing-4);
+  }
+
+  .overlap-note {
+    text-align: center;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 0;
+  }
+
+  .resource-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .resource-links li a {
+    display: block;
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .resource-links li a:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .faq-item summary {
+    padding: var(--spacing-4);
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    user-select: none;
+  }
+
+  .faq-answer {
+    padding: 0 var(--spacing-4) var(--spacing-4);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-4);
+  }
+
+  .related-card {
+    display: block;
+    padding: var(--spacing-5);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .related-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .related-card h3 {
+    margin: 0 0 var(--spacing-2);
+    color: var(--accent);
+    font-size: 1.125rem;
+  }
+
+  .related-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .status-grid {
+      flex-direction: column;
+      gap: var(--spacing-4);
+    }
+
+    .status-divider::before {
+      display: none;
+    }
+
+    .overlap-grid {
+      flex-direction: column;
+      gap: var(--spacing-6);
+    }
+
+    .overlap-divider {
+      transform: rotate(90deg);
+    }
+    
+    .page-header h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
