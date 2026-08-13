@@ -76,7 +76,7 @@ export default defineConfig({
         // Exclude dynamic timezone converter pages that redirect to the homepage,
         // while keeping activated converter landing pages indexable.
         const activatedConverterPaths = new Set([
-          "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/",
+          "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/pst-to-est/",
           "/gmt-to-acdt/", "/gmt-to-aedt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
           "/aest-to-est/", "/aedt-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/eat-to-est/", "/gmt-to-ist/",
           "/gmt-to-akdt/", "/gmt-to-akst/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-mest/", "/gmt-to-pdt/", "/wita-to-est/", "/gmt-to-wita/",
