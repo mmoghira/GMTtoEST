@@ -107,6 +107,8 @@ export const pages: any[] = [
   { slug: "hst-to-est", kind: "dynamic", labelKey: "hstToEst", context: { from: "HST", to: "EST", fromZone: "Pacific/Honolulu", toZone: "America/New_York" } },
   { slug: "idt-to-est", kind: "dynamic", labelKey: "idtToEst", context: { from: "IDT", to: "EST", fromZone: "Asia/Jerusalem", toZone: "America/New_York" } },
   { slug: "pkt-to-est", kind: "dynamic", labelKey: "pktToEst", context: { from: "PKT", to: "EST", fromZone: "Asia/Karachi", toZone: "America/New_York" } },
+  { slug: "nst-to-est", kind: "dynamic", labelKey: "nstToEst", context: { from: "NST", to: "EST", fromZone: "America/St_Johns", toZone: "America/New_York" } },
+  { slug: "gmt-to-akst", kind: "dynamic", labelKey: "gmtToAkst", context: { from: "GMT", to: "AKST", fromZone: "UTC", toZone: "America/Anchorage" } },
   { slug: "gmt-to-ast", kind: "dynamic", labelKey: "gmtToAst", context: { from: "GMT", to: "AST", fromZone: "UTC", toZone: "America/Halifax" } },
   { slug: "gmt-to-cst", kind: "dynamic", labelKey: "gmtToCst", context: { from: "GMT", to: "CST", fromZone: "UTC", toZone: "America/Chicago" } },
   { slug: "gmt-to-utc", kind: "dynamic", labelKey: "gmtToUtc", context: { from: "GMT", to: "UTC", fromZone: "UTC", toZone: "UTC" } },

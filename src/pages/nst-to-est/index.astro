@@ -1,0 +1,993 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "nst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "NST to EST Converter";
+const seoTitle = "NST to EST Converter – Newfoundland Time to Eastern Time";
+const pageDescription = "Convert NST to EST with our free timezone converter. Check the time difference, conversion table, date changes, and Newfoundland and Eastern daylight saving time.";
+
+const context = {
+  from: "NST",
+  to: "EST",
+  fromZone: "America/St_Johns",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number, minutes = 0) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  const m = minutes === 0 ? "00" : minutes.toString().padStart(2, "0");
+  return `${h}:${m} ${ampm}`;
+}
+
+// 24-hour table calculation (NST UTC-3:30 -> EST UTC-5: EST = NST - 1h 30m)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estTotalMinutes = hour * 60 - 90; // subtract 90 minutes
+  const prevDay = estTotalMinutes < 0;
+  if (prevDay) {
+    estTotalMinutes += 24 * 60;
+  }
+  const estHour = Math.floor(estTotalMinutes / 60);
+  const estMin = estTotalMinutes % 60;
+
+  return {
+    nst: formatHour12(hour, 0),
+    est: `${formatHour12(estHour, estMin)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is the time difference between NST and EST?",
+    a: "Newfoundland Standard Time (NST, UTC-3:30) is 1 hour and 30 minutes ahead of Eastern Standard Time (EST, UTC-5). When both regions observe daylight saving time (NDT, UTC-2:30 and EDT, UTC-4), Newfoundland Time remains 1 hour and 30 minutes ahead of Eastern Time."
+  },
+  {
+    q: "Is NST 1 hour and 30 minutes ahead of EST?",
+    a: "Yes. Newfoundland Time is situated in a unique half-hour time zone (UTC-3:30), making it exactly 1.5 hours ahead of standard Eastern Time (UTC-5)."
+  },
+  {
+    q: "How do I convert NST to EST?",
+    a: "To convert NST to EST manually, subtract 1 hour and 30 minutes from the NST time. For example, 12:00 PM NST converts to 10:30 AM EST."
+  },
+  {
+    q: "Does Newfoundland observe daylight saving time?",
+    a: "Yes. Newfoundland observes daylight saving time from the second Sunday in March to the first Sunday in November, switching from NST (UTC-3:30) to NDT (UTC-2:30)."
+  },
+  {
+    q: "Does the time difference between Newfoundland and Eastern Time change during the year?",
+    a: "Generally, no. Because both Newfoundland and the US/Canadian East Coast transition to daylight saving time on the same spring and autumn dates, the gap remains 1 hour and 30 minutes almost year-round."
+  },
+  {
+    q: "What is the difference between NST and NDT?",
+    a: "NST (Newfoundland Standard Time) is UTC-3:30, observed in winter. NDT (Newfoundland Daylight Time) is UTC-2:30, observed in summer."
+  },
+  {
+    q: "Does NST to EST conversion change the date?",
+    a: "Yes. For late-night NST hours between 12:00 AM midnight and 1:29 AM NST, subtracting 1 hour and 30 minutes rolls the time back into the previous calendar day in EST."
+  },
+  {
+    q: "What time is 12 PM NST in EST?",
+    a: "12:00 PM (noon) NST in St. John's converts to 10:30 AM EST on the same calendar day in New York or Toronto."
+  },
+  {
+    q: "What time is 6 PM NST in EST?",
+    a: "6:00 PM NST converts to 4:30 PM EST on the same day."
+  },
+  {
+    q: "Which cities use Newfoundland Time?",
+    a: "Major communities using Newfoundland Time include St. John's, Mount Pearl, Corner Brook, Grand Falls-Windsor, and Gander."
+  },
+  {
+    q: "Is Newfoundland ahead of New York?",
+    a: "Yes. Newfoundland is located further east than New York and is 1 hour and 30 minutes ahead of Eastern Time."
+  },
+  {
+    q: "What IANA timezone identifier represents Newfoundland Time?",
+    a: "America/St_Johns is the official IANA timezone identifier representing Newfoundland Standard and Daylight Time."
+  },
+  {
+    q: "What is the best time for a meeting between St. John's and Toronto?",
+    a: "Standard business hours align very easily. A 9:00 AM – 5:00 PM workday in St. John's corresponds to 7:30 AM – 3:30 PM EST in Toronto or New York."
+  },
+  {
+    q: "Why does Newfoundland have a half-hour time zone?",
+    a: "Newfoundland adopted its unique half-hour offset in 1935 so that local solar time in St. John's would align closely with standard clocks across the island province."
+  },
+  {
+    q: "Is this converter accurate for future dates?",
+    a: "Yes. Our converter references official IANA timezone datasets to automatically apply historical, present, and future daylight saving changes for both regions."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "nst to est, NST to EST converter, Newfoundland Standard Time to Eastern Standard Time, Newfoundland Time to Eastern Time, convert NST to EST, NST EST time difference, NST vs EST, St Johns time to New York time, NST UTC-3:30, EST UTC-5",
+  image: "/assets/nst-to-est-converter.webp",
+  imageAlt: "NST to EST conversion showing Newfoundland and New York clocks",
+  faqs,
+  appDescription: "Free online NST to EST converter with real-time clocks, half-hour DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Newfoundland Standard Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/nst-to-est-converter.webp",
+  preloadImageSrcset: "/assets/nst-to-est-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert NST to EST",
+  howToDescription: "Steps to convert Newfoundland Standard Time (NST) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter NST Date and Time", text: "Select the date and Newfoundland time into the interactive tool inputs." },
+    { name: "Subtract 1 Hour 30 Minutes", text: "Subtract 1 hour and 30 minutes from the NST time to calculate the equivalent EST time." },
+    { name: "Check Previous Day Shift", text: "Times between 12:00 AM midnight and 1:29 AM NST roll back into the previous calendar day in EST." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time." },
+  { href: "/ast-to-est/", label: "AST to EST Converter", desc: "Convert Atlantic Standard Time to Eastern Standard Time." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time." },
+  { href: "/eat-to-est/", label: "EAT to EST Converter", desc: "Convert East Africa Time to Eastern Standard Time." },
+  { href: "/gmt-to-akst/", label: "GMT to AKST Converter", desc: "Convert Greenwich Mean Time to Alaska Standard Time." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time to Greenwich Mean Time." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="NST to EST"
+  hreflangCodes={["en"]}
+>
+  <main class="page-container">
+    <header class="hero-header">
+      <h1 class="page-title">{pageTitle}</h1>
+      <p class="lead-text">
+        Easily convert <strong>Newfoundland Standard Time (NST)</strong> to <strong>Eastern Standard Time (EST)</strong>. 
+        Whether you are planning a meeting between St. John's and New York, scheduling international calls, or tracking time for travel, our accurate DST-aware timezone converter is here to help. 
+        Because Newfoundland operates on a rare half-hour timezone offset, manual calculations can be confusing. 
+        Use the interactive tool below, browse our reference tables, and understand exactly how <strong>NST (UTC-3:30)</strong> translates to <strong>EST (UTC-5)</strong>.
+      </p>
+    </header>
+
+    <section class="converter-section">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <div class="status-card">
+      <div class="status-inner">
+        <span class="tz-label">NST (UTC-3:30)</span>
+        <span class="tz-arrow">➔ <span class="tz-diff">- 1 HOUR 30 MINUTES</span> ➔</span>
+        <span class="tz-label">EST (UTC-5)</span>
+      </div>
+      <p class="status-desc">
+        Eastern Time is consistently 1 hour and 30 minutes <em>behind</em> Newfoundland Time. When it is noon in St. John's, it is 10:30 AM in Eastern North America.
+      </p>
+    </div>
+
+    <figure class="hero-figure">
+      <img
+        src="/assets/nst-to-est-converter.webp"
+        alt="NST to EST conversion showing Newfoundland and New York clocks"
+        width="1200"
+        height="630"
+        loading="eager"
+        decoding="async"
+      />
+      <figcaption>Comparing clocks across the 1.5-hour timezone difference between NST and EST.</figcaption>
+    </figure>
+
+    <section class="content-section">
+      <h2>NST to EST Time Difference</h2>
+      <p>
+        The time difference between <strong>Newfoundland Standard Time (NST)</strong> and <strong>Eastern Standard Time (EST)</strong> is precisely <strong>1 hour and 30 minutes</strong>. 
+        NST is situated at UTC-3:30, making it one of the few global time zones offset by a half hour, while EST is situated at UTC-5:00. 
+        Since NST is further east, it is always ahead of EST.
+      </p>
+      <div class="formula-box">
+        <span class="formula-text">EST Time = NST Time − 1 Hour 30 Minutes</span>
+      </div>
+      <p>Here are eight quick examples of converting Newfoundland Time to Eastern Time throughout the day:</p>
+      <ul class="example-list">
+        <li><strong>12:00 AM (Midnight) NST</strong> translates to <strong>10:30 PM EST</strong> on the <em>previous calendar day</em>.</li>
+        <li><strong>6:00 AM NST</strong> is equivalent to <strong>4:30 AM EST</strong>.</li>
+        <li><strong>9:00 AM NST</strong> corresponds to <strong>7:30 AM EST</strong>.</li>
+        <li><strong>12:00 PM (Noon) NST</strong> equals <strong>10:30 AM EST</strong>.</li>
+        <li><strong>3:00 PM NST</strong> translates to <strong>1:30 PM EST</strong>.</li>
+        <li><strong>6:00 PM NST</strong> is exactly <strong>4:30 PM EST</strong>.</li>
+        <li><strong>9:00 PM NST</strong> matches <strong>7:30 PM EST</strong>.</li>
+        <li><strong>11:30 PM NST</strong> is equivalent to <strong>10:00 PM EST</strong>.</li>
+      </ul>
+    </section>
+
+    <figure class="hero-figure">
+      <img
+        src="/assets/nst-est-time-difference.webp"
+        alt="Visual comparison showing the 1h 30m offset between NST and EST"
+        width="1200"
+        height="630"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption>The timeline comparison displaying the 1 hour 30 minute offset between NST and EST.</figcaption>
+    </figure>
+
+    <section class="content-section">
+      <h2>How to Convert NST to EST</h2>
+      <p>
+        Converting time manually from Newfoundland Standard Time to Eastern Standard Time involves a simple subtraction, but the half-hour offset means you must pay close attention to minute carry-overs and midnight boundaries.
+      </p>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">Step 1</div>
+          <h3 class="step-title">Note the Time in NST</h3>
+          <p class="step-text">Identify the exact Newfoundland Time you wish to convert, including AM or PM.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">Step 2</div>
+          <h3 class="step-title">Subtract 1 Hour 30 Minutes</h3>
+          <p class="step-text">Subtract exactly 1 hour and 30 minutes from the NST clock. If the minutes drop below zero, borrow an hour.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">Step 3</div>
+          <h3 class="step-title">Check the Calendar Date</h3>
+          <p class="step-text">If the original NST time was between 12:00 AM and 1:29 AM, subtracting 90 minutes pushes the EST time into the previous day.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>24-Hour NST to EST Conversion Table</h2>
+      <p>
+        Use this comprehensive hourly conversion chart to quickly look up equivalent times. Notice how the early morning NST hours correspond to the previous night in EST.
+      </p>
+      <div class="table-wrapper">
+        <table class="timezone-table">
+          <thead>
+            <tr>
+              <th>Newfoundland Standard Time (NST)</th>
+              <th>Eastern Standard Time (EST)</th>
+              <th>Date Shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td><strong>{row.nst}</strong></td>
+                <td>{row.est}</td>
+                <td>
+                  <span class={`date-badge ${row.dayNote === "Previous day" ? "badge-prev" : "badge-same"}`}>
+                    {row.dayNote}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Common NST to EST Conversions</h2>
+      <div class="common-grid">
+        <div class="common-card">
+          <h3>Morning in NST</h3>
+          <ul>
+            <li><strong>7:00 AM NST</strong> = 5:30 AM EST</li>
+            <li><strong>8:00 AM NST</strong> = 6:30 AM EST</li>
+            <li><strong>9:00 AM NST</strong> = 7:30 AM EST</li>
+            <li><strong>10:00 AM NST</strong> = 8:30 AM EST</li>
+          </ul>
+        </div>
+        <div class="common-card">
+          <h3>Afternoon in NST</h3>
+          <ul>
+            <li><strong>12:00 PM NST</strong> = 10:30 AM EST</li>
+            <li><strong>1:00 PM NST</strong> = 11:30 AM EST</li>
+            <li><strong>2:00 PM NST</strong> = 12:30 PM EST</li>
+            <li><strong>4:00 PM NST</strong> = 2:30 PM EST</li>
+          </ul>
+        </div>
+        <div class="common-card">
+          <h3>Evening in NST</h3>
+          <ul>
+            <li><strong>6:00 PM NST</strong> = 4:30 PM EST</li>
+            <li><strong>8:00 PM NST</strong> = 6:30 PM EST</li>
+            <li><strong>10:00 PM NST</strong> = 8:30 PM EST</li>
+            <li><strong>11:00 PM NST</strong> = 9:30 PM EST</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>What Is NST?</h2>
+      <p>
+        <strong>Newfoundland Standard Time (NST)</strong> is a geographic time zone that is strictly observed in the Canadian province of Newfoundland and Labrador. 
+        It is situated at <strong>UTC-3:30</strong>, meaning it is 3 hours and 30 minutes behind Coordinated Universal Time (<a href="/gmt-vs-utc/">UTC</a>) and <a href="/what-is-gmt/">Greenwich Mean Time (GMT)</a>.
+        The 30-minute offset is a historical quirk intended to align local clocks closer to true solar noon for St. John's, the provincial capital.
+      </p>
+
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the prominent time zone used across the eastern seaboard of North America, encompassing parts of the United States, Canada, Mexico, and the Caribbean. 
+        It is positioned at <strong>UTC-5:00</strong>. Many major financial, political, and cultural hubs operate on Eastern Time, serving as the standard "default" for many North American broadcast networks. Learn more at <a href="/what-is-est/">What is EST?</a>.
+      </p>
+
+      <h2>NST vs EST Comparison Table</h2>
+      <div class="table-wrapper">
+        <table class="timezone-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Newfoundland Time (NST)</th>
+              <th>Eastern Time (EST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Standard Offset</strong></td>
+              <td>UTC-3:30</td>
+              <td>UTC-5:00</td>
+            </tr>
+            <tr>
+              <td><strong>Daylight Saving Offset</strong></td>
+              <td>UTC-2:30 (NDT)</td>
+              <td>UTC-4:00 (EDT)</td>
+            </tr>
+            <tr>
+              <td><strong>Time Difference</strong></td>
+              <td>1h 30m ahead of EST</td>
+              <td>1h 30m behind NST</td>
+            </tr>
+            <tr>
+              <td><strong>Key Locations</strong></td>
+              <td>St. John's, Corner Brook, Gander</td>
+              <td>New York, Toronto, Miami, Boston</td>
+            </tr>
+            <tr>
+              <td><strong>Half-Hour Zone?</strong></td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>NST, NDT, EST and EDT Explained</h2>
+      <p>
+        Understanding the acronyms is crucial when dealing with seasonal time adjustments. In the winter months, Newfoundland observes <strong>NST (UTC-3:30)</strong>, and Eastern North America observes <strong>EST (UTC-5:00)</strong>.
+        During the summer months, both regions switch to Daylight Saving Time. Newfoundland transitions to <strong>Newfoundland Daylight Time (NDT, UTC-2:30)</strong>, and Eastern regions transition to <strong>Eastern Daylight Time (EDT, UTC-4:00)</strong>.
+      </p>
+      <p>
+        Because both regions "spring forward" and "fall back" simultaneously, the time gap between them remains constant at <strong>1 hour and 30 minutes</strong> throughout the year. 
+        Our <a href="/est-vs-edt/">EST vs EDT guide</a> has more details on the Eastern shift.
+      </p>
+    </section>
+
+    <figure class="hero-figure">
+      <img
+        src="/assets/nst-ndt-est-edt-timezones.webp"
+        alt="Map diagram illustrating NST, NDT, EST and EDT timezone boundaries"
+        width="1200"
+        height="630"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption>Diagram showing the relationship between Standard and Daylight time across Newfoundland and Eastern Time zones.</figcaption>
+    </figure>
+
+    <section class="content-section">
+      <h2>Daylight Saving Time and NST to EST</h2>
+      <p>
+        Daylight Saving Time begins on the second Sunday in March when clocks are moved forward by one hour at 2:00 AM local time. 
+        It ends on the first Sunday in November when clocks revert by one hour.
+        Whether you are comparing NST to EST in December, or NDT to EDT in July, the math remains identical. However, identifying the correct timezone abbreviation prevents confusion on official documents and invitations.
+        Read more on <a href="/what-is-daylight-saving-time/">What is Daylight Saving Time?</a> and how it impacts global conversion metrics in our <a href="/how-time-zones-work/">How Time Zones Work</a> guide.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Does NST to EST Change the Date?</h2>
+      <p>
+        Converting across the 1 hour and 30 minute threshold frequently results in a date shift, but only during a very specific window at night. 
+        Because EST is behind NST, subtracting the offset from late-night hours in Newfoundland will push the clock backward past midnight into the preceding day.
+      </p>
+      <div class="panel-box">
+        <h3>Date Change Boundaries</h3>
+        <ul>
+          <li><strong>12:00 AM to 1:29 AM NST:</strong> Subtracting 1h 30m results in a time between 10:30 PM and 11:59 PM EST on the <strong>previous calendar day</strong>.</li>
+          <li><strong>1:30 AM to 11:59 PM NST:</strong> Subtracting 1h 30m results in a time between 12:00 AM and 10:29 PM EST on the <strong>same calendar day</strong>.</li>
+        </ul>
+      </div>
+      <p>
+        For instance, if your flight arrives in St. John's at 12:45 AM on Wednesday (NST), friends back in Toronto will perceive the arrival time as 11:15 PM on Tuesday (EST).
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Newfoundland Time and Eastern Time Cities</h2>
+      <p>
+        Visualizing the conversion is often easier when associating the time zones with familiar cities. 
+        Newfoundland Time is geographically isolated to the island of Newfoundland and a few small communities in southeastern Labrador. 
+        Eastern Time, conversely, spans a vast north-to-south corridor.
+      </p>
+      <div class="cities-grid">
+        <div class="city-card">
+          <h3>Cities using NST (UTC-3:30)</h3>
+          <ul>
+            <li>St. John's, NL</li>
+            <li>Mount Pearl, NL</li>
+            <li>Corner Brook, NL</li>
+            <li>Conception Bay South, NL</li>
+            <li>Gander, NL</li>
+          </ul>
+        </div>
+        <div class="city-card">
+          <h3>Cities using EST (UTC-5)</h3>
+          <ul>
+            <li>New York City, USA</li>
+            <li>Toronto, Canada</li>
+            <li>Washington D.C., USA</li>
+            <li>Miami, USA</li>
+            <li>Montreal, Canada</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Newfoundland Time to Eastern Time</h2>
+      <p>
+        The conversion from Newfoundland Time to Eastern Time highlights the vastness of North American geography. Despite St. John's and Halifax both being east coast Canadian hubs, Newfoundland's insistence on a unique timezone marker means anyone conducting business with the province must remain hyper-aware of the half-hour offset. Whether tracking stock markets opening in NYC, or simply catching a syndicated TV broadcast, adapting from NST to EST is a routine part of daily life on the island.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Best NST to EST Meeting Times</h2>
+      <p>
+        Finding a convenient time to meet between teams in Newfoundland and the Eastern Seaboard is highly favorable due to the small time gap. 
+        The primary challenge is simply remembering the 30-minute skew so nobody joins a conference call half an hour early or late.
+      </p>
+      <div class="meeting-overlap">
+        <h3>Standard Workday Overlap</h3>
+        <p>A typical 9:00 AM to 5:00 PM schedule in Newfoundland corresponds to an early 7:30 AM to 3:30 PM schedule in EST.</p>
+        <ul>
+          <li><strong>Good for EST:</strong> Start meetings after 10:30 AM EST (which is 12:00 PM NST).</li>
+          <li><strong>Good for NST:</strong> Schedule meetings before 3:30 PM EST (which is 5:00 PM NST).</li>
+          <li><strong>Sweet Spot:</strong> 11:00 AM EST / 12:30 PM NST to 2:00 PM EST / 3:30 PM NST.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Practical Uses of NST to EST Conversion</h2>
+      <div class="practical-grid">
+        <div class="practical-card">
+          <h3>Business Meetings</h3>
+          <p>Align cross-border conferences seamlessly without missing the crucial half-hour gap.</p>
+        </div>
+        <div class="practical-card">
+          <h3>Flight Layovers</h3>
+          <p>Calculate local arrival and departure times when connecting through Toronto or New York.</p>
+        </div>
+        <div class="practical-card">
+          <h3>TV & Sports</h3>
+          <p>Determine exactly when live primetime events broadcasting in EST will air locally on NST.</p>
+        </div>
+        <div class="practical-card">
+          <h3>Financial Markets</h3>
+          <p>Track the New York Stock Exchange opening bell at 9:30 AM EST locally at 11:00 AM NST.</p>
+        </div>
+        <div class="practical-card">
+          <h3>Server Logging</h3>
+          <p>Normalize timestamp data when central servers run on Eastern Time while clients reside in Newfoundland.</p>
+        </div>
+        <div class="practical-card">
+          <h3>Family Calls</h3>
+          <p>Ensure you don't wake up relatives in Florida or Ontario when calling from St. John's on a Sunday morning.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section faq-section">
+      <h2>Frequently Asked Questions: NST to EST</h2>
+      <div class="faq-container">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary class="faq-question">
+              <h3>{faq.q}</h3>
+              <span class="faq-icon"></span>
+            </summary>
+            <div class="faq-answer">
+              <p>{faq.a}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Related Time Zone Converters</h2>
+      <p>
+        Need to calculate times beyond Newfoundland and the Eastern Seaboard? Explore our extensive directory of <a href="/world-time-zones-guide/">world time zones</a> and discover our most popular timezone calculators below. Check out how different continents handle time offsets, such as our guide to <a href="/australia-time-zones/">Australia time zones</a>, or use these direct converter links:
+      </p>
+      <div class="converters-grid">
+        {relatedConverters.map((conv) => (
+          <a href={conv.href} class="converter-link-card">
+            <h3>{conv.label}</h3>
+            <p>{conv.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+  </main>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+
+  .hero-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .lead-text {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .converter-section {
+    margin-bottom: 3rem;
+    background: var(--panel);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--line);
+  }
+
+  .status-card {
+    text-align: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .status-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tz-label {
+    font-size: 1.25rem;
+    color: var(--accent);
+  }
+
+  .tz-arrow {
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+
+  .tz-diff {
+    color: #e63946;
+    background: rgba(230, 57, 70, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin: 0 0.5rem;
+  }
+
+  .status-desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .hero-figure {
+    margin: 3rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .hero-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .hero-figure figcaption {
+    padding: 1rem;
+    background: var(--panel);
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .content-section {
+    margin-bottom: 4rem;
+  }
+
+  .content-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 0.5rem;
+  }
+
+  .content-section h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .content-section p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .content-section a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .content-section a:hover {
+    text-decoration: underline;
+  }
+
+  .formula-box {
+    background: rgba(var(--accent-rgb), 0.05);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .formula-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: monospace;
+    color: var(--text);
+  }
+
+  .example-list {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .example-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .step-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .step-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+  }
+
+  .step-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .step-text {
+    margin: 0 !important;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .timezone-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    text-align: left;
+  }
+
+  .timezone-table th,
+  .timezone-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .timezone-table th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 600;
+  }
+
+  .timezone-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .date-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-same {
+    background: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+  }
+
+  .badge-prev {
+    background: rgba(230, 57, 70, 0.1);
+    color: #e63946;
+  }
+
+  .common-grid,
+  .cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .common-card,
+  .city-card {
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .common-card ul,
+  .city-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .common-card li,
+  .city-card li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .common-card li:last-child,
+  .city-card li:last-child {
+    border-bottom: none;
+  }
+
+  .panel-box {
+    background: rgba(var(--accent-rgb), 0.03);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .panel-box ul {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+
+  .panel-box li {
+    margin-bottom: 0.5rem;
+  }
+
+  .meeting-overlap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid #27ae60;
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  .practical-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .practical-card {
+    background: var(--panel);
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .practical-card h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+    color: var(--accent);
+  }
+
+  .practical-card p {
+    margin: 0 !important;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .faq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+  }
+
+  .faq-question h3 {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+
+  .faq-icon {
+    width: 20px;
+    height: 20px;
+    position: relative;
+  }
+
+  .faq-icon::before,
+  .faq-icon::after {
+    content: "";
+    position: absolute;
+    background: var(--text);
+    transition: transform 0.3s ease;
+  }
+
+  .faq-icon::before {
+    top: 9px;
+    left: 0;
+    width: 20px;
+    height: 2px;
+  }
+
+  .faq-icon::after {
+    top: 0;
+    left: 9px;
+    width: 2px;
+    height: 20px;
+  }
+
+  .faq-item[open] .faq-icon::after {
+    transform: rotate(90deg);
+    opacity: 0;
+  }
+
+  .faq-answer {
+    padding: 0 1.25rem 1.25rem;
+    color: var(--muted);
+  }
+
+  .faq-answer p {
+    margin: 0 !important;
+  }
+
+  .converters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .converter-link-card {
+    display: block;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    text-decoration: none !important;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .converter-link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: var(--accent);
+  }
+
+  .converter-link-card h3 {
+    margin: 0 0 0.5rem 0 !important;
+    color: var(--text);
+    font-size: 1.2rem !important;
+  }
+
+  .converter-link-card p {
+    margin: 0 !important;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+    .status-inner {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .tz-arrow {
+      transform: rotate(90deg);
+      margin: 0.5rem 0;
+    }
+  }
+</style>

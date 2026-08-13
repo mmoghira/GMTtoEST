@@ -1,0 +1,708 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-akst";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to AKST Converter";
+const seoTitle = "GMT to AKST Converter – Greenwich Mean Time to Alaska Time";
+const pageDescription = "Convert GMT to AKST with our free timezone converter. Check the time difference, conversion table, date changes, and Alaska daylight saving time.";
+
+const context = {
+  from: "GMT",
+  to: "AKST",
+  fromZone: "UTC",
+  toZone: "America/Anchorage"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table calculation (GMT UTC+0 -> AKST UTC-9: AKST = GMT - 9 hours)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const akstHour = hour - 9;
+  const akstNormalized = ((akstHour % 24) + 24) % 24;
+  const prevDay = akstHour < 0;
+  return {
+    gmt: formatHour12(hour),
+    akst: `${formatHour12(akstNormalized)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is the time difference between GMT and AKST?",
+    a: "When Alaska Standard Time (AKST, UTC-9) is active during winter, GMT (Greenwich Mean Time, UTC+0) is 9 hours ahead of AKST. When Alaska observes Alaska Daylight Time (AKDT, UTC-8) during summer, GMT is 8 hours ahead of AKDT."
+  },
+  {
+    q: "Is GMT 9 hours ahead of AKST?",
+    a: "Yes. When Alaska observes standard time (AKST, UTC-9), Greenwich Mean Time (GMT, UTC+0) is exactly 9 hours ahead of AKST."
+  },
+  {
+    q: "How do I convert GMT to AKST?",
+    a: "To convert GMT to AKST manually, subtract 9 hours from the GMT time. If the result drops below 12:00 AM midnight, the time rolls back into the previous calendar day."
+  },
+  {
+    q: "Does Alaska observe daylight saving time?",
+    a: "Yes. Most of Alaska observes daylight saving time, switching from Alaska Standard Time (AKST, UTC-9) to Alaska Daylight Time (AKDT, UTC-8) from the second Sunday in March to the first Sunday in November."
+  },
+  {
+    q: "Does the GMT to AKST time difference change during the year?",
+    a: "Yes. Because Alaska observes daylight saving time while GMT remains at UTC+0 year-round, the gap decreases from 9 hours in winter (AKST) to 8 hours in summer (AKDT)."
+  },
+  {
+    q: "What is the difference between AKST and AKDT?",
+    a: "AKST (Alaska Standard Time) is UTC-9, used from November to March. AKDT (Alaska Daylight Time) is UTC-8, used from March to November during daylight saving."
+  },
+  {
+    q: "Does GMT to AKST conversion change the date?",
+    a: "Yes. For GMT times between 12:00 AM midnight and 8:59 AM GMT, subtracting 9 hours results in the previous calendar day in AKST."
+  },
+  {
+    q: "What time is 12 PM GMT in AKST?",
+    a: "12:00 PM (noon) GMT converts to 3:00 AM AKST on the same calendar day in Anchorage."
+  },
+  {
+    q: "What time is 6 PM GMT in AKST?",
+    a: "6:00 PM GMT converts to 9:00 AM AKST on the same day."
+  },
+  {
+    q: "Which cities observe Alaska Time?",
+    a: "Major cities observing Alaska Time include Anchorage, Fairbanks, Juneau, Wasilla, Sitka, and Ketchikan."
+  },
+  {
+    q: "Is Alaska behind GMT?",
+    a: "Yes. Alaska is located in the Western Hemisphere and is 9 hours behind GMT during standard time (AKST) and 8 hours behind GMT during daylight saving (AKDT)."
+  },
+  {
+    q: "What IANA timezone identifier is used for Alaska Time?",
+    a: "America/Anchorage is the canonical IANA timezone identifier used to represent Alaska Standard and Daylight Time."
+  },
+  {
+    q: "What is the best time for a meeting between London and Anchorage?",
+    a: "The best business overlap window is late afternoon/early evening in London (5:00 PM – 8:00 PM GMT), which corresponds to morning in Anchorage (8:00 AM – 11:00 AM AKST)."
+  },
+  {
+    q: "Are all parts of Alaska in the Alaska Time Zone?",
+    a: "Most of Alaska uses the Alaska Time Zone (America/Anchorage). However, the westernmost Aleutian Islands observe Hawaii-Aleutian Standard Time (HST/HDT, UTC-10/UTC-9)."
+  },
+  {
+    q: "Is this converter accurate for future dates?",
+    a: "Yes. Our converter uses official IANA timezone data to automatically apply North American DST transition rules for any past, present, or future date."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "gmt to akst, GMT to AKST converter, Greenwich Mean Time to Alaska Standard Time, convert GMT to AKST, GMT AKST time difference, GMT vs AKST, GMT to Alaska time, Anchorage time to GMT, GMT UTC+0, AKST UTC-9",
+  image: "/assets/gmt-to-akst-converter.webp",
+  imageAlt: "GMT to Alaska Standard Time conversion showing Greenwich and Anchorage clocks",
+  faqs,
+  appDescription: "Free online GMT to AKST converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Alaska Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/gmt-to-akst-converter.webp",
+  preloadImageSrcset: "/assets/gmt-to-akst-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert GMT to AKST",
+  howToDescription: "Steps to convert Greenwich Mean Time (GMT) to Alaska Standard Time (AKST).",
+  howToSteps: [
+    { name: "Enter GMT Date and Time", text: "Select the GMT date and time you want to convert into the tool inputs." },
+    { name: "Apply the Timezone Offset", text: "Subtract 9 hours from GMT when AKST (UTC-9) is in effect, or 8 hours when AKDT (UTC-8) is in effect." },
+    { name: "Check for Previous Day Shift", text: "GMT times between 12:00 AM midnight and 8:59 AM roll back into the previous calendar day in AKST." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time." },
+  { href: "/gmt-to-akdt/", label: "GMT to AKDT Converter", desc: "Convert Greenwich Mean Time to Alaska Daylight Time (UTC-8)." },
+  { href: "/akdt-to-est/", label: "AKDT to EST Converter", desc: "Convert Alaska Daylight Time to Eastern Standard Time." },
+  { href: "/gmt-to-eat/", label: "GMT to EAT Converter", desc: "Convert Greenwich Mean Time to East Africa Time." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time to Greenwich Mean Time." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to AKST"
+  hreflangCodes={["en"]}
+>
+  <main class="page-container">
+    <header class="page-header">
+      <h1>GMT to AKST Converter</h1>
+      <p class="lead-text">
+        Welcome to the most accurate and easy-to-use <strong>GMT to AKST converter</strong>. Whether you are scheduling international business meetings, planning a trip to Anchorage, or simply trying to figure out what time it is for family and friends in Alaska, this tool allows you to convert <strong>Greenwich Mean Time (GMT)</strong> to <strong>Alaska Standard Time (AKST)</strong> instantly.
+      </p>
+    </header>
+
+    <section class="converter-section" aria-label="Interactive Timezone Converter">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <section class="status-card" aria-label="Time Difference Summary">
+      <div class="status-content">
+        <div class="status-zone">
+          <span class="zone-name">GMT</span>
+          <span class="zone-offset">UTC+0</span>
+        </div>
+        <div class="status-arrow">
+          <span class="arrow-icon">➔</span>
+          <span class="arrow-text">-9 HOURS</span>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="status-zone">
+          <span class="zone-name">AKST</span>
+          <span class="zone-offset">UTC-9</span>
+        </div>
+      </div>
+      <p class="status-desc">Alaska Standard Time is exactly 9 hours behind Greenwich Mean Time.</p>
+    </section>
+
+    <figure class="hero-image">
+      <img src="/assets/gmt-to-akst-converter.webp" alt="GMT to Alaska Standard Time conversion showing Greenwich and Anchorage clocks" width="1200" height="630" loading="eager" decoding="async" />
+      <figcaption>Comparing clocks between Greenwich Mean Time (GMT) and Alaska Standard Time (AKST).</figcaption>
+    </figure>
+
+    <article class="content-section">
+      <h2>GMT to AKST Time Difference</h2>
+      <p>
+        Understanding the time difference between <strong>Greenwich Mean Time (GMT)</strong> and <strong>Alaska Standard Time (AKST)</strong> is straightforward once you know their respective offsets from Coordinated Universal Time (UTC). GMT operates at UTC+0, effectively acting as the zero-point for global timekeeping. AKST, on the other hand, operates at UTC-9. This means that during the winter months when standard time is in effect, Alaska is a full 9 hours behind Greenwich.
+      </p>
+      
+      <div class="formula-box">
+        <h3>Conversion Formula</h3>
+        <code>AKST Time = GMT Time − 9 Hours</code>
+      </div>
+
+      <p>
+        This large timezone gap means that when it is daytime in London or any other region strictly observing GMT, it is often still the middle of the night or very early morning in Alaska. The 9-hour difference heavily influences communication patterns, global broadcasts, and business coordination between Europe and the northwestern regions of North America.
+      </p>
+
+      <h3>Examples of GMT to AKST Conversions</h3>
+      <ul class="example-list">
+        <li><strong>12:00 AM (Midnight) GMT</strong> is 3:00 PM AKST (Previous Day)</li>
+        <li><strong>3:00 AM GMT</strong> is 6:00 PM AKST (Previous Day)</li>
+        <li><strong>6:00 AM GMT</strong> is 9:00 PM AKST (Previous Day)</li>
+        <li><strong>9:00 AM GMT</strong> is 12:00 AM (Midnight) AKST (Same Day)</li>
+        <li><strong>12:00 PM (Noon) GMT</strong> is 3:00 AM AKST (Same Day)</li>
+        <li><strong>3:00 PM GMT</strong> is 6:00 AM AKST (Same Day)</li>
+        <li><strong>6:00 PM GMT</strong> is 9:00 AM AKST (Same Day)</li>
+        <li><strong>9:00 PM GMT</strong> is 12:00 PM (Noon) AKST (Same Day)</li>
+      </ul>
+
+      <figure class="content-image">
+        <img src="/assets/gmt-akst-time-difference.webp" alt="Visual representation of the 9 hour time difference between GMT and AKST" width="800" height="420" loading="lazy" decoding="async" />
+        <figcaption>The 9-hour span visually separating GMT (UTC+0) and AKST (UTC-9).</figcaption>
+      </figure>
+
+      <h2>How to Convert GMT to AKST</h2>
+      <p>
+        If you don't have our interactive converter handy, you can manually calculate the time in Alaska based on Greenwich Mean Time by following a few simple steps. The conversion is a matter of basic subtraction, keeping an eye on the 24-hour clock and calendar boundaries.
+      </p>
+      <div class="steps-box">
+        <ol>
+          <li><strong>Identify your GMT time:</strong> Start with your exact time in GMT (e.g., 2:00 PM or 14:00).</li>
+          <li><strong>Apply the UTC offset:</strong> Subtract 9 hours from the GMT time to find the AKST time. (14:00 - 9 hours = 5:00 or 5:00 AM).</li>
+          <li><strong>Watch for a date change:</strong> If your GMT time is very early in the morning (between 12:00 AM and 8:59 AM), subtracting 9 hours will push you past midnight and backward into the previous calendar day.</li>
+        </ol>
+      </div>
+
+      <h2>24-Hour GMT to AKST Conversion Table</h2>
+      <p>
+        For a quick reference throughout the day, use this 24-hour conversion table mapping out every hour of Greenwich Mean Time to its corresponding time in Alaska Standard Time. Notice how the first nine hours of the GMT day correspond to the previous afternoon and evening in Alaska.
+      </p>
+      <div class="table-responsive">
+        <table class="conversion-table">
+          <thead>
+            <tr>
+              <th>Greenwich Mean Time (GMT)</th>
+              <th>Alaska Standard Time (AKST)</th>
+              <th>Day Shift Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map(row => (
+              <tr>
+                <td><strong>{row.gmt}</strong></td>
+                <td>{row.akst}</td>
+                <td><span class={`tag ${row.dayNote === 'Previous day' ? 'tag-prev' : 'tag-same'}`}>{row.dayNote}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common GMT to AKST Conversions</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <h3>Morning in GMT</h3>
+          <p>Converting morning hours in GMT (like 8:00 AM) means stepping back 9 hours to 11:00 PM the previous night in AKST. This is often the time Europeans are starting their day while Alaskans are just heading to sleep.</p>
+        </div>
+        <div class="card">
+          <h3>Afternoon in GMT</h3>
+          <p>Afternoon in GMT (such as 2:00 PM) aligns with the very early morning in Alaska (5:00 AM AKST). It’s an ideal time for overlapping communications if the Alaskan party is an early riser.</p>
+        </div>
+        <div class="card">
+          <h3>Evening in GMT</h3>
+          <p>Evening hours in GMT (like 8:00 PM) translate to late morning in Alaska (11:00 AM AKST). This represents one of the best windows for global business coordination between Europe and the Alaskan workday.</p>
+        </div>
+      </div>
+
+      <div class="comparison-section">
+        <div class="comp-col">
+          <h2>What Is GMT?</h2>
+          <p>
+            <strong>Greenwich Mean Time (GMT)</strong> is the mean solar time at the Royal Observatory in Greenwich, London. Historically, it served as the international standard for civil time. Today, it operates identically to <a href="/gmt-vs-utc/">Coordinated Universal Time (UTC)</a> at an offset of UTC+0. Unlike many regional timezones, GMT is not subject to daylight saving time rules in its pure definition (though the UK switches to British Summer Time in summer). You can read more about its history in our <a href="/what-is-gmt/">comprehensive guide to GMT</a>.
+          </p>
+        </div>
+        <div class="comp-col">
+          <h2>What Is AKST?</h2>
+          <p>
+            <strong>Alaska Standard Time (AKST)</strong> represents the standard time zone covering nearly all of the state of Alaska, with a fixed offset of UTC-9. Established to unify the massive geographic span of Alaska, it runs from early November to mid-March. Due to the extreme northern latitudes of the state, managing sunlight is crucial, making their adherence to daylight saving time a heavily discussed topic.
+          </p>
+        </div>
+      </div>
+
+      <h2>GMT vs AKST Comparison Table</h2>
+      <div class="table-responsive">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>GMT (Greenwich Mean Time)</th>
+              <th>AKST (Alaska Standard Time)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC+0</td>
+              <td>UTC-9</td>
+            </tr>
+            <tr>
+              <td><strong>Time Difference</strong></td>
+              <td>9 hours ahead of AKST</td>
+              <td>9 hours behind GMT</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Region</strong></td>
+              <td>Europe, Africa</td>
+              <td>Alaska (USA)</td>
+            </tr>
+            <tr>
+              <td><strong>Daylight Saving?</strong></td>
+              <td>No (Fixed UTC+0 year-round)</td>
+              <td>Yes (Switches to AKDT UTC-8)</td>
+            </tr>
+            <tr>
+              <td><strong>IANA Identifier</strong></td>
+              <td>Etc/GMT, Europe/London (winter)</td>
+              <td>America/Anchorage, America/Juneau</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>AKST vs AKDT: Understanding Alaska Time</h2>
+      <p>
+        It is critical to note that Alaska does not stay on Alaska Standard Time (AKST) all year. Like most of North America, it observes <a href="/what-is-daylight-saving-time/">daylight saving time</a>. When spring arrives—specifically on the second Sunday in March—Alaska shifts its clocks forward one hour, entering <strong>Alaska Daylight Time (AKDT)</strong> at UTC-8. 
+      </p>
+      
+      <figure class="content-image">
+        <img src="/assets/gmt-akst-akdt-timezone-offset.webp" alt="Comparison showing the timezone offset changes between AKST and AKDT relative to GMT" width="800" height="420" loading="lazy" decoding="async" />
+        <figcaption>How the timezone gap narrows from 9 hours (AKST) to 8 hours (AKDT) in the summer.</figcaption>
+      </figure>
+
+      <h2>Does the GMT to AKST Time Difference Change During Daylight Saving Time?</h2>
+      <p>
+        Yes, the time difference absolutely changes. GMT is a fixed time standard; it stays permanently at UTC+0. However, Alaska's local clocks shift. 
+      </p>
+      <p>
+        During the winter months (November to March), the standard 9-hour gap applies (GMT is 9 hours ahead of AKST). But during the summer months (March to November), when Alaska uses AKDT (UTC-8), the gap shrinks. During this period, you would need a <a href="/gmt-to-akdt/">GMT to AKDT Converter</a>, because GMT is only 8 hours ahead of Alaska Daylight Time. Our converter tool at the top of this page automatically handles these complex transition rules depending on the exact date you select!
+      </p>
+
+      <h2>Does GMT to AKST Change the Date?</h2>
+      <p>
+        Because Alaska is located so far west of the Prime Meridian, a significant portion of the GMT day translates into the previous calendar day in Alaska.
+      </p>
+      <p>
+        Specifically, for any time between <strong>12:00 AM (midnight) and 8:59 AM GMT</strong>, subtracting 9 hours will push the result into the previous day. For example, if it is 6:00 AM on a Tuesday in GMT, it is still 9:00 PM on Monday night in AKST. Once GMT reaches 9:00 AM, the corresponding time in Alaska strikes midnight (12:00 AM), aligning both regions onto the same calendar day for the remaining 15 hours of the GMT day.
+      </p>
+
+      <h2>GMT to Alaska Time for Major Cities</h2>
+      <p>
+        While GMT encompasses a massive longitudinal slice of the globe (including the UK, Iceland, and West Africa), Alaska Standard Time applies to a vast yet single American state. If you are converting time for the following major Alaskan hubs, you will use the exact same GMT to AKST conversion rules:
+      </p>
+      <ul class="cities-list">
+        <li><strong>Anchorage:</strong> The largest city, acting as the primary anchor for the America/Anchorage IANA timezone.</li>
+        <li><strong>Fairbanks:</strong> Located in the interior, experiencing extreme daylight fluctuations but maintaining UTC-9 in winter.</li>
+        <li><strong>Juneau:</strong> The state capital in the southeast panhandle.</li>
+        <li><strong>Wasilla, Sitka, and Ketchikan:</strong> All strictly adhere to standard Alaska Time.</li>
+      </ul>
+      <p>
+        <em>Note:</em> The far western Aleutian Islands (like Adak) do not use AKST; they observe Hawaii-Aleutian Time (HST/HDT).
+      </p>
+
+      <h2>GMT to AKST Business and Meeting Times</h2>
+      <p>
+        Scheduling meetings across a 9-hour divide requires careful planning. If a business in London (operating on GMT) needs to coordinate with a partner in Anchorage (on AKST), the traditional 9-to-5 workdays hardly overlap.
+      </p>
+      <div class="overlap-card">
+        <h3>Best Meeting Overlap</h3>
+        <p><strong>5:00 PM – 8:00 PM in GMT</strong> overlaps with <strong>8:00 AM – 11:00 AM in AKST</strong>.</p>
+        <p>This means the London team will need to schedule late afternoon or evening calls to catch the Alaskan team at the beginning of their morning shift. Conversely, an Alaskan team working late into the night (e.g., 11:00 PM AKST) could theoretically catch their European partners at the start of their day (8:00 AM GMT).</p>
+      </div>
+
+      <h2>Practical Uses of GMT to AKST Conversion</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <h3>International Business</h3>
+          <p>Navigating the 9-hour gap is essential for smooth logistics, remote team synchronizations, and global customer support workflows spanning from Europe to the Pacific Northwest.</p>
+        </div>
+        <div class="card">
+          <h3>Travel & Tourism</h3>
+          <p>Alaska is a premier destination for cruises and northern lights tourism. European travelers use these conversions to manage jet lag and coordinate flights effectively.</p>
+        </div>
+        <div class="card">
+          <h3>Server Administration</h3>
+          <p>IT professionals convert server logs—which are universally stamped in GMT/UTC—into their local Alaska time to troubleshoot localized network anomalies.</p>
+        </div>
+        <div class="card">
+          <h3>Live Broadcasts</h3>
+          <p>For live global events, sports broadcasts, or major news releases scheduled in GMT, Alaskans must calculate exactly when to tune in locally.</p>
+        </div>
+        <div class="card">
+          <h3>Astronomy & Weather</h3>
+          <p>Due to its high latitude, astronomical and meteorological data for Alaska is frequently mapped back to UTC/GMT to standardize global climate models.</p>
+        </div>
+        <div class="card">
+          <h3>Family Communication</h3>
+          <p>With families spread globally, avoiding late-night wake-up calls is only possible with a solid grasp of how late afternoon in Europe relates to morning in Alaska.</p>
+        </div>
+      </div>
+
+      <h2>Related Time Zone & Conversion Resources</h2>
+      <p>
+        If you found this GMT to AKST guide helpful, you might also want to explore the broader context of how global time zones function. Dive deeper into the differences between time zones along the eastern seaboard by reading about <a href="/what-is-est/">Eastern Standard Time</a>, or discover how daylight saving impacts offsets by comparing <a href="/est-vs-edt/">EST vs EDT</a>. 
+      </p>
+      <p>
+        Are you dealing with other major global conversions? Read our comprehensive <a href="/world-time-zones-guide/">world time zones guide</a> or check out how time works in the southern hemisphere with our overview of <a href="/australia-time-zones/">Australia time zones</a>. Understanding the foundation of timekeeping helps make sense of <a href="/how-time-zones-work/">how time zones work</a> worldwide.
+      </p>
+
+      <h2>Frequently Asked Questions: GMT to AKST</h2>
+      <div class="faq-container" itemscope itemtype="https://schema.org/FAQPage">
+        {faqs.map(faq => (
+          <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+            <summary itemprop="name">{faq.q}</summary>
+            <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+              <p itemprop="text">{faq.a}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <h2>Related Time Zone Converters</h2>
+      <div class="related-converters">
+        {relatedConverters.map(link => (
+          <a href={link.href} class="related-link-card">
+            <h3>{link.label}</h3>
+            <p>{link.desc}</p>
+          </a>
+        ))}
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .lead-text {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .converter-section {
+    margin-bottom: 3rem;
+  }
+  .status-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .status-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .status-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .zone-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .zone-offset {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .status-arrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .status-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+  .hero-image, .content-image {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .hero-image img, .content-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .content-section {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .content-section h2 {
+    font-size: 2rem;
+    margin: 2.5rem 0 1rem;
+    color: var(--text);
+  }
+  .content-section h3 {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 1rem;
+    color: var(--text);
+  }
+  .content-section p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+  .content-section a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .content-section a:hover {
+    text-decoration: none;
+  }
+  .formula-box, .steps-box, .overlap-card {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .formula-box code {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin-top: 0.5rem;
+  }
+  .example-list, .cities-list {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .example-list li, .cities-list li {
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+  .steps-box ol {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+  .steps-box li {
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+  .table-responsive {
+    overflow-x: auto;
+    margin: 2rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: rgba(0,0,0,0.05);
+    font-weight: 600;
+  }
+  .tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .tag-same {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  .tag-prev {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+  .card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+  .comparison-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+  .faq-container {
+    margin: 2rem 0;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .faq-item summary {
+    padding: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+    padding-right: 3rem;
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item summary::after {
+    content: "+";
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+  .faq-answer {
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid var(--line);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+  }
+  .related-converters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .related-link-card {
+    display: block;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-decoration: none !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .related-link-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .related-link-card h3 {
+    color: var(--accent);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+  .related-link-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+</style>
