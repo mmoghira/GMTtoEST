@@ -1,0 +1,760 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "adt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "ADT to EST Converter";
+const seoTitle = "ADT to EST Converter – Convert Atlantic Daylight Time to EST";
+const pageDescription = "Convert ADT to EST with our free timezone converter. ADT is UTC-3 and EST is UTC-5, making EST 2 hours behind ADT. View conversion tables, examples, date changes, and timezone details.";
+
+const context = {
+  from: "ADT",
+  to: "EST",
+  fromZone: "America/Halifax",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: ADT (UTC-3) → EST (UTC-5) = subtract 2 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour - 2;
+  const prevDay = estHour < 0;
+  if (prevDay) estHour += 24;
+  return {
+    adt: formatHour12(hour),
+    est: `${formatHour12(estHour)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "How many hours is ADT ahead of EST?",
+    a: "Atlantic Daylight Time (ADT, UTC-3) is 2 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM (noon) ADT in Halifax, it is 10:00 AM EST in New York."
+  },
+  {
+    q: "How do I convert ADT to EST?",
+    a: "To convert ADT to EST, subtract 2 hours from the ADT time. For example, 4:00 PM ADT minus 2 hours equals 2:00 PM EST."
+  },
+  {
+    q: "What is ADT?",
+    a: "ADT stands for Atlantic Daylight Time. It operates at UTC-3 during summer Daylight Saving Time in Atlantic Canada (Nova Scotia, New Brunswick, Prince Edward Island, and parts of Labrador)."
+  },
+  {
+    q: "What is EST?",
+    a: "EST stands for Eastern Standard Time. It operates at UTC-5 during winter standard time across Eastern US and Canadian regions (including New York, Florida, and Toronto)."
+  },
+  {
+    q: "What is the difference between ADT and EST?",
+    a: "ADT operates at UTC-3 during summer, while EST operates at UTC-5 during winter. EST is 2 hours behind ADT."
+  },
+  {
+    q: "What is the difference between ADT and AST?",
+    a: "ADT (Atlantic Daylight Time, UTC-3) is observed during summer daylight saving time. AST (Atlantic Standard Time, UTC-4) is observed during winter standard time. ADT is 1 hour ahead of AST."
+  },
+  {
+    q: "Is ADT the same as Atlantic Time?",
+    a: "Atlantic Time (AT) is the generic zone name. It uses ADT (UTC-3) in summer and AST (UTC-4) in winter."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time, UTC-5) is observed during winter standard time. EDT (Eastern Daylight Time, UTC-4) is observed during summer daylight saving time. EDT is 1 hour ahead of EST."
+  },
+  {
+    q: "How does ADT compare to EDT?",
+    a: "ADT (UTC-3) is 1 hour ahead of EDT (UTC-4). When both Atlantic and Eastern regions observe daylight saving time in summer, Atlantic Time is 1 hour ahead of Eastern Time."
+  },
+  {
+    q: "Does daylight saving time affect ADT to EST?",
+    a: "Yes. In summer, Atlantic Time is in ADT (UTC-3) and Eastern Time is in EDT (UTC-4), resulting in a 1-hour difference (ADT to EDT). When comparing ADT (UTC-3) directly to fixed EST (UTC-5), the difference is 2 hours."
+  },
+  {
+    q: "What time is 12 PM ADT in EST?",
+    a: "12:00 PM (noon) ADT is 10:00 AM EST on the same day."
+  },
+  {
+    q: "What time is 10 PM ADT in EST?",
+    a: "10:00 PM ADT is 8:00 PM EST on the same day."
+  },
+  {
+    q: "Does ADT to EST change the date?",
+    a: "Yes, for very early morning ADT hours. ADT times from 00:00 to 01:59 (12:00 AM to 1:59 AM) fall onto the late evening of the previous calendar day in EST (e.g., 00:00 ADT = 10:00 PM EST previous day)."
+  },
+  {
+    q: "Is Atlantic Time always ADT?",
+    a: "No. Atlantic Time uses ADT (UTC-3) only during Daylight Saving Time (March to November). During winter (November to March), Atlantic Time uses AST (UTC-4)."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "adt to est, ADT to EST converter, Atlantic Daylight Time to Eastern Standard Time, convert ADT to EST, ADT EST time difference, ADT vs EST, Halifax to New York time difference, Atlantic Canada to Eastern time",
+  image: "/assets/adt-to-est-converter.webp",
+  imageAlt: "ADT to EST converter comparing Atlantic Daylight Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online ADT to EST converter featuring live clocks, 24-hour schedules, DST-aware calculations, and cross-provincial meeting planners between Atlantic Daylight Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/adt-to-est-converter.webp",
+  preloadImageSrcset: "/assets/adt-to-est-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert ADT to EST",
+  howToDescription: "Simple steps to convert Atlantic Daylight Time (ADT) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter ADT Time", text: "Select your desired hour and date in Atlantic Daylight Time (UTC-3)." },
+    { name: "Subtract 2 Hours", text: "Subtract 2 hours to convert ADT to Eastern Standard Time (UTC-5)." },
+    { name: "Check Date Rollover", text: "If subtracting 2 hours drops below 12:00 AM, the date rolls back to the previous calendar day in EST." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/ast-to-est/", label: "AST to EST Converter", desc: "Convert Atlantic Standard Time (UTC-4) to Eastern Standard Time (UTC-5)." },
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time (UTC+0) to Eastern Standard Time (UTC-5)." },
+  { href: "/edt-to-est/", label: "EDT to EST Converter", desc: "Convert Eastern Daylight Time (UTC-4) to Eastern Standard Time (UTC-5)." },
+  { href: "/pdt-to-est/", label: "PDT to EST Converter", desc: "Convert Pacific Daylight Time (UTC-7) to Eastern Standard Time (UTC-5)." },
+  { href: "/cst-to-est/", label: "CST to EST Converter", desc: "Convert Central Standard Time (UTC-6) to Eastern Standard Time (UTC-5)." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time (UTC-5) to Greenwich Mean Time (UTC+0)." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="ADT to EST"
+  hreflangCodes={["en"]}
+>
+  <main class="converter-page">
+    <header class="page-header">
+      <h1>{pageTitle}</h1>
+      <p class="lead">
+        Convert Atlantic Daylight Time (ADT, UTC-3) to Eastern Standard Time (EST, UTC-5) instantly. 
+        EST is <strong>2 hours behind ADT</strong>. Use our interactive converter for live clocks, 
+        24-hour conversion charts, and date rollover tracking between Atlantic Canada and Eastern Time.
+      </p>
+    </header>
+
+    <section class="converter-section" aria-label="Interactive Time Converter">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <section class="status-card-section">
+      <div class="status-card">
+        <div class="status-item">
+          <span class="status-label">Atlantic Daylight Time</span>
+          <span class="status-value">UTC-3</span>
+        </div>
+        <div class="status-arrow">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          <span class="status-diff">-2 HRS</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Eastern Standard Time</span>
+          <span class="status-value">UTC-5</span>
+        </div>
+      </div>
+      <p class="status-note">
+        Eastern Standard Time (UTC-5) is 2 hours behind Atlantic Daylight Time (UTC-3). Subtract 2 hours to convert ADT to EST.
+      </p>
+    </section>
+
+    <figure class="hero-image">
+      <img 
+        src="/assets/adt-to-est-converter.webp" 
+        alt="ADT to EST converter comparing Atlantic Daylight Time and Eastern Standard Time" 
+        width="1200" 
+        height="630" 
+        loading="eager"
+      />
+      <figcaption>Comparing Atlantic Daylight Time (ADT, UTC-3) in Atlantic Canada with Eastern Standard Time (EST, UTC-5) in New York.</figcaption>
+    </figure>
+
+    <article class="content-body">
+      <h2>ADT to EST Time Difference</h2>
+      <p>
+        The time difference between Atlantic Daylight Time (ADT) and Eastern Standard Time (EST) is exactly <strong>2 hours</strong>. 
+        ADT operates at <strong>UTC-3</strong>, while EST operates at <strong>UTC-5</strong>. Because UTC-5 is 2 hours behind UTC-3, 
+        Eastern Standard Time is always 2 hours behind Atlantic Daylight Time.
+      </p>
+      <div class="formula-box">
+        <code>EST = ADT − 2 hours</code>
+      </div>
+      <p>
+        Here are quick practical conversion examples:
+      </p>
+      <ul class="example-list">
+        <li><strong>00:00 ADT (12:00 AM)</strong> = <strong>10:00 PM EST</strong> (Previous day)</li>
+        <li><strong>01:00 AM ADT</strong> = <strong>11:00 PM EST</strong> (Previous day)</li>
+        <li><strong>02:00 AM ADT</strong> = <strong>12:00 AM (Midnight) EST</strong> (Same day)</li>
+        <li><strong>06:00 AM ADT</strong> = <strong>4:00 AM EST</strong> (Same day)</li>
+        <li><strong>09:00 AM ADT</strong> = <strong>7:00 AM EST</strong> (Same day)</li>
+        <li><strong>12:00 PM (Noon) ADT</strong> = <strong>10:00 AM EST</strong> (Same day)</li>
+        <li><strong>3:00 PM ADT</strong> = <strong>1:00 PM EST</strong> (Same day)</li>
+        <li><strong>6:00 PM ADT</strong> = <strong>4:00 PM EST</strong> (Same day)</li>
+        <li><strong>9:00 PM ADT</strong> = <strong>7:00 PM EST</strong> (Same day)</li>
+        <li><strong>11:00 PM ADT</strong> = <strong>9:00 PM EST</strong> (Same day)</li>
+      </ul>
+
+      <figure class="content-image">
+        <img 
+          src="/assets/adt-to-est-time-difference.webp" 
+          alt="Clocks showing ADT at 12:00 PM and EST at 10:00 AM displaying a 2-hour difference" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>EST is 2 hours behind ADT: 12:00 PM ADT corresponds to 10:00 AM EST.</figcaption>
+      </figure>
+
+      <h2>How to Convert ADT to EST</h2>
+      <p>
+        Converting ADT to <a href="/what-is-est/">Eastern Standard Time (EST)</a> is quick and simple:
+      </p>
+      <ol class="step-list">
+        <li><strong>Determine the ADT time:</strong> Identify your start time in Atlantic Daylight Time (UTC-3).</li>
+        <li><strong>Subtract 2 hours:</strong> Subtract 2 hours from the ADT hour value.</li>
+        <li><strong>Check calendar date:</strong> If subtracting 2 hours drops below 00:00 (12:00 AM), the time rolls back to the previous calendar day in EST.</li>
+      </ol>
+
+      <h2>ADT to EST Conversion Table (24 Hours)</h2>
+      <p>
+        This full 24-hour reference table shows every hour of the day converted from Atlantic Daylight Time to Eastern Standard Time.
+      </p>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Atlantic Daylight Time (ADT)</th>
+              <th>Eastern Standard Time (EST)</th>
+              <th>Calendar Day Shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map(row => (
+              <tr>
+                <td>{row.adt}</td>
+                <td><strong>{row.est}</strong></td>
+                <td><span class={`tag ${row.dayNote === 'Previous day' ? 'tag-prev' : 'tag-same'}`}>{row.dayNote}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>What Is ADT?</h2>
+      <p>
+        <strong>ADT</strong> stands for <strong>Atlantic Daylight Time</strong>. It operates at an offset of <strong>UTC-3</strong>. 
+        ADT is observed in Atlantic Canada during Daylight Saving Time (from the second Sunday in March to the first Sunday in November). 
+        Key regions observing ADT include Nova Scotia, New Brunswick, Prince Edward Island, parts of Labrador, and Bermuda. The IANA timezone identifier is <code>America/Halifax</code>.
+      </p>
+
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>EST</strong> stands for <strong>Eastern Standard Time</strong>. It operates at an offset of <strong>UTC-5</strong>. 
+        EST is observed in the Eastern Time zone during winter standard time (from November to March). 
+        Major cities observing EST include New York, Miami, Atlanta, Washington D.C., and Toronto. The IANA timezone identifier is <code>America/New_York</code>.
+      </p>
+
+      <h2>ADT vs EST Comparison</h2>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>ADT</th>
+              <th>EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Full Name</strong></td>
+              <td>Atlantic Daylight Time</td>
+              <td>Eastern Standard Time</td>
+            </tr>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC-3</td>
+              <td>UTC-5</td>
+            </tr>
+            <tr>
+              <td><strong>Difference</strong></td>
+              <td colspan="2">EST is 2 hours behind ADT</td>
+            </tr>
+            <tr>
+              <td><strong>Season</strong></td>
+              <td>Summer (March to November)</td>
+              <td>Winter (November to March)</td>
+            </tr>
+            <tr>
+              <td><strong>IANA Identifier</strong></td>
+              <td>America/Halifax</td>
+              <td>America/New_York</td>
+            </tr>
+            <tr>
+              <td><strong>Key Cities</strong></td>
+              <td>Halifax, Fredericton, Charlottetown</td>
+              <td>New York, Toronto, Miami</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>ADT vs AST: Summer vs Winter in Atlantic Canada</h2>
+      <p>
+        It is important to distinguish ADT from <a href="/ast-to-est/">AST (Atlantic Standard Time)</a>:
+      </p>
+      <ul>
+        <li><strong>ADT (Atlantic Daylight Time):</strong> UTC-3 (Summer: March to November).</li>
+        <li><strong>AST (Atlantic Standard Time):</strong> UTC-4 (Winter: November to March).</li>
+      </ul>
+      <p>
+        ADT is 1 hour ahead of AST. When Atlantic Canada shifts to Daylight Saving Time in March, local clocks move from AST to ADT.
+      </p>
+
+      <h2>EST vs EDT: Standard vs Daylight in Eastern Region</h2>
+      <p>
+        Similarly, Eastern Time shifts seasonally:
+      </p>
+      <ul>
+        <li><strong>EST (Eastern Standard Time):</strong> UTC-5 (Winter: November to March).</li>
+        <li><strong>EDT (Eastern Daylight Time):</strong> UTC-4 (Summer: March to November).</li>
+      </ul>
+
+      <h2>Atlantic Time vs Eastern Time Matrix</h2>
+      <p>
+        Depending on which seasonal abbreviations are being compared, the offset between Atlantic and Eastern Time varies:
+      </p>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Atlantic Zone</th>
+              <th>Eastern Zone</th>
+              <th>Difference</th>
+              <th>Formula</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ADT (UTC-3)</strong></td>
+              <td><strong>EST (UTC-5)</strong></td>
+              <td>EST is 2 hours behind ADT</td>
+              <td>EST = ADT − 2h</td>
+            </tr>
+            <tr>
+              <td><strong>ADT (UTC-3)</strong></td>
+              <td><strong>EDT (UTC-4)</strong></td>
+              <td>EDT is 1 hour behind ADT</td>
+              <td>EDT = ADT − 1h</td>
+            </tr>
+            <tr>
+              <td><strong>AST (UTC-4)</strong></td>
+              <td><strong>EST (UTC-5)</strong></td>
+              <td>EST is 1 hour behind AST</td>
+              <td>EST = AST − 1h</td>
+            </tr>
+            <tr>
+              <td><strong>AST (UTC-4)</strong></td>
+              <td><strong>EDT (UTC-4)</strong></td>
+              <td>No time difference (Same time)</td>
+              <td>EDT = AST + 0h</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="content-image">
+        <img 
+          src="/assets/adt-est-ast-edt-time-zone-comparison.webp" 
+          alt="Infographic showing seasonal comparisons between Atlantic Time (ADT/AST) and Eastern Time (EST/EDT)" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>Comparison matrix between Atlantic Time (ADT/AST) and Eastern Time (EST/EDT).</figcaption>
+      </figure>
+
+      <h2>Does ADT to EST Change the Date?</h2>
+      <p>
+        Yes, for early morning ADT hours between 00:00 and 01:59 (12:00 AM and 1:59 AM). Because EST is 2 hours behind ADT, these hours drop back to the late evening of the previous calendar day in EST:
+      </p>
+      <ul>
+        <li><strong>00:00 ADT (Midnight)</strong> ➔ <strong>10:00 PM EST previous day</strong></li>
+        <li><strong>01:00 ADT</strong> ➔ <strong>11:00 PM EST previous day</strong></li>
+        <li><strong>02:00 ADT</strong> ➔ <strong>12:00 AM (Midnight) EST same day</strong></li>
+      </ul>
+
+      <h2>When Is ADT Used?</h2>
+      <p>
+        ADT is used from the second Sunday in March to the first Sunday in November in Nova Scotia, New Brunswick, Prince Edward Island, parts of Quebec (Magdalen Islands), parts of Labrador, and Bermuda.
+      </p>
+
+      <h2>ADT to Eastern Time</h2>
+      <p>
+        When converting ADT to Eastern Time, note whether Eastern Time is in EST (UTC-5) or EDT (UTC-4). 
+        During summer when both regions observe DST, Atlantic Daylight Time (ADT, UTC-3) is 1 hour ahead of Eastern Daylight Time (EDT, UTC-4). 
+        When comparing ADT (UTC-3) directly to fixed EST (UTC-5), the gap is 2 hours.
+      </p>
+
+      <h2>ADT to New York Time</h2>
+      <p>
+        New York uses Eastern Time. In winter standard time (EST, UTC-5), New York is 2 hours behind ADT (UTC-3). In summer daylight time (EDT, UTC-4), New York is 1 hour behind ADT.
+      </p>
+
+      <h2>ADT to Toronto Time</h2>
+      <p>
+        Toronto operates on Eastern Time on the exact same schedule as New York. During summer daylight time (EDT), Toronto is 1 hour behind ADT.
+      </p>
+
+      <h2>ADT to Atlantic Canada Time</h2>
+      <p>
+        Atlantic Canada uses Atlantic Time. In summer, provinces like Nova Scotia, New Brunswick, and Prince Edward Island use ADT (UTC-3). In winter, they switch to AST (UTC-4).
+      </p>
+
+      <h2>Daylight Saving Time and ADT to EST</h2>
+      <p>
+        Both Atlantic Canada and the Eastern US shift between standard and daylight saving time on the second Sunday in March and first Sunday in November. 
+        As a result, local clocks in Halifax and New York maintain a consistent <strong>1-hour difference</strong> (Halifax is 1 hour ahead) during both summer (ADT vs EDT) and winter (AST vs EST).
+      </p>
+
+      <h2>Practical Uses of ADT to EST Conversion</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <h4>Inter-Provincial Business Collaboration</h4>
+          <p>Companies headquartered in Toronto or Montreal schedule business calls with branch offices in Halifax, Moncton, or Saint John.</p>
+        </div>
+        <div class="card">
+          <h4>Maritime Transportation & Logistics</h4>
+          <p>Shipping lines, ports, and rail networks coordinate cargo departures between Halifax harbor and East Coast US ports in New York or Boston.</p>
+        </div>
+        <div class="card">
+          <h4>Broadcasting & Live Events</h4>
+          <p>Canadian national broadcasters (CBC, CTV) coordinate live sports and news broadcasts across Atlantic and Eastern feed times.</p>
+        </div>
+        <div class="card">
+          <h4>Remote Work & Meetings</h4>
+          <p>Remote workers in Nova Scotia and New Brunswick coordinate daily workflows with team members based in New York, Florida, or Georgia.</p>
+        </div>
+      </div>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-container">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary class="faq-question">{faq.q}</summary>
+            <div class="faq-answer"><p>{faq.a}</p></div>
+          </details>
+        ))}
+      </div>
+
+      <div class="related-converters">
+        <h2>Related Time Zone Converters</h2>
+        <div class="converter-grid">
+          {relatedConverters.map(link => (
+            <a href={link.href} class="converter-link-card">
+              <span class="converter-label">{link.label}</span>
+              <span class="converter-desc">{link.desc}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .converter-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .lead {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .converter-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--panel);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--line);
+  }
+  .status-card-section {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .status-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .status-label {
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .status-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .status-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--accent);
+  }
+  .status-diff {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+  .status-note {
+    font-size: 0.875rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero-image, .content-image {
+    margin: 3rem 0;
+    text-align: center;
+  }
+  .hero-image img, .content-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .hero-image figcaption, .content-image figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .content-body {
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .content-body h2 {
+    font-size: 1.75rem;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .content-body h3 {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  .content-body p {
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .content-body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .content-body a:hover {
+    opacity: 0.85;
+  }
+  .formula-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    margin: 1.5rem 0;
+    font-size: 1.125rem;
+  }
+  .formula-box code {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .example-list, .step-list {
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+  }
+  .example-list li, .step-list li {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .table-container {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .time-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .time-table th {
+    background: var(--panel);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--line);
+  }
+  .time-table td {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+  }
+  .time-table tr:hover {
+    background: var(--panel);
+  }
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .tag-same {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+  }
+  .tag-prev {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .card h4 {
+    margin-top: 0;
+    font-size: 1.125rem;
+    color: var(--accent);
+  }
+  .faq-container {
+    margin: 1.5rem 0;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  .faq-question {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+  .faq-question::before {
+    content: "▸ ";
+    color: var(--accent);
+  }
+  .faq-item[open] .faq-question::before {
+    content: "▾ ";
+  }
+  .faq-answer {
+    padding: 0 1.25rem 1rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .related-converters {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .converter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .converter-link-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .converter-link-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .converter-label {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+  .converter-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  @media (max-width: 768px) {
+    .page-header h1 { font-size: 1.75rem; }
+    .content-body h2 { font-size: 1.375rem; }
+    .status-card { flex-direction: column; gap: 1rem; }
+    .grid-cards { grid-template-columns: 1fr; }
+    .converter-grid { grid-template-columns: 1fr; }
+  }
+</style>
