@@ -1,0 +1,739 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, pageUrl, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-aedt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to AEDT Converter";
+const seoTitle = "GMT to AEDT Converter – Greenwich Mean Time to AEDT";
+const pageDescription = "Convert GMT to AEDT instantly. See the 11-hour time difference, conversion examples, time tables, and daylight saving information.";
+
+const context = {
+  from: "GMT",
+  to: "AEDT",
+  fromZone: "UTC",
+  toZone: "Australia/Sydney"
+};
+
+const canonical = `${siteUrl}/gmt-to-aedt/`;
+
+// 24-hour conversion table data (GMT → AEDT = GMT + 11 hours during Australian DST)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const aedtHour = hour + 11;
+  const aedtNormalized = ((aedtHour % 24) + 24) % 24;
+  const nextDay = aedtHour >= 24;
+  const period = aedtNormalized < 12 ? "AM" : "PM";
+  const displayHour = aedtNormalized % 12 || 12;
+  return {
+    gmt: formatHour12(hour),
+    aedt: `${displayHour}:00 ${period}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+// Practical conversion examples
+const practicalConversions = [
+  { gmt: "1:00 AM GMT", aedt: "12:00 PM (Noon) AEDT", note: "Lunchtime in Sydney & Melbourne, early morning in Greenwich" },
+  { gmt: "2:00 AM GMT", aedt: "1:00 PM AEDT", note: "Early afternoon in AEDT zone" },
+  { gmt: "6:00 AM GMT", aedt: "5:00 PM AEDT", note: "End of Australian workday, early morning in London" },
+  { gmt: "9:00 AM GMT", aedt: "8:00 PM AEDT", note: "Evening relaxation in Australia, start of UK business hours" },
+  { gmt: "12:00 PM (Noon) GMT", aedt: "11:00 PM AEDT", note: "Late night in Sydney, midday in London" },
+  { gmt: "3:00 PM GMT", aedt: "2:00 AM AEDT (+1 day)", note: "Next calendar day in Australia, mid-afternoon in GMT" },
+  { gmt: "6:00 PM GMT", aedt: "5:00 AM AEDT (+1 day)", note: "Pre-dawn next day in Sydney, evening in Greenwich" },
+  { gmt: "9:00 PM GMT", aedt: "8:00 AM AEDT (+1 day)", note: "Start of next workday in Australia, late night in London" },
+  { gmt: "11:00 PM GMT", aedt: "10:00 AM AEDT (+1 day)", note: "Mid-morning next day in AEDT zone, bedtime in Greenwich" }
+];
+
+// Bespoke FAQ Data for GMT → AEDT
+const faqs = [
+  {
+    q: "What is the difference between GMT and AEDT?",
+    a: "GMT (Greenwich Mean Time) is the zero-offset time baseline (UTC+0) tied to the Prime Meridian in London. AEDT (Australian Eastern Daylight Time) is the daylight saving time zone used in southeastern Australia, running at UTC+11. AEDT is 11 hours ahead of GMT during Australian summer."
+  },
+  {
+    q: "Is AEDT 11 hours ahead of GMT?",
+    a: "Yes. When Australian Eastern Daylight Time is active (from early October to early April), AEDT is exactly 11 hours ahead of Greenwich Mean Time (GMT). For example, 12:00 PM GMT equals 11:00 PM AEDT on the same day."
+  },
+  {
+    q: "How do I convert GMT to AEDT?",
+    a: "To convert GMT to AEDT manually, add 11 hours to the GMT time. If the calculated time exceeds 24 hours (12:00 AM midnight), advance the result to the next calendar day. Our interactive converter on this page automatically handles date roll-overs and DST schedules."
+  },
+  {
+    q: "Does AEDT change during the year?",
+    a: "Yes. AEDT is only active during the Australian daylight saving period (first Sunday in October to first Sunday in April). Outside this window, southeastern Australia reverts to Australian Eastern Standard Time (AEST, UTC+10), reducing the time gap with GMT to 10 hours."
+  },
+  {
+    q: "Is Sydney GMT+11?",
+    a: "Sydney operates on GMT+11 (AEDT) during Australian daylight saving time (October through April). During standard winter months (April through October), Sydney observes GMT+10 (AEST)."
+  },
+  {
+    q: "What happens when the GMT conversion crosses midnight?",
+    a: "Because AEDT is 11 hours ahead of GMT, any GMT time after 1:00 PM (13:00) rolls over into the early morning hours of the next calendar day in Australia. For example, 3:00 PM GMT on Monday converts to 2:00 AM AEDT on Tuesday."
+  },
+  {
+    q: "What is the difference between AEDT and AEST?",
+    a: "AEST (Australian Eastern Standard Time) is the standard winter time zone at UTC+10. AEDT (Australian Eastern Daylight Time) is the summer daylight saving time zone at UTC+11. AEDT is exactly 1 hour ahead of AEST."
+  },
+  {
+    q: "Is AEDT the same as Australian Eastern Time?",
+    a: "Australian Eastern Time is the overarching regional time zone umbrella that encompasses both AEST (UTC+10) in winter and AEDT (UTC+11) in summer for participating eastern states."
+  },
+  {
+    q: "Which Australian states use AEDT?",
+    a: "New South Wales (including Sydney), Victoria (Melbourne), Tasmania (Hobart), and the Australian Capital Territory (Canberra) observe AEDT. Queensland (Brisbane), Western Australia (Perth), and the Northern Territory do not use AEDT."
+  },
+  {
+    q: "Does Brisbane use AEDT?",
+    a: "No. Brisbane and the state of Queensland do not observe daylight saving time. Queensland stays on AEST (UTC+10) year-round, so Brisbane remains 10 hours ahead of GMT even while Sydney shifts to AEDT (UTC+11)."
+  },
+  {
+    q: "What time is 9:00 AM GMT in AEDT?",
+    a: "9:00 AM GMT converts to 8:00 PM AEDT (20:00) on the same day in Sydney and Melbourne during daylight saving time."
+  },
+  {
+    q: "What time is 6:00 PM GMT in AEDT?",
+    a: "6:00 PM GMT converts to 5:00 AM AEDT the following day. Adding 11 hours to 18:00 GMT results in 29:00, which normalizes to 5:00 AM (+1 day)."
+  },
+  {
+    q: "When does Australian Eastern Daylight Time start and end?",
+    a: "AEDT starts on the first Sunday in October at 2:00 AM (clocks move forward 1 hour to 3:00 AM) and ends on the first Sunday in April at 3:00 AM (clocks fall back 1 hour to 2:00 AM)."
+  },
+  {
+    q: "How does Melbourne time compare to GMT?",
+    a: "During AEDT (October to April), Melbourne is 11 hours ahead of GMT. During AEST (April to October), Melbourne is 10 hours ahead of GMT."
+  },
+  {
+    q: "Is this converter accurate for past or future dates?",
+    a: "Yes. Our converter uses the IANA Time Zone Database (Australia/Sydney) to automatically resolve historical and future daylight saving rule changes for any chosen date."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "gmt to aedt, GMT to AEDT converter, Greenwich Mean Time to Australian Eastern Daylight Time, GMT AEDT conversion, GMT AEDT time difference, convert GMT to AEDT, GMT time in AEDT, GMT to Sydney time during daylight saving, GMT to Melbourne time during daylight saving",
+  image: "/assets/gmt-to-aedt-og.svg",
+  imageAlt: "GMT to AEDT Converter – Convert Greenwich Mean Time to Australian Eastern Daylight Time",
+  faqs,
+  appDescription: "Free online GMT to AEDT converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Australian Eastern Daylight Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to AEDT",
+  howToDescription: "Simple steps to convert Greenwich Mean Time (GMT) to Australian Eastern Daylight Time (AEDT).",
+  howToSteps: [
+    { name: "Select Date and Time", text: "Enter the desired date and Greenwich Mean Time (GMT) into the converter input field." },
+    { name: "Apply AEDT Offset", text: "The converter adds 11 hours to GMT for dates falling within the Australian daylight saving period (October to April)." },
+    { name: "Check Date Roll-over", text: "Verify whether the 11-hour addition crosses midnight, advancing the local Australian time into the next calendar day." }
+  ]
+};
+
+// Related converter links (verified existing URLs only)
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time (UTC-5)." },
+  { href: "/gmt-to-aest/", label: "GMT to AEST Converter", desc: "Convert GMT to Australian Eastern Standard Time (UTC+10)." },
+  { href: "/gmt-to-acdt/", label: "GMT to ACDT Converter", desc: "Convert GMT to Australian Central Daylight Time (UTC+10:30)." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time (UTC-8)." },
+  { href: "/gmt-to-cst/", label: "GMT to CST Converter", desc: "Convert Greenwich Mean Time to Central Standard Time (UTC-6)." },
+  { href: "/gmt-to-bst/", label: "GMT to BST Converter", desc: "Convert Greenwich Mean Time to British Summer Time (UTC+1)." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+>
+  <div class="content converter-page">
+    <!-- Single H1 Title -->
+    <header class="page-header">
+      <h1>GMT to AEDT Converter</h1>
+      <p class="lead">
+        Convert Greenwich Mean Time (GMT) to Australian Eastern Daylight Time (AEDT) instantly.
+        View real-time clocks, 11-hour DST difference charts, and scheduling guidelines for Sydney, Melbourne, Canberra, and Hobart.
+      </p>
+    </header>
+
+    <!-- Functional Interactive Converter -->
+    <section class="converter-section" aria-labelledby="converter-heading">
+      <h2 id="converter-heading" class="sr-only">Interactive GMT to AEDT Time Calculator</h2>
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <!-- Live Clocks Information Summary -->
+    <section class="live-status-card" aria-label="Current Time Zone Status">
+      <div class="status-grid">
+        <div class="status-box">
+          <span class="status-label">Primary Baseline</span>
+          <strong class="status-title">GMT (UTC+0)</strong>
+          <p class="status-desc">Greenwich Mean Time stays fixed year-round without daylight saving adjustments.</p>
+        </div>
+        <div class="status-divider" aria-hidden="true">➔ +11 HRS (DST)</div>
+        <div class="status-box highlight">
+          <span class="status-label">Target Daylight Zone</span>
+          <strong class="status-title">AEDT (UTC+11)</strong>
+          <p class="status-desc">Australian Eastern Daylight Time is active from the first Sunday in October to the first Sunday in April.</p>
+        </div>
+      </div>
+      <p class="dst-seasonal-note">
+        <strong>Seasonal Note:</strong> Outside the Australian daylight saving window (April to October), southeastern Australia operates on <strong>AEST (UTC+10)</strong>, reducing the offset to +10 hours.
+      </p>
+    </section>
+
+    <!-- Visual Infographic Graphic Asset -->
+    <figure class="page-visual">
+      <picture>
+        <source type="image/webp" srcset="/assets/gmt-to-aedt-converter-world-map.webp" />
+        <img
+          src="/assets/gmt-to-aedt-converter-world-map.webp"
+          alt="GMT to AEDT time zone difference illustration showing 11-hour offset between Greenwich and Sydney"
+          width="1200"
+          height="630"
+          loading="eager"
+          decoding="async"
+        />
+      </picture>
+      <figcaption>Visual breakdown of the +11-hour difference between GMT (UTC+0) and AEDT (UTC+11) during Australian daylight saving time.</figcaption>
+    </figure>
+
+    <!-- Time Difference Breakdown & Calculation Math -->
+    <section class="content-section" aria-labelledby="time-diff-heading">
+      <h2 id="time-diff-heading">Understanding the GMT to AEDT Time Difference</h2>
+      <p>
+        When Australian Eastern Daylight Time is in effect, <strong>AEDT is exactly 11 hours ahead of GMT</strong>.
+        Because Greenwich Mean Time sits at the 0° longitude Prime Meridian (UTC+0) and AEDT operates at UTC+11,
+        time in southeastern Australia leads Greenwich by nearly half a calendar day.
+      </p>
+
+      <div class="example-box">
+        <h3>Mathematical Conversion Formula</h3>
+        <p class="formula"><code>AEDT Time = GMT Time + 11 Hours</code></p>
+        <ul>
+          <li><strong>12:00 AM (Midnight) GMT</strong> ➔ <strong>11:00 AM AEDT</strong> (Same day)</li>
+          <li><strong>3:00 AM GMT</strong> ➔ <strong>2:00 PM AEDT</strong> (Same day)</li>
+          <li><strong>6:00 AM GMT</strong> ➔ <strong>5:00 PM AEDT</strong> (Same day)</li>
+          <li><strong>12:00 PM (Noon) GMT</strong> ➔ <strong>11:00 PM AEDT</strong> (Same day)</li>
+          <li><strong>6:00 PM GMT</strong> ➔ <strong>5:00 AM AEDT</strong> (Next day: +1 calendar day)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 24-Hour Conversion Schedule Table -->
+    <section class="content-section" aria-labelledby="table-heading">
+      <h2 id="table-heading">24-Hour GMT to AEDT Conversion Table</h2>
+      <p>
+        The reference table below displays exact hourly equivalents between GMT and AEDT.
+        <em>Note: This table reflects the 11-hour offset active while AEDT is in effect during Australian daylight saving time.</em>
+      </p>
+
+      <div class="table-container">
+        <table class="conversion-table">
+          <thead>
+            <tr>
+              <th scope="col">GMT Time (UTC+0)</th>
+              <th scope="col">AEDT Time (UTC+11)</th>
+              <th scope="col">Day Indicator</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td><strong>{row.gmt}</strong></td>
+                <td><span class="aedt-time">{row.aedt}</span></td>
+                <td><span class:list={["day-tag", row.dayNote === "Next day" && "next-day"]}>{row.dayNote}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Practical Business & Travel Examples -->
+    <section class="content-section" aria-labelledby="examples-heading">
+      <h2 id="examples-heading">Common GMT to AEDT Conversions</h2>
+      <p>
+        When coordinating international calls, live broadcasts, or flight schedules between London/Greenwich and Australia,
+        keep these high-frequency time mappings in mind:
+      </p>
+
+      <div class="grid-list">
+        {practicalConversions.map((item) => (
+          <div class="grid-card">
+            <div class="card-times">
+              <span class="gmt-val">{item.gmt}</span>
+              <span class="arrow">➔</span>
+              <span class="aedt-val">{item.aedt}</span>
+            </div>
+            <p class="card-note">{item.note}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Deep Educational Content -->
+    <section class="content-section" aria-labelledby="edu-heading">
+      <h2 id="edu-heading">Greenwich Mean Time (GMT) vs. Australian Eastern Daylight Time (AEDT)</h2>
+
+      <h3>What is GMT?</h3>
+      <p>
+        <a href="/what-is-gmt/">Greenwich Mean Time (GMT)</a> represents mean solar time at the Royal Observatory in Greenwich, London.
+        Positioned at 0° longitude, GMT serves as the international reference baseline (UTC+0) for world time zones.
+        GMT does not observe daylight saving time, remaining constant throughout the year.
+      </p>
+
+      <h3>What is AEDT?</h3>
+      <p>
+        <strong>Australian Eastern Daylight Time (AEDT)</strong> is the daylight saving time zone observed in the southeastern portion of Australia,
+        running at an offset of <strong>UTC+11</strong>. AEDT is used in key economic hubs including Sydney (New South Wales), Melbourne (Victoria),
+        Hobart (Tasmania), and Canberra (Australian Capital Territory).
+      </p>
+
+      <h3>AEST vs. AEDT: Understanding the Distinction</h3>
+      <p>
+        It is vital not to confuse <strong>AEST</strong> with <strong>AEDT</strong>:
+      </p>
+      <ul>
+        <li><strong>AEST (Australian Eastern Standard Time):</strong> UTC+10. Observed during Australian winter (April to October).</li>
+        <li><strong>AEDT (Australian Eastern Daylight Time):</strong> UTC+11. Observed during Australian summer (October to April).</li>
+      </ul>
+      <p>
+        During the summer months, participating eastern states advance their clocks by 1 hour from AEST to AEDT, increasing the time difference from GMT from 10 hours to 11 hours.
+        For more information on Australian time zone structures, consult our <a href="/australia-time-zones/">Australia Time Zones Guide</a>.
+      </p>
+
+      <h3>When Does AEDT Apply in Australia?</h3>
+      <p>
+        Daylight saving time in participating Australian states begins on the <strong>first Sunday in October</strong> (clocks spring forward 1 hour at 2:00 AM to 3:00 AM)
+        and ends on the <strong>first Sunday in April</strong> (clocks fall back 1 hour at 3:00 AM to 2:00 AM).
+      </p>
+
+      <div class="state-breakdown">
+        <h4>State-by-State DST Participation:</h4>
+        <div class="state-grid">
+          <div class="state-card yes">
+            <strong>Observes AEDT (UTC+11):</strong>
+            <p>New South Wales, Victoria, Tasmania, Australian Capital Territory (Sydney, Melbourne, Hobart, Canberra).</p>
+          </div>
+          <div class="state-card no">
+            <strong>Stays on AEST (UTC+10 Year-Round):</strong>
+            <p>Queensland (Brisbane, Gold Coast, Cairns) does <em>not</em> observe DST and remains on UTC+10 year-round.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contextual Internal Links Section -->
+    <section class="content-section" aria-labelledby="linking-heading">
+      <h2 id="linking-heading">Related Time Zone & Conversion Resources</h2>
+      <p>
+        Explore related timezone guides and converters across our platform to streamline global scheduling:
+      </p>
+      <ul class="resource-links">
+        <li><a href="/">GMT to EST Converter</a> — Main home page for Greenwich to US Eastern Time conversions.</li>
+        <li><a href="/gmt-vs-est/">GMT vs EST Difference</a> — Deep dive comparison between GMT (UTC+0) and Eastern Standard Time (UTC-5).</li>
+        <li><a href="/gmt-vs-utc/">GMT vs UTC Guide</a> — Learn the technical distinction between solar GMT and atomic UTC standards.</li>
+        <li><a href="/time-zone-guide/">Global Time Zone Guide</a> — Comprehensive educational hub covering world time zone offsets.</li>
+        <li><a href="/sydney-time/">Sydney Local Time Guide</a> — Local clock guidelines, business hours, and weather for Sydney.</li>
+        <li><a href="/gmt-to-aest/">GMT to AEST Converter</a> — Standard winter time converter for Greenwich to Australian Eastern Standard Time (UTC+10).</li>
+        <li><a href="/gmt-to-acdt/">GMT to ACDT Converter</a> — Greenwich to Australian Central Daylight Time (Adelaide, UTC+10:30).</li>
+      </ul>
+    </section>
+
+    <!-- Bespoke FAQ Accordion / List -->
+    <section class="content-section faq-section" aria-labelledby="faq-title">
+      <h2 id="faq-title">Frequently Asked Questions: GMT to AEDT</h2>
+      <div class="faq-list">
+        {faqs.map((item) => (
+          <article class="faq-item">
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Related Converters Card Grid -->
+    <section class="content-section" aria-labelledby="related-heading">
+      <h2 id="related-heading">Related Time Zone Converters</h2>
+      <div class="related-grid">
+        {relatedConverters.map((rel) => (
+          <a href={rel.href} class="related-card">
+            <h3>{rel.label}</h3>
+            <p>{rel.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .converter-page {
+    display: block;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .lead {
+    font-size: 1.12rem;
+    color: var(--muted);
+    max-width: 78ch;
+    line-height: 1.6;
+  }
+
+  .converter-section {
+    margin-bottom: 36px;
+  }
+
+  .live-status-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 36px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .status-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .status-box {
+    flex: 1;
+    min-width: 240px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--line);
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .status-box.highlight {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  }
+
+  .status-label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .status-title {
+    font-size: 1.35rem;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .status-desc {
+    font-size: 0.92rem;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .status-divider {
+    font-weight: 800;
+    color: var(--accent-2);
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .dst-seasonal-note {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .page-visual {
+    margin: 32px 0;
+    text-align: center;
+  }
+
+  .page-visual img {
+    width: 100%;
+    max-width: 1000px;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  }
+
+  .page-visual figcaption {
+    margin-top: 10px;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .content-section {
+    margin-bottom: 40px;
+  }
+
+  .content-section h2 {
+    font-size: clamp(1.45rem, 2.5vw, 2rem);
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .content-section h3 {
+    font-size: 1.25rem;
+    margin: 24px 0 10px;
+    color: var(--accent);
+  }
+
+  .content-section p, .content-section li {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .example-box {
+    background: var(--panel);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .example-box h3 {
+    margin-top: 0;
+  }
+
+  .formula {
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+  }
+
+  .formula code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--accent-2);
+  }
+
+  .table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+
+  .conversion-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .conversion-table th, .conversion-table td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.98rem;
+  }
+
+  .conversion-table th {
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .conversion-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .aedt-time {
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+
+  .day-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+  }
+
+  .day-tag.next-day {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .grid-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .card-times {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .gmt-val { color: var(--text); }
+  .arrow { color: var(--accent); }
+  .aedt-val { color: var(--accent-2); }
+
+  .card-note {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .state-breakdown {
+    margin-top: 20px;
+  }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .state-card {
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .state-card.yes {
+    background: color-mix(in srgb, var(--accent) 6%, var(--panel));
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  }
+
+  .state-card.no {
+    background: var(--panel);
+  }
+
+  .resource-links {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .resource-links li a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .faq-list {
+    display: grid;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .faq-item h3 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .faq-item p {
+    margin: 0;
+    font-size: 0.98rem;
+    color: var(--muted);
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .related-card {
+    display: block;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    text-decoration: none;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .related-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+
+  .related-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .related-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .status-grid {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .status-divider {
+      text-align: center;
+    }
+  }
+</style>

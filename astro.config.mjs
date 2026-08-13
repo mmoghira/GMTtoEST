@@ -77,7 +77,7 @@ export default defineConfig({
         // while keeping activated converter landing pages indexable.
         const activatedConverterPaths = new Set([
           "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/",
-          "/gmt-to-acdt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
+          "/gmt-to-acdt/", "/gmt-to-aedt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
           "/aest-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/",
           "/gmt-to-akdt/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-pdt/", "/wita-to-est/",
           "/eet-to-est/", "/gmt-to-pst/", "/hst-to-est/", "/idt-to-est/", "/pkt-to-est/",

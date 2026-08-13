@@ -88,6 +88,7 @@ export const pages: any[] = [
   { slug: "mst-to-est", kind: "dynamic", labelKey: "mstToEst", context: { from: "MST", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },
   { slug: "ast-to-est", kind: "dynamic", labelKey: "astToEst", context: { from: "AST", to: "EST", fromZone: "America/Halifax", toZone: "America/New_York" } },
   { slug: "gmt-to-acdt", kind: "dynamic", labelKey: "gmtToAcdt", context: { from: "GMT", to: "ACDT", fromZone: "UTC", toZone: "Australia/Adelaide" } },
+  { slug: "gmt-to-aedt", kind: "dynamic", labelKey: "gmtToAedt", context: { from: "GMT", to: "AEDT", fromZone: "UTC", toZone: "Australia/Sydney" } },
   { slug: "gmt-to-bst", kind: "dynamic", labelKey: "gmtToBst", context: { from: "GMT", to: "BST", fromZone: "UTC", toZone: "Europe/London" } },
   { slug: "gmt-to-aest", kind: "dynamic", labelKey: "gmtToAest", context: { from: "GMT", to: "AEST", fromZone: "UTC", toZone: "Australia/Sydney" } },
   { slug: "gmt-to-idt", kind: "dynamic", labelKey: "gmtToIdt", context: { from: "GMT", to: "IDT", fromZone: "UTC", toZone: "Asia/Jerusalem" } },
