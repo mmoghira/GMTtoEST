@@ -78,7 +78,7 @@ export default defineConfig({
         const activatedConverterPaths = new Set([
           "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/",
           "/gmt-to-acdt/", "/gmt-to-aedt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
-          "/aest-to-est/", "/aedt-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/gmt-to-ist/",
+          "/aest-to-est/", "/aedt-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-eat/", "/eat-to-est/", "/gmt-to-ist/",
           "/gmt-to-akdt/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-pdt/", "/wita-to-est/",
           "/eet-to-est/", "/gmt-to-pst/", "/hst-to-est/", "/idt-to-est/", "/pkt-to-est/",
           "/gmt-to-ast/", "/gmt-to-cst/", "/gmt-to-utc/", "/cat-to-est/", "/ist-to-est/",
