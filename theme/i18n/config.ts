@@ -141,6 +141,7 @@ export const pages: any[] = [
   { slug: "gmt-to-west", kind: "dynamic", labelKey: "gmtToWest", context: { from: "GMT", to: "WEST", fromZone: "UTC", toZone: "Europe/Lisbon" } },
   { slug: "gmt-to-wet", kind: "dynamic", labelKey: "gmtToWet", context: { from: "GMT", to: "WET", fromZone: "UTC", toZone: "Europe/Lisbon" } },
   { slug: "gmt-to-wit", kind: "dynamic", labelKey: "gmtToWit", context: { from: "GMT", to: "WIT", fromZone: "UTC", toZone: "Asia/Jayapura" } },
+  { slug: "gmt-to-wita", kind: "dynamic", labelKey: "gmtToWita", context: { from: "GMT", to: "WITA", fromZone: "UTC", toZone: "Asia/Makassar" } },
   { slug: "gmt-to-cest", kind: "dynamic", labelKey: "gmtToCest", context: { from: "GMT", to: "CEST", fromZone: "UTC", toZone: "Europe/Paris" } },
   { slug: "gmt-to-mest", kind: "dynamic", labelKey: "gmtToMest", context: { from: "GMT", to: "MEST", fromZone: "UTC", toZone: "Europe/Berlin" } },
   { slug: "mdt-to-est", kind: "dynamic", labelKey: "mdtToEst", context: { from: "MDT", to: "EST", fromZone: "America/Denver", toZone: "America/New_York" } },

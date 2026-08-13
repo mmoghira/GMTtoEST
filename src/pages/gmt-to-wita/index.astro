@@ -1,0 +1,751 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-wita";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to WITA Converter";
+const seoTitle = "GMT to WITA Converter – Greenwich Mean Time to Central Indonesia Time";
+const pageDescription = "Convert GMT to WITA with our free timezone converter. WITA is 8 hours ahead of GMT. See conversion examples, time tables, date changes, and Central Indonesia time information.";
+
+const context = {
+  from: "GMT",
+  to: "WITA",
+  fromZone: "UTC",
+  toZone: "Asia/Makassar"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table calculation (GMT UTC+0 -> WITA UTC+8: WITA = GMT + 8 hours)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const witaHour = hour + 8;
+  const witaNormalized = witaHour % 24;
+  const nextDay = witaHour >= 24;
+  return {
+    gmt: formatHour12(hour),
+    wita: `${formatHour12(witaNormalized)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is WITA?",
+    a: "WITA stands for Waktu Indonesia Tengah (Central Indonesia Time). It operates at UTC+8 and covers central regions of Indonesia including Bali, Lombok, Sulawesi, East Kalimantan, South Kalimantan, and the Lesser Sunda Islands."
+  },
+  {
+    q: "How many hours ahead is WITA from GMT?",
+    a: "WITA is exactly 8 hours ahead of GMT (Greenwich Mean Time). When it is 12:00 PM GMT in London, it is 8:00 PM WITA in Central Indonesia."
+  },
+  {
+    q: "How do I convert GMT to WITA?",
+    a: "To convert GMT to WITA, simply add 8 hours to the GMT time. For example, 9:00 AM GMT converts to 5:00 PM WITA."
+  },
+  {
+    q: "Is WITA always UTC+8?",
+    a: "Yes. WITA stays fixed at UTC+8 all year round and does not observe daylight saving time."
+  },
+  {
+    q: "Does WITA observe Daylight Saving Time?",
+    a: "No. Indonesia is located near the equator where daylight hours remain consistent throughout the year, so WITA never observes daylight saving time."
+  },
+  {
+    q: "What countries use WITA?",
+    a: "WITA is used exclusively in Indonesia for its central provinces."
+  },
+  {
+    q: "What cities use WITA?",
+    a: "Major cities observing WITA include Makassar, Denpasar (Bali), Mataram, Samarinda, Balikpapan, Manado, and Banjarmasin."
+  },
+  {
+    q: "Is Bali on WITA?",
+    a: "Yes. The island of Bali uses Central Indonesia Time (WITA, UTC+8)."
+  },
+  {
+    q: "Does GMT to WITA change the date?",
+    a: "Yes. For GMT times from 4:00 PM to 11:59 PM GMT, adding 8 hours moves the converted WITA time into the next calendar day."
+  },
+  {
+    q: "What is the difference between WIB, WITA, and WIT?",
+    a: "Indonesia has three time zones: WIB (Western Indonesia Time, UTC+7), WITA (Central Indonesia Time, UTC+8), and WIT (Eastern Indonesia Time, UTC+9). WITA is 1 hour ahead of WIB and 1 hour behind WIT."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "gmt to wita, GMT to WITA converter, Greenwich Mean Time to Central Indonesia Time, convert GMT to WITA, GMT WITA time difference, GMT vs WITA, GMT to Bali time, GMT to Makassar time, WITA UTC+8, GMT UTC+0",
+  image: "/assets/gmt-to-wita-converter.webp",
+  imageAlt: "GMT to WITA converter showing Greenwich and Central Indonesia time",
+  faqs,
+  appDescription: "Free online GMT to WITA converter with real-time clocks, 24-hour conversion chart, and meeting planner for scheduling between Greenwich Mean Time and Central Indonesia Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/gmt-to-wita-converter.webp",
+  preloadImageSrcset: "/assets/gmt-to-wita-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert GMT to WITA",
+  howToDescription: "Steps to convert Greenwich Mean Time (GMT) to Central Indonesia Time (WITA).",
+  howToSteps: [
+    { name: "Enter GMT Date and Time", text: "Select the GMT date and time in the converter tool." },
+    { name: "Add 8 Hours", text: "Add 8 hours to the GMT time to determine Central Indonesia Time (WITA, UTC+8)." },
+    { name: "Check Next Day Shift", text: "Times from 4:00 PM GMT onward will roll over into the next calendar day in WITA." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time." },
+  { href: "/jst-to-est/", label: "JST to EST Converter", desc: "Convert Japan Standard Time to Eastern Standard Time." },
+  { href: "/eat-to-est/", label: "EAT to EST Converter", desc: "Convert East Africa Time to Eastern Standard Time." },
+  { href: "/gmt-to-akst/", label: "GMT to AKST Converter", desc: "Convert Greenwich Mean Time to Alaska Standard Time." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time to Greenwich Mean Time." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="GMT to WITA"
+  hreflangCodes={["en"]}
+>
+  <main class="converter-page">
+    <header class="page-header">
+      <h1>{pageTitle}</h1>
+      <p class="lead">
+        Welcome to the most accurate, real-time Greenwich Mean Time (GMT) to Central Indonesia Time (WITA) converter. 
+        Whether you are planning a business meeting in Makassar, scheduling a virtual conference with teams in East Kalimantan, 
+        or booking a well-deserved vacation to the beautiful island of Bali, understanding the time difference between Europe 
+        and Central Indonesia is essential. <strong>WITA is strictly 8 hours ahead of GMT</strong>. Use our interactive tool 
+        below to seamlessly bridge the gap between <a href="/what-is-gmt/">GMT</a> and WITA.
+      </p>
+    </header>
+
+    <section class="converter-section" aria-label="Interactive Time Converter">
+      <Converter intent="converter" t={t} context={context} />
+    </section>
+
+    <section class="status-card-section">
+      <div class="status-card">
+        <div class="status-item">
+          <span class="status-label">GMT Time Zone</span>
+          <span class="status-value">UTC+0</span>
+        </div>
+        <div class="status-arrow">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          <span class="status-diff">+8 HOURS</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">WITA Time Zone</span>
+          <span class="status-value">UTC+8</span>
+        </div>
+      </div>
+      <p class="status-note">
+        Central Indonesia Time (WITA) operates at Universal Time Coordinated plus eight hours (UTC+8). Because Greenwich Mean Time acts as the UTC baseline (UTC+0), the calculation requires adding exactly eight hours to any GMT timestamp.
+      </p>
+    </section>
+
+    <figure class="hero-image">
+      <img 
+        src="/assets/gmt-to-wita-converter.webp" 
+        alt="GMT to WITA converter showing Greenwich and Central Indonesia time" 
+        width="1200" 
+        height="630" 
+        loading="eager"
+      />
+      <figcaption>Comparing GMT (Greenwich Mean Time) to WITA (Central Indonesia Time).</figcaption>
+    </figure>
+
+    <article class="content-body">
+      <h2>GMT to WITA Time Difference</h2>
+      <p>
+        The time difference between Greenwich Mean Time (GMT) and Central Indonesia Time (WITA) is precisely 8 hours. 
+        This means that when it is morning in London or Reykjavik (which strictly observe GMT year-round), it is already 
+        late afternoon in Denpasar and Makassar. The mathematical formula for this timezone conversion is simple and constant throughout the year:
+      </p>
+      <div class="formula-box">
+        <code>WITA Time = GMT Time + 8 Hours</code>
+      </div>
+      <p>
+        To give you a better understanding of how this formula translates to real-world scenarios, here are 8 specific calculation examples. 
+        Note how the time progresses through the day, and when the jump into the next calendar day occurs.
+      </p>
+      <ul class="example-list">
+        <li><strong>Example 1:</strong> If it is 2:00 AM GMT, adding 8 hours makes it 10:00 AM WITA (Same day).</li>
+        <li><strong>Example 2:</strong> If it is 6:00 AM GMT, adding 8 hours makes it 2:00 PM WITA (Same day).</li>
+        <li><strong>Example 3:</strong> If it is 9:00 AM GMT, adding 8 hours makes it 5:00 PM WITA (Same day).</li>
+        <li><strong>Example 4:</strong> If it is 12:00 PM GMT (noon), adding 8 hours makes it 8:00 PM WITA (Same day).</li>
+        <li><strong>Example 5:</strong> If it is 3:00 PM GMT, adding 8 hours makes it 11:00 PM WITA (Same day).</li>
+        <li><strong>Example 6:</strong> If it is 4:00 PM GMT, adding 8 hours results in 12:00 AM midnight WITA (Next day).</li>
+        <li><strong>Example 7:</strong> If it is 8:00 PM GMT, adding 8 hours results in 4:00 AM WITA (Next day).</li>
+        <li><strong>Example 8:</strong> If it is 11:00 PM GMT, adding 8 hours results in 7:00 AM WITA (Next day).</li>
+      </ul>
+
+      <figure class="content-image">
+        <img 
+          src="/assets/gmt-to-wita-indonesia-time.webp" 
+          alt="Visual map highlighting the Central Indonesia Time zone relative to the Prime Meridian" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>Central Indonesia Time spans Bali, Sulawesi, and parts of Kalimantan and Nusa Tenggara.</figcaption>
+      </figure>
+
+      <h2>How to Convert GMT to WITA</h2>
+      <p>
+        Converting time manually from <a href="/gmt-vs-utc/">GMT vs UTC</a> base to Central Indonesia Time is a straightforward process once you know the rule. 
+        Follow these steps to accurately calculate the corresponding time in Indonesia:
+      </p>
+      <ol class="step-list">
+        <li><strong>Determine the current GMT time:</strong> Start with the exact hour and minute in Greenwich Mean Time.</li>
+        <li><strong>Add eight hours:</strong> Since WITA is UTC+8, you need to step your clock forward by 8 hours.</li>
+        <li><strong>Check for the 12-hour AM/PM crossover:</strong> If your initial GMT time is in the morning (AM), adding 8 hours might push you into the afternoon (PM).</li>
+        <li><strong>Check for calendar date changes:</strong> If the GMT time is 4:00 PM or later, adding 8 hours will push the clock past midnight. This means the time in WITA has advanced to the next calendar day.</li>
+      </ol>
+
+      <h2>GMT to WITA Conversion Table</h2>
+      <p>
+        To make things even easier, we have compiled a complete 24-hour comparative table. 
+        This chart tracks every hour of the day in Greenwich Mean Time and displays its direct equivalent in Waktu Indonesia Tengah. 
+        Pay special attention to the rightmost column, which indicates whether the conversion lands on the same day or rolls over into the next day.
+      </p>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Greenwich Mean Time (GMT)</th>
+              <th>Central Indonesia Time (WITA)</th>
+              <th>Date Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map(row => (
+              <tr>
+                <td>{row.gmt}</td>
+                <td><strong>{row.wita}</strong></td>
+                <td><span class={`tag ${row.dayNote === 'Next day' ? 'tag-next' : 'tag-same'}`}>{row.dayNote}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common GMT to WITA Conversions</h2>
+      <p>
+        Depending on whether you are scheduling an early morning business sync, an afternoon check-in, or a late-night flight connection, 
+        certain conversions are more commonly searched than others. Below are a few quick reference blocks segmented by time of day in the UK/GMT zone.
+      </p>
+      <div class="grid-cards">
+        <div class="card">
+          <h3>Morning GMT</h3>
+          <p>Early GMT hours map directly to afternoon and evening in Indonesia.</p>
+          <ul>
+            <li>6:00 AM GMT = 2:00 PM WITA</li>
+            <li>9:00 AM GMT = 5:00 PM WITA</li>
+            <li>11:00 AM GMT = 7:00 PM WITA</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Afternoon GMT</h3>
+          <p>Afternoon GMT hours convert to late night in WITA, eventually crossing midnight.</p>
+          <ul>
+            <li>1:00 PM GMT = 9:00 PM WITA</li>
+            <li>3:00 PM GMT = 11:00 PM WITA</li>
+            <li>5:00 PM GMT = 1:00 AM WITA <em>(+1 Day)</em></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Evening GMT</h3>
+          <p>Evening GMT hours result in early morning times the following day in WITA.</p>
+          <ul>
+            <li>7:00 PM GMT = 3:00 AM WITA <em>(+1 Day)</em></li>
+            <li>9:00 PM GMT = 5:00 AM WITA <em>(+1 Day)</em></li>
+            <li>11:00 PM GMT = 7:00 AM WITA <em>(+1 Day)</em></li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>What Is GMT?</h2>
+      <p>
+        Greenwich Mean Time (GMT) is the annual solar time at the Royal Observatory in Greenwich, London. Originally established as a global time standard in the 19th century, GMT historically served as the baseline from which all other time zones were calculated. Today, it is functionally equivalent to Coordinated Universal Time (UTC) for civil timing purposes, though UTC is maintained by atomic clocks rather than astronomical observations. GMT operates at UTC+0. During the winter months, the United Kingdom observes GMT, while during the summer it switches to British Summer Time (BST, UTC+1). However, as a standalone timezone standard, GMT itself never observes <a href="/what-is-daylight-saving-time/">Daylight Saving Time</a>.
+      </p>
+
+      <h2>What Is WITA?</h2>
+      <p>
+        WITA stands for <em>Waktu Indonesia Tengah</em>, which translates to Central Indonesia Time. It is one of three time zones observed in the sprawling archipelago of Indonesia. Operating strictly at UTC+8, WITA encompasses major regions central to the nation's geography, commerce, and tourism. These regions include the popular island of Bali, the Nusa Tenggara islands (including Lombok and Komodo), the massive island of Sulawesi, as well as South and East Kalimantan on the island of Borneo. WITA serves millions of residents and international tourists every day.
+      </p>
+
+      <h2>GMT vs WITA Comparison Table</h2>
+      <div class="table-container">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Greenwich Mean Time (GMT)</th>
+              <th>Central Indonesia Time (WITA)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Abbreviation</strong></td>
+              <td>GMT</td>
+              <td>WITA</td>
+            </tr>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC+0 / UTC+00:00</td>
+              <td>UTC+8 / UTC+08:00</td>
+            </tr>
+            <tr>
+              <td><strong>Time Difference</strong></td>
+              <td>Baseline (0 hours)</td>
+              <td>8 hours ahead of GMT</td>
+            </tr>
+            <tr>
+              <td><strong>Observes DST?</strong></td>
+              <td>No (UK switches to BST, but GMT is constant)</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Regions</strong></td>
+              <td>United Kingdom, Iceland, parts of West Africa</td>
+              <td>Bali, Sulawesi, East/South Kalimantan, Nusa Tenggara</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Why Is WITA 8 Hours Ahead of GMT?</h2>
+      <p>
+        The earth is divided into 360 degrees of longitude, and standard time zones are roughly based on 15-degree longitudinal increments (360 degrees divided by 24 hours equals 15 degrees per hour). The Prime Meridian (0° longitude) runs right through Greenwich, England, which establishes the baseline (UTC+0). Central Indonesia lies approximately 120° East longitude. By dividing 120 by 15, we get exactly 8. Therefore, the sun rises over central Indonesia roughly eight hours before it reaches the Prime Meridian, placing WITA steadily at UTC+8. <a href="/how-time-zones-work/">Understanding how time zones work</a> helps illuminate these geographic calculations.
+      </p>
+
+      <h2>WITA and Daylight Saving Time</h2>
+      <p>
+        One frequent question from international travelers and global businesses is whether Indonesia observes Daylight Saving Time (DST). The answer is a resounding no. Because Indonesia sits comfortably along the equator, its daylight hours remain incredibly consistent year-round—averaging around 12 hours of sunlight and 12 hours of darkness every single day. There are no drastically short winter days or unusually long summer nights to necessitate adjusting the clocks. As a result, WITA remains fixed at UTC+8 on January 1st just as it does on July 1st. 
+      </p>
+
+      <h2>GMT to Indonesia Time: WIB, WITA, WIT</h2>
+      <p>
+        When dealing with time in Indonesia from a GMT perspective, it is critical to realize that Indonesia is too wide to fit into a single time zone. Check out our broader <a href="/world-time-zones-guide/">world time zones guide</a> for more scale, but locally, Indonesia uses three time standards:
+      </p>
+      <ul>
+        <li><strong>WIB (Waktu Indonesia Barat):</strong> Western Indonesia Time (UTC+7). Covers Sumatra, Java (including Jakarta), West and Central Kalimantan. WIB is 7 hours ahead of GMT.</li>
+        <li><strong>WITA (Waktu Indonesia Tengah):</strong> Central Indonesia Time (UTC+8). Covers Bali, Sulawesi, East/South Kalimantan. WITA is 8 hours ahead of GMT.</li>
+        <li><strong>WIT (Waktu Indonesia Timur):</strong> Eastern Indonesia Time (UTC+9). Covers Maluku and Papua. WIT is 9 hours ahead of GMT.</li>
+      </ul>
+      <p>
+        Consequently, WITA sits right in the middle—one hour ahead of Jakarta (WIB) and one hour behind Jayapura (WIT).
+      </p>
+
+      <h2>Cities and Regions That Use WITA</h2>
+      <p>
+        If your business communications or travel itineraries involve the following major cities and territories, you must use the GMT to WITA (UTC+8) conversion:
+      </p>
+      <ul>
+        <li><strong>Bali:</strong> Denpasar, Kuta, Ubud, Seminyak.</li>
+        <li><strong>Nusa Tenggara (Lesser Sunda Islands):</strong> Mataram (Lombok), Kupang (West Timor), Komodo.</li>
+        <li><strong>Sulawesi (Celebes):</strong> Makassar, Manado, Palu, Kendari.</li>
+        <li><strong>Kalimantan (Indonesian Borneo):</strong> Balikpapan, Samarinda, Banjarmasin, Tarakan (East, South, and North Kalimantan).</li>
+      </ul>
+
+      <h2>GMT to Bali Time</h2>
+      <p>
+        Because Bali is Indonesia's most famous international tourist destination, "GMT to Bali Time" is one of the most common variations of this search. Visitors traveling from the UK or West Africa must prepare for significant jet lag. If your flight departs London at 10:00 PM GMT, it is already 6:00 AM the next day in Bali. Preparing for this +8 hour shift before departure is vital for a smooth transition into your vacation. 
+      </p>
+      <figure class="content-image">
+        <img 
+          src="/assets/indonesia-time-zones-gmt-wib-wita-wit.webp" 
+          alt="Map showing Indonesia's three time zones: WIB, WITA, and WIT relative to GMT" 
+          width="800" 
+          height="533" 
+          loading="lazy"
+        />
+        <figcaption>Indonesia is divided into three distinct time zones: WIB (UTC+7), WITA (UTC+8), and WIT (UTC+9).</figcaption>
+      </figure>
+
+      <h2>Does GMT to WITA Change the Date?</h2>
+      <p>
+        A critical aspect of converting time eastward across the globe is managing the date threshold. Because WITA is exactly 8 hours ahead of GMT, the current time in Indonesia will routinely cross into tomorrow while it is still today in Greenwich. 
+      </p>
+      <p>
+        Here is the rule of thumb: <strong>For any GMT time between 4:00 PM (16:00) and 11:59 PM (23:59), the converted WITA time will fall on the next calendar day.</strong> 
+        For example, if you send an email at 5:00 PM GMT on a Tuesday, it will arrive in a colleague's inbox at 1:00 AM WITA on Wednesday morning. Conversely, any GMT time between 12:00 AM midnight and 3:59 PM falls on the same calendar day in Central Indonesia.
+      </p>
+
+      <h2>Best GMT to WITA Meeting Times</h2>
+      <div class="overlap-card">
+        <h3>Shared Business Hours</h3>
+        <p>Finding a convenient meeting time between Europe (GMT) and Central Indonesia (WITA) can be challenging due to the 8-hour gap. The most viable overlap occurs during the early morning in GMT, which corresponds to the late afternoon in WITA.</p>
+        <div class="optimal-times">
+          <div class="time-slot">
+            <strong>7:00 AM GMT</strong> ➔ 3:00 PM WITA
+          </div>
+          <div class="time-slot">
+            <strong>8:00 AM GMT</strong> ➔ 4:00 PM WITA
+          </div>
+          <div class="time-slot">
+            <strong>9:00 AM GMT</strong> ➔ 5:00 PM WITA
+          </div>
+        </div>
+        <p class="small-text">
+          Scheduling meetings outside this 7 AM – 9 AM GMT window generally forces one party to attend well outside standard business hours. 
+        </p>
+      </div>
+
+      <h2>Practical Uses of GMT to WITA Conversion</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <h4>Remote Work</h4>
+          <p>Developers in Bali and managers in London must carefully sync sprints to ensure handoffs occur smoothly within overlapping hours.</p>
+        </div>
+        <div class="card">
+          <h4>Flight Scheduling</h4>
+          <p>Airlines quote departure times in local time. Knowing the WITA conversion ensures travelers from the GMT zone correctly align connecting flights.</p>
+        </div>
+        <div class="card">
+          <h4>Trading & Finance</h4>
+          <p>Investors trading on European markets from Indonesia must calculate opening and closing bells using the +8 hour shift.</p>
+        </div>
+        <div class="card">
+          <h4>Family Communications</h4>
+          <p>For expats living in Makassar or Denpasar, checking the clock before calling relatives in the UK prevents waking loved ones in the middle of the night.</p>
+        </div>
+        <div class="card">
+          <h4>Live Sports</h4>
+          <p>Premier League football matches played at 8:00 PM GMT air live at 4:00 AM WITA the following morning for Indonesian fans.</p>
+        </div>
+        <div class="card">
+          <h4>Server Logs</h4>
+          <p>IT professionals tracing server events recorded in UTC/GMT must apply the +8 offset to correlate them with local user activity in Central Indonesia.</p>
+        </div>
+      </div>
+
+      <h2>Frequently Asked Questions: GMT to WITA</h2>
+      <div class="faq-container">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary class="faq-question">{faq.q}</summary>
+            <div class="faq-answer"><p>{faq.a}</p></div>
+          </details>
+        ))}
+      </div>
+
+      <div class="related-converters">
+        <h2>Related Time Zone Converters</h2>
+        <div class="converter-grid">
+          {relatedConverters.map(link => (
+            <a href={link.href} class="converter-link-card">
+              <span class="converter-label">{link.label}</span>
+              <span class="converter-desc">{link.desc}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .converter-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .lead {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .converter-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--panel);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--line);
+  }
+  .status-card-section {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .status-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .status-label {
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .status-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .status-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--accent);
+  }
+  .status-diff {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+  .status-note {
+    font-size: 0.875rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero-image, .content-image {
+    margin: 3rem 0;
+    text-align: center;
+  }
+  .hero-image img, .content-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .hero-image figcaption, .content-image figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .content-body {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .content-body h2 {
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1rem;
+    color: var(--text);
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 0.5rem;
+  }
+  .content-body h3 {
+    font-size: 1.3rem;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--text);
+  }
+  .content-body h4 {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+    color: var(--text);
+  }
+  .content-body p {
+    margin-bottom: 1.25rem;
+  }
+  .formula-box {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .formula-box code {
+    color: var(--accent);
+  }
+  .example-list, .step-list, .content-body ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+  .example-list li, .step-list li, .content-body ul li {
+    margin-bottom: 0.75rem;
+  }
+  .table-container {
+    overflow-x: auto;
+    margin: 2rem 0;
+  }
+  .time-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .time-table th, .time-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .time-table th {
+    background: rgba(0,0,0,0.03);
+    font-weight: 600;
+    color: var(--text);
+  }
+  .tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tag-same {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+  }
+  .tag-next {
+    background: rgba(249, 115, 22, 0.1);
+    color: #ea580c;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .card {
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .overlap-card {
+    background: var(--panel);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 2px solid var(--line);
+    margin: 2rem 0;
+  }
+  .optimal-times {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .time-slot {
+    background: rgba(0,0,0,0.02);
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1.1rem;
+    border: 1px solid var(--line);
+  }
+  .small-text {
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .faq-container {
+    margin: 2rem 0;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .faq-question {
+    padding: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(0,0,0,0.02);
+    margin: 0;
+  }
+  .faq-answer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--line);
+  }
+  .faq-answer p {
+    margin: 0;
+  }
+  .related-converters {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--line);
+  }
+  .converter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .converter-link-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+  .converter-link-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .converter-label {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .converter-desc {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .time-table th { background: rgba(255,255,255,0.03); }
+    .faq-question { background: rgba(255,255,255,0.03); }
+    .time-slot { background: rgba(255,255,255,0.03); }
+    .tag-same { background: rgba(34, 197, 94, 0.2); }
+    .tag-next { background: rgba(249, 115, 22, 0.2); }
+  }
+</style>
