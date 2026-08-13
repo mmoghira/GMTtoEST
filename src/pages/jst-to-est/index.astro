@@ -1,0 +1,723 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "jst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "JST to EST Converter";
+const seoTitle = "JST to EST Converter – Japan Standard Time to Eastern Time";
+const pageDescription = "Convert JST to EST with our free timezone converter. Check the Japan and Eastern Time difference, conversion table, date changes, and daylight saving time.";
+
+const context = {
+  from: "JST",
+  to: "EST",
+  fromZone: "Asia/Tokyo",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table calculation (JST UTC+9 -> EST UTC-5: EST = JST - 14 hours)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = hour - 14;
+  const estNormalized = ((estHour % 24) + 24) % 24;
+  const prevDay = estHour < 0;
+  return {
+    jst: formatHour12(hour),
+    est: `${formatHour12(estNormalized)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is the time difference between JST and EST?",
+    a: "When Eastern Standard Time (EST, UTC-5) is in effect, Japan Standard Time (JST, UTC+9) is 14 hours ahead of EST. When North America observes Eastern Daylight Time (EDT, UTC-4) during summer, JST is 13 hours ahead of EDT."
+  },
+  {
+    q: "Is JST 14 hours ahead of EST?",
+    a: "Yes. During North American winter standard time (EST, UTC-5), Japan Standard Time (JST, UTC+9) is exactly 14 hours ahead of EST."
+  },
+  {
+    q: "How do I convert JST to EST?",
+    a: "To convert JST to EST manually, subtract 14 hours from the JST time. If the converted hour falls below 12:00 AM midnight, the result belongs to the previous calendar day in EST."
+  },
+  {
+    q: "Does Japan observe daylight saving time?",
+    a: "No. Japan Standard Time (JST) stays fixed at UTC+9 all year long and does not observe daylight saving time."
+  },
+  {
+    q: "Does the JST to EST time difference change during the year?",
+    a: "Yes. Because North America observes daylight saving time while Japan does not, the gap changes from 14 hours during winter (EST) to 13 hours during summer (EDT)."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time) is UTC-5, observed from November to March. EDT (Eastern Daylight Time) is UTC-4, observed from March to November during daylight saving."
+  },
+  {
+    q: "Does JST to EST conversion change the date?",
+    a: "Yes. For JST times between 12:00 AM midnight and 1:59 PM JST, subtracting 14 hours places the converted EST time in the previous calendar day."
+  },
+  {
+    q: "What time is 12 PM JST in EST?",
+    a: "12:00 PM (noon) JST in Tokyo converts to 10:00 PM EST on the previous calendar day in New York."
+  },
+  {
+    q: "What time is 6 PM JST in EST?",
+    a: "6:00 PM JST converts to 4:00 AM EST on the same calendar day."
+  },
+  {
+    q: "Which Japanese cities use JST?",
+    a: "All cities in Japan observe Japan Standard Time (UTC+9), including Tokyo, Yokohama, Osaka, Nagoya, Sapporo, Kyoto, and Fukuoka."
+  },
+  {
+    q: "Is Tokyo ahead of New York?",
+    a: "Yes. Tokyo is 14 hours ahead of New York during EST (winter) and 13 hours ahead of New York during EDT (summer)."
+  },
+  {
+    q: "What IANA timezone identifier is used for Japan?",
+    a: "Asia/Tokyo is the official IANA timezone identifier used to calculate Japan Standard Time."
+  },
+  {
+    q: "What is the best time for a meeting between Tokyo and New York?",
+    a: "The most practical overlap window is morning in Tokyo (8:00 AM – 10:00 AM JST), which aligns with early evening in New York (6:00 PM – 8:00 PM EST on the previous day)."
+  },
+  {
+    q: "Why does Japan not use daylight saving time?",
+    a: "Japan briefly used daylight saving time between 1948 and 1951 but abandoned it due to public preference for consistent daily routines year-round."
+  },
+  {
+    q: "Is this converter accurate for future dates?",
+    a: "Yes. Our converter uses authoritative IANA timezone databases to automatically apply North American DST transitions for any future date."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "jst to est, JST to EST converter, Japan Standard Time to Eastern Standard Time, Japan Time to Eastern Time, convert JST to EST, JST EST time difference, JST vs EST, Tokyo time to New York time, JST UTC+9, EST UTC-5",
+  image: "/assets/jst-to-est-converter.webp",
+  imageAlt: "JST to EST conversion showing Tokyo and New York clocks",
+  faqs,
+  appDescription: "Free online JST to EST converter with real-time clocks, DST-aware calculation, 24-hour conversion chart, and meeting planner for scheduling between Japan Standard Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  preloadImage: "/assets/jst-to-est-converter.webp",
+  preloadImageSrcset: "/assets/jst-to-est-converter.webp 1200w",
+  preloadImageSizes: "(max-width: 720px) 92vw, 1000px",
+  preloadImageType: "image/webp",
+  howToName: "How to Convert JST to EST",
+  howToDescription: "Steps to convert Japan Standard Time (JST) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Enter JST Date and Time", text: "Select the JST date and time in the converter inputs." },
+    { name: "Subtract 14 Hours", text: "Subtract 14 hours from JST when EST (UTC-5) is active, or 13 hours when EDT (UTC-4) is active." },
+    { name: "Check Previous Day Shift", text: "Times between 12:00 AM midnight and 1:59 PM JST fall into the previous calendar day in EST." }
+  ]
+};
+
+const relatedConverters = [
+  { href: "/gmt-to-est/", label: "GMT to EST Converter", desc: "Convert Greenwich Mean Time to Eastern Standard Time." },
+  { href: "/gmt-to-pst/", label: "GMT to PST Converter", desc: "Convert Greenwich Mean Time to Pacific Standard Time." },
+  { href: "/nst-to-est/", label: "NST to EST Converter", desc: "Convert Newfoundland Standard Time to Eastern Standard Time." },
+  { href: "/eat-to-est/", label: "EAT to EST Converter", desc: "Convert East Africa Time to Eastern Standard Time." },
+  { href: "/gmt-to-akst/", label: "GMT to AKST Converter", desc: "Convert Greenwich Mean Time to Alaska Standard Time." },
+  { href: "/est-to-gmt/", label: "EST to GMT Converter", desc: "Convert Eastern Standard Time to Greenwich Mean Time." }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={meta.seoTitle}
+  description={meta.description}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="JST to EST"
+  hreflangCodes={["en"]}
+>
+  <div class="content-wrapper">
+    <header class="page-header">
+      <h1>JST to EST Converter</h1>
+      <p class="lead-text">
+        Quickly and easily convert Japan Standard Time (JST) to Eastern Standard Time (EST) with our free timezone converter. Explore the time difference, understand how to convert between the two zones, and discover everything you need to know about scheduling between Japan and the North American East Coast.
+      </p>
+    </header>
+
+    <div class="converter-section">
+      <Converter intent="converter" t={t} context={context} />
+    </div>
+
+    <div class="status-card">
+      <div class="status-item">
+        <span class="status-label">Japan Standard Time (JST)</span>
+        <span class="status-value">UTC+9</span>
+      </div>
+      <div class="status-divider">➔ -14 HOURS ➔</div>
+      <div class="status-item">
+        <span class="status-label">Eastern Standard Time (EST)</span>
+        <span class="status-value">UTC-5</span>
+      </div>
+    </div>
+
+    <figure class="hero-image">
+      <img src="/assets/jst-to-est-converter.webp" alt="JST to EST conversion showing Tokyo and New York clocks" width="1200" height="630" loading="eager" />
+      <figcaption>Real-time conversion from Japan Standard Time (JST) to Eastern Standard Time (EST).</figcaption>
+    </figure>
+
+    <article class="informational-content">
+      <h2>JST to EST Time Difference</h2>
+      <p>
+        The time difference between Japan Standard Time (JST) and Eastern Standard Time (EST) is exactly 14 hours. JST operates at UTC+9, while EST is set at UTC-5. This massive 14-hour gap means that Japan is significantly ahead of the Eastern Seaboard of the United States and Canada. Because the Earth rotates west to east, the sun rises in Tokyo long before it reaches New York, Toronto, or Miami.
+      </p>
+      <p>
+        To determine the current time in EST when you know the JST time, you can apply this straightforward formula:
+      </p>
+      <div class="formula-box">
+        <strong>EST Time = JST Time − 14 Hours</strong>
+      </div>
+      <p>
+        When you subtract 14 hours, it's very common to cross into the previous calendar day. Let's look at eight specific calculation examples to make this concept crystal clear:
+      </p>
+      <ul class="example-list">
+        <li><strong>9:00 AM JST:</strong> Subtract 14 hours to get 7:00 PM EST (Previous Day).</li>
+        <li><strong>12:00 PM (Noon) JST:</strong> Subtract 14 hours to get 10:00 PM EST (Previous Day).</li>
+        <li><strong>1:00 PM JST:</strong> Subtract 14 hours to get 11:00 PM EST (Previous Day).</li>
+        <li><strong>2:00 PM JST:</strong> Subtract 14 hours to get 12:00 AM (Midnight) EST (Same Day).</li>
+        <li><strong>5:00 PM JST:</strong> Subtract 14 hours to get 3:00 AM EST (Same Day).</li>
+        <li><strong>8:00 PM JST:</strong> Subtract 14 hours to get 6:00 AM EST (Same Day).</li>
+        <li><strong>10:00 PM JST:</strong> Subtract 14 hours to get 8:00 AM EST (Same Day).</li>
+        <li><strong>11:59 PM JST:</strong> Subtract 14 hours to get 9:59 AM EST (Same Day).</li>
+      </ul>
+
+      <figure class="content-image">
+        <img src="/assets/jst-est-time-difference.webp" alt="Visualizing the 14-hour time difference between Japan Standard Time and Eastern Standard Time" width="1000" height="525" loading="lazy" />
+        <figcaption>Visual breakdown of the 14-hour difference from JST to EST.</figcaption>
+      </figure>
+
+      <h2>How to Convert JST to EST</h2>
+      <p>
+        Converting between JST and EST is a crucial skill for international business, travel, and communication. The process can seem daunting because of the 14-hour difference, which frequently triggers a date change. Follow these simple steps to ensure you always get the correct time and date:
+      </p>
+      <ol class="step-list">
+        <li><strong>Identify the JST Time:</strong> First, determine the exact hour and minute in Japan Standard Time.</li>
+        <li><strong>Subtract 14 Hours:</strong> Subtract exactly 14 hours from the JST time. If your JST time is in the morning or early afternoon, it is often easier to convert the time to a 24-hour format first (e.g., 9:00 AM is 09:00, 2:00 PM is 14:00).</li>
+        <li><strong>Check the Date Shift:</strong> If your calculation drops below 00:00 (midnight), you must subtract a day. Specifically, any JST time from 12:00 AM to 1:59 PM will land on the previous calendar day in EST. From 2:00 PM to 11:59 PM JST, the EST time will be on the same calendar day.</li>
+        <li><strong>Account for Daylight Saving Time:</strong> Remember that this 14-hour formula only applies during standard time (usually November to March). When daylight saving time is active in North America, the gap shrinks to 13 hours.</li>
+      </ol>
+
+      <h2>24-Hour JST to EST Conversion Table</h2>
+      <p>
+        For quick reference, consult the comprehensive 24-hour conversion chart below. It clearly illustrates how every hour in Japan translates to Eastern Standard Time, explicitly noting when the date shifts to the previous day.
+      </p>
+      <div class="table-container">
+        <table class="conversion-table">
+          <thead>
+            <tr>
+              <th>Japan Standard Time (JST)</th>
+              <th>Eastern Standard Time (EST)</th>
+              <th>Date Shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row) => (
+              <tr>
+                <td><strong>{row.jst}</strong></td>
+                <td>{row.est}</td>
+                <td>
+                  <span class={`badge ${row.dayNote === "Previous day" ? "badge-prev" : "badge-same"}`}>
+                    {row.dayNote}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>JST to EDT During Daylight Saving Time</h2>
+      <p>
+        The conversion from Japan Time to Eastern Time is not static throughout the entire year. While Japan stays constantly at UTC+9 and does not observe Daylight Saving Time (DST), most regions in the Eastern Time Zone switch to Eastern Daylight Time (EDT, UTC-4) during the warmer months—typically from the second Sunday in March to the first Sunday in November.
+      </p>
+      <p>
+        During this daylight saving period, clocks in the Eastern Time Zone are moved forward by one hour. Consequently, the time difference between JST and EDT is reduced from 14 hours to <strong>13 hours</strong>. For example, during EDT, 9:00 AM JST converts to 8:00 PM EDT on the previous day (a 13-hour subtraction instead of 14). Always double-check whether North America is operating on EST or EDT before scheduling critical meetings.
+      </p>
+
+      <h2>Common JST to EST Conversions</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <h3>Morning in Japan</h3>
+          <p>
+            When it is early morning in Tokyo (e.g., 9:00 AM JST), it is the evening of the previous day in New York (7:00 PM EST). This is a prime time for closing out business for the American teams while Japanese teams start their day.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Afternoon in Japan</h3>
+          <p>
+            An afternoon in Japan (e.g., 2:00 PM JST) marks exactly midnight (12:00 AM EST) on the same calendar day on the US East Coast. At this hour, most of the Eastern timezone is asleep.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Evening in Japan</h3>
+          <p>
+            By the time it is 10:00 PM JST in the evening, the US East Coast is just starting its workday at 8:00 AM EST on the same day. This creates another potential window for quick synchronization.
+          </p>
+        </div>
+      </div>
+
+      <div class="tz-compare-sections">
+        <div class="tz-info">
+          <h2>What Is JST?</h2>
+          <p>
+            <strong>Japan Standard Time (JST)</strong> is the standard time zone for the entire nation of Japan. It operates at UTC+9, meaning it is nine hours ahead of Coordinated Universal Time. Unlike many western nations, Japan does not utilize daylight saving time, maintaining a consistent offset year-round. This makes planning slightly easier on the Japanese side, as the local time never jumps forward or backward.
+          </p>
+        </div>
+        <div class="tz-info">
+          <h2>What Is EST?</h2>
+          <p>
+            <strong>Eastern Standard Time (EST)</strong> operates at UTC-5 and is used by the eastern parts of the United States and Canada, as well as several Caribbean and Central American countries. In North America, EST is primarily utilized during the winter months. <a href="/what-is-est/">Learn more about EST here</a>. 
+          </p>
+        </div>
+      </div>
+
+      <h2>JST vs EST Comparison Table</h2>
+      <div class="table-container">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Japan Standard Time (JST)</th>
+              <th>Eastern Standard Time (EST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>UTC Offset</strong></td>
+              <td>UTC+9</td>
+              <td>UTC-5</td>
+            </tr>
+            <tr>
+              <td><strong>Time Difference</strong></td>
+              <td>14 hours ahead of EST</td>
+              <td>14 hours behind JST</td>
+            </tr>
+            <tr>
+              <td><strong>Daylight Saving Time</strong></td>
+              <td>No (Consistent UTC+9)</td>
+              <td>Yes (Switches to EDT, UTC-4)</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Regions</strong></td>
+              <td>Japan</td>
+              <td>East Coast of US/Canada, Caribbean</td>
+            </tr>
+            <tr>
+              <td><strong>Major Cities</strong></td>
+              <td>Tokyo, Osaka, Kyoto, Sapporo</td>
+              <td>New York, Washington D.C., Toronto</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>JST, EST and EDT Explained</h2>
+      <p>
+        To fully grasp the relationship between Japan and the North American east coast, one must understand the dynamic interplay of JST, EST, and EDT. While Japan remains a steadfast beacon at UTC+9, the eastern seaboard's timezone breathes with the seasons, expanding to a 14-hour difference in winter and contracting to 13 hours in summer.
+      </p>
+      <figure class="content-image">
+        <img src="/assets/jst-est-edt-timezone-difference.webp" alt="Map showing the timezone relationships between JST, EST, and EDT" width="1000" height="525" loading="lazy" />
+        <figcaption>Understanding the transition from 14 hours (EST) to 13 hours (EDT) difference against Japan Standard Time.</figcaption>
+      </figure>
+
+      <h2>Does JST to EST Change During Daylight Saving Time?</h2>
+      <p>
+        Yes, absolutely. The most critical factor in converting JST to Eastern Time is knowing the time of year. Because Japan abandoned Daylight Saving Time (DST) over 70 years ago, JST is fixed. However, the United States and Canada observe DST. Thus, when the clocks spring forward in March to Eastern Daylight Time (EDT, UTC-4), the conversion shifts. Instead of subtracting 14 hours, you only subtract 13 hours from the Japanese time. This persists until November, when clocks fall back to EST (UTC-5) and the 14-hour gap is restored. You can read more about the nuances of DST in our <a href="/what-is-daylight-saving-time/">comprehensive guide to daylight saving time</a>.
+      </p>
+
+      <h2>Does JST to EST Change the Date?</h2>
+      <p>
+        Because of the massive 14-hour gap, translating time from Japan to the East Coast almost always involves thinking about the date. Japan is geographically and chronologically "ahead" of North America. 
+      </p>
+      <p>
+        <strong>The rule of thumb:</strong>
+        If it is between <strong>12:00 AM and 1:59 PM in Japan</strong>, the corresponding time in EST is on the <em>previous calendar day</em>. 
+        If it is between <strong>2:00 PM and 11:59 PM in Japan</strong>, the corresponding EST time is on the <em>same calendar day</em>. 
+        For example, Tuesday morning in Tokyo is Monday evening in New York. Tuesday evening in Tokyo is Tuesday morning in New York.
+      </p>
+
+      <h2>Japan Time to Eastern Time</h2>
+      <p>
+        When people refer to "Japan Time to Eastern Time," they are typically speaking about scheduling events between the economic hubs of Tokyo and New York. This corridor is one of the most vital financial arteries in the global economy. Understanding that Japan is 14 hours ahead during the winter and 13 hours ahead during the summer ensures that international calls, trade settlements, and joint ventures run smoothly without off-hours disruptions. For more insights on global timezones, check out our <a href="/world-time-zones-guide/">world time zones guide</a>.
+      </p>
+
+      <h2>JST to New York Time</h2>
+      <p>
+        Converting JST to New York Time is identical to converting JST to EST or EDT. New York is the quintessential anchor city for the Eastern Time Zone. Thus, when converting for Wall Street, the United Nations, or Broadway, the exact same rules apply: subtract 14 hours in the winter (EST) and 13 hours in the summer (EDT).
+      </p>
+
+      <div class="cities-section">
+        <div class="cities-list">
+          <h2>Japan Cities</h2>
+          <p>These major cities always observe JST (UTC+9):</p>
+          <ul>
+            <li>Tokyo</li>
+            <li>Yokohama</li>
+            <li>Osaka</li>
+            <li>Nagoya</li>
+            <li>Sapporo</li>
+            <li>Fukuoka</li>
+            <li>Kyoto</li>
+            <li>Kobe</li>
+          </ul>
+        </div>
+        <div class="cities-list">
+          <h2>Eastern Time Cities</h2>
+          <p>These major cities observe EST/EDT:</p>
+          <ul>
+            <li>New York City, NY</li>
+            <li>Washington, D.C.</li>
+            <li>Toronto, Canada</li>
+            <li>Miami, FL</li>
+            <li>Atlanta, GA</li>
+            <li>Boston, MA</li>
+            <li>Philadelphia, PA</li>
+            <li>Montreal, Canada</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Best JST to EST Meeting Times</h2>
+      <p>
+        Scheduling a live meeting between Tokyo and the US East Coast requires compromise, as the 14-hour difference leaves very few overlapping waking hours. The most optimal window relies on one party waking up early and the other staying online late.
+      </p>
+      <div class="meeting-card">
+        <h3>Optimal Overlap Window</h3>
+        <p><strong>8:00 AM – 10:00 AM JST (Tokyo)</strong></p>
+        <p><strong>= 6:00 PM – 8:00 PM EST (New York) — Previous Day</strong></p>
+        <p>
+          This window allows the Japanese team to meet first thing in their morning, while the American team meets at the tail end of their workday. Another alternative is <strong>9:00 PM - 11:00 PM JST</strong> aligning with <strong>7:00 AM - 9:00 AM EST</strong>, though this pushes far into the night for Japan.
+        </p>
+      </div>
+
+      <h2>Practical Uses of JST to EST Conversion</h2>
+      <div class="grid-cards uses-grid">
+        <div class="card">
+          <h3>International Finance</h3>
+          <p>Coordinating trades between the Tokyo Stock Exchange and the New York Stock Exchange requires precision timing across the 14-hour gap.</p>
+        </div>
+        <div class="card">
+          <h3>Tech & Gaming</h3>
+          <p>Software developers and gaming companies collaborating between Japan and the US east coast rely on accurate conversions for sprint planning and server maintenance.</p>
+        </div>
+        <div class="card">
+          <h3>Travel & Flights</h3>
+          <p>Travelers flying from Narita or Haneda to JFK or Newark must calculate the time difference to combat jet lag and arrange ground transportation.</p>
+        </div>
+        <div class="card">
+          <h3>Anime & Media Releases</h3>
+          <p>Global fans rely on exact conversions to know precisely when the latest anime episode, manga chapter, or Nintendo direct broadcast will drop in EST.</p>
+        </div>
+        <div class="card">
+          <h3>Family Communication</h3>
+          <p>Expatriates and students maintaining relationships with family overseas need to find the sweet spots for video calls that won't wake anyone up in the middle of the night.</p>
+        </div>
+        <div class="card">
+          <h3>Logistics & Shipping</h3>
+          <p>Supply chain managers tracking ocean freight or air cargo from Yokohama to East Coast ports use time conversions to predict arrival and customs clearance.</p>
+        </div>
+      </div>
+
+      <h2>Frequently Asked Questions: JST to EST</h2>
+      <div class="faq-container">
+        {faqs.map((faq) => (
+          <details class="faq-item">
+            <summary class="faq-q">{faq.q}</summary>
+            <div class="faq-a">{faq.a}</div>
+          </details>
+        ))}
+      </div>
+
+      <h2>Related Time Zone Converters</h2>
+      <div class="grid-cards">
+        {relatedConverters.map((conv) => (
+          <a href={conv.href} class="card link-card">
+            <h3>{conv.label}</h3>
+            <p>{conv.desc}</p>
+          </a>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .content-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    color: var(--text);
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .lead-text {
+    font-size: 1.15rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .converter-section {
+    margin: 2rem 0;
+    background: var(--panel);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+  }
+  .status-card {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    margin: 2rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .status-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text);
+  }
+  .status-divider {
+    font-weight: bold;
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+  .hero-image, .content-image {
+    margin: 3rem 0;
+    text-align: center;
+  }
+  .hero-image img, .content-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .informational-content {
+    line-height: 1.7;
+    font-size: 1.05rem;
+  }
+  .informational-content h2 {
+    font-size: 2rem;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--line);
+    color: var(--text);
+  }
+  .informational-content p {
+    margin-bottom: 1.25rem;
+  }
+  .informational-content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .informational-content a:hover {
+    text-decoration: none;
+  }
+  .formula-box {
+    background: var(--panel);
+    border-left: 4px solid var(--accent);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    font-size: 1.2rem;
+    border-radius: 0 8px 8px 0;
+  }
+  .example-list, .step-list {
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .example-list li, .step-list li {
+    margin-bottom: 0.75rem;
+  }
+  .table-container {
+    overflow-x: auto;
+    margin: 2rem 0;
+  }
+  .conversion-table, .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  .conversion-table th, .conversion-table td,
+  .compare-table th, .compare-table td {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  .conversion-table th, .compare-table th {
+    background: rgba(0,0,0,0.02);
+    font-weight: 600;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .badge-prev {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+  .badge-same {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .card {
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .card h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+  .card p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .link-card {
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .link-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .tz-compare-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 3rem 0;
+  }
+  @media (max-width: 768px) {
+    .tz-compare-sections {
+      grid-template-columns: 1fr;
+    }
+  }
+  .cities-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+    background: var(--panel);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  @media (max-width: 768px) {
+    .cities-section {
+      grid-template-columns: 1fr;
+    }
+  }
+  .cities-list h2 {
+    border: none;
+    margin-top: 0;
+  }
+  .meeting-card {
+    background: var(--panel);
+    border: 2px solid var(--accent);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 2rem 0;
+  }
+  .meeting-card h3 {
+    margin-top: 0;
+    color: var(--accent);
+    font-size: 1.4rem;
+  }
+  .meeting-card p {
+    font-size: 1.15rem;
+  }
+  .faq-container {
+    margin: 2rem 0;
+  }
+  .faq-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .faq-q {
+    padding: 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    background: rgba(0,0,0,0.01);
+    user-select: none;
+  }
+  .faq-q:hover {
+    background: rgba(0,0,0,0.03);
+  }
+  .faq-a {
+    padding: 1.25rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+</style>
