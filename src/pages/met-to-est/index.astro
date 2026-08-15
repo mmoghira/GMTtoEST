@@ -1,0 +1,694 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "met-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "MET to EST Converter";
+const seoTitle = "MET to EST Converter – Convert Middle European Time to Eastern Standard Time";
+const pageDescription = "Convert MET to EST with our date-aware timezone converter. Middle European Time (MET, UTC+1) is typically 6 hours ahead of Eastern Standard Time (EST, UTC-5). Includes conversion tables, DST explanations, MET vs CET vs CEST comparison, and practical examples.";
+
+const context = {
+  from: "MET",
+  to: "EST",
+  fromZone: "Europe/Paris",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// Standard-time table: MET (UTC+1) → EST (UTC-5) = subtract 6 hours
+// This table applies when both regions are in standard time (typically Nov–Mar)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour - 6;
+  const prevDay = estHour < 0;
+  if (prevDay) estHour += 24;
+  return {
+    met: formatHour12(hour),
+    est: `${formatHour12(estHour)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is MET?",
+    a: "MET stands for Middle European Time. It is a historical and alternative designation for the standard time used in much of continental Europe, equivalent to UTC+1. MET is functionally the same as CET (Central European Time) and is referenced in various software systems, aviation schedules, and legacy documentation."
+  },
+  {
+    q: "What does MET stand for?",
+    a: "MET stands for Middle European Time. The abbreviation originates from the German term 'Mitteleuropäische Zeit' (MEZ). It designates the UTC+1 time zone used across much of continental Europe during winter standard-time months."
+  },
+  {
+    q: "What is EST?",
+    a: "EST stands for Eastern Standard Time. It is the standard-time designation for the U.S. Eastern Time Zone, defined as UTC-5. EST is observed during winter months (approximately November to March). During summer, Eastern Time locations switch to EDT (Eastern Daylight Time, UTC-4)."
+  },
+  {
+    q: "What is the difference between MET and EST?",
+    a: "During standard time, MET (UTC+1) is 6 hours ahead of EST (UTC-5). When it is noon (12:00 PM) in MET, it is 6:00 AM in EST. However, because both regions observe daylight saving time on different schedules, the effective offset can vary during transitional periods in spring and autumn."
+  },
+  {
+    q: "Is MET always 6 hours ahead of EST?",
+    a: "When both regions are in their standard-time periods, the difference is exactly 6 hours. However, European and North American daylight-saving transitions occur on different dates, which means there are brief periods in spring and autumn when the offset is 5 hours instead of 6. Our converter uses IANA timezone data to account for these variations automatically."
+  },
+  {
+    q: "Does daylight saving time affect MET to EST conversion?",
+    a: "Yes. European countries switch to summer time (CEST/MEST, UTC+2) on the last Sunday in March, while the U.S. switches to EDT (UTC-4) on the second Sunday in March. This creates transitional periods where the offset differs from the standard 6-hour gap. Always use a date-aware converter for accurate results."
+  },
+  {
+    q: "What is the difference between MET, CET, and CEST?",
+    a: "MET (Middle European Time) and CET (Central European Time) both refer to UTC+1 and are functionally identical standard-time designations for continental Europe. CEST (Central European Summer Time) is the daylight-saving equivalent at UTC+2, observed from late March to late October. MET is the older term while CET is more commonly used in modern contexts."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time) is UTC-5, used during winter months in the U.S. Eastern Time Zone. EDT (Eastern Daylight Time) is UTC-4, used during summer months. The switch happens on the second Sunday of March (to EDT) and the first Sunday of November (back to EST). This page specifically converts MET to EST."
+  },
+  {
+    q: "Can MET to EST conversion change depending on the date?",
+    a: "Yes. Because European and U.S. daylight-saving transitions happen on different dates, there are periods when the effective time difference changes. During standard time, the gap is 6 hours. During certain spring and autumn transition weeks, it may temporarily be 5 hours. Use our date-aware converter for accuracy."
+  },
+  {
+    q: "Can MET and EST have different calendar dates?",
+    a: "Yes. Since MET is 6 hours ahead of EST during standard time, any MET time between midnight and 5:59 AM corresponds to the previous calendar day in EST. For example, 3:00 AM MET on January 15 is 9:00 PM EST on January 14."
+  },
+  {
+    q: "How do I convert MET to EST?",
+    a: "During standard time, subtract 6 hours from the MET time. For example, 2:00 PM MET minus 6 hours equals 8:00 AM EST. If the result goes below midnight, subtract one calendar day. For dates near daylight-saving transitions, use our converter tool which accounts for the exact offset automatically."
+  },
+  {
+    q: "Should I use EST or EDT when converting from MET?",
+    a: "Use EST (UTC-5) during the North American winter standard-time period (approximately November to March). Use EDT (UTC-4) during summer daylight-saving months (approximately March to November). If you are unsure, our converter uses IANA timezone data and will apply the correct offset for the selected date."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "met to est, MET to EST converter, convert MET to EST, Middle European Time to Eastern Standard Time, MET EST conversion, MET time to EST, MET and EST difference, MET vs EST, MET timezone converter, Middle European Time converter",
+  image: "/assets/met-to-est-converter.webp",
+  imageAlt: "MET to EST converter comparing Middle European Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online MET to EST converter with date-aware timezone calculations, DST handling, 24-hour conversion tables, and scheduling tools between Middle European Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert MET to EST",
+  howToDescription: "Convert Middle European Time (MET, UTC+1) to Eastern Standard Time (EST, UTC-5) using date-aware calculation.",
+  howToSteps: [
+    { name: "Select the MET date", text: "Choose the specific date for the conversion because daylight-saving rules can affect the offset." },
+    { name: "Enter the MET time", text: "Enter the hour and minute in Middle European Time (UTC+1)." },
+    { name: "Subtract 6 hours (standard time)", text: "During standard time, subtract 6 hours from MET. During DST transition periods, the offset may differ." },
+    { name: "Check the date", text: "If subtracting crosses midnight backward, move the calendar date back by one day." },
+    { name: "Read the EST result", text: "The resulting time is Eastern Standard Time (UTC-5). Verify whether EST or EDT applies to your date." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">MET to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">MET to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 700px; margin: 0.75rem auto 0;">
+        Convert Middle European Time (MET) to Eastern Standard Time (EST) instantly. During standard time, MET is <strong>UTC+1</strong> and EST is <strong>UTC−5</strong>, making MET <strong>6 hours ahead</strong> of EST. Our converter uses IANA timezone data to handle daylight-saving transitions automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/met-to-est-converter.webp"
+      alt="MET to EST converter showing Middle European Time and Eastern Standard Time comparison"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="MET to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- MET to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST Time Difference</h2>
+      <p>
+        The relationship between Middle European Time and Eastern Standard Time involves a <strong>6-hour offset during standard time</strong>. MET operates at UTC+1, while EST operates at UTC−5. This means that when both regions are observing their standard-time designations, MET is exactly 6 hours ahead of EST.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">MET − 6 hours = EST</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+1 → UTC−5 • During standard time (typically November through March)</p>
+      </div>
+      <p>
+        However, this 6-hour difference is not permanently fixed throughout the entire year. Both European and North American regions observe daylight saving time, but they switch on different dates. European summer time begins on the last Sunday in March and ends on the last Sunday in October. North American daylight saving begins on the second Sunday in March and ends on the first Sunday in November. During the brief transition periods between these dates, the effective offset between European and Eastern U.S. time can temporarily change to 5 hours.
+      </p>
+      <p>
+        Our converter uses the IANA timezone database identifiers <code>Europe/Paris</code> and <code>America/New_York</code> to calculate the exact offset for any given date, ensuring accuracy even during these transitional periods.
+      </p>
+    </section>
+
+    <!-- Time Difference Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/met-to-est-time-difference.webp"
+        alt="Timezone graphic showing MET (UTC+1) to EST (UTC-5) with a 6-hour offset during standard time"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert MET to EST</h2>
+      <p>
+        Converting Middle European Time to Eastern Standard Time requires awareness of the date because daylight-saving rules can affect the calculation. Here is the general process:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Select the MET date.</strong> The date determines whether standard time or daylight-saving time is in effect for each region.</li>
+        <li><strong>Enter the MET time.</strong> Note the hour and minute in Middle European Time (UTC+1 during standard time).</li>
+        <li><strong>Subtract 6 hours (standard time).</strong> During the standard-time period (roughly November through March), subtract 6 hours from MET to get EST.</li>
+        <li><strong>Check for date rollback.</strong> If subtracting 6 hours crosses midnight backward, move the calendar date back by one day.</li>
+        <li><strong>Verify the result.</strong> Confirm whether EST (UTC−5) or EDT (UTC−4) applies to the destination date. Our converter handles this distinction automatically.</li>
+      </ol>
+      <h3>Quick Standard-Time Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>12:00 PM MET</strong> → 12 − 6 = <strong>6:00 AM EST</strong> (same day)</li>
+        <li><strong>8:00 PM MET</strong> → 20 − 6 = <strong>2:00 PM EST</strong> (same day)</li>
+        <li><strong>3:00 AM MET</strong> → 3 − 6 = <strong>9:00 PM EST</strong> (previous day)</li>
+      </ul>
+      <p>
+        For conversions involving dates near daylight-saving transitions, always use the <strong>converter tool above</strong> rather than manual subtraction to ensure the correct offset is applied.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST Conversion Table (Standard Time)</h2>
+      <p>
+        The table below shows every hour converted from MET to EST during the <strong>standard-time period</strong> (approximately November through March), when MET is UTC+1 and EST is UTC−5. During daylight-saving periods, offsets may differ — use the converter tool for date-specific accuracy.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">MET (UTC+1)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">EST (UTC−5)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.met}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: MET times from 12:00 AM to 5:00 AM produce EST times on the previous calendar day. This table uses standard-time offsets (MET = UTC+1, EST = UTC−5).
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST Practical Conversion Examples</h2>
+      <p>Below are real-world scenarios showing how MET converts to EST during standard time:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning Stand-Up</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>9:00 AM MET</strong> → <strong>3:00 AM EST</strong><br/>A 9 AM European stand-up falls at 3 AM EST — far too early for U.S. Eastern colleagues. Consider scheduling after 2 PM MET for reasonable EST hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Sync</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>12:00 PM MET</strong> → <strong>6:00 AM EST</strong><br/>A noon MET meeting translates to 6 AM EST — early morning on the U.S. East Coast.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Optimal Overlap</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>3:00 PM MET</strong> → <strong>9:00 AM EST</strong><br/>A 3 PM MET call is 9 AM EST — the sweet spot where both European and U.S. teams are in working hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Late Afternoon</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>5:00 PM MET</strong> → <strong>11:00 AM EST</strong><br/>End of the European workday corresponds to mid-morning EST — still well within U.S. business hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Webinar</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>8:00 PM MET</strong> → <strong>2:00 PM EST</strong><br/>An evening MET event is mid-afternoon EST — great for reaching both audiences.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Change Example</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>2:00 AM MET, Jan 15</strong> → <strong>8:00 PM EST, Jan 14</strong><br/>Subtracting 6 hours from early morning MET crosses midnight backward, placing EST on the previous day.</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>2:30 PM MET</strong> → <strong>8:30 AM EST</strong> (same day)</li>
+        <li><strong>6:45 PM MET</strong> → <strong>12:45 PM EST</strong> (same day)</li>
+        <li><strong>1:15 AM MET</strong> → <strong>7:15 PM EST</strong> (previous day)</li>
+        <li><strong>4:30 AM MET</strong> → <strong>10:30 PM EST</strong> (previous day)</li>
+      </ul>
+    </section>
+
+    <!-- What Is MET? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is MET?</h2>
+      <p>
+        <strong>MET (Middle European Time)</strong> is a time zone abbreviation designating UTC+1 standard time as used across much of continental Europe. The term originates from the German expression <em>Mitteleuropäische Zeit</em> (MEZ), which has been used in Central European timekeeping since the late 19th century when standard time zones were formalized across the region.
+      </p>
+      <p>
+        In modern usage, CET (Central European Time) is more commonly encountered than MET in international contexts. Both abbreviations refer to the same UTC+1 offset during winter standard time. However, MET continues to appear in legacy software systems, aviation schedules, meteorological data, scientific instruments, and older reference documents. Users may also encounter MET in the IANA timezone database, where the <code>MET</code> identifier is recognized and maps to the <code>Europe/Paris</code> timezone data.
+      </p>
+      <p>
+        During summer months, the European regions that use MET/CET switch to daylight saving time, known variously as MEST (Middle European Summer Time) or CEST (Central European Summer Time), which operates at UTC+2. This shift occurs on the last Sunday in March and reverts on the last Sunday in October.
+      </p>
+      <p>
+        Countries that observe MET/CET standard time include Germany, France, Italy, Spain, the Netherlands, Belgium, Austria, Switzerland, Poland, Czech Republic, Hungary, Sweden, Norway, Denmark, and many others across continental Europe.
+      </p>
+    </section>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>EST (Eastern Standard Time)</strong> is the standard-time designation for the U.S. and Canadian Eastern Time Zone, defined as UTC−5. EST is used during winter months — specifically from the first Sunday in November through the second Sunday in March in the United States.
+      </p>
+      <p>
+        It is important to distinguish EST from the broader concept of "Eastern Time." The Eastern Time Zone as a region observes two different offsets throughout the year: <strong>EST (UTC−5)</strong> during winter and <strong>EDT (Eastern Daylight Time, UTC−4)</strong> during summer. When someone says "Eastern Time" without specifying standard or daylight, they are referring to whichever offset currently applies. This page specifically targets the <strong>MET → EST</strong> conversion.
+      </p>
+      <p>
+        Major cities in the EST/Eastern Time Zone include New York, Washington D.C., Toronto, Miami, Boston, Philadelphia, Atlanta, and Montreal. The timezone is the most populous in North America and is commonly referenced in global business, financial markets, media broadcasts, and international scheduling.
+      </p>
+      <p>
+        For converting MET to EDT during North American summer months, the offset changes from −6 hours to −5 hours. Our converter detects this automatically based on the selected date. For a dedicated converter, see our <a href="/gmt-to-edt/" style="color: var(--accent);">GMT to EDT Converter</a>.
+      </p>
+    </section>
+
+    <!-- Comparison Infographic -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/met-cet-cest-est-edt-comparison.webp"
+        alt="Infographic comparing MET (UTC+1), CET (UTC+1), CEST (UTC+2), EST (UTC-5), and EDT (UTC-4) timezone designations"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- MET vs CET vs CEST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET vs CET vs CEST</h2>
+      <p>
+        These three abbreviations are closely related but represent different aspects of European timekeeping. Understanding their distinctions helps prevent conversion errors:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Abbreviation</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Period</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">MET</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Middle European Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+1</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter standard time</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">CET</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Central European Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+1</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter standard time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">MEST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Middle European Summer Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+2</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Summer daylight saving</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; font-weight: 600;">CEST</td>
+              <td style="padding: 10px 16px;">Central European Summer Time</td>
+              <td style="padding: 10px 16px;">UTC+2</td>
+              <td style="padding: 10px 16px;">Summer daylight saving</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 1rem;">
+        MET and CET are functionally identical — both designate UTC+1 standard time in continental Europe. The key distinction is that MET originates from the German-language tradition (<em>Mitteleuropäische Zeit</em>), while CET is the more internationally standardized English-language term. Similarly, MEST and CEST both represent UTC+2 summer time. When converting to EST, the critical factor is whether the source time is in standard time (UTC+1) or summer time (UTC+2), regardless of which abbreviation is used.
+      </p>
+      <p>
+        For MEST/CEST to EST conversions specifically, see our <a href="/mest-to-est/" style="color: var(--accent);">MEST to EST Converter</a> or <a href="/cest-to-est/" style="color: var(--accent);">CEST to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- EST vs EDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>EST vs EDT</h2>
+      <p>
+        On the destination side of MET-to-EST conversion, it is equally important to understand the difference between EST and EDT:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Abbreviation</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Approx. Period (U.S.)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−5</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">November – March</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; font-weight: 600;">EDT</td>
+              <td style="padding: 10px 16px;">Eastern Daylight Time</td>
+              <td style="padding: 10px 16px;">UTC−4</td>
+              <td style="padding: 10px 16px;">March – November</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 1rem;">
+        Users searching for "MET to EST" most often intend the winter standard-time conversion. However, if you are scheduling for a summer date, the U.S. Eastern Time Zone will be observing EDT (UTC−4) rather than EST (UTC−5). Our converter applies the correct offset automatically based on the date you select. For a dedicated EDT converter, visit our <a href="/gmt-to-edt/" style="color: var(--accent);">GMT to EDT Converter</a>.
+      </p>
+    </section>
+
+    <!-- Why the Offset Can Change By Date -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why MET to EST Can Change by Date</h2>
+      <p>
+        One of the most common sources of scheduling errors between Europe and North America is the assumption that the time difference is always fixed. In reality, the offset between European and U.S. Eastern time can vary because their daylight-saving transitions occur on different dates:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Period</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Europe</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">U.S. East</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Offset</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Jan–early Mar</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">MET/CET (UTC+1)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">EST (UTC−5)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">6 hours</td>
+            </tr>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Early Mar–late Mar</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">MET/CET (UTC+1)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">EDT (UTC−4)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">5 hours</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Late Mar–late Oct</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">MEST/CEST (UTC+2)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">EDT (UTC−4)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">6 hours</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px;">Late Oct–early Nov</td>
+              <td style="padding: 10px 16px;">MET/CET (UTC+1)</td>
+              <td style="padding: 10px 16px;">EDT (UTC−4)</td>
+              <td style="padding: 10px 16px; font-weight: 600;">5 hours</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        As the table shows, during most of the year the difference between European time and U.S. Eastern time is 6 hours. But during the transition weeks in spring and autumn, the gap narrows to 5 hours because one region has switched to daylight saving while the other has not yet changed. This is why a date-aware converter is essential for accurate scheduling.
+      </p>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST Date Changes</h2>
+      <p>
+        Because MET is 6 hours ahead of EST during standard time, early-morning MET times can fall on the previous calendar day when converted to EST. This is a critical detail for deadline management, contract execution, and event scheduling.
+      </p>
+      <h3>When Does the Date Roll Back?</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>MET 6:00 AM to 11:59 PM</strong> → EST on the <strong>same calendar day</strong></li>
+        <li><strong>MET 12:00 AM (midnight) to 5:59 AM</strong> → EST on the <strong>previous calendar day</strong></li>
+      </ul>
+      <h3>Date Rollback Examples</h3>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+        <p style="margin: 0 0 0.75rem;"><strong>Example 1:</strong> 7:00 PM MET on February 10 → 1:00 PM EST on February 10 (same day)</p>
+        <p style="margin: 0 0 0.75rem;"><strong>Example 2:</strong> 4:00 AM MET on February 10 → 10:00 PM EST on February 9 (previous day)</p>
+        <p style="margin: 0;"><strong>Example 3:</strong> 12:30 AM MET on January 1 → 6:30 PM EST on December 31 (previous year!)</p>
+      </div>
+      <p>
+        Always verify both the <strong>time and date</strong> when converting early-morning MET hours to EST. Our converter tool at the top of this page handles date transitions automatically.
+      </p>
+    </section>
+
+    <!-- Business & Scheduling -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST for Business and Scheduling</h2>
+      <p>
+        The MET-to-EST conversion is one of the most common transatlantic time zone calculations. European companies regularly coordinate with U.S. East Coast offices, and understanding the 6-hour offset is essential for productive collaboration.
+      </p>
+      <h3>Overlapping Business Hours</h3>
+      <p>
+        Standard MET business hours (9:00 AM to 6:00 PM) correspond to 3:00 AM to 12:00 PM EST. The comfortable overlap window for both sides is approximately <strong>3:00 PM to 6:00 PM MET / 9:00 AM to 12:00 PM EST</strong> — a 3-hour window in the morning for EST and late afternoon for MET.
+      </p>
+      <h3>Scheduling Best Practices</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li>Always include the timezone abbreviation: <strong>15:00 MET / 9:00 AM EST</strong></li>
+        <li>Use calendar tools that display multiple time zones simultaneously</li>
+        <li>Be aware of DST transition periods in spring and autumn when the offset may temporarily change</li>
+        <li>Schedule recurring meetings during the 3:00–6:00 PM MET / 9:00 AM–12:00 PM EST overlap</li>
+        <li>For U.S. participants, morning meetings are generally preferable; for European participants, afternoon is better</li>
+      </ul>
+      <h3>Common Use Cases</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Financial markets</strong> — European exchanges overlap with U.S. market pre-open hours</li>
+        <li><strong>Corporate meetings</strong> — transatlantic teams need consistent scheduling windows</li>
+        <li><strong>Software deployments</strong> — coordinating release windows across European and U.S. servers</li>
+        <li><strong>Customer support</strong> — handoff timing between European and American support teams</li>
+        <li><strong>Travel planning</strong> — flights between European cities and U.S. East Coast destinations</li>
+        <li><strong>Academic collaboration</strong> — research teams at European and American universities</li>
+      </ul>
+    </section>
+
+    <!-- Common Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common MET to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing MET with CET</h3>
+          <p style="margin: 0; font-size: 0.93rem;">MET and CET are functionally identical (both UTC+1), so the conversion result is the same. However, confusing either with CEST (UTC+2) creates a 1-hour error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing EST with EDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Using EST (UTC−5) when EDT (UTC−4) applies creates a 1-hour error. Always check whether the destination date falls in standard or daylight-saving time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Ignoring the Date</h3>
+          <p style="margin: 0; font-size: 0.93rem;">A fixed "−6 hours" calculation works most of the time but fails during DST transition weeks when the offset changes to −5 hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Forgetting Date Rollback</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Early morning MET times (midnight to 5:59 AM) convert to the previous calendar day in EST. Missing this can cause a full day's scheduling error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ One Fixed Offset All Year</h3>
+          <p style="margin: 0; font-size: 0.93rem;">The 6-hour gap applies during standard time, but not necessarily during March/October transition weeks. Always verify with a date-aware tool.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Omitting the Timezone</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Writing "3 PM" without specifying the timezone causes confusion. Always state: <strong>3:00 PM MET / 9:00 AM EST</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT/UTC Context -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT and UTC Context</h2>
+      <p>
+        This website focuses primarily on <a href="/" style="color: var(--accent);">GMT to EST conversions</a>. GMT (Greenwich Mean Time) and UTC (Coordinated Universal Time) both represent the UTC±0 baseline from which all other time zones are calculated. MET (UTC+1) is 1 hour ahead of GMT/UTC, while EST (UTC−5) is 5 hours behind GMT/UTC.
+      </p>
+      <p>
+        Understanding this relationship can help cross-verify conversions: if you know the GMT time, you can add 1 hour to get MET and subtract 5 hours to get EST. The total difference between MET and EST is therefore 1 − (−5) = 6 hours during standard time. For more on the GMT-to-EST relationship, visit our <a href="/gmt-vs-est/" style="color: var(--accent);">GMT vs EST</a> comparison page.
+      </p>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MET to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Remember −6</h3>
+          <p style="margin: 0; font-size: 0.93rem;">During standard time, subtract 6 hours from MET to get EST. This works for the majority of the year.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Always Include the Date</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Early-morning MET times roll back to the previous calendar day in EST. Verify the date in every conversion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🔄 Watch DST Transitions</h3>
+          <p style="margin: 0; font-size: 0.93rem;">In March and October/November, European and U.S. clocks change on different dates. The offset may temporarily be 5 hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🕐 Optimal Meeting Window</h3>
+          <p style="margin: 0; font-size: 0.93rem;">3:00–6:00 PM MET (9:00 AM–12:00 PM EST) is the ideal overlap for transatlantic business calls.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/mest-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          MEST to EST Converter
+        </a>
+        <a href="/cest-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          CEST to EST Converter
+        </a>
+        <a href="/cet-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          CET to EST Converter
+        </a>
+        <a href="/gmt-to-cat/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to CAT Converter
+        </a>
+        <a href="/gmt-to-cst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to CST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/met-to-est/",
+        "url": "https://gmttoestconverter.com/met-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/met-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/met-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "MET to EST Converter", "item": "https://gmttoestconverter.com/met-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "MET to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/met-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
