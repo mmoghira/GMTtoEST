@@ -1,0 +1,601 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "sst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "SST to EST Converter";
+const seoTitle = "SST to EST Converter – Convert Samoa Standard Time to Eastern Standard Time";
+const pageDescription = "Convert SST to EST instantly with our free timezone converter. Samoa Standard Time (SST) is UTC-11, making Eastern Standard Time (EST, UTC-5) 6 hours ahead of SST. Includes conversion tables, date-change calculations, EST vs EDT guides, and FAQs.";
+
+const context = {
+  from: "SST",
+  to: "EST",
+  fromZone: "Pacific/Pago_Pago",
+  toZone: "Etc/GMT+5"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: SST (UTC-11) → EST (UTC-5) = add 6 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour + 6;
+  const nextDay = estHour >= 24;
+  if (nextDay) estHour -= 24;
+  return {
+    sst: formatHour12(hour),
+    est: `${formatHour12(estHour)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What does SST stand for?",
+    a: "In this converter and standard timezone databases (such as IANA), SST stands for Samoa Standard Time, which operates at UTC-11 offset. It is observed in American Samoa and Midway Atoll."
+  },
+  {
+    q: "What is the UTC offset of SST?",
+    a: "SST (Samoa Standard Time) operates at UTC-11 (Coordinated Universal Time minus 11 hours). It remains fixed at UTC-11 year-round without daylight saving shifts."
+  },
+  {
+    q: "How many hours is EST from SST?",
+    a: "Eastern Standard Time (EST, UTC-5) is exactly 6 hours ahead of Samoa Standard Time (SST, UTC-11). When it is 12:00 PM (noon) SST, it is 6:00 PM EST."
+  },
+  {
+    q: "How do I convert SST to EST?",
+    a: "To convert SST to EST, add 6 hours to the SST time. For example, 9:00 AM SST plus 6 hours equals 3:00 PM EST. If adding 6 hours reaches or passes 24:00 (midnight), advance the calendar date by one day."
+  },
+  {
+    q: "What is EST in UTC?",
+    a: "EST (Eastern Standard Time) operates at UTC-5 (Coordinated Universal Time minus 5 hours)."
+  },
+  {
+    q: "Is EST always UTC-5?",
+    a: "Yes. EST itself is specifically defined as UTC-5 standard time. However, North American Eastern locations switch to EDT (Eastern Daylight Time, UTC-4) during summer months (from mid-March to early November). This converter specifically calculates the fixed SST to EST (UTC-5) conversion."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time, UTC-5) is observed during winter months. EDT (Eastern Daylight Time, UTC-4) is observed during summer months under daylight saving time. EDT is 1 hour ahead of EST."
+  },
+  {
+    q: "Can SST to EST conversion change the calendar date?",
+    a: "Yes. Because EST is 6 hours ahead of SST, any SST time between 6:00 PM (18:00) and 11:59 PM (23:59) advances into the next calendar day in EST. For example, 7:00 PM SST on June 10 converts to 1:00 AM EST on June 11."
+  },
+  {
+    q: "Why can timezone abbreviations like SST be confusing?",
+    a: "Timezone abbreviations can occasionally overlap in casual speech. While SST officially means Samoa Standard Time (UTC-11), historical software systems or colloquial usages sometimes referenced other names. Checking the verified UTC offset (UTC-11 for SST) eliminates ambiguity."
+  },
+  {
+    q: "What time is 12 PM SST in EST?",
+    a: "12:00 PM (noon) SST is 6:00 PM (18:00) EST on the same calendar day."
+  },
+  {
+    q: "What time is midnight SST in EST?",
+    a: "Midnight (00:00) SST is 6:00 AM EST on the same calendar day."
+  },
+  {
+    q: "Should I use EST or EDT for Eastern Time?",
+    a: "Use EST (UTC-5) during winter standard-time months (November to March). Use EDT (UTC-4) during summer daylight-saving months (March to November). Our converter uses standard-time EST (UTC-5) as its fixed target."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "sst to est, SST to EST converter, convert SST to EST, SST time to EST, SST EST conversion, SST to Eastern Standard Time, SST vs EST, SST EST time difference, EST UTC offset, EST UTC-5, SST time zone, SST timezone",
+  image: "/assets/sst-to-est-time-difference.webp",
+  imageAlt: "SST to EST converter comparing Samoa Standard Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online SST to EST converter featuring live clocks, 24-hour conversion schedules, date-change calculations, and timezone guides for Samoa Standard Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert SST to EST",
+  howToDescription: "Convert Samoa Standard Time (SST, UTC-11) to Eastern Standard Time (EST, UTC-5) by adding 6 hours.",
+  howToSteps: [
+    { name: "Start with SST time", text: "Identify the current time in Samoa Standard Time (SST / UTC-11)." },
+    { name: "Add 6 hours", text: "Add exactly 6 hours to the SST time value." },
+    { name: "Check for date rollover", text: "If the calculation reaches or passes 24:00 (midnight), advance the calendar date by one day." },
+    { name: "Read the EST result", text: "The resulting time and date reflect Eastern Standard Time (EST, UTC-5)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">SST to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">SST to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 700px; margin: 0.75rem auto 0;">
+        Convert Samoa Standard Time (SST) to Eastern Standard Time (EST) instantly. SST is <strong>UTC-11</strong> and EST is <strong>UTC-5</strong>, making Eastern Standard Time <strong>6 hours ahead</strong> of SST. Our tool calculates exact local times and handles date changes automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/sst-to-est-time-difference.webp"
+      alt="SST to EST converter showing Samoa Standard Time and Eastern Standard Time comparison"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="SST to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- SST to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST to EST Time Difference</h2>
+      <p>
+        The time difference between Samoa Standard Time (SST) and Eastern Standard Time (EST) is <strong>6 hours</strong>. In international timekeeping databases (such as IANA), SST operates at the UTC-11 offset, whereas Eastern Standard Time (EST) operates at UTC-5. Because UTC-5 is 6 hours ahead of UTC-11 on the clock timeline, EST is exactly 6 hours ahead of SST.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">SST + 6 hours = EST</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC-11 → UTC-5 • Eastern Standard Time is 6 hours ahead of SST</p>
+      </div>
+      <p>
+        Samoa Standard Time (SST, UTC-11) is observed in American Samoa and Midway Atoll year-round without daylight saving adjustments. Meanwhile, EST (UTC-5) represents the winter standard-time offset of eastern North America. The offset difference of +6 hours applies directly for all SST to EST calculations.
+      </p>
+      <p>
+        Because EST is 6 hours ahead, evening hours in SST (from 6:00 PM onward) cross midnight forward, placing local EST time on the following calendar day.
+      </p>
+    </section>
+
+    <!-- Date Conversion Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/sst-to-est-date-conversion.webp"
+        alt="Visual timeline illustrating SST to EST date conversion across midnight"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert SST to EST</h2>
+      <p>
+        Converting Samoa Standard Time to Eastern Standard Time requires adding 6 hours to your SST time. Follow these steps:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Start with your SST time.</strong> Identify the hour and minute in Samoa Standard Time (SST / UTC-11).</li>
+        <li><strong>Add 6 hours.</strong> Shift the time forward by 6 hours.</li>
+        <li><strong>Check for date rollover.</strong> If the calculated time reaches or passes 24:00 (midnight), subtract 24 from the hour total and advance the calendar date by one day.</li>
+        <li><strong>Read the final EST result.</strong> The resulting time and date reflect Eastern Standard Time (EST, UTC-5).</li>
+      </ol>
+      <h3>Quick Standard Conversion Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>00:00 (Midnight) SST</strong> → 0 + 6 = <strong>6:00 AM EST</strong> (same day)</li>
+        <li><strong>06:00 AM SST</strong> → 6 + 6 = <strong>12:00 PM (Noon) EST</strong> (same day)</li>
+        <li><strong>12:00 PM (Noon) SST</strong> → 12 + 6 = <strong>6:00 PM (18:00) EST</strong> (same day)</li>
+        <li><strong>5:00 PM (17:00) SST</strong> → 17 + 6 = <strong>11:00 PM EST</strong> (same day)</li>
+        <li><strong>6:00 PM (18:00) SST</strong> → 18 + 6 = <strong>12:00 AM Midnight EST</strong> (next day)</li>
+        <li><strong>9:00 PM (21:00) SST</strong> → 21 + 6 = <strong>3:00 AM EST</strong> (next day)</li>
+      </ul>
+      <p>
+        For instant date-aware conversions without manual math, use our <strong>interactive converter tool above</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST to EST Conversion Table (24 Hours)</h2>
+      <p>
+        The table below shows every hour of the day converted from Samoa Standard Time (SST) to Eastern Standard Time (EST). The rows highlighted in accent color indicate times where EST advances to the next calendar day.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">SST (UTC-11)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">EST (UTC-5)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.sst}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: SST times from 6:00 PM (18:00) to 11:00 PM (23:00) produce EST times on the next calendar day.
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST to EST Practical Conversion Examples</h2>
+      <p>Here are real-world scenarios showing how SST maps to Eastern Standard Time:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning Business Check-In</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>8:00 AM SST</strong> → <strong>2:00 PM EST</strong><br/>An 8:00 AM SST check-in in Pago Pago matches 2:00 PM EST in New York — mid-afternoon on the East Coast.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Conference Call</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>11:00 AM SST</strong> → <strong>5:00 PM EST</strong><br/>An 11:00 AM SST call aligns with the 5:00 PM EST end of the business day in Eastern North America.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Afternoon Handoff</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>2:00 PM SST</strong> → <strong>8:00 PM EST</strong><br/>A 2:00 PM SST afternoon handoff maps to 8:00 PM EST evening hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Update</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>5:00 PM SST</strong> → <strong>11:00 PM EST</strong><br/>A 5:00 PM SST update lands right before midnight EST (11:00 PM EST).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Transition Example 1</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>7:00 PM SST, Oct 12</strong> → <strong>1:00 AM EST, Oct 13</strong><br/>Adding 6 hours crosses midnight. 7:00 PM SST on Oct 12 becomes 1:00 AM EST on Oct 13.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Transition Example 2</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>10:00 PM SST, Dec 31</strong> → <strong>4:00 AM EST, Jan 1</strong><br/>Late New Year's Eve in SST converts to early morning on New Year's Day in EST!</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>7:30 AM SST</strong> → <strong>1:30 PM EST</strong></li>
+        <li><strong>10:15 AM SST</strong> → <strong>4:15 PM EST</strong></li>
+        <li><strong>4:45 PM SST</strong> → <strong>10:45 PM EST</strong></li>
+        <li><strong>8:30 PM SST</strong> → <strong>2:30 AM EST (next day)</strong></li>
+      </ul>
+    </section>
+
+    <!-- What Is SST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is SST?</h2>
+      <p>
+        <strong>Samoa Standard Time (SST)</strong> is the standard time zone for American Samoa and Midway Atoll, operating at the offset of <strong>UTC-11</strong>. In the international IANA timezone database, it is primarily identified by <code>Pacific/Pago_Pago</code>.
+      </p>
+      <p>
+        SST is one of the westernmost civil time zones on Earth. Because of its location near the International Date Line, local time in SST is among the last on the planet to experience each calendar day. SST remains fixed at UTC-11 year-round without daylight saving time changes.
+      </p>
+      <p>
+        Note: The Independent State of Samoa (Apia) changed its time zone in December 2011 to align with Australian trading partners, moving across the International Date Line to UTC+13. American Samoa (Pago Pago), however, remains on Samoa Standard Time (SST) at UTC-11.
+      </p>
+    </section>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the standard time zone designation for eastern North America, defined as <strong>UTC-5</strong>.
+      </p>
+      <p>
+        EST applies to major metropolitan areas including New York City, Washington D.C., Toronto, Miami, Boston, Philadelphia, Atlanta, and Montreal. In the U.S. and Canada, EST is observed during winter standard time (from early November to mid-March).
+      </p>
+      <p>
+        For converting GMT to EST or other time zones, see our <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage.
+      </p>
+    </section>
+
+    <!-- EST vs EDT Graphic -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/est-vs-edt-comparison.webp"
+        alt="Infographic comparing EST (UTC-5, Standard Time) and EDT (UTC-4, Daylight Saving Time)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- EST vs EDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>EST vs EDT</h2>
+      <p>
+        It is essential to distinguish between <strong>EST</strong> and <strong>EDT</strong> when scheduling across time zones:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Observance Period</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Eastern Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC-5</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter (Nov to Mar)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px;">EDT</td>
+              <td style="padding: 10px 16px;">Eastern Daylight Time</td>
+              <td style="padding: 10px 16px;">UTC-4</td>
+              <td style="padding: 10px 16px;">Summer (Mar to Nov)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        EST (UTC-5) is observed during winter months. EDT (UTC-4) is observed during summer months under daylight saving time. Our converter explicitly calculates the standard <strong>SST (UTC-11) to EST (UTC-5)</strong> conversion.
+      </p>
+    </section>
+
+    <!-- SST vs EST Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST vs EST</h2>
+      <p>A direct comparison of key attributes between Samoa Standard Time and Eastern Standard Time:</p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">SST</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Samoa Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC-11</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC-5</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">—</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">6 hours ahead of SST</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">American Samoa, Midway Atoll</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern US & Canada</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No DST (fixed UTC-11 year-round)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Fixed UTC-5 offset (region uses EDT in summer)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px;">Pacific/Pago_Pago</td>
+              <td style="padding: 10px 16px;">Etc/GMT+5 / America/New_York</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Dates Can Change During SST to EST Conversion</h2>
+      <p>
+        Because EST (UTC-5) is 6 hours ahead of SST (UTC-11), evening hours in SST roll forward into the next calendar day in EST.
+      </p>
+      <h3>Date Rollover Window</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>SST 00:00 to 17:59</strong> → EST 06:00 to 23:59 → <strong>Same calendar day</strong></li>
+        <li><strong>SST 18:00</strong> → EST 00:00 (midnight) → <strong>Next calendar day</strong></li>
+        <li><strong>SST 19:00</strong> → EST 01:00 AM → <strong>Next calendar day</strong></li>
+        <li><strong>SST 21:00</strong> → EST 03:00 AM → <strong>Next calendar day</strong></li>
+        <li><strong>SST 23:00</strong> → EST 05:00 AM → <strong>Next calendar day</strong></li>
+      </ul>
+      <p>
+        Always check both the <strong>time and date</strong> when communicating across SST and EST. Our converter tool updates calendar dates automatically.
+      </p>
+    </section>
+
+    <!-- Business & Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST to EST for Business, Meetings, and Technology</h2>
+      <p>
+        Transatlantic and transpacific coordination between American Samoa (SST) and the U.S. East Coast (EST) requires planning around the 6-hour difference.
+      </p>
+      <h3>Overlapping Working Hours</h3>
+      <p>
+        Standard business hours in Pago Pago (8:00 AM to 5:00 PM SST) correspond to <strong>2:00 PM to 11:00 PM EST</strong>. The most effective overlap window occurs between <strong>8:00 AM and 11:00 AM SST (2:00 PM to 5:00 PM EST)</strong>, giving teams 3 hours of shared office availability daily.
+      </p>
+      <h3>Technical Systems Context</h3>
+      <p>
+        Cloud servers, distributed APIs, and maritime logistics systems operating across Pacific territories frequently translate UTC or SST timestamps to EST for U.S. corporate reporting. Using a date-aware calculation ensures accurate log parsing.
+      </p>
+    </section>
+
+    <!-- Common Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common SST to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Subtracting Instead of Adding</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST (UTC-5) is ahead of SST (UTC-11). You must add 6 hours to SST. Subtracting 6 hours yields UTC-17, which does not exist.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Missing Next-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">SST times from 6:00 PM onward advance into the next calendar day in EST. Always check the date.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing Independent Samoa with American Samoa</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Independent Samoa (Apia) uses UTC+13 (WST). American Samoa (Pago Pago) uses SST (UTC-11). Verify which Samoa you are scheduling for.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing EST with EDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is UTC-5 (winter). EDT is UTC-4 (summer). Using EST during summer introduces a 1-hour shift relative to New York local clocks.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SST to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Add 6 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is always SST + 6 hours. Add 6 hours to SST to calculate EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Watch Midnight SST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any SST time at or after 6:00 PM (18:00) falls on the next day in EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🌐 State Full Abbreviation</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Write meeting times clearly: <strong>09:00 SST / 15:00 EST</strong>.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">⚡ Use the Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Use our free converter above for instant, error-free date and time calculations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/utc-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          UTC to EST Converter
+        </a>
+        <a href="/pst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          PST to EST Converter
+        </a>
+        <a href="/cst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          CST to EST Converter
+        </a>
+        <a href="/gmt-to-sst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to SST Converter
+        </a>
+        <a href="/gmt-to-wib/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to WIB Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/sst-to-est/",
+        "url": "https://gmttoestconverter.com/sst-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/sst-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/sst-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "SST to EST Converter", "item": "https://gmttoestconverter.com/sst-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "SST to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/sst-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
