@@ -1,0 +1,606 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "hkt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "HKT to EST Converter";
+const seoTitle = "HKT to EST Converter – Convert Hong Kong Time to EST";
+const pageDescription = "Convert HKT to EST instantly with our free timezone converter. Hong Kong Time (HKT) is UTC+8, making it 13 hours ahead of Eastern Standard Time (EST, UTC-5). Includes 24-hour conversion tables, previous-day date rollover guides, EST vs EDT comparisons, and FAQs.";
+
+const context = {
+  from: "HKT",
+  to: "EST",
+  fromZone: "Asia/Hong_Kong",
+  toZone: "Etc/GMT+5"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: HKT (UTC+8) → EST (UTC-5) = subtract 13 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour - 13;
+  const prevDay = estHour < 0;
+  if (prevDay) estHour += 24;
+  return {
+    hkt: formatHour12(hour),
+    est: `${formatHour12(estHour)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What does HKT stand for?",
+    a: "HKT stands for Hong Kong Time. It is the official time zone observed in Hong Kong, operating at UTC+8."
+  },
+  {
+    q: "What is the UTC offset of HKT?",
+    a: "HKT operates at UTC+8 (Coordinated Universal Time plus 8 hours). It stays fixed at UTC+8 year-round without daylight saving adjustments."
+  },
+  {
+    q: "How many hours is HKT ahead of EST?",
+    a: "Hong Kong Time (HKT, UTC+8) is exactly 13 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 1:00 PM (13:00) HKT in Hong Kong, it is 00:00 (midnight) EST in New York."
+  },
+  {
+    q: "How do I convert HKT to EST?",
+    a: "Subtract 13 hours from your HKT time. For WIB/HKT times between 00:00 and 12:59 PM, subtracting 13 hours moves the EST time to the previous calendar day."
+  },
+  {
+    q: "What is 12:00 HKT in EST?",
+    a: "12:00 PM (noon) HKT is 11:00 PM EST on the previous calendar day."
+  },
+  {
+    q: "What is midnight HKT in EST?",
+    a: "Midnight (00:00) HKT is 11:00 AM EST on the previous calendar day."
+  },
+  {
+    q: "Is HKT always UTC+8?",
+    a: "Yes. Hong Kong abolished daylight saving time in 1979. HKT remains fixed at UTC+8 throughout the entire year."
+  },
+  {
+    q: "What is EST in UTC?",
+    a: "EST (Eastern Standard Time) operates at UTC-5 (Coordinated Universal Time minus 5 hours)."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time, UTC-5) is observed during North American winter months (November to March). EDT (Eastern Daylight Time, UTC-4) is observed during summer months (March to November). EDT is 1 hour ahead of EST."
+  },
+  {
+    q: "Can HKT to EST conversion change the calendar date?",
+    a: "Yes. Because HKT is 13 hours ahead of EST, all HKT times from 00:00 (midnight) through 12:59 PM correspond to the previous calendar day in EST. For example, 10:00 AM HKT on Jan 15 is 9:00 PM EST on Jan 14."
+  },
+  {
+    q: "Is Hong Kong Time the same as China Standard Time (CST)?",
+    a: "Yes. Both HKT (Hong Kong Time) and CST (China Standard Time / Beijing Time) operate at UTC+8 year-round. However, they are tracked under separate IANA timezone identifiers (Asia/Hong_Kong vs Asia/Shanghai)."
+  },
+  {
+    q: "Why should I include the date when converting HKT to EST?",
+    a: "Because the 13-hour difference causes more than half of the day in Hong Kong to fall on the previous date in EST, specifying the date prevents severe meeting scheduling and travel errors."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "hkt to est, HKT to EST converter, convert HKT to EST, HKT time to EST, HKT EST conversion, Hong Kong Time to EST, HKT to Eastern Standard Time, HKT vs EST, HKT EST time difference, Hong Kong time to Eastern Time, Hong Kong time zone, HKT timezone, HKT UTC+8, EST UTC-5",
+  image: "/assets/hkt-to-est-time-difference.webp",
+  imageAlt: "HKT to EST converter comparing Hong Kong Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online HKT to EST converter featuring live clocks, 24-hour schedules, previous-day date rollover calculations, and timezone guides for Hong Kong Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert HKT to EST",
+  howToDescription: "Convert Hong Kong Time (HKT, UTC+8) to Eastern Standard Time (EST, UTC-5) by subtracting 13 hours.",
+  howToSteps: [
+    { name: "Start with HKT time", text: "Identify the current time in Hong Kong Time (HKT / UTC+8)." },
+    { name: "Subtract 13 hours", text: "Subtract exactly 13 hours from the HKT time value." },
+    { name: "Check for date rollover", text: "If the HKT time is between 00:00 and 12:59 PM, set the calendar date back by one day." },
+    { name: "Read the EST result", text: "The resulting time and date reflect Eastern Standard Time (EST, UTC-5)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">HKT to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">HKT to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 700px; margin: 0.75rem auto 0;">
+        Convert Hong Kong Time (HKT) to Eastern Standard Time (EST) instantly. HKT is <strong>UTC+8</strong> and EST is <strong>UTC-5</strong>, making HKT <strong>13 hours ahead</strong> of EST. Our tool calculates exact local times and handles previous-day date rollbacks automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/hkt-to-est-time-difference.webp"
+      alt="HKT to EST converter showing Hong Kong Time and Eastern Standard Time comparison"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="HKT to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- HKT to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST Time Difference</h2>
+      <p>
+        The time difference between Hong Kong Time (HKT) and Eastern Standard Time (EST) is <strong>13 hours</strong>. HKT operates at the UTC+8 offset, while EST operates at UTC-5. Because the calculation is <code>+8 − (-5) = 13</code> hours, local time in Hong Kong is exactly 13 hours ahead of EST.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">HKT − 13 hours = EST</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+8 → UTC-5 • Hong Kong Time is 13 hours ahead of EST</p>
+      </div>
+      <p>
+        Because HKT is 13 hours ahead, more than half of each calendar day in Hong Kong (from midnight 00:00 to 12:59 PM) corresponds to the <strong>previous calendar day</strong> in EST. For instance, 9:00 AM HKT on Thursday morning matches 8:00 PM EST on Wednesday evening.
+      </p>
+    </section>
+
+    <!-- Date Rollover Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/hkt-to-est-date-rollover.webp"
+        alt="Infographic illustrating HKT to EST date rollover from morning HKT to previous evening EST"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert HKT to EST</h2>
+      <p>
+        Converting Hong Kong Time to Eastern Standard Time requires subtracting 13 hours from your HKT time. Follow these steps:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Start with your HKT date and time.</strong> Note the hour and minute in Hong Kong Time (HKT / UTC+8).</li>
+        <li><strong>Subtract 13 hours.</strong> Shift the time backward by 13 hours.</li>
+        <li><strong>Check for date rollover.</strong> If the HKT time is between 00:00 and 12:59 PM, subtracting 13 hours moves the EST date to the previous calendar day.</li>
+        <li><strong>Read the final EST result.</strong> The resulting figure reflects Eastern Standard Time (EST, UTC-5).</li>
+      </ol>
+      <h3>Quick Standard Conversion Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>00:00 (Midnight) HKT</strong> → 0 − 13 = <strong>11:00 PM EST previous day</strong></li>
+        <li><strong>06:00 AM HKT</strong> → 6 − 13 = <strong>5:00 PM (17:00) EST previous day</strong></li>
+        <li><strong>12:00 PM (Noon) HKT</strong> → 12 − 13 = <strong>11:00 PM EST previous day</strong></li>
+        <li><strong>1:00 PM (13:00) HKT</strong> → 13 − 13 = <strong>12:00 AM (00:00) EST same day</strong></li>
+        <li><strong>6:00 PM (18:00) HKT</strong> → 18 − 13 = <strong>5:00 AM EST same day</strong></li>
+        <li><strong>11:00 PM (23:00) HKT</strong> → 23 − 13 = <strong>10:00 AM EST same day</strong></li>
+      </ul>
+      <p>
+        For instant date-aware conversions without manual math, use our <strong>interactive converter tool above</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST Conversion Table (24 Hours)</h2>
+      <p>
+        The table below shows every hour of the day converted from Hong Kong Time (HKT) to Eastern Standard Time (EST). Rows highlighted in accent color indicate times where EST falls on the previous calendar day.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">HKT (UTC+8)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">EST (UTC-5)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.hkt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: HKT times from 00:00 (midnight) to 12:00 PM produce EST times on the previous calendar day.
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST Practical Conversion Examples</h2>
+      <p>Here are practical real-world scenarios illustrating how HKT times map to Eastern Standard Time:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning HK Exchange Open</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>9:30 AM HKT, Jan 15</strong> → <strong>8:30 PM EST, Jan 14</strong><br/>The market open in Hong Kong (9:30 AM HKT) aligns with 8:30 PM EST on the previous evening in New York.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Lunch Sync</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>1:00 PM (13:00) HKT</strong> → <strong>12:00 AM (Midnight) EST</strong><br/>1:00 PM HKT in Hong Kong matches midnight EST as the Eastern U.S. date begins.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Afternoon Handoff</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>5:00 PM (17:00) HKT</strong> → <strong>4:00 AM EST</strong><br/>A 5:00 PM HKT afternoon handoff reaches early morning EST (4:00 AM EST) on the same day.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Hong Kong Briefing</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>8:00 PM (20:00) HKT</strong> → <strong>7:00 AM EST</strong><br/>An 8:00 PM HKT evening call in Hong Kong matches 7:00 AM EST — as morning office hours begin on the U.S. East Coast.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Late Night Sync</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>10:00 PM (22:00) HKT</strong> → <strong>9:00 AM EST</strong><br/>A 10:00 PM HKT late-night sync aligns with 9:00 AM EST standard business opening in New York.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">New Year's Midnight</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>00:00 HKT, Jan 1</strong> → <strong>11:00 AM EST, Dec 31</strong><br/>When Hong Kong rings in the New Year at midnight, New York is at 11:00 AM on New Year's Eve!</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>8:30 AM HKT</strong> → <strong>7:30 PM EST (previous day)</strong></li>
+        <li><strong>10:15 AM HKT</strong> → <strong>9:15 PM EST (previous day)</strong></li>
+        <li><strong>2:45 PM HKT</strong> → <strong>1:45 AM EST (same day)</strong></li>
+        <li><strong>9:30 PM HKT</strong> → <strong>8:30 AM EST (same day)</strong></li>
+      </ul>
+    </section>
+
+    <!-- What Is HKT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is HKT?</h2>
+      <p>
+        <strong>Hong Kong Time (HKT)</strong> is the standard time zone for Hong Kong, operating at <strong>UTC+8</strong>. In the IANA timezone database, it is identified by <code>Asia/Hong_Kong</code>.
+      </p>
+      <p>
+        Hong Kong is a major global financial center. HKT operates at the same UTC+8 offset as China Standard Time (Beijing Time), Singapore Standard Time (SST), and Western Australian Standard Time (AWST). Hong Kong does not observe daylight saving time, maintaining a fixed UTC+8 offset year-round.
+      </p>
+    </section>
+
+    <!-- Hong Kong Time Zone Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/hong-kong-time-hkt-utc8.webp"
+        alt="Graphic illustration of Hong Kong Time HKT UTC+8 timezone"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the standard time zone designation for eastern North America, defined as <strong>UTC-5</strong>.
+      </p>
+      <p>
+        EST applies to major cities including New York City, Toronto, Washington D.C., Miami, Boston, Philadelphia, Atlanta, and Montreal during winter standard-time months (November to March). For more GMT-based conversions, visit our <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage.
+      </p>
+    </section>
+
+    <!-- EST vs EDT Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/est-vs-edt-comparison.webp"
+        alt="Infographic comparing EST (UTC-5, Standard Time) and EDT (UTC-4, Daylight Saving Time)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- EST vs EDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>EST vs EDT</h2>
+      <p>
+        It is essential to distinguish between <strong>EST</strong> and <strong>EDT</strong> when converting to North American Eastern Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Observance Period</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Eastern Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC-5</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter (Nov to Mar)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px;">EDT</td>
+              <td style="padding: 10px 16px;">Eastern Daylight Time</td>
+              <td style="padding: 10px 16px;">UTC-4</td>
+              <td style="padding: 10px 16px;">Summer (Mar to Nov)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        EST (UTC-5) is observed during winter months. EDT (UTC-4) is observed during summer months under daylight saving time. Our tool explicitly calculates the standard <strong>HKT (UTC+8) to EST (UTC-5)</strong> 13-hour difference.
+      </p>
+    </section>
+
+    <!-- HKT vs EST Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT vs EST</h2>
+      <p>A direct comparison of key attributes between Hong Kong Time and Eastern Standard Time:</p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HKT</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hong Kong Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+8</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC-5</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13 hours ahead of EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13 hours behind HKT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hong Kong SAR</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern US & Canada</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No DST (fixed UTC+8 year-round)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Fixed UTC-5 offset (region uses EDT in summer)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px;">Asia/Hong_Kong</td>
+              <td style="padding: 10px 16px;">Etc/GMT+5 / America/New_York</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why HKT to EST Conversion Can Change the Date</h2>
+      <p>
+        Because HKT is 13 hours ahead of EST, morning and early afternoon hours in Hong Kong correspond to the previous calendar day in EST.
+      </p>
+      <h3>Date Rollover Window</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>HKT 00:00 to 12:59 PM</strong> → EST 11:00 AM to 11:59 PM → <strong>Previous calendar day</strong></li>
+        <li><strong>HKT 13:00 (1:00 PM)</strong> → EST 00:00 (Midnight) → <strong>Same calendar day</strong></li>
+        <li><strong>HKT 18:00 (6:00 PM)</strong> → EST 05:00 AM → <strong>Same calendar day</strong></li>
+        <li><strong>HKT 22:00 (10:00 PM)</strong> → EST 09:00 AM → <strong>Same calendar day</strong></li>
+      </ul>
+      <p>
+        Always state both the <strong>time and date</strong> when coordinating between Hong Kong and the U.S. East Coast. Our converter updates calendar dates automatically.
+      </p>
+    </section>
+
+    <!-- Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST for Business Meetings</h2>
+      <p>
+        Managing international finance and cross-border commerce between Hong Kong (HKT) and New York (EST) requires planning around the 13-hour shift.
+      </p>
+      <h3>Optimal Overlap Windows</h3>
+      <p>
+        Standard business hours in Hong Kong (9:00 AM to 6:00 PM HKT) map to <strong>8:00 PM to 5:00 AM EST</strong>. The best real-time overlap occurs between <strong>8:00 PM and 10:00 PM HKT (7:00 AM to 9:00 AM EST)</strong>, when Hong Kong teams wrap up evening work while New York teams start their workday.
+      </p>
+    </section>
+
+    <!-- Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST for Technology</h2>
+      <p>
+        Fintech platforms, stock exchanges, and cloud data centers in East Asia convert transaction timestamps logged in HKT or UTC to EST for Wall Street reporting. Using a date-aware calculation ensures error-free data auditing.
+      </p>
+    </section>
+
+    <!-- Common Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common HKT to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Adding Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is 13 hours behind HKT. You must subtract 13 hours from HKT. Adding 13 hours yields UTC+21, which does not exist.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Missing Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">HKT times from 00:00 to 12:59 PM belong to the previous calendar day in EST. Always verify the date.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Assuming 12-Hour Shift Instead of 13</h3>
+          <p style="margin: 0; font-size: 0.93rem;">The difference between UTC+8 and UTC-5 is 13 hours, not 12. Using 12 hours causes a 1-hour scheduling error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing EST with EDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is UTC-5 (winter). EDT is UTC-4 (summer). Using EST during summer introduces a 1-hour shift relative to New York local clocks.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Subtract 13 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is always HKT − 13 hours. Subtract 13 hours from HKT to calculate EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Watch Midday Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any HKT time before 1:00 PM (13:00) falls on the previous calendar day in EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🌐 State Full Abbreviation</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Write meeting times clearly: <strong>10:00 HKT / 21:00 EST (previous day)</strong>.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">⚡ Use the Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Use our free converter above for instant, error-free date and time calculations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/utc-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          UTC to EST Converter
+        </a>
+        <a href="/pst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          PST to EST Converter
+        </a>
+        <a href="/wib-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          WIB to EST Converter
+        </a>
+        <a href="/sst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          SST to EST Converter
+        </a>
+        <a href="/gmt-to-hkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to HKT Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/hkt-to-est/",
+        "url": "https://gmttoestconverter.com/hkt-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/hkt-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/hkt-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "HKT to EST Converter", "item": "https://gmttoestconverter.com/hkt-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "HKT to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/hkt-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>

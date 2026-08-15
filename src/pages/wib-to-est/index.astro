@@ -1,0 +1,648 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "wib-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "WIB to EST Converter";
+const seoTitle = "WIB to EST Converter – Convert Western Indonesian Time to EST";
+const pageDescription = "Convert WIB to EST instantly with our free timezone converter. Western Indonesian Time (WIB) is UTC+7, making it 12 hours ahead of Eastern Standard Time (EST, UTC-5). Includes conversion tables, previous-day date rollover guides, EST vs EDT comparisons, and FAQs.";
+
+const context = {
+  from: "WIB",
+  to: "EST",
+  fromZone: "Asia/Jakarta",
+  toZone: "Etc/GMT+5"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: WIB (UTC+7) → EST (UTC-5) = subtract 12 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour - 12;
+  const prevDay = estHour < 0;
+  if (prevDay) estHour += 24;
+  return {
+    wib: formatHour12(hour),
+    est: `${formatHour12(estHour)}${prevDay ? " (-1 day)" : ""}`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is WIB?",
+    a: "WIB stands for Western Indonesian Time (Waktu Indonesia Barat). It is the official time zone for western Indonesia (UTC+7), covering Java, Sumatra, and parts of Kalimantan, including Jakarta, Surabaya, Bandung, Medan, and Palembang."
+  },
+  {
+    q: "What is the UTC offset of WIB?",
+    a: "WIB operates at UTC+7 (Coordinated Universal Time plus 7 hours). It remains fixed at UTC+7 year-round without daylight saving adjustments."
+  },
+  {
+    q: "How many hours is WIB ahead of EST?",
+    a: "Western Indonesian Time (WIB, UTC+7) is exactly 12 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM (noon) WIB in Jakarta, it is 00:00 (midnight) EST in New York."
+  },
+  {
+    q: "What is WIB in EST?",
+    a: "To convert WIB to EST, subtract 12 hours. For WIB times between 00:00 and 11:59 AM, subtracting 12 hours moves the EST time to the previous calendar day."
+  },
+  {
+    q: "How do I convert WIB to EST?",
+    a: "Subtract 12 hours from your WIB time. For example, 6:00 PM (18:00) WIB minus 12 hours equals 6:00 AM EST on the same day. 6:00 AM WIB minus 12 hours equals 6:00 PM (18:00) EST on the previous day."
+  },
+  {
+    q: "Is WIB always UTC+7?",
+    a: "Yes. Indonesia does not observe seasonal daylight saving time. WIB stays fixed at UTC+7 throughout the entire year."
+  },
+  {
+    q: "What is EST in UTC?",
+    a: "EST (Eastern Standard Time) operates at UTC-5 (Coordinated Universal Time minus 5 hours)."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST (Eastern Standard Time, UTC-5) is observed during North American winter months (November to March). EDT (Eastern Daylight Time, UTC-4) is observed during summer months (March to November). EDT is 1 hour ahead of EST."
+  },
+  {
+    q: "Can WIB to EST conversion change the calendar date?",
+    a: "Yes. Because WIB is 12 hours ahead of EST, all WIB times between 00:00 (midnight) and 11:59 AM correspond to the previous calendar day in EST. For example, 8:00 AM WIB on January 15 is 8:00 PM EST on January 14."
+  },
+  {
+    q: "What time is 12:00 WIB in EST?",
+    a: "12:00 PM (noon) WIB is 00:00 (midnight) EST at the start of the same calendar day."
+  },
+  {
+    q: "What time is midnight WIB in EST?",
+    a: "Midnight (00:00) WIB is 12:00 PM (noon) EST on the previous calendar day."
+  },
+  {
+    q: "Which Indonesian cities use WIB?",
+    a: "WIB is used by major western Indonesian metropolitan areas including Jakarta, Surabaya, Bandung, Medan, Palembang, Semarang, Yogyakarta, and Pontianak."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "wib to est, WIB to EST converter, convert WIB to EST, WIB time to EST, WIB EST conversion, WIB to Eastern Standard Time, WIB vs EST, WIB EST time difference, Western Indonesian Time to EST, Indonesia time to EST, Jakarta time to EST, WIB timezone, WIB UTC+7, EST UTC-5",
+  image: "/assets/wib-to-est-time-difference.webp",
+  imageAlt: "WIB to EST converter comparing Western Indonesian Time and Eastern Standard Time",
+  faqs,
+  appDescription: "Free online WIB to EST converter featuring live clocks, 24-hour schedules, previous-day date rollover calculations, and Indonesia timezone guides for Western Indonesian Time and Eastern Standard Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert WIB to EST",
+  howToDescription: "Convert Western Indonesian Time (WIB, UTC+7) to Eastern Standard Time (EST, UTC-5) by subtracting 12 hours.",
+  howToSteps: [
+    { name: "Start with WIB time", text: "Identify the current time in Western Indonesian Time (WIB / UTC+7)." },
+    { name: "Subtract 12 hours", text: "Subtract exactly 12 hours from the WIB time value." },
+    { name: "Check for date rollover", text: "If the WIB time is between 00:00 and 11:59 AM, set the calendar date back by one day." },
+    { name: "Read the EST result", text: "The resulting time and date reflect Eastern Standard Time (EST, UTC-5)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">WIB to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">WIB to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 700px; margin: 0.75rem auto 0;">
+        Convert Western Indonesian Time (WIB) to Eastern Standard Time (EST) instantly. WIB is <strong>UTC+7</strong> and EST is <strong>UTC-5</strong>, making WIB <strong>12 hours ahead</strong> of EST. Our tool calculates exact local times and handles previous-day date rollbacks automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/wib-to-est-time-difference.webp"
+      alt="WIB to EST converter showing Western Indonesian Time and Eastern Standard Time comparison"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="WIB to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- WIB to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB to EST Time Difference</h2>
+      <p>
+        The time difference between Western Indonesian Time (WIB) and Eastern Standard Time (EST) is <strong>12 hours</strong>. WIB operates at the UTC+7 offset, while EST operates at UTC-5. Because the difference between +7 and -5 is 12 hours, local time in Western Indonesia is exactly half a day (12 hours) ahead of EST.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">WIB − 12 hours = EST</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+7 → UTC-5 • WIB is 12 hours ahead of EST</p>
+      </div>
+      <p>
+        A 12-hour offset means AM and PM times neatly flip between the two regions: 8:00 AM WIB corresponds to 8:00 PM EST, while 8:00 PM WIB corresponds to 8:00 AM EST.
+      </p>
+      <p>
+        Because WIB is 12 hours ahead, any WIB time during morning hours (00:00 to 11:59 AM) falls on the <strong>previous calendar day</strong> in EST. For instance, 6:00 AM WIB on Thursday morning corresponds to 6:00 PM EST on Wednesday evening.
+      </p>
+    </section>
+
+    <!-- Date Rollover Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/wib-to-est-date-rollover.webp"
+        alt="Infographic showing WIB to EST date rollover from morning WIB to previous evening EST"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert WIB to EST</h2>
+      <p>
+        Converting Western Indonesian Time to Eastern Standard Time requires subtracting 12 hours from your WIB time. Follow these steps:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Start with your WIB time.</strong> Note the hour and minute in Western Indonesian Time (WIB / UTC+7).</li>
+        <li><strong>Subtract 12 hours.</strong> Shift the time backward by 12 hours.</li>
+        <li><strong>Check for date rollover.</strong> If the WIB time is between 00:00 and 11:59 AM, subtracting 12 hours moves the EST date to the previous calendar day.</li>
+        <li><strong>Read the final EST result.</strong> The resulting figure is Eastern Standard Time (EST, UTC-5).</li>
+      </ol>
+      <h3>Quick Standard Conversion Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>00:00 (Midnight) WIB</strong> → 0 − 12 = <strong>12:00 PM (Noon) EST previous day</strong></li>
+        <li><strong>06:00 AM WIB</strong> → 6 − 12 = <strong>6:00 PM (18:00) EST previous day</strong></li>
+        <li><strong>12:00 PM (Noon) WIB</strong> → 12 − 12 = <strong>12:00 AM (00:00) EST same day</strong></li>
+        <li><strong>3:00 PM (15:00) WIB</strong> → 15 − 12 = <strong>3:00 AM EST same day</strong></li>
+        <li><strong>6:00 PM (18:00) WIB</strong> → 18 − 12 = <strong>6:00 AM EST same day</strong></li>
+        <li><strong>11:00 PM (23:00) WIB</strong> → 23 − 12 = <strong>11:00 AM EST same day</strong></li>
+      </ul>
+      <p>
+        For instant date-aware conversions without manual math, use our <strong>interactive converter tool above</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB to EST Conversion Table (24 Hours)</h2>
+      <p>
+        The table below shows every hour of the day converted from Western Indonesian Time (WIB) to Eastern Standard Time (EST). Rows highlighted in accent color indicate times where EST falls on the previous calendar day.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">WIB (UTC+7)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">EST (UTC-5)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.wib}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: WIB times from 00:00 to 11:00 AM produce EST times on the previous calendar day.
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB to EST Practical Conversion Examples</h2>
+      <p>Here are practical real-world scenarios illustrating how WIB times map to Eastern Standard Time:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning Jakarta Stand-Up</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>8:00 AM WIB, Jan 15</strong> → <strong>8:00 PM EST, Jan 14</strong><br/>An 8:00 AM WIB morning briefing in Jakarta lands at 8:00 PM EST on the previous evening in New York.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Lunch Sync</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>12:00 PM WIB</strong> → <strong>12:00 AM (Midnight) EST</strong><br/>Noon WIB in Surabaya aligns with midnight EST as the Eastern U.S. date begins.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Afternoon Handoff</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>4:00 PM (16:00) WIB</strong> → <strong>4:00 AM EST</strong><br/>A 4:00 PM WIB handoff reaches early morning EST (4:00 AM EST) on the same day.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">End of Business Day in Jakarta</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>6:00 PM (18:00) WIB</strong> → <strong>6:00 AM EST</strong><br/>The close of the business day in Jakarta (6:00 PM WIB) matches 6:00 AM EST — the start of the morning on the East Coast.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Webinar</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>9:00 PM (21:00) WIB</strong> → <strong>9:00 AM EST</strong><br/>A prime-time 9:00 PM WIB webinar in Indonesia broadcasts live at 9:00 AM EST as office hours open in North America.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">New Year's Celebration</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>00:00 WIB, Jan 1</strong> → <strong>12:00 PM (Noon) EST, Dec 31</strong><br/>When Indonesia celebrates New Year's midnight, Eastern North America is still at noon on New Year's Eve!</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>7:30 AM WIB</strong> → <strong>7:30 PM EST (previous day)</strong></li>
+        <li><strong>10:15 AM WIB</strong> → <strong>10:15 PM EST (previous day)</strong></li>
+        <li><strong>1:45 PM WIB</strong> → <strong>1:45 AM EST (same day)</strong></li>
+        <li><strong>8:30 PM WIB</strong> → <strong>8:30 AM EST (same day)</strong></li>
+      </ul>
+    </section>
+
+    <!-- What Is WIB? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is WIB?</h2>
+      <p>
+        <strong>WIB (Western Indonesian Time / Waktu Indonesia Barat)</strong> is the standard time zone for western regions of Indonesia, operating at <strong>UTC+7</strong>. In the IANA timezone database, it is primarily identified by <code>Asia/Jakarta</code> and <code>Asia/Pontianak</code>.
+      </p>
+      <p>
+        WIB covers approximately 80% of Indonesia's population, encompassing Java (Jakarta, Surabaya, Bandung), Sumatra (Medan, Palembang, Pekanbaru), and West/Central Kalimantan. WIB does not observe seasonal daylight saving time, remaining fixed at UTC+7 year-round.
+      </p>
+    </section>
+
+    <!-- Indonesia Time Map Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/wib-indonesia-time-zone-map.webp"
+        alt="Map/Infographic of Indonesia showing WIB (UTC+7), WITA (UTC+8), and WIT (UTC+9)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Indonesia's Three Time Zones -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Indonesia's Three Time Zones</h2>
+      <p>
+        Indonesia spans over 5,100 kilometers across the equator and is divided into three official time zones:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Indonesian Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Key Islands & Cities</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">WIB</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Waktu Indonesia Barat</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC+7</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Java, Sumatra, West & Central Kalimantan (Jakarta, Surabaya, Medan)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">WITA</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Waktu Indonesia Tengah</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+8</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Bali, Nusa Tenggara, Sulawesi, East Kalimantan (Denpasar, Makassar)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px;">WIT</td>
+              <td style="padding: 10px 16px;">Waktu Indonesia Timur</td>
+              <td style="padding: 10px 16px;">UTC+9</td>
+              <td style="padding: 10px 16px;">Maluku, Papua (Jayapura, Ambon)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        When converting Indonesian times to EST, confirm the specific region. Converting Bali time to EST requires a <a href="/wita-to-est/" style="color: var(--accent);">WITA to EST</a> conversion (UTC+8 to UTC-5 = 13 hours difference), whereas Jakarta time to EST is WIB to EST (12 hours difference).
+      </p>
+    </section>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the standard time zone designation for eastern North America, defined as <strong>UTC-5</strong>.
+      </p>
+      <p>
+        EST applies to major cities including New York City, Toronto, Washington D.C., Miami, Boston, Philadelphia, Atlanta, and Montreal during winter standard-time months (November to March). For more GMT-based conversions, see our <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage.
+      </p>
+    </section>
+
+    <!-- EST vs EDT Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/est-vs-edt-wib-converter.webp"
+        alt="Infographic comparing EST (UTC-5, Standard Time) and EDT (UTC-4, Daylight Saving Time)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- EST vs EDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>EST vs EDT</h2>
+      <p>
+        It is important to distinguish between <strong>EST</strong> and <strong>EDT</strong> when converting to North American Eastern Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Observance Period</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Eastern Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC-5</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter (Nov to Mar)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px;">EDT</td>
+              <td style="padding: 10px 16px;">Eastern Daylight Time</td>
+              <td style="padding: 10px 16px;">UTC-4</td>
+              <td style="padding: 10px 16px;">Summer (Mar to Nov)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        EST (UTC-5) is observed during winter months. EDT (UTC-4) is observed during summer months under daylight saving time. Our tool explicitly measures the standard <strong>WIB (UTC+7) to EST (UTC-5)</strong> 12-hour difference.
+      </p>
+    </section>
+
+    <!-- WIB vs EST Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB vs EST</h2>
+      <p>A direct comparison of key attributes between Western Indonesian Time and Eastern Standard Time:</p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">WIB</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Western Indonesian Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+7</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC-5</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">12 hours ahead of EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">12 hours behind WIB</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Java, Sumatra, West/Central Kalimantan (Indonesia)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern US & Canada</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No DST (fixed UTC+7 year-round)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Fixed UTC-5 offset (region uses EDT in summer)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px;">Asia/Jakarta</td>
+              <td style="padding: 10px 16px;">Etc/GMT+5 / America/New_York</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Dates Can Change During WIB to EST Conversion</h2>
+      <p>
+        Because WIB is 12 hours ahead of EST, morning hours in WIB correspond to the previous calendar day in EST.
+      </p>
+      <h3>Date Rollover Window</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>WIB 00:00 to 11:59 AM</strong> → EST 12:00 PM to 11:59 PM → <strong>Previous calendar day</strong></li>
+        <li><strong>WIB 12:00 PM (Noon)</strong> → EST 00:00 (Midnight) → <strong>Same calendar day</strong></li>
+        <li><strong>WIB 18:00 (6:00 PM)</strong> → EST 06:00 AM → <strong>Same calendar day</strong></li>
+        <li><strong>WIB 23:00 (11:00 PM)</strong> → EST 11:00 AM → <strong>Same calendar day</strong></li>
+      </ul>
+      <p>
+        Always check both the <strong>time and date</strong> when communicating across WIB and EST. Our converter tool updates calendar dates automatically.
+      </p>
+    </section>
+
+    <!-- Business & Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB to EST for Business, Meetings, and Technology</h2>
+      <p>
+        Coordinating business operations between Indonesia (WIB) and North American Eastern Time (EST) requires planning around the 12-hour difference.
+      </p>
+      <h3>Overlapping Working Hours</h3>
+      <p>
+        A 12-hour difference means standard working hours in Jakarta (8:00 AM to 5:00 PM WIB) correspond to <strong>8:00 PM to 5:00 AM EST</strong>. The best window for real-time communication occurs at <strong>6:00 PM to 8:00 PM WIB (6:00 AM to 8:00 AM EST)</strong>, when Indonesian teams wrap up their evening while U.S. East Coast teams start their morning.
+      </p>
+      <h3>Technical Systems Context</h3>
+      <p>
+        Cloud platforms and financial APIs operating in Southeast Asia convert transaction timestamps stored in WIB or UTC to EST for U.S. corporate reporting. Using a date-aware calculation ensures accurate audit logs.
+      </p>
+    </section>
+
+    <!-- Common Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common WIB to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Adding Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is 12 hours behind WIB. You must subtract 12 hours from WIB. Adding 12 hours gives UTC+19, which is incorrect.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Missing Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">WIB times from 00:00 to 11:59 AM belong to the previous calendar day in EST. Always verify the date.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing WIB with WITA or WIT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Indonesia has 3 time zones. WIB is UTC+7 (Jakarta), WITA is UTC+8 (Bali), and WIT is UTC+9 (Papua). Using WIB for Bali creates a 1-hour error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing EST with EDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is UTC-5 (winter). EDT is UTC-4 (summer). Using EST during summer introduces a 1-hour shift relative to New York local clocks.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>WIB to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Subtract 12 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">EST is always WIB − 12 hours. Subtract 12 hours from WIB to calculate EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Flip AM and PM</h3>
+          <p style="margin: 0; font-size: 0.93rem;">8:00 AM WIB = 8:00 PM EST (previous day). 8:00 PM WIB = 8:00 AM EST (same day).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🌐 State Full Abbreviation</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Write meeting times clearly: <strong>09:00 WIB / 21:00 EST (previous day)</strong>.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">⚡ Use the Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Use our free converter above for instant, error-free date and time calculations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-wib/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to WIB Converter
+        </a>
+        <a href="/utc-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          UTC to EST Converter
+        </a>
+        <a href="/wita-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          WITA to EST Converter
+        </a>
+        <a href="/wit-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          WIT to EST Converter
+        </a>
+        <a href="/sst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          SST to EST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/wib-to-est/",
+        "url": "https://gmttoestconverter.com/wib-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/wib-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/wib-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "WIB to EST Converter", "item": "https://gmttoestconverter.com/wib-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "WIB to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/wib-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
