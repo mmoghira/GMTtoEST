@@ -1,0 +1,690 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-cat";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to CAT Converter";
+const seoTitle = "GMT to CAT Converter – Convert GMT to Central Africa Time";
+const pageDescription = "Convert GMT to CAT instantly with our free converter. Central Africa Time (CAT) is UTC+2, which is 2 hours ahead of Greenwich Mean Time (GMT). See conversion tables, practical examples, date-change handling, and CAT countries.";
+
+const context = {
+  from: "GMT",
+  to: "CAT",
+  fromZone: "UTC",
+  toZone: "Africa/Maputo"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → CAT (UTC+2) = add 2 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let catHour = hour + 2;
+  const nextDay = catHour >= 24;
+  if (nextDay) catHour -= 24;
+  return {
+    gmt: formatHour12(hour),
+    cat: `${formatHour12(catHour)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is the difference between GMT and CAT?",
+    a: "GMT (Greenwich Mean Time) is the time standard at UTC+0, used as the global reference point for timekeeping. CAT (Central Africa Time) operates at UTC+2, making it 2 hours ahead of GMT. When it is noon in GMT, it is 2:00 PM in CAT."
+  },
+  {
+    q: "Is CAT 2 hours ahead of GMT?",
+    a: "Yes. Central Africa Time (CAT, UTC+2) is exactly 2 hours ahead of Greenwich Mean Time (GMT, UTC+0). To convert GMT to CAT, simply add 2 hours."
+  },
+  {
+    q: "What does CAT stand for?",
+    a: "CAT stands for Central Africa Time. It is the time zone designation used by several countries in central and southern Africa, including Botswana, Zambia, Zimbabwe, Malawi, Mozambique, Rwanda, and Burundi."
+  },
+  {
+    q: "What is CAT in UTC?",
+    a: "CAT operates at UTC+2, which means Central Africa Time is 2 hours ahead of Coordinated Universal Time (UTC). This is the same numeric offset as South Africa Standard Time (SAST) and Eastern European Time (EET), though they represent different geographic regions."
+  },
+  {
+    q: "How do I convert GMT to CAT?",
+    a: "Add 2 hours to the GMT time. For example, 10:00 AM GMT becomes 12:00 PM (noon) CAT. If the result exceeds midnight (e.g., 11:00 PM GMT + 2 hours = 1:00 AM CAT), advance the calendar date by one day."
+  },
+  {
+    q: "What time is 12 PM GMT in CAT?",
+    a: "12:00 PM (noon) GMT is 2:00 PM CAT on the same day."
+  },
+  {
+    q: "What time is midnight GMT in CAT?",
+    a: "Midnight (00:00) GMT is 2:00 AM CAT on the same calendar day."
+  },
+  {
+    q: "Does CAT use daylight saving time?",
+    a: "No. Central Africa Time (CAT) is a fixed UTC+2 offset year-round. The countries that observe CAT do not typically adjust their clocks for daylight saving time, making GMT-to-CAT conversion consistent throughout the year."
+  },
+  {
+    q: "Which countries use CAT?",
+    a: "Countries observing Central Africa Time include Botswana, Burundi, Democratic Republic of the Congo (eastern regions), Malawi, Mozambique, Namibia (since February 2018), Rwanda, Zambia, and Zimbabwe."
+  },
+  {
+    q: "Can GMT and CAT have different calendar dates?",
+    a: "Yes. When GMT is between 10:00 PM and 11:59 PM, adding 2 hours crosses midnight, placing CAT on the next calendar day. For example, 11:00 PM GMT on January 15 becomes 1:00 AM CAT on January 16."
+  },
+  {
+    q: "Is CAT the same as Central Time in the US?",
+    a: "No. CAT (Central Africa Time, UTC+2) is completely different from US Central Time. US Central Standard Time (CST) is UTC-6, and US Central Daylight Time (CDT) is UTC-5. CAT is 7–8 hours ahead of US Central Time."
+  },
+  {
+    q: "Is CAT the same as UTC+2?",
+    a: "Yes. CAT is defined as UTC+2. However, UTC+2 is also shared by other time zone designations such as SAST (South Africa Standard Time), EET (Eastern European Time), and IST (Israel Standard Time). These abbreviations represent different geographic regions despite sharing the same offset."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "gmt to cat, GMT to CAT converter, convert GMT to CAT, GMT CAT conversion, GMT to Central Africa Time, GMT and CAT difference, GMT vs CAT, Central Africa Time converter, CAT UTC offset, what time is CAT, GMT to CAT time difference",
+  image: "/assets/gmt-to-cat-converter.webp",
+  imageAlt: "GMT to CAT converter comparing Greenwich Mean Time and Central Africa Time",
+  faqs,
+  appDescription: "Free online GMT to CAT converter featuring live clocks, 24-hour conversion tables, and instant time calculations between Greenwich Mean Time and Central Africa Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to CAT",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Central Africa Time (CAT, UTC+2) by adding 2 hours.",
+  howToSteps: [
+    { name: "Start with GMT time", text: "Note the current Greenwich Mean Time (GMT / UTC+0)." },
+    { name: "Add 2 hours", text: "Add exactly 2 hours to the GMT time." },
+    { name: "Check for date change", text: "If the result passes midnight (00:00), advance the calendar date by one day." },
+    { name: "Read the CAT result", text: "The resulting time is Central Africa Time (CAT, UTC+2)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to CAT Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">CAT</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 680px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Central Africa Time (CAT) instantly. CAT is <strong>UTC+2</strong>, which is <strong>2 hours ahead</strong> of GMT. Our converter handles date changes automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/gmt-to-cat-converter.webp"
+      alt="GMT to CAT converter comparing London and Central Africa Time zones"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to CAT time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- GMT to CAT Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT Time Difference</h2>
+      <p>
+        The time difference between GMT and CAT is straightforward: <strong>CAT is always 2 hours ahead of GMT</strong>. Greenwich Mean Time (GMT) uses the UTC+0 offset, serving as the baseline reference for global timekeeping. Central Africa Time (CAT) uses the UTC+2 offset, which places it 2 hours ahead of GMT throughout the entire year.
+      </p>
+      <p>
+        Unlike many time zone pairs that shift during daylight saving transitions, the GMT-to-CAT offset remains constant. CAT-observing countries do not adjust their clocks seasonally, so the 2-hour difference applies every day of the year. This consistency makes scheduling between GMT and CAT regions predictable and reliable.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">GMT + 2 hours = CAT</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 → UTC+2 • Central Africa Time is always 2 hours ahead</p>
+      </div>
+      <p>
+        The 2-hour offset can cause the calendar date to change. When GMT is between 10:00 PM and 11:59 PM, adding 2 hours crosses midnight, meaning the CAT time falls on the following calendar day. Our converter accounts for this automatically.
+      </p>
+    </section>
+
+    <!-- Time Difference Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-cat-time-difference.webp"
+        alt="Timezone graphic showing the 2-hour offset between GMT (UTC+0) and CAT (UTC+2)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to CAT</h2>
+      <p>
+        Converting GMT to Central Africa Time requires a single calculation: add 2 hours to the GMT time. Here is the step-by-step process:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Start with the GMT time.</strong> Identify the exact hour and minute in Greenwich Mean Time (UTC+0).</li>
+        <li><strong>Add 2 hours.</strong> This shifts the time forward to the UTC+2 offset used by CAT.</li>
+        <li><strong>Check the date.</strong> If adding 2 hours causes the time to pass midnight (00:00), advance the calendar date by one day.</li>
+        <li><strong>Read the CAT result.</strong> The final value is the time in Central Africa Time (UTC+2).</li>
+      </ol>
+      <h3>Quick Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>10:00 AM GMT</strong> → 10 + 2 = <strong>12:00 PM CAT</strong> (same day)</li>
+        <li><strong>3:00 PM GMT</strong> → 15 + 2 = <strong>5:00 PM CAT</strong> (same day)</li>
+        <li><strong>11:00 PM GMT</strong> → 23 + 2 = <strong>1:00 AM CAT</strong> (next day)</li>
+      </ul>
+      <p>
+        For precise conversions that account for specific dates, use the <strong>converter tool above</strong>. It handles all calculations including date-boundary transitions automatically.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT Conversion Table (24 Hours)</h2>
+      <p>
+        The table below shows every hour of the day converted from GMT to Central Africa Time. The final two rows highlight date changes where the CAT time moves to the following calendar day.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">GMT (UTC+0)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">CAT (UTC+2)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.cat}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT times from 10:00 PM to 11:00 PM produce CAT times on the following calendar day.
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT Practical Examples</h2>
+      <p>Here are real-world conversion scenarios to illustrate how GMT converts to Central Africa Time:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning Conference Call</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>9:00 AM GMT</strong> → <strong>11:00 AM CAT</strong><br/>A 9 AM GMT meeting starts at 11 AM in Harare, Lusaka, or Kigali — well within working hours.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Deadline</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>12:00 PM GMT</strong> → <strong>2:00 PM CAT</strong><br/>A noon GMT deadline translates to a 2 PM cutoff in CAT countries, giving teams a manageable afternoon window.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Afternoon Sync</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>3:00 PM GMT</strong> → <strong>5:00 PM CAT</strong><br/>An afternoon sync at 3 PM GMT falls at the end of the standard CAT business day.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Event</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>6:00 PM GMT</strong> → <strong>8:00 PM CAT</strong><br/>An evening GMT event starts at 8 PM in CAT regions — suitable for virtual social events.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Late Night Handoff</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>9:00 PM GMT</strong> → <strong>11:00 PM CAT</strong><br/>A late GMT handoff reaches CAT at 11 PM — suitable for automated system transfers.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Change Example</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>11:00 PM GMT, Jan 15</strong> → <strong>1:00 AM CAT, Jan 16</strong><br/>Adding 2 hours crosses midnight. Always verify the date when converting late GMT times.</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <p>The same +2 hour rule applies to any minute value:</p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>7:30 AM GMT</strong> → <strong>9:30 AM CAT</strong></li>
+        <li><strong>2:45 PM GMT</strong> → <strong>4:45 PM CAT</strong></li>
+        <li><strong>10:15 PM GMT</strong> → <strong>12:15 AM CAT (next day)</strong></li>
+        <li><strong>11:30 PM GMT</strong> → <strong>1:30 AM CAT (next day)</strong></li>
+      </ul>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> is the time standard historically based on solar observations at the Royal Observatory in Greenwich, London. GMT sits at the UTC+0 offset, which means it has zero hours of deviation from Coordinated Universal Time (UTC). For most practical purposes, GMT and UTC are interchangeable, although UTC is the modern technical standard based on atomic clock measurements rather than astronomical observation.
+      </p>
+      <p>
+        GMT serves as the reference point from which all other time zones are calculated. Zones east of the Prime Meridian are ahead of GMT (positive UTC offsets), while zones west are behind GMT (negative UTC offsets). CAT at UTC+2 is positioned 2 hours east of GMT.
+      </p>
+      <p>
+        Many international organizations, aviation systems, weather forecasts, and maritime operations use GMT (or its equivalent UTC) as the common baseline for scheduling. When converting to any regional time zone, including CAT, you start from this zero-offset anchor. Learn more about Greenwich Mean Time on our <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage.
+      </p>
+    </section>
+
+    <!-- What Is CAT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is CAT?</h2>
+      <p>
+        <strong>Central Africa Time (CAT)</strong> is the time zone designation for UTC+2 as used in several countries across central and southern Africa. The abbreviation CAT specifically represents Central Africa Time and should not be confused with unrelated abbreviations or North American time zone names.
+      </p>
+      <p>
+        CAT operates at a fixed UTC+2 offset throughout the year. Unlike many Western time zones that adjust by one hour during seasonal daylight saving time transitions, CAT remains constant. Countries in the CAT zone keep their clocks at UTC+2 during both summer and winter months, which simplifies scheduling for anyone converting from GMT or other reference time zones.
+      </p>
+      <p>
+        The IANA time zone database uses identifiers such as <code>Africa/Maputo</code> (Mozambique), <code>Africa/Harare</code> (Zimbabwe), and <code>Africa/Lusaka</code> (Zambia) for CAT. These identifiers all resolve to UTC+2 without daylight saving adjustments.
+      </p>
+      <p>
+        CAT is commonly encountered in international business communications, NGO operations coordinating with African field offices, software timestamp displays, and travel itineraries involving flights to or from central and southern African destinations.
+      </p>
+    </section>
+
+    <!-- Comparison Infographic -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-cat-wat-eat-time-zone-comparison.webp"
+        alt="Infographic comparing GMT (UTC+0), WAT (UTC+1), CAT (UTC+2), and EAT (UTC+3) African time zones"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Countries That Use CAT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Countries and Regions That Use CAT</h2>
+      <p>
+        Central Africa Time is observed by a number of countries in the central and southern portions of the African continent. The following countries use CAT as their standard time zone:
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Botswana</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Gaborone</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Burundi</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Gitega</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>DR Congo (East)</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Lubumbashi, Bukavu</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Malawi</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Lilongwe</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Mozambique</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Maputo</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Namibia</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Windhoek</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Rwanda</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Kigali</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Zambia</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Lusaka</span>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+          <strong>Zimbabwe</strong><br/><span style="font-size: 0.88rem; color: var(--text-muted);">Capital: Harare</span>
+        </div>
+      </div>
+      <p>
+        Note that the Democratic Republic of the Congo spans two time zones: the western part uses WAT (West Africa Time, UTC+1), while the eastern part uses CAT (UTC+2). Not all African countries use CAT — neighboring zones include WAT (UTC+1) to the west and EAT (East Africa Time, UTC+3) to the east. South Africa Standard Time (SAST) also shares the UTC+2 offset but is classified separately under its own designation.
+      </p>
+    </section>
+
+    <!-- GMT vs CAT Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs CAT</h2>
+      <p>Here is a direct comparison of Greenwich Mean Time and Central Africa Time across key attributes:</p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">CAT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Central Africa Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC±0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+2</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">—</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">2 hours ahead of GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">United Kingdom, global reference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Central & Southern Africa</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UK switches to BST in summer</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No seasonal DST change</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC / Etc/GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Africa/Maputo, Africa/Harare</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; font-weight: 600;">Common Uses</td>
+              <td style="padding: 10px 16px;">Aviation, maritime, global IT systems</td>
+              <td style="padding: 10px 16px;">Regional business, NGO operations, travel</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Does CAT Observe Daylight Saving? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does CAT Observe Daylight Saving Time?</h2>
+      <p>
+        <strong>No.</strong> Central Africa Time (CAT) is a fixed UTC+2 offset that does not change seasonally. The countries using CAT do not observe daylight saving time (DST). Their clocks remain at UTC+2 throughout the entire year, including both the southern hemisphere summer and winter periods.
+      </p>
+      <p>
+        This is in contrast to many European and North American time zones, where clocks shift forward by one hour during spring and back again in autumn. For GMT-to-CAT conversion, this means the calculation is always the same: <strong>add 2 hours to GMT, regardless of the date</strong>.
+      </p>
+      <p>
+        However, note that the United Kingdom itself switches from GMT (UTC+0) to BST (British Summer Time, UTC+1) during summer months. If you are located in the UK during summer, you would need to convert from BST rather than GMT. Our <a href="/gmt-to-bst/" style="color: var(--accent);">GMT to BST Converter</a> can help with that distinction.
+      </p>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT Date Changes</h2>
+      <p>
+        Since CAT is 2 hours ahead of GMT, late-evening GMT times can cross midnight and fall on the next calendar day in CAT. This is an important detail for scheduling, contract deadlines, and any time-sensitive operations.
+      </p>
+      <h3>When Does the Date Change?</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 21:59</strong> → CAT 02:00 to 23:59 → <strong>Same calendar day</strong></li>
+        <li><strong>GMT 22:00</strong> → CAT 00:00 (midnight) → <strong>Next calendar day</strong></li>
+        <li><strong>GMT 23:00</strong> → CAT 01:00 AM → <strong>Next calendar day</strong></li>
+        <li><strong>GMT 23:30</strong> → CAT 01:30 AM → <strong>Next calendar day</strong></li>
+      </ul>
+      <h3>Date Change Examples</h3>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+        <p style="margin: 0 0 0.75rem;"><strong>Example 1:</strong> 9:00 PM GMT on March 10 → 11:00 PM CAT on March 10 (same day)</p>
+        <p style="margin: 0 0 0.75rem;"><strong>Example 2:</strong> 10:00 PM GMT on March 10 → 12:00 AM CAT on March 11 (date advances)</p>
+        <p style="margin: 0;"><strong>Example 3:</strong> 11:30 PM GMT on December 31 → 1:30 AM CAT on January 1 (new year in CAT)</p>
+      </div>
+      <p>
+        Always verify both the <strong>time and date</strong> when converting late GMT hours to CAT. Our converter tool at the top of this page handles date transitions automatically.
+      </p>
+    </section>
+
+    <!-- Meetings and Scheduling -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT for Meetings and Scheduling</h2>
+      <p>
+        If you work with colleagues, clients, or partners in CAT countries, coordinating meeting times across the 2-hour offset is essential. Here are practical approaches:
+      </p>
+      <h3>Overlapping Business Hours</h3>
+      <p>
+        Standard business hours in GMT (9:00 AM to 5:00 PM) correspond to 11:00 AM to 7:00 PM in CAT. The overlap window for comfortable working hours (assuming CAT business hours of 8:00 AM to 5:00 PM) is approximately <strong>9:00 AM to 3:00 PM GMT / 11:00 AM to 5:00 PM CAT</strong>.
+      </p>
+      <h3>Best Practices for Cross-Zone Scheduling</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li>Always include the time zone abbreviation when sharing meeting times: <strong>14:00 GMT / 16:00 CAT</strong></li>
+        <li>Use calendar applications that support time zone display to avoid manual conversion errors</li>
+        <li>For recurring meetings, note that the offset does not change seasonally — the same GMT time always converts to the same CAT time</li>
+        <li>When sending meeting invitations to CAT participants, consider that their afternoon ends at 5:00 PM CAT (3:00 PM GMT)</li>
+        <li>For international conferences spanning multiple African zones, confirm whether participants are in <a href="/gmt-to-eat/" style="color: var(--accent);">EAT (UTC+3)</a>, CAT (UTC+2), or WAT (UTC+1)</li>
+      </ul>
+      <h3>Use Cases</h3>
+      <p>GMT-to-CAT conversion is commonly needed for:</p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>International development and NGO coordination</strong> — many organizations headquartered in GMT-aligned countries operate field offices in CAT regions</li>
+        <li><strong>Corporate operations</strong> — mining, telecommunications, and financial companies with offices in Botswana, Zambia, or Zimbabwe</li>
+        <li><strong>Travel planning</strong> — flights between London and Harare, Lusaka, Maputo, or Kigali</li>
+        <li><strong>Remote work</strong> — distributed teams spanning European and African time zones</li>
+        <li><strong>Software development</strong> — server maintenance windows and deployment schedules across GMT and CAT</li>
+        <li><strong>Event broadcasting</strong> — live streams and webinars targeting both GMT and CAT audiences</li>
+      </ul>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to CAT Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Remember +2</h3>
+          <p style="margin: 0; font-size: 0.93rem;">CAT is always exactly 2 hours ahead of GMT. There is no seasonal variation to track.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Check the Date</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Late GMT times (10 PM onward) roll into the next calendar day in CAT. Always verify the date.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🔤 Confirm the Abbreviation</h3>
+          <p style="margin: 0; font-size: 0.93rem;">CAT means Central Africa Time (UTC+2). Do not confuse it with CST, CDT, or other Central-prefixed zones.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🌍 Identify the Region</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Verify whether your contact is in a CAT (UTC+2), WAT (UTC+1), or <a href="/gmt-to-eat/" style="color: var(--accent);">EAT (UTC+3)</a> country before converting.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🔄 No DST Adjustments</h3>
+          <p style="margin: 0; font-size: 0.93rem;">CAT countries do not observe daylight saving time. The +2 offset is constant year-round.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🛫 Include Date in Scheduling</h3>
+          <p style="margin: 0; font-size: 0.93rem;">When scheduling across GMT and CAT, always include the full date, time, and timezone abbreviation to avoid confusion.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to Harare / Lusaka -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to Harare Time</h2>
+      <p>
+        Harare, the capital of Zimbabwe, observes Central Africa Time (CAT, UTC+2) year-round. Converting GMT to Harare time follows the standard <strong>GMT + 2 hours = Harare time</strong> formula. Zimbabwe does not use daylight saving time, so the 2-hour offset is consistent throughout the year. Harare is a major hub for business, international organizations, and tourism in southern Africa.
+      </p>
+
+      <h2>GMT to Lusaka Time</h2>
+      <p>
+        Lusaka, the capital of Zambia, also uses Central Africa Time (CAT, UTC+2). Like other CAT countries, Zambia does not observe daylight saving time. The conversion from GMT to Lusaka time is always <strong>GMT + 2 hours</strong>. Lusaka serves as a central business hub for the southern African region and hosts numerous international conferences and operations.
+      </p>
+    </section>
+
+    <!-- CAT vs Other African Time Zones -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>CAT vs Other African Time Zones</h2>
+      <p>
+        Africa uses several different time zone designations. Understanding how CAT relates to its neighbors helps avoid confusion:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Example Countries</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">WAT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">West Africa Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+1</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Nigeria, Ghana (some), Cameroon</td>
+            </tr>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">CAT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Central Africa Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC+2</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Zambia, Zimbabwe, Botswana</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">SAST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">South Africa Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+2</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">South Africa, Eswatini, Lesotho</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; font-weight: 600;">EAT</td>
+              <td style="padding: 10px 16px;">East Africa Time</td>
+              <td style="padding: 10px 16px;">UTC+3</td>
+              <td style="padding: 10px 16px;">Kenya, Ethiopia, Tanzania</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 1rem;">
+        While CAT and SAST share the same UTC+2 numeric offset, they are distinct designations representing different geographic regions. When communicating internationally, specifying the exact abbreviation (CAT vs SAST) helps clarify which region you are referring to. For conversions involving East Africa, see our <a href="/gmt-to-eat/" style="color: var(--accent);">GMT to EAT Converter</a>. For South Africa conversions, see our <a href="/gmt-to-sast/" style="color: var(--accent);">GMT to SAST Converter</a>.
+      </p>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-eat/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EAT Converter
+        </a>
+        <a href="/gmt-to-sast/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to SAST Converter
+        </a>
+        <a href="/cat-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          CAT to EST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-cst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to CST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-cat/",
+        "url": "https://gmttoestconverter.com/gmt-to-cat/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-cat/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-cat/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to CAT Converter", "item": "https://gmttoestconverter.com/gmt-to-cat/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "GMT to CAT Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-cat/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>

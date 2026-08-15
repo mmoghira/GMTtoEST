@@ -81,7 +81,7 @@ export default defineConfig({
           "/aest-to-est/", "/aedt-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-edt/", "/gmt-to-eat/", "/eat-to-est/", "/gmt-to-ist/",
           "/gmt-to-akdt/", "/gmt-to-akst/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-mest/", "/gmt-to-pdt/", "/wita-to-est/", "/gmt-to-wita/",
           "/eet-to-est/", "/gmt-to-pst/", "/hst-to-est/", "/hdt-to-est/", "/idt-to-est/", "/pkt-to-est/", "/nst-to-est/", "/jst-to-est/",
-          "/gmt-to-adt/", "/gmt-to-ast/", "/gmt-to-cst/", "/gmt-to-utc/", "/cat-to-est/", "/ist-to-est/",
+          "/gmt-to-adt/", "/gmt-to-ast/", "/gmt-to-cat/", "/gmt-to-cst/", "/gmt-to-utc/", "/cat-to-est/", "/ist-to-est/",
           "/mest-to-est/", "/gmt-to-sst/", "/acst-to-est/", "/gmt-to-acst/", "/west-to-est/",
           "/gmt-to-kst/", "/bst-to-est/", "/cet-to-est/", "/gmt-to-ndt/", "/awst-to-est/",
           "/wit-to-est/", "/gmt-to-sast/", "/gmt-to-mdt/", "/gmt-to-eest/", "/wet-to-est/",
