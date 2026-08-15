@@ -159,6 +159,7 @@ export const pages: any[] = [
   { slug: "sst-to-est", kind: "dynamic", labelKey: "sstToEst", context: { from: "SST", to: "EST", fromZone: "Pacific/Pago_Pago", toZone: "Etc/GMT+5" } },
   { slug: "wib-to-est", kind: "dynamic", labelKey: "wibToEst", context: { from: "WIB", to: "EST", fromZone: "Asia/Jakarta", toZone: "Etc/GMT+5" } },
   { slug: "hkt-to-est", kind: "dynamic", labelKey: "hktToEst", context: { from: "HKT", to: "EST", fromZone: "Asia/Hong_Kong", toZone: "Etc/GMT+5" } },
+  { slug: "ndt-to-est", kind: "dynamic", labelKey: "ndtToEst", context: { from: "NDT", to: "EST", fromZone: "America/St_Johns", toZone: "Etc/GMT+5" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
