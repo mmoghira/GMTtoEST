@@ -1,0 +1,632 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-wib";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to WIB Converter";
+const seoTitle = "GMT to WIB Converter – Convert GMT to Western Indonesia Time";
+const pageDescription = "Convert GMT to WIB instantly with our free timezone converter. Western Indonesia Time (WIB) is UTC+7, which is 7 hours ahead of Greenwich Mean Time (GMT). Includes conversion tables, practical examples, date-change handling, and Indonesia timezone details.";
+
+const context = {
+  from: "GMT",
+  to: "WIB",
+  fromZone: "UTC",
+  toZone: "Asia/Jakarta"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → WIB (UTC+7) = add 7 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let wibHour = hour + 7;
+  const nextDay = wibHour >= 24;
+  if (nextDay) wibHour -= 24;
+  return {
+    gmt: formatHour12(hour),
+    wib: `${formatHour12(wibHour)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is the difference between GMT and WIB?",
+    a: "GMT (Greenwich Mean Time) operates at UTC+0 baseline, while WIB (Western Indonesia Time / Waktu Indonesia Barat) operates at UTC+7. WIB is exactly 7 hours ahead of GMT year-round. When it is 12:00 PM (noon) GMT in London, it is 7:00 PM WIB in Jakarta."
+  },
+  {
+    q: "Is WIB 7 hours ahead of GMT?",
+    a: "Yes. Western Indonesia Time (WIB, UTC+7) is permanently 7 hours ahead of Greenwich Mean Time (GMT, UTC+0). To convert GMT to WIB, simply add 7 hours."
+  },
+  {
+    q: "What does WIB stand for?",
+    a: "WIB stands for Western Indonesia Time, known natively in Indonesian as 'Waktu Indonesia Barat'. It is the official time zone for western regions of Indonesia, including Java, Sumatra, and parts of Kalimantan."
+  },
+  {
+    q: "What is WIB in UTC?",
+    a: "WIB operates at UTC+7 (Coordinated Universal Time plus 7 hours). It remains at UTC+7 throughout the entire year without seasonal adjustments."
+  },
+  {
+    q: "How do I convert GMT to WIB?",
+    a: "Add 7 hours to the GMT time. For example, 9:00 AM GMT plus 7 hours equals 4:00 PM WIB. If adding 7 hours crosses midnight (e.g., 6:00 PM GMT + 7 hours = 1:00 AM WIB), advance the calendar date by one day."
+  },
+  {
+    q: "What time is 12 PM GMT in WIB?",
+    a: "12:00 PM (noon) GMT is 7:00 PM WIB on the same calendar day."
+  },
+  {
+    q: "What time is midnight GMT in WIB?",
+    a: "Midnight (00:00) GMT is 7:00 AM WIB on the same calendar day."
+  },
+  {
+    q: "Does WIB observe daylight saving time?",
+    a: "No. Indonesia does not observe seasonal daylight saving time. WIB stays fixed at UTC+7 year-round, so the 7-hour difference between GMT and WIB never changes by season."
+  },
+  {
+    q: "Which cities use WIB in Indonesia?",
+    a: "WIB is used by major western Indonesian metropolitan areas including Jakarta (the capital), Surabaya, Bandung, Medan, Palembang, Semarang, Yogyakarta, and Pontianak."
+  },
+  {
+    q: "What is the difference between WIB, WITA, and WIT?",
+    a: "Indonesia has three standard time zones: WIB (Western Indonesia Time, UTC+7), WITA (Central Indonesia Time, UTC+8), and WIT (Eastern Indonesia Time, UTC+9). WIB is 1 hour behind WITA (Bali/Makassar) and 2 hours behind WIT (Maluku/Papua)."
+  },
+  {
+    q: "Can GMT and WIB have different calendar dates?",
+    a: "Yes. Because WIB is 7 hours ahead of GMT, any GMT time between 5:00 PM (17:00) and 11:59 PM (23:59) corresponds to the following calendar day in WIB. For example, 6:00 PM GMT on October 10 is 1:00 AM WIB on October 11."
+  },
+  {
+    q: "What time is GMT to Jakarta time?",
+    a: "Jakarta operates on Western Indonesia Time (WIB, UTC+7). Converting GMT to Jakarta time follows the exact same formula: GMT + 7 hours = Jakarta time."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "gmt to wib, GMT to WIB converter, convert GMT to WIB, GMT WIB conversion, GMT time to WIB, GMT to Western Indonesia Time, GMT to Indonesia time, GMT and WIB difference, GMT vs WIB, WIB UTC+7, Western Indonesia Time converter, GMT to Jakarta time",
+  image: "/assets/gmt-to-wib-converter.webp",
+  imageAlt: "GMT to WIB converter comparing Greenwich Mean Time and Western Indonesia Time",
+  faqs,
+  appDescription: "Free online GMT to WIB converter featuring live clocks, 24-hour conversion schedules, date-change calculation, and regional time guides for Greenwich Mean Time and Western Indonesia Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to WIB",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Western Indonesia Time (WIB, UTC+7) by adding 7 hours.",
+  howToSteps: [
+    { name: "Start with GMT time", text: "Identify the current time in Greenwich Mean Time (GMT / UTC+0)." },
+    { name: "Add 7 hours", text: "Add exactly 7 hours to the GMT time value." },
+    { name: "Check for date rollover", text: "If the calculated time reaches or passes 24:00 (midnight), advance the calendar date by one day." },
+    { name: "Read the WIB result", text: "The resulting time and date reflect Western Indonesia Time (WIB, UTC+7)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to WIB Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">WIB</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 700px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Western Indonesia Time (WIB) instantly. WIB is <strong>UTC+7</strong>, making it <strong>7 hours ahead</strong> of GMT. Our tool calculates exact local times and handles date changes automatically.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero Image -->
+  <div style="max-width: 750px; margin: 0 auto 2rem; padding: 0 16px;">
+    <img
+      src="/assets/gmt-to-wib-converter.webp"
+      alt="GMT to WIB converter comparing Greenwich Mean Time and Western Indonesia Time"
+      width="1200" height="800"
+      loading="eager"
+      style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+    />
+  </div>
+
+  <!-- Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to WIB time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem;">
+
+    <!-- GMT to WIB Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB Time Difference</h2>
+      <p>
+        The time difference between Greenwich Mean Time (GMT) and Western Indonesia Time (WIB) is <strong>7 hours</strong>. WIB operates at the UTC+7 offset, while GMT serves as the UTC+0 baseline reference point. Consequently, local time in Western Indonesia is always 7 hours ahead of GMT.
+      </p>
+      <p>
+        Indonesia does not observe daylight saving time (DST). Because neither region shifts its clocks seasonally for daylight saving within the WIB zone, the 7-hour offset between GMT and WIB remains constant every day of the year.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--accent);">GMT + 7 hours = WIB</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 → UTC+7 • Western Indonesia Time is permanently 7 hours ahead</p>
+      </div>
+      <p>
+        A 7-hour positive offset significantly shifts the time of day. For example, morning hours in GMT correspond to afternoon in WIB, while late afternoon in GMT corresponds to late night in WIB. For GMT times from 5:00 PM (17:00) onward, adding 7 hours crosses midnight, placing WIB on the following calendar day.
+      </p>
+    </section>
+
+    <!-- Time Difference Image -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-wib-time-difference.webp"
+        alt="Timezone diagram illustrating the 7-hour offset between GMT (UTC+0) and WIB (UTC+7)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to WIB</h2>
+      <p>
+        Converting Greenwich Mean Time to Western Indonesia Time requires adding 7 hours to your GMT time. Here is the step-by-step method:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.8;">
+        <li><strong>Start with your GMT time.</strong> Note the hour and minute in Greenwich Mean Time (UTC+0).</li>
+        <li><strong>Add 7 hours.</strong> Shift the time forward by 7 hours.</li>
+        <li><strong>Check for date rollover.</strong> If the calculated hour reaches or exceeds 24:00 (midnight), subtract 24 from the hour total and advance the calendar date by one day.</li>
+        <li><strong>Read the final WIB time.</strong> The resulting figure is local Western Indonesia Time (WIB, UTC+7).</li>
+      </ol>
+      <h3>Quick Standard Conversion Examples</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>02:00 AM GMT</strong> → 2 + 7 = <strong>9:00 AM WIB</strong> (same day)</li>
+        <li><strong>08:00 AM GMT</strong> → 8 + 7 = <strong>3:00 PM WIB</strong> (same day)</li>
+        <li><strong>12:00 PM GMT</strong> → 12 + 7 = <strong>7:00 PM WIB</strong> (same day)</li>
+        <li><strong>5:00 PM (17:00) GMT</strong> → 17 + 7 = <strong>12:00 AM midnight WIB</strong> (next day)</li>
+        <li><strong>6:00 PM (18:00) GMT</strong> → 18 + 7 = <strong>1:00 AM WIB</strong> (next day)</li>
+        <li><strong>11:00 PM (23:00) GMT</strong> → 23 + 7 = <strong>6:00 AM WIB</strong> (next day)</li>
+      </ul>
+      <p>
+        For accurate date-aware conversions without manual math, use our <strong>interactive converter tool above</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB Conversion Table (24 Hours)</h2>
+      <p>
+        The table below shows every hour of the day converted from Greenwich Mean Time (GMT) to Western Indonesia Time (WIB). The rows highlighted in accent color indicate times where WIB advances to the next calendar day.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">GMT (UTC+0)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">WIB (UTC+7)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line); white-space: nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.08)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{row.wib}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT times from 5:00 PM (17:00) to 11:00 PM (23:00) produce WIB times on the next calendar day.
+      </p>
+    </section>
+
+    <!-- Practical Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB Practical Conversion Examples</h2>
+      <p>Here are practical scenarios illustrating how GMT times map to Western Indonesia Time in daily life and business:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Early Morning Stand-Up</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>2:00 AM GMT</strong> → <strong>9:00 AM WIB</strong><br/>A 2:00 AM GMT team check-in matches the 9:00 AM WIB opening of the business day in Jakarta and Surabaya.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Morning Business Call</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>6:00 AM GMT</strong> → <strong>1:00 PM WIB</strong><br/>A 6:00 AM GMT call falls right after lunch (1:00 PM WIB) for Indonesian business partners.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Midday Conference</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>10:00 AM GMT</strong> → <strong>5:00 PM WIB</strong><br/>A 10:00 AM GMT meeting lands at 5:00 PM WIB — the final working hour of the day in Jakarta.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Evening Webinar</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>1:00 PM GMT</strong> → <strong>8:00 PM WIB</strong><br/>A 1:00 PM GMT event broadcasts during peak prime-time evening hours in Western Indonesia.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Transition Example 1</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>6:00 PM GMT, Jul 14</strong> → <strong>1:00 AM WIB, Jul 15</strong><br/>Adding 7 hours crosses midnight. 6:00 PM GMT on July 14 becomes 1:00 AM WIB on July 15.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Date Transition Example 2</h3>
+          <p style="margin: 0; font-size: 0.93rem;"><strong>11:30 PM GMT, Dec 31</strong> → <strong>6:30 AM WIB, Jan 1</strong><br/>Late New Year's Eve in GMT translates to morning on New Year's Day in WIB!</p>
+        </div>
+      </div>
+
+      <h3>Half-Hour and Minute Conversions</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>7:30 AM GMT</strong> → <strong>2:30 PM WIB</strong></li>
+        <li><strong>11:15 AM GMT</strong> → <strong>6:15 PM WIB</strong></li>
+        <li><strong>4:45 PM GMT</strong> → <strong>11:45 PM WIB</strong></li>
+        <li><strong>8:30 PM GMT</strong> → <strong>3:30 AM WIB (next day)</strong></li>
+      </ul>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> is the mean solar time measured at the Royal Observatory in Greenwich, London, located on the Prime Meridian (0° longitude). GMT serves as the international baseline time zone (UTC+0) from which world time offsets are calculated.
+      </p>
+      <p>
+        Although atomic timekeeping officially relies on Coordinated Universal Time (UTC), GMT remains widely used across civil, aviation, maritime, and technological applications worldwide. When converting from GMT to Asian time zones like WIB (UTC+7), GMT provides the fixed starting point. Learn more on our <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage.
+      </p>
+    </section>
+
+    <!-- What Is WIB? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is WIB?</h2>
+      <p>
+        <strong>WIB (Western Indonesia Time / Waktu Indonesia Barat)</strong> is the standard time zone for western Indonesia, defined as <strong>UTC+7</strong>. In the IANA timezone database, it is primarily identified by <code>Asia/Jakarta</code>, alongside <code>Asia/Pontianak</code>.
+      </p>
+      <p>
+        WIB is the most populous time zone in Indonesia, covering roughly 80% of the national population. It encompasses the entirety of the island of Java (including Jakarta, Bandung, and Surabaya), the entire island of Sumatra (Medan, Palembang, Pekanbaru), and West and Central Kalimantan (Pontianak, Palangkaraya).
+      </p>
+      <p>
+        Like most equatorial regions, Indonesia does not observe seasonal daylight saving time. WIB remains fixed at UTC+7 year-round.
+      </p>
+    </section>
+
+    <!-- Indonesia Time Zones Visual -->
+    <div style="margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/indonesia-time-zones-wib-wita-wit.webp"
+        alt="Infographic showing Indonesia's three time zones: WIB (UTC+7), WITA (UTC+8), and WIT (UTC+9)"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Indonesia's Three Time Zones -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Indonesia's Three Time Zones</h2>
+      <p>
+        Because the Indonesian archipelago stretches over 5,100 kilometers (3,100 miles) across equatorial Southeast Asia, the nation is divided into <strong>three official standard time zones</strong>:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); margin: 1.25rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Indonesian Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Key Islands & Cities</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(var(--accent-rgb, 99, 102, 241), 0.08);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 700;">WIB</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Waktu Indonesia Barat</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC+7</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Java, Sumatra, West & Central Kalimantan (Jakarta, Surabaya, Medan)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">WITA</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Waktu Indonesia Tengah</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+8</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Bali, Lombok, Nusa Tenggara, Sulawesi, South & East Kalimantan (Denpasar, Makassar)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px;">WIT</td>
+              <td style="padding: 10px 16px;">Waktu Indonesia Timur</td>
+              <td style="padding: 10px 16px;">UTC+9</td>
+              <td style="padding: 10px 16px;">Maluku Islands, Papua, West Papua (Jayapura, Ambon)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        When converting GMT to an Indonesian destination, always verify whether your location uses WIB (UTC+7), WITA (UTC+8), or WIT (UTC+9). For instance, GMT to Bali is a <a href="/gmt-to-wita/" style="color: var(--accent);">GMT to WITA</a> conversion (UTC+8), whereas GMT to Jakarta is GMT to WIB (UTC+7).
+      </p>
+    </section>
+
+    <!-- GMT vs WIB -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs WIB</h2>
+      <p>A direct comparison of key attributes between Greenwich Mean Time and Western Indonesia Time:</p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">WIB</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Western Indonesia Time (Waktu Indonesia Barat)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC±0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+7</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">—</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">7 hours ahead of GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">United Kingdom / Global reference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Java, Sumatra, West/Central Kalimantan (Indonesia)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UK switches to BST (UTC+1) in summer</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No seasonal DST (fixed UTC+7 year-round)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC / Etc/GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Asia/Jakarta, Asia/Pontianak</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; font-weight: 600;">Common Uses</td>
+              <td style="padding: 10px 16px;">Aviation, maritime, server UTC benchmarks</td>
+              <td style="padding: 10px 16px;">Indonesian business, banking, flights, public events</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Does WIB Use DST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does WIB Observe Daylight Saving Time?</h2>
+      <p>
+        <strong>No. Western Indonesia Time (WIB) does not observe daylight saving time.</strong>
+      </p>
+      <p>
+        Because Indonesia is situated along the equator, daylight hours remain virtually uniform (roughly 12 hours of sunlight) throughout the entire year. Seasonal clock adjustments offer no daylight-saving benefit near the equator. Consequently, WIB remains fixed at UTC+7 year-round.
+      </p>
+      <p>
+        This means the mathematical conversion formula is permanent: <strong>GMT + 7 hours = WIB</strong>, 365 days a year.
+      </p>
+    </section>
+
+    <!-- Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB Date Changes</h2>
+      <p>
+        Because WIB is 7 hours ahead of GMT, late afternoon and evening GMT times pass midnight and fall on the following calendar day in WIB.
+      </p>
+      <h3>Date Rollover Window</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 16:59</strong> → WIB 07:00 to 23:59 → <strong>Same calendar day</strong></li>
+        <li><strong>GMT 17:00</strong> → WIB 00:00 (midnight) → <strong>Next calendar day</strong></li>
+        <li><strong>GMT 18:00</strong> → WIB 01:00 AM → <strong>Next calendar day</strong></li>
+        <li><strong>GMT 21:00</strong> → WIB 04:00 AM → <strong>Next calendar day</strong></li>
+        <li><strong>GMT 23:00</strong> → WIB 06:00 AM → <strong>Next calendar day</strong></li>
+      </ul>
+      <h3>Examples of Date Transition</h3>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+        <p style="margin: 0 0 0.75rem;"><strong>Example 1:</strong> 4:00 PM GMT on August 10 → 11:00 PM WIB on August 10 (same day)</p>
+        <p style="margin: 0 0 0.75rem;"><strong>Example 2:</strong> 5:00 PM GMT on August 10 → 12:00 AM WIB on August 11 (date advances)</p>
+        <p style="margin: 0;"><strong>Example 3:</strong> 10:00 PM GMT on December 31 → 5:00 AM WIB on January 1 (new year in WIB!)</p>
+      </div>
+      <p>
+        Always check both the <strong>time and date</strong> when scheduling across GMT and WIB. Our converter tool handles date transitions automatically.
+      </p>
+    </section>
+
+    <!-- Business & Scheduling -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB for Meetings and Business</h2>
+      <p>
+        Coordinating business operations between Europe/GMT and Western Indonesia requires planning around the 7-hour time difference.
+      </p>
+      <h3>Overlapping Working Hours</h3>
+      <p>
+        Standard business hours in Jakarta (8:00 AM to 5:00 PM WIB) correspond to <strong>1:00 AM to 10:00 AM GMT</strong>. The most practical overlap window for real-time collaboration occurs between <strong>7:00 AM and 10:00 AM GMT (2:00 PM to 5:00 PM WIB)</strong>, offering a 3-hour daily window when both parties are in their offices.
+      </p>
+      <h3>Best Practices for International Scheduling</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li>Always state timezone abbreviations clearly: <strong>09:00 GMT / 16:00 WIB</strong></li>
+        <li>Note that during European summer months (late March to late October), the UK operates on BST (UTC+1), which reduces the UK-to-WIB offset to 6 hours</li>
+        <li>When scheduling morning calls from Europe, aim for 7:00–9:00 AM GMT to catch Indonesian colleagues before they leave work</li>
+        <li>For digital events, webinars, or global product launches, 12:00 PM GMT maps to 7:00 PM WIB — ideal evening viewing in Jakarta</li>
+      </ul>
+    </section>
+
+    <!-- Common Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to WIB Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing WIB with WITA or WIT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Indonesia has 3 time zones. WIB is UTC+7 (Jakarta), WITA is UTC+8 (Bali), and WIT is UTC+9 (Papua). Using WIB for Bali creates a 1-hour error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Forgetting the Date Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">GMT times from 5:00 PM onward roll into the next day in WIB. 6:00 PM GMT on Tuesday is 1:00 AM WIB on Wednesday.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Confusing GMT with BST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">During summer, London uses BST (UTC+1), which is 6 hours behind WIB. Standard GMT (UTC+0) is always 7 hours behind WIB.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">❌ Assuming Seasonal Clock Shifts</h3>
+          <p style="margin: 0; font-size: 0.93rem;">WIB stays at UTC+7 year-round. Do not add or subtract hours for daylight saving in Indonesia.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to WIB Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📌 Add 7 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">WIB is always GMT + 7 hours. The offset is constant year-round.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📅 Check Date After 5 PM GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT time at or after 17:00 corresponds to the next day in WIB.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">🏙️ Applies to Jakarta & Java</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Use WIB for Jakarta, Surabaya, Bandung, Medan, and Palembang.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">⚡ Use the Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Use our free converter tool above for instant, error-free date and time calculations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-wita/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to WITA Converter
+        </a>
+        <a href="/gmt-to-wit/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to WIT Converter
+        </a>
+        <a href="/wita-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          WITA to EST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-msk/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: border-color 0.2s;">
+          GMT to MSK Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-wib/",
+        "url": "https://gmttoestconverter.com/gmt-to-wib/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-wib/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-wib/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to WIB Converter", "item": "https://gmttoestconverter.com/gmt-to-wib/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "GMT to WIB Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-wib/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
