@@ -1,0 +1,770 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "sast-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "SAST to EST Converter";
+const seoTitle = "SAST to EST Converter – Convert South Africa Time to EST";
+const pageDescription = "Convert SAST to EST instantly with our free timezone converter. South Africa Standard Time (SAST, UTC+2) is 7 hours ahead of Eastern Standard Time (EST, UTC-5). Includes previous-day date rollover guides, 24-hour conversion tables, EST vs EDT rules, and scheduling tips.";
+
+const context = {
+  from: "SAST",
+  to: "EST",
+  fromZone: "Africa/Johannesburg",
+  toZone: "Etc/GMT+5"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: SAST (UTC+2) → EST (UTC-5) = subtract 7 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour - 7;
+  const prevDay = estHour < 0;
+  if (prevDay) estHour += 24;
+  return {
+    sast: formatHour12(hour),
+    sast24: `${String(hour).padStart(2, "0")}:00`,
+    est: formatHour12(estHour),
+    est24: `${String(estHour).padStart(2, "0")}:00`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What does SAST stand for?",
+    a: "SAST stands for South Africa Standard Time. It is the official time zone used across South Africa, Eswatini, and Lesotho."
+  },
+  {
+    q: "What is SAST's UTC offset?",
+    a: "South Africa Standard Time operates at a fixed offset of UTC+2 (Coordinated Universal Time plus 2 hours)."
+  },
+  {
+    q: "What does EST stand for?",
+    a: "EST stands for Eastern Standard Time. It is the standard North American Eastern time zone offset at UTC-5."
+  },
+  {
+    q: "What is EST's UTC offset?",
+    a: "Eastern Standard Time operates at UTC-5 (Coordinated Universal Time minus 5 hours)."
+  },
+  {
+    q: "How many hours is SAST ahead of EST?",
+    a: "South Africa Standard Time (SAST, UTC+2) is exactly 7 hours ahead of Eastern Standard Time (EST, UTC-5)."
+  },
+  {
+    q: "How do I convert SAST to EST?",
+    a: "To convert SAST to EST, subtract exactly 7 hours from the SAST time. If the resulting hour is less than 00:00, add 24 hours and roll back to the previous calendar day."
+  },
+  {
+    q: "What is 12:00 SAST in EST?",
+    a: "12:00 PM (noon) SAST equals 05:00 (5:00 AM) EST on the exact same calendar day."
+  },
+  {
+    q: "What is 00:00 SAST in EST?",
+    a: "00:00 (midnight) SAST equals 17:00 (5:00 PM) EST on the previous calendar day."
+  },
+  {
+    q: "Does SAST observe daylight saving time?",
+    a: "No. South Africa does not observe Daylight Saving Time (DST). SAST remains fixed at UTC+2 throughout the entire calendar year."
+  },
+  {
+    q: "Does EST change to EDT?",
+    a: "Yes. Locations in the U.S. Eastern Time zone observe Eastern Standard Time (EST, UTC-5) in winter and switch to Eastern Daylight Time (EDT, UTC-4) in summer. During EDT, SAST is 6 hours ahead instead of 7."
+  },
+  {
+    q: "Why does SAST to EST sometimes show the previous day?",
+    a: "Because SAST is 7 hours ahead of EST, early morning hours in South Africa between 00:00 and 06:59 occur while North American Eastern locations are still experiencing the previous calendar evening."
+  },
+  {
+    q: "Is SAST to EST always a seven-hour difference?",
+    a: "The difference between SAST (UTC+2) and standard EST (UTC-5) is permanently 7 hours. However, when U.S. Eastern locations observe Daylight Saving Time (EDT, UTC-4) from March to November, the live local time difference between South Africa and Eastern Time becomes 6 hours."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "SAST to EST, SAST to EST converter, convert SAST to EST, SAST time to EST, SAST EST conversion, SAST to Eastern Standard Time, SAST vs EST, SAST EST time difference, SAST EST converter, what time is SAST in EST, SAST UTC+2, EST UTC-5, SAST to EST time converter, SAST to EST time difference, 12 SAST to EST, 00 SAST to EST, SAST South Africa time to EST",
+  image: "/assets/sast-to-est-og.webp",
+  imageAlt: "SAST to EST Converter - South Africa Standard Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online SAST to EST converter tool. Convert South Africa Standard Time to Eastern Standard Time with instant previous-day date rollover calculations, 24-hour schedules, and timezone guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert SAST to EST",
+  howToDescription: "Convert South Africa Standard Time (SAST, UTC+2) to Eastern Standard Time (EST, UTC-5) by subtracting 7 hours.",
+  howToSteps: [
+    { name: "Obtain the SAST date and time", text: "Identify the starting South Africa Standard Time (UTC+2)." },
+    { name: "Subtract 7 hours", text: "Subtract 7 hours from the SAST time value." },
+    { name: "Check for previous-day rollover", text: "If the resulting hour is less than 0 (before 00:00 midnight), add 24 hours and set the date to the previous calendar day." },
+    { name: "Confirm final EST output", text: "Record the final converted EST time and calendar date (UTC-5)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">SAST to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">SAST to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert South Africa Standard Time (SAST) to Eastern Standard Time (EST) instantly. SAST is <strong>UTC+2</strong>, which is exactly <strong>7 hours ahead</strong> of EST (UTC-5). Our date-aware calculation tool computes exact local times and automatic previous-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick SAST to EST Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert SAST to EST, subtract exactly 7 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 SAST</strong> = 05:00 EST (5:00 AM)</span>
+        <span><strong>05:00 SAST</strong> = 22:00 EST (Previous Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="SAST to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the SAST to EST Conversion</h2>
+      <p>
+        Managing international scheduling, cross-border corporate operations, remote team handoffs, and digital communications between Southern Africa and North America requires precise time zone calculations. When converting from <strong>South Africa Standard Time (SAST)</strong> to <strong>Eastern Standard Time (EST)</strong>, the fundamental rule is that South Africa operates 7 hours ahead of standard North American Eastern time.
+      </p>
+      <p>
+        South Africa Standard Time is fixed at <strong>UTC+2</strong> (Coordinated Universal Time plus 2 hours). Meanwhile, North American Eastern Standard Time operates at <strong>UTC-5</strong> (Coordinated Universal Time minus 5 hours). Comparing these two offsets yields a standard mathematical difference of 7 hours (+2 minus -5 = 7 hours).
+      </p>
+      <p>
+        Because South Africa does not observe seasonal daylight saving time, SAST remains static at UTC+2 year-round. However, U.S. Eastern locations switch between Eastern Standard Time (EST, UTC-5) in winter and Eastern Daylight Time (EDT, UTC-4) in summer. Using a date-aware converter ensures that date boundary shifts to the <em>previous calendar day</em> are accurately calculated.
+      </p>
+    </section>
+
+    <!-- SAST to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST Time Difference</h2>
+      <p>
+        The exact standard time difference between South Africa Standard Time and Eastern Standard Time is <strong>7 hours</strong>. SAST is 7 hours ahead of EST, or conversely, EST is 7 hours behind SAST.
+      </p>
+      <p>
+        The conversion formula is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">EST = SAST − 7 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+2 (South Africa) → UTC-5 (Eastern Standard Time)</p>
+      </div>
+      <p>
+        Because South Africa sits far to the east of North America, daylight reaches cities like Johannesburg, Cape Town, Pretoria, and Durban 7 hours before reaching New York, Toronto, or Miami during standard time. When South Africans sit down for lunch at 12:00 PM SAST, Eastern Standard Time locations are just starting their morning routines at 05:00 AM EST.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/sast-to-est-time-difference.webp"
+        alt="SAST UTC plus two to EST UTC minus five time difference"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert SAST to EST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert SAST to EST</h2>
+      <p>
+        Converting South Africa Standard Time to Eastern Standard Time is simple when following a step-by-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Identify the starting SAST date and time:</strong> Record the exact hour and minute in South Africa (UTC+2).</li>
+        <li><strong>Subtract 7 hours:</strong> Subtract 7 from the SAST hour value (e.g., 15:30 SAST − 7 hours = 08:30 EST).</li>
+        <li><strong>Check for previous-day rollover:</strong> If subtracting 7 hours results in a negative hour (before 00:00 midnight), add 24 hours to the result and move the date back by one calendar day.</li>
+        <li><strong>Verify DST status:</strong> Confirm whether the North American Eastern location is currently observing EST (UTC-5) or EDT (UTC-4). If EDT is active, subtract 6 hours instead of 7.</li>
+        <li><strong>Confirm the final EST time and date:</strong> Record the converted time, date, and timezone label.</li>
+      </ol>
+      <p>
+        For instance, converting <strong>15:30 SAST</strong> yields <strong>08:30 EST</strong> on the exact same calendar day. However, converting <strong>04:00 SAST</strong> yields 04:00 − 7 = −03:00. Adding 24 hours gives <strong>21:00 EST (9:00 PM EST) on the previous calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST 24-Hour Conversion Table</h2>
+      <p>
+        The reference table below maps every hour of the day from South Africa Standard Time (00:00 through 23:00) to Eastern Standard Time. Rows highlighted in colored styling indicate times where subtracting 7 hours moves the converted time to the <strong>previous calendar day</strong> in EST.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">SAST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">SAST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.sast}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.sast24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.est24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: SAST times between 00:00 (midnight) and 06:00 AM result in EST times on the previous calendar day.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST Conversion Examples</h2>
+      <p>
+        Review these 10 practical scenarios demonstrating how South Africa times translate to Eastern Standard Time in real-world situations:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 SAST → 17:00 EST (Previous Day)</strong><br />
+            When a new calendar day begins at midnight in Johannesburg (00:00 SAST), Eastern Standard Time locations are at 5:00 PM EST on the previous evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 SAST → 19:00 EST (Previous Day)</strong><br />
+            02:00 AM SAST in South Africa translates to 7:00 PM EST on the previous evening in New York or Toronto.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Pre-Dawn SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>05:00 SAST → 22:00 EST (Previous Day)</strong><br />
+            5:00 AM SAST in Cape Town aligns with 10:00 PM EST on the previous night in the U.S. Eastern region.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Workday Start / Midnight EST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>07:00 SAST → 00:00 EST (Same Day)</strong><br />
+            07:00 AM SAST marks the exact boundary where EST enters midnight 00:00 of the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Morning Business Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>09:00 SAST → 02:00 EST (Same Day)</strong><br />
+            When South African corporate offices open at 09:00 AM SAST, Eastern North America is at 2:00 AM EST in early morning sleeping hours.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Midday SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 SAST → 05:00 EST (Same Day)</strong><br />
+            12:00 PM (noon) SAST equals 5:00 AM EST. Early morning risers in the U.S. Eastern zone can catch South African teams during lunch.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Mid-Afternoon SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>15:00 SAST → 08:00 EST (Same Day)</strong><br />
+            15:00 (3:00 PM) SAST aligns with 08:00 AM EST, marking the start of the joint overlap window for executive meetings.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: SAST Workday End</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 SAST → 11:00 EST (Same Day)</strong><br />
+            As South African offices close at 18:00 (6:00 PM) SAST, Eastern US offices are mid-morning at 11:00 AM EST.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Evening SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>21:00 SAST → 14:00 EST (Same Day)</strong><br />
+            21:00 (9:00 PM) SAST equals 14:00 (2:00 PM) EST in the afternoon across U.S. Eastern cities.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: New Year Date Transition</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 SAST (Jan 1, 2027) → 19:00 EST (Dec 31, 2026)</strong><br />
+            Celebrating 2:00 AM on New Year's Day 2027 in South Africa corresponds to 7:00 PM on New Year's Eve 2026 in EST!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is SAST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is SAST?</h2>
+      <p>
+        <strong>South Africa Standard Time (SAST)</strong> is the official standard time zone governing South Africa, Eswatini, and Lesotho. SAST is defined strictly as <strong>UTC+2</strong> (Coordinated Universal Time plus 2 hours).
+      </p>
+      <p>
+        Centered on the 30th meridian east of Greenwich, SAST has been the official standardized time in South Africa since 1892, when railway and telegraph systems required unified timekeeping across Cape Colony, Natal, Transvaal, and the Orange Free State.
+      </p>
+      <p>
+        Crucially, <strong>South Africa does not observe daylight saving time</strong>. SAST remains fixed at UTC+2 throughout all twelve months of the year. In global time databases (IANA database), SAST is represented primarily by <code>Africa/Johannesburg</code>. You can also explore our <a href="/gmt-to-sast/" style="color: var(--accent);">GMT to SAST Converter</a> for Greenwich calculations.
+      </p>
+    </section>
+
+    <!-- Image 2: South Africa Map -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/sast-south-africa-timezone.webp"
+        alt="South Africa Standard Time SAST UTC plus two timezone illustration"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the standard time zone covering the eastern coastline and commercial centers of North America, including major cities such as New York, Washington D.C., Boston, Atlanta, Miami, Toronto, and Montreal.
+      </p>
+      <p>
+        EST operates at <strong>UTC-5</strong> (Coordinated Universal Time minus 5 hours). During North American winter months (from the first Sunday in November until the second Sunday in March), EST is the active civil time. In the IANA time zone database, Eastern Time is identified by <code>America/New_York</code> or <code>Etc/GMT+5</code>.
+      </p>
+      <p>
+        To learn more about standard Eastern Time principles, visit our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a> homepage or <a href="/what-is-est/" style="color: var(--accent);">What Is EST guide</a>.
+      </p>
+    </section>
+
+    <!-- SAST vs EST Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST vs EST Comparison</h2>
+      <p>
+        Review the structural attributes comparing South Africa Standard Time and Eastern Standard Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">South Africa Standard Time (SAST)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Eastern Standard Time (EST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">South Africa Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+2</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC-5</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">7 hours ahead of EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">7 hours behind SAST</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Does NOT observe DST (Fixed UTC+2)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Standard Time (Shifts to EDT in summer)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Geographic Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">South Africa, Eswatini, Lesotho</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern US & Canada (NY, Toronto, Miami)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Identifier</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Africa/Johannesburg</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/New_York</code> / <code>Etc/GMT+5</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SAST vs EDT Explanation -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding SAST vs EDT (Eastern Daylight Time)</h2>
+      <p>
+        While this converter specifically calculates conversions to standard <strong>EST (UTC-5)</strong>, real-world scheduling between South Africa and the eastern United States requires awareness of seasonal clock shifts:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Standard Time Period (November to March):</strong> Eastern U.S. locations operate on <strong>EST (UTC-5)</strong>. The difference from SAST is <strong>7 hours</strong>.</li>
+        <li><strong>Daylight Saving Period (March to November):</strong> Eastern U.S. locations operate on <strong>EDT (UTC-4)</strong>. The difference from SAST becomes <strong>6 hours</strong>.</li>
+      </ul>
+      <p>
+        For instance, when it is 15:00 SAST in Johannesburg:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+        <p style="margin: 0 0 0.5rem;"><strong>In Winter (EST, UTC-5):</strong> 15:00 SAST − 7 hours = <strong>08:00 AM EST</strong></p>
+        <p style="margin: 0;"><strong>In Summer (EDT, UTC-4):</strong> 15:00 SAST − 6 hours = <strong>09:00 AM EDT</strong></p>
+      </div>
+    </section>
+
+    <!-- Image 3: EST vs EDT Comparison Graphic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/est-vs-edt-comparison-sast-page.webp"
+        alt="EST and EDT UTC offset comparison for SAST scheduling"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Why SAST to EST Can Change the Date -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why SAST to EST Can Change the Date</h2>
+      <p>
+        Because SAST is 7 hours ahead of EST, early morning hours in South Africa land on the <strong>previous calendar day</strong> in Eastern Standard Time.
+      </p>
+      <p>
+        Any SAST time occurring between 00:00 (midnight) and 06:59 AM corresponds to evening hours between 17:00 (5:00 PM) and 23:59 (11:59 PM) on the <em>preceding calendar day</em> in North America.
+      </p>
+
+      <h3>Date Rollover Window</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>00:00 SAST:</strong> 17:00 EST on the <strong>Previous Calendar Day</strong></li>
+        <li><strong>03:00 SAST:</strong> 20:00 EST on the <strong>Previous Calendar Day</strong></li>
+        <li><strong>06:00 SAST:</strong> 23:00 EST on the <strong>Previous Calendar Day</strong></li>
+        <li><strong>07:00 SAST:</strong> 00:00 EST on the <strong>SAME Calendar Day</strong></li>
+      </ul>
+      <p>
+        For example, a scheduled software migration taking place at 02:00 AM SAST on Tuesday, October 15 occurs at 7:00 PM EST on Monday, October 14.
+      </p>
+    </section>
+
+    <!-- Image 4: Date Rollover -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/sast-to-est-date-rollover.webp"
+        alt="SAST to EST conversion showing previous calendar day"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- SAST to EST for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST for Business Meetings</h2>
+      <p>
+        Coordinating executive meetings and team syncs between South African headquarters (Johannesburg, Cape Town, Durban) and U.S. Eastern hubs (New York, Boston, Atlanta) requires scheduling around the 7-hour time gap.
+      </p>
+
+      <h3>Optimal Overlap Windows</h3>
+      <p>
+        Standard office working hours in South Africa run from 08:00 to 17:00 SAST. Meanwhile, standard U.S. office hours run from 09:00 to 17:00 EST.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Prime Meeting Window: 15:00–18:00 SAST = 08:00–11:00 EST</p>
+      </div>
+      <p>
+        The best window for real-time collaboration occurs between <strong>15:00 and 18:00 SAST</strong>, which matches <strong>08:00 to 11:00 AM EST</strong>. During this 3-hour period, South African professionals are finishing their workday while North American colleagues are starting theirs.
+      </p>
+    </section>
+
+    <!-- SAST to EST Working Hours -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">SAST Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">SAST Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">08:00 – 12:00 SAST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">01:00 – 05:00 EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">SAST Active / EST Sleeping</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">15:00 – 18:00 SAST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">08:00 – 11:00 EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">EST Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">19:00 – 23:00 SAST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">12:00 – 16:00 EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">SAST Evening / EST Active</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Best SAST Times for EST Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Best SAST Times for EST Meetings</h2>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>14:00 SAST → 07:00 EST:</strong> Suitable for early morning risers in the U.S.</li>
+        <li><strong>15:00 SAST → 08:00 EST:</strong> Ideal start of the cross-continental business day.</li>
+        <li><strong>16:00 SAST → 09:00 EST:</strong> Peak collaboration slot (mid-afternoon SAST / 9 AM EST).</li>
+        <li><strong>17:00 SAST → 10:00 EST:</strong> Excellent late afternoon SAST slot before office wrap-up.</li>
+      </ul>
+    </section>
+
+    <!-- SAST to EST for Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST for Technology and Infrastructure</h2>
+      <p>
+        Engineers and DevOps teams managing data centers in South Africa (such as AWS Africa Cape Town region `af-south-1`) and U.S. East regions (`us-east-1` N. Virginia) rely on accurate timezone conversions for logging and automated tasks.
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Notation:</strong> Represent 15:00 SAST as <code>2026-10-15T15:00:00+02:00</code> and the corresponding EST time as <code>2026-10-15T08:00:00-05:00</code>.</li>
+        <li><strong>Server Maintenance Windows:</strong> Scheduling a server reboot for 02:00 AM SAST on Tuesday means U.S. operators must monitor systems at 7:00 PM EST on Monday.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC in database backends, converting to <code>Africa/Johannesburg</code> or <code>America/New_York</code> at the UI presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- SAST to EST for Travel and Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST for Travel and Events</h2>
+      <p>
+        Travelers booking flights from O.R. Tambo International Airport (JNB) or Cape Town International (CPT) to John F. Kennedy Airport (JFK) or Hartsfield-Jackson Atlanta (ATL) must carefully track local departure and arrival dates.
+      </p>
+      <p>
+        Always confirm flight departure times in local SAST and arrival times in local U.S. Eastern Time, paying close attention to previous-day or next-day calendar rollovers.
+      </p>
+    </section>
+
+    <!-- SAST to EST for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST for Remote Work</h2>
+      <p>
+        Distributed engineering and customer support teams across South Africa and North America benefit from structured asynchronous workflows:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Asynchronous Handoffs:</strong> South African developers completing code reviews at 17:00 SAST can push updates that U.S. Eastern developers review when logging in at 10:00 AM EST.</li>
+        <li><strong>Explicit Labels:</strong> Always include full date, time, and timezone labels in team communications (e.g., <em>"Sprint planning scheduled for Nov 12, 16:00 SAST / 09:00 EST"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- Common Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common SAST to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Adding Hours Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Adding 7 hours instead of subtracting 7 hours results in a 14-hour error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Forgetting Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move the calendar date back one day for early morning SAST times (00:00–06:59).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Confusing EST with EDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to account for U.S. Daylight Saving Time between March and November when Eastern Time uses EDT (UTC-4, 6-hour difference).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Assuming SAST Observes DST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">South Africa does NOT observe daylight saving time. SAST remains fixed at UTC+2 year-round.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAST to EST Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>SAST to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: Subtract 7 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always subtract 7 hours to convert from South Africa Standard Time to Eastern Standard Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date Before 07:00 AM SAST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any SAST time before 07:00 AM belongs to the previous calendar day in EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Military Time</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Using 24-hour notation (15:00 vs 3:00 PM) prevents AM/PM conversion errors.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our date-aware converter tool at the top of this page for accurate instant results.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-sast/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to SAST Converter
+        </a>
+        <a href="/utc-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          UTC to EST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+        <a href="/gmt-to-hkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HKT Converter
+        </a>
+        <a href="/gmt-to-cat/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CAT Converter
+        </a>
+        <a href="/gmt-to-wib/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to WIB Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/sast-to-est/#webpage",
+        "url": "https://gmttoestconverter.com/sast-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/sast-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/sast-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "SAST to EST Converter", "item": "https://gmttoestconverter.com/sast-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/sast-to-est/#software-application",
+        "name": "SAST to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/sast-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/sast-to-est/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/sast-to-est/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
