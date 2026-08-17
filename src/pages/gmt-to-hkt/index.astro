@@ -1,0 +1,821 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-hkt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to HKT Converter";
+const seoTitle = "GMT to HKT Converter – Convert GMT to Hong Kong Time";
+const pageDescription = "Convert GMT to HKT instantly with our free timezone converter. Hong Kong Time (HKT) is UTC+8, exactly 8 hours ahead of Greenwich Mean Time (GMT). Features date-aware calculations, 24-hour conversion tables, scheduling tips, and complete timezone rules.";
+
+const context = {
+  from: "GMT",
+  to: "HKT",
+  fromZone: "UTC",
+  toZone: "Asia/Hong_Kong"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → HKT (UTC+8) = add 8 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let hktHour = hour + 8;
+  const nextDay = hktHour >= 24;
+  if (nextDay) hktHour -= 24;
+  return {
+    gmt: formatHour12(hour),
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    hkt: formatHour12(hktHour),
+    hkt24: `${String(hktHour).padStart(2, "0")}:00`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What does GMT stand for?",
+    a: "GMT stands for Greenwich Mean Time. It is the solar time standard measured at the Royal Observatory in Greenwich, London, serving as UTC+0 baseline."
+  },
+  {
+    q: "What does HKT stand for?",
+    a: "HKT stands for Hong Kong Time (香港時間). It is the standard official timezone for Hong Kong Special Administrative Region."
+  },
+  {
+    q: "What is HKT's UTC offset?",
+    a: "Hong Kong Time operates at a fixed offset of UTC+8 (Coordinated Universal Time plus 8 hours)."
+  },
+  {
+    q: "How many hours ahead is HKT from GMT?",
+    a: "HKT is exactly 8 hours ahead of GMT (Greenwich Mean Time, UTC+0) throughout the entire calendar year."
+  },
+  {
+    q: "How do I convert GMT to HKT?",
+    a: "To convert GMT to HKT, add exactly 8 hours to the GMT time. If the total exceeds 24:00 (midnight), subtract 24 and move forward to the next calendar date."
+  },
+  {
+    q: "What is 12:00 GMT in HKT?",
+    a: "12:00 PM (noon) GMT equals 20:00 (8:00 PM) HKT on the exact same calendar day."
+  },
+  {
+    q: "What is 16:00 GMT in HKT?",
+    a: "16:00 (4:00 PM) GMT equals 00:00 (midnight) HKT on the following calendar day."
+  },
+  {
+    q: "Does GMT to HKT conversion change the date?",
+    a: "Yes. Any GMT time from 16:00 (4:00 PM) through 23:59 GMT will land on the next calendar day in Hong Kong."
+  },
+  {
+    q: "Does HKT observe daylight saving time?",
+    a: "No. Hong Kong does not observe Daylight Saving Time (DST). HKT remains at UTC+8 year-round."
+  },
+  {
+    q: "Is HKT always UTC+8?",
+    a: "Yes. Hong Kong Time has remained at a static UTC+8 offset since daylight saving time was permanently abolished in Hong Kong in 1979."
+  },
+  {
+    q: "What is the difference between GMT and HKT?",
+    a: "GMT is located at the Prime Meridian (UTC+0), whereas HKT is located in East Asia (UTC+8). HKT is consistently 8 hours ahead of GMT."
+  },
+  {
+    q: "Is HKT the same as other UTC+8 timezones?",
+    a: "While HKT shares the UTC+8 offset with China Standard Time (CST), Singapore Standard Time (SST), and Western Australian Standard Time (AWST), HKT is a distinct regional identifier (Asia/Hong_Kong)."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to HKT, GMT to HKT converter, convert GMT to HKT, GMT time to HKT, GMT HKT conversion, GMT to Hong Kong Time, GMT vs HKT, GMT HKT time difference, GMT HKT converter, what time is GMT in HKT, GMT UTC+0, HKT UTC+8, GMT to HKT time converter, GMT to HKT time difference, 12 GMT to HKT, 16 GMT to HKT, 18 GMT to HKT, GMT Hong Kong time",
+  image: "/assets/gmt-to-hkt-og.webp",
+  imageAlt: "GMT to HKT Converter - Greenwich Mean Time to Hong Kong Time",
+  faqs,
+  appDescription: "Free online GMT to HKT converter tool. Convert Greenwich Mean Time to Hong Kong Time with instant date-change calculations, 24-hour schedules, and timezone guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to HKT",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Hong Kong Time (HKT, UTC+8) by adding 8 hours.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the current or scheduled Greenwich Mean Time (UTC+0)." },
+    { name: "Add 8 hours", text: "Add exactly 8 hours to calculate the corresponding Hong Kong time." },
+    { name: "Check for date rollover", text: "If the total time reaches or exceeds 24:00, subtract 24 hours and advance the calendar date by one day." },
+    { name: "Confirm final HKT output", text: "Record the converted HKT date and time (UTC+8)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to HKT Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">HKT</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Hong Kong Time (HKT) instantly. Hong Kong Time is <strong>UTC+8</strong>, which is exactly <strong>8 hours ahead</strong> of GMT (UTC+0). Our date-aware calculation tool computes exact local times and automatic midnight day-changes.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to HKT Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to HKT, add exactly 8 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 GMT</strong> = 20:00 HKT (8:00 PM)</span>
+        <span><strong>16:00 GMT</strong> = 00:00 HKT (Next Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to HKT time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to HKT Conversion</h2>
+      <p>
+        Coordinating international meeting times, flight schedules, stock market entries, and digital communication across international borders requires a clear technical understanding of time zone mathematics. When converting from <strong>Greenwich Mean Time (GMT)</strong> to <strong>Hong Kong Time (HKT)</strong>, the fundamental rule is that Hong Kong operates 8 hours ahead of the Prime Meridian baseline.
+      </p>
+      <p>
+        Greenwich Mean Time serves as the primary longitudinal reference point at zero degrees longitude (UTC+0). Meanwhile, Hong Kong Standard Time is situated at 114.16 degrees East longitude, placing it securely within the eighth eastern time zone (UTC+8). Because Hong Kong does not observe seasonal clock shifts like Daylight Saving Time, this 8-hour gap remains constant 365 days a year.
+      </p>
+      <p>
+        Whether you are scheduling an online executive conference, deploying cross-regional database updates, tracking financial operations on the Hong Kong Stock Exchange (HKEX), or organizing personal communications with family in East Asia, using a date-aware converter ensures that midnight boundary shifts are never missed.
+      </p>
+    </section>
+
+    <!-- GMT to HKT Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and Hong Kong Time is <strong>8 hours</strong>. Hong Kong Time is permanently 8 hours ahead of Greenwich Mean Time.
+      </p>
+      <p>
+        The standard offset mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">HKT = GMT + 8 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 baseline → UTC+8 eastern standard time offset</p>
+      </div>
+      <p>
+        Because the offset is positive, Hong Kong experiences daylight and calendar dates hours before Greenwich observatory coordinates do. When London or Greenwich marks the break of dawn at 06:00 GMT, Hong Kong has already arrived at 14:00 (2:00 PM) in the mid-afternoon.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hkt-time-difference.webp"
+        alt="GMT UTC plus zero to HKT UTC plus eight time difference"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to HKT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to HKT</h2>
+      <p>
+        Converting Greenwich Mean Time to Hong Kong Time manually is simple when following a structured step-by-step approach. Follow these seven steps to calculate exact local Hong Kong hours and dates correctly:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Identify the clock time in GMT (e.g., 10:30 GMT).</li>
+        <li><strong>Verify the GMT baseline:</strong> Confirm that the baseline uses UTC+0 without daylight saving modifications.</li>
+        <li><strong>Identify HKT's offset:</strong> Note that Hong Kong Time uses UTC+8 year-round.</li>
+        <li><strong>Add eight hours:</strong> Sum the GMT hour figure with 8 (10:30 + 8 hours = 18:30).</li>
+        <li><strong>Check whether the result crosses midnight:</strong> If your calculated hour reaches or exceeds 24:00, subtract 24 hours from the total.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the result rolled over 24:00, advance the calendar day, month, or year by one.</li>
+        <li><strong>Confirm the final HKT time:</strong> Write out the resulting hour, minute, date, and HKT timezone label (e.g., 18:30 HKT).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>10:30 GMT</strong> yields <strong>18:30 HKT</strong> (6:30 PM HKT) on the exact same date. However, converting <strong>18:30 GMT</strong> yields 18:30 + 8 = 26:30. Subtracting 24 hours results in <strong>02:30 HKT (2:30 AM HKT) on the next calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to Hong Kong Time. Rows highlighted in colored styling indicate times where adding 8 hours advances the clock into the next calendar day in Hong Kong.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HKT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HKT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.hkt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.hkt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: Starting from 16:00 GMT (4:00 PM GMT), every subsequent GMT hour translates to the next calendar date in Hong Kong.
+      </p>
+    </section>
+
+    <!-- Detailed Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT Conversion Examples</h2>
+      <p>
+        To illustrate real-world application across different times of day, review these 10 comprehensive conversion scenarios with explicit clock and date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 08:00 HKT (Same Day)</strong><br />
+            When a new calendar day begins at midnight in Greenwich (00:00 GMT), citizens in Hong Kong are starting their morning commute at 08:00 AM HKT on the exact same date.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>03:00 GMT → 11:00 HKT (Same Day)</strong><br />
+            An early 03:00 AM GMT system backup corresponds to 11:00 AM HKT, right before lunch hours in Hong Kong office hubs like Central and Kowloon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Morning Market Open</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 14:00 HKT (Same Day)</strong><br />
+            A 06:00 AM GMT morning dispatch aligns with 14:00 (2:00 PM) HKT in Hong Kong during active afternoon trading hours.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Mid-Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>09:00 GMT → 17:00 HKT (Same Day)</strong><br />
+            When London offices open at 09:00 AM GMT, Hong Kong workers are wrapping up their business day at 17:00 (5:00 PM) HKT.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Noon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 20:00 HKT (Same Day)</strong><br />
+            12:00 PM noon GMT translates to 20:00 (8:00 PM) HKT in the evening. Ideal for evening personal check-ins or late-night tech handoffs.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Mid-Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:00 GMT → 22:00 HKT (Same Day)</strong><br />
+            14:00 (2:00 PM) GMT translates to 22:00 (10:00 PM) HKT late evening in Hong Kong.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Late Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>15:00 GMT → 23:00 HKT (Same Day)</strong><br />
+            15:00 (3:00 PM) GMT equals 23:00 (11:00 PM) HKT, the final hour before midnight in Hong Kong on the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Midnight Boundary Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 00:00 HKT (Next Day)</strong><br />
+            At 16:00 (4:00 PM) GMT, Hong Kong officially reaches midnight 00:00, advancing the calendar date into the next morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Evening Date Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:30 GMT (Oct 14) → 02:30 HKT (Oct 15)</strong><br />
+            A scheduled maintenance event at 18:30 GMT on October 14 takes place at 02:30 AM HKT on October 15 in Hong Kong.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: New Year Date Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>23:30 GMT (Dec 31, 2026) → 07:30 HKT (Jan 1, 2027)</strong><br />
+            A 23:30 GMT timestamp on New Year's Eve 2026 occurs at 07:30 AM HKT on New Year's Day 2027 in Hong Kong!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> historically represents mean solar time calculated at the Royal Observatory situated on the Prime Meridian (0° longitude) in Greenwich, London, United Kingdom.
+      </p>
+      <p>
+        Established as an international standard in 1884 at the International Meridian Conference, GMT served for decades as the foundational benchmark against which all global time zones were calibrated. In modern aviation, telecommunications, and computer software architectures, Coordinated Universal Time (UTC) has superseded GMT as the high-precision atomic standard. However, GMT remains the standard civil time zone name for the UK, West Africa, and global conversion tools.
+      </p>
+      <p>
+        Crucially, GMT operates at <strong>UTC+0</strong>. Unlike the United Kingdom's civil time (which shifts to British Summer Time / BST UTC+1 between March and October), standard GMT itself maintains a static zero offset throughout the year. You can learn more about GMT baseline logic on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or explore our main <a href="/" style="color: var(--accent);">GMT to EST Converter</a> tool.
+      </p>
+    </section>
+
+    <!-- What Is HKT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is HKT?</h2>
+      <p>
+        <strong>Hong Kong Time (HKT)</strong>, known natively as 香港時間 (Hong Kong Time), is the official time zone governing the Hong Kong Special Administrative Region. HKT is defined strictly as <strong>UTC+8</strong> (Coordinated Universal Time plus 8 hours).
+      </p>
+      <p>
+        Administered by the Hong Kong Observatory (HKO), Hong Kong Time is anchored to high-precision atomic clocks linked to international time standards. Hong Kong first adopted standardized time synchronized with the 120th meridian east of Greenwich in 1904. While daylight saving time was temporarily utilized during mid-20th-century wartime and energy-saving periods, DST was completely abolished in Hong Kong in 1979.
+      </p>
+      <p>
+        In global computing and time database systems (the IANA Time Zone Database), Hong Kong Time is designated by the location string <code>Asia/Hong_Kong</code>.
+      </p>
+    </section>
+
+    <!-- Image 2: Timezone Map -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-hkt-time-zone-map.webp"
+        alt="GMT and Hong Kong Time UTC offset illustration"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT vs HKT Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs HKT Comparison</h2>
+      <p>
+        To clarify the core distinctions between Greenwich Mean Time and Hong Kong Time, review the comprehensive comparison table below:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Hong Kong Time (HKT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hong Kong Time (香港時間)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+8</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">8 hours behind HKT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">8 hours ahead of GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Reference time (UK shifts to BST in summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Does NOT observe DST (Fixed UTC+8)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Geographic Area</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Royal Observatory, Greenwich / UK standard</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hong Kong SAR (Victoria Harbour, Kowloon, NT)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Database Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Asia/Hong_Kong</code></td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; font-weight: 600;">Governing Body</td>
+              <td style="padding: 10px 16px;">BIPM / Royal Observatory Greenwich</td>
+              <td style="padding: 10px 16px;">Hong Kong Observatory (HKO)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Why Is HKT 8 Hours Ahead of GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Is HKT 8 Hours Ahead of GMT?</h2>
+      <p>
+        The 8-hour difference between GMT and HKT stems directly from the division of Earth into 24 geographical time zone meridians, spaced at 15-degree longitudinal increments (360° / 24 hours = 15° per hour).
+      </p>
+      <p>
+        Greenwich, London sits at 0° longitude (UTC+0). Hong Kong is centered near 114°10' East longitude. Dividing 120° East (the standard reference longitude for the 8th eastern time zone) by 15° per hour yields:
+      </p>
+      <p style="text-align: center; font-weight: 700; font-size: 1.1rem; color: var(--accent);">
+        120° East / 15° per hour = +8 Hours
+      </p>
+      <p>
+        Because Earth rotates from west to east, regions east of the Prime Meridian see the sun rise earlier. Consequently, Hong Kong enters each new hour exactly 8 hours before Greenwich observatory coordinates.
+      </p>
+    </section>
+
+    <!-- Does GMT to HKT Change the Date? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does GMT to HKT Change the Date?</h2>
+      <p>
+        <strong>Yes. Because HKT is 8 hours ahead of GMT, evening hours in GMT roll into the next calendar day in Hong Kong.</strong>
+      </p>
+      <p>
+        Any GMT time occurring between 16:00 (4:00 PM GMT) and 23:59 (11:59 PM GMT) falls after midnight local time in Hong Kong, advancing the HKT calendar date by +1 day.
+      </p>
+
+      <h3>Date Transition Breakdown</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 15:59:</strong> Results in HKT 08:00 to 23:59 on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 16:00:</strong> Results in HKT 00:00 (midnight) on the <strong>NEXT calendar date</strong>.</li>
+        <li><strong>GMT 18:00:</strong> Results in HKT 02:00 AM on the <strong>NEXT calendar date</strong>.</li>
+        <li><strong>GMT 21:00:</strong> Results in HKT 05:00 AM on the <strong>NEXT calendar date</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- Image 3: Date Rollover -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hkt-date-rollover.webp"
+        alt="GMT to HKT date rollover showing the next calendar day"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- HKT Does Not Observe Daylight Saving Time -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HKT Does Not Observe Daylight Saving Time</h2>
+      <p>
+        A frequent misconception among international software developers and travel planners is assuming that all world cities adjust their clocks twice a year for Daylight Saving Time (DST).
+      </p>
+      <p>
+        <strong>Hong Kong Time remains strictly at UTC+8 year-round.</strong> Hong Kong does not observe DST and has no clock shifts in spring or autumn.
+      </p>
+      <p>
+        This static status makes converting GMT to HKT predictable: the formula <code>HKT = GMT + 8 hours</code> remains valid every single day of the year.
+      </p>
+    </section>
+
+    <!-- Image 4: Year-Round UTC+8 -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/hkt-utc-8-year-round.webp"
+        alt="Hong Kong Time remains UTC plus eight throughout the year"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Do Not Confuse HKT with Other Asian Timezones -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Do Not Confuse HKT with Other Asian Timezones</h2>
+      <p>
+        Hong Kong Time shares the UTC+8 offset with several neighboring Asian time zones. While the numeric offset (+8 hours) is identical during standard time, HKT is a separate geographic timezone designation:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>China Standard Time (CST / Beijing Time):</strong> Shares UTC+8. Used across mainland China.</li>
+        <li><strong>Singapore Standard Time (SST / SGT):</strong> Shares UTC+8. Used in Singapore.</li>
+        <li><strong>Malaysia Time (MYT):</strong> Shares UTC+8. Used in Kuala Lumpur and Malaysia.</li>
+        <li><strong>Central Indonesia Time (WITA):</strong> Shares UTC+8. Used in Bali and Makassar. Compare with <a href="/gmt-to-wib/" style="color: var(--accent);">GMT to WIB</a> (UTC+7).</li>
+        <li><strong>Japan Standard Time (JST):</strong> Operates at UTC+9 (1 hour ahead of HKT).</li>
+        <li><strong>Korea Standard Time (KST):</strong> Operates at UTC+9 (1 hour ahead of HKT).</li>
+      </ul>
+      <p>
+        In software programming and database design, always specify <code>Asia/Hong_Kong</code> rather than assuming generic regional aliases.
+      </p>
+    </section>
+
+    <!-- GMT to HKT for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT for Business Meetings</h2>
+      <p>
+        Scheduling business interactions between European or GMT-based organizations and Hong Kong enterprises requires strategic coordination due to the 8-hour window.
+      </p>
+
+      <h3>Overlap Windows & Working Hours</h3>
+      <p>
+        Standard business hours in Hong Kong run from 09:00 to 18:00 HKT. Converting this range to GMT shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Hong Kong Workday (09:00–18:00 HKT) = 01:00–10:00 GMT</p>
+      </div>
+      <p>
+        The prime overlapping meeting window occurs between <strong>07:00 GMT and 10:00 GMT</strong>, corresponding to <strong>15:00 HKT to 18:00 HKT</strong> in Hong Kong. This provides a 3-hour daily window where both European morning teams and Hong Kong late-afternoon teams are simultaneously at their desks.
+      </p>
+    </section>
+
+    <!-- Best GMT Times for Hong Kong Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Best GMT Times for Hong Kong Meetings</h2>
+      <p>
+        Here are recommended meeting slots specified in GMT alongside their corresponding Hong Kong local times:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>01:00 GMT → 09:00 HKT:</strong> Ideal for early dispatches sent as Hong Kong offices open.</li>
+        <li><strong>02:00 GMT → 10:00 HKT:</strong> Convenient mid-morning slot for Hong Kong executives.</li>
+        <li><strong>03:00 GMT → 11:00 HKT:</strong> Prime morning meeting slot in Hong Kong.</li>
+        <li><strong>07:00 GMT → 15:00 HKT:</strong> Optimal cross-region meeting slot for both regions.</li>
+        <li><strong>08:00 GMT → 16:00 HKT:</strong> Great mid-afternoon meeting slot in Hong Kong.</li>
+        <li><strong>09:00 GMT → 17:00 HKT:</strong> Final business hour meeting slot in Hong Kong.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HKT Working Hours -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HKT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Overnight GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">01:00 – 05:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">09:00 – 13:00 HKT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">Hong Kong Working / GMT Sleeping</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">07:00 – 10:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">15:00 – 18:00 HKT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Workday</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">11:00 – 16:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">19:00 – 00:00 HKT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">GMT Working / Hong Kong Evening</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to HKT for Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT for Technology and Infrastructure</h2>
+      <p>
+        Software engineers, cloud architects, and database administrators regularly perform timezone conversions when parsing logs, configuring cron jobs, or scheduling database maintenance between European and East Asian data centers.
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express GMT as <code>2026-10-14T10:00:00Z</code> and HKT as <code>2026-10-14T18:00:00+08:00</code>.</li>
+        <li><strong>Cron Expressions:</strong> A cron job configured to run at 02:00 HKT daily must be set to <code>18:00 UTC</code> on the previous calendar day.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC in backend databases, applying the <code>Asia/Hong_Kong</code> timezone dynamically at the UI presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HKT for Travel and Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT for Travel and Events</h2>
+      <p>
+        Travelers flying into Hong Kong International Airport (HKG) from European airports or navigating long-haul flight itineraries must pay close attention to local departure and arrival times.
+      </p>
+      <p>
+        Flight schedules are always listed in <strong>local time</strong> at each airport. If a flight departs London at 12:00 GMT and takes 12 hours, the arrival time is calculated by adding 12 flight hours (00:00 GMT next day) plus the 8-hour HKT offset, landing at 08:00 AM HKT on the following morning.
+      </p>
+    </section>
+
+    <!-- GMT to HKT for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT for Remote Work</h2>
+      <p>
+        With distributed teams operating across Europe, Africa, and East Asia, establishing clear asynchronous communication protocols prevents delays:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>End-of-Day Handoffs:</strong> Hong Kong teams completing work at 17:00 HKT can pass code reviews or documentation to GMT colleagues starting their morning at 09:00 GMT.</li>
+        <li><strong>Explicit Communication:</strong> Always append exact date, time, and timezone abbreviations (e.g., <em>"Please submit deliverables by March 15, 14:00 GMT / 22:00 HKT"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- Common Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to HKT Conversion Mistakes</h2>
+      <p>
+        Avoid these eleven frequent pitfalls when calculating GMT to HKT conversions:
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Subtracting Hours Instead of Adding</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Subtracting 8 hours instead of adding 8 hours produces a 16-hour calculation error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Forgetting Midnight Date Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to advance the calendar date for GMT times from 16:00 onward causes wrong-day scheduling.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Assuming HKT Observes DST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Hong Kong does NOT alter its clock seasonally. HKT remains permanently at UTC+8.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Confusing GMT with BST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">During UK summer, London uses BST (UTC+1), which is 7 hours behind HKT, whereas standard GMT (UTC+0) is 8 hours behind HKT.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">5. Ignoring Month & Year Boundaries</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Forgetting that midnight rollover on month-ends (e.g., Dec 31 → Jan 1) changes the year.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">6. Omitting the Date Entirely</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Specifying 18:00 without a calendar date creates ambiguity across midnight transitions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to HKT Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HKT Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: +8 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always add 8 hours to move from Greenwich Mean Time forward to Hong Kong Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date After 16:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT time equal to or greater than 16:00 belongs to the next calendar date in HKT.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Format</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military notation (e.g., 16:00 vs 04:00) eliminates AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our network:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+        <a href="/gmt-to-msk/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to MSK Converter
+        </a>
+        <a href="/gmt-to-wib/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to WIB Converter
+        </a>
+        <a href="/gmt-to-cat/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CAT Converter
+        </a>
+        <a href="/hkt-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          HKT to EST Converter
+        </a>
+        <a href="/gmt-to-cst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hkt/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-hkt/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-hkt/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-hkt/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to HKT Converter", "item": "https://gmttoestconverter.com/gmt-to-hkt/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-hkt/#software-application",
+        "name": "GMT to HKT Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-hkt/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-hkt/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hkt/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
