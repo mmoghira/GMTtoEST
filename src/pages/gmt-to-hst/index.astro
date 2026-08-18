@@ -1,0 +1,836 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-hst";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to HST Converter";
+const seoTitle = "GMT to HST Converter – Greenwich Mean Time to Hawaii Time";
+const pageDescription = "Convert GMT to HST instantly with our free timezone converter. Hawaii Standard Time (HST, UTC−10) is 10 hours behind Greenwich Mean Time (GMT, UTC+0). Features 24-hour conversion tables, previous-day date rollover guides, Hawaii year-round no-DST rules, and developer guides.";
+
+const context = {
+  from: "GMT",
+  to: "HST",
+  fromZone: "UTC",
+  toZone: "Pacific/Honolulu"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → HST (UTC−10) = subtract 10 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let hstHour = hour - 10;
+  const prevDay = hstHour < 0;
+  if (prevDay) hstHour += 24;
+  return {
+    gmt: formatHour12(hour),
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    hst: formatHour12(hstHour),
+    hst24: `${String(hstHour).padStart(2, "0")}:00`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is GMT?",
+    a: "Greenwich Mean Time (GMT) is the historic solar time standard measured at the Royal Observatory in Greenwich, London, serving as the UTC+0 baseline."
+  },
+  {
+    q: "What is HST?",
+    a: "Hawaii Standard Time (HST) is the standard time zone observed throughout the state of Hawaii, operating at UTC−10 year-round."
+  },
+  {
+    q: "How many hours behind GMT is HST?",
+    a: "Hawaii Standard Time (HST, UTC−10) is exactly 10 hours behind Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How do I convert GMT to HST?",
+    a: "To convert GMT to HST, subtract 10 hours from the GMT time. If the resulting hour falls below 00:00 (midnight), add 24 hours to the result and set the date to the previous calendar day."
+  },
+  {
+    q: "What is 12 PM GMT in HST?",
+    a: "12:00 PM (noon) GMT equals 02:00 AM HST on the exact same calendar day."
+  },
+  {
+    q: "What is 12 AM GMT in HST?",
+    a: "00:00 (midnight) GMT equals 14:00 (2:00 PM) HST on the previous calendar day."
+  },
+  {
+    q: "What is 06:00 GMT in HST?",
+    a: "06:00 AM GMT equals 20:00 (8:00 PM) HST on the previous calendar day."
+  },
+  {
+    q: "What is 18:00 GMT in HST?",
+    a: "18:00 (6:00 PM) GMT equals 08:00 AM HST on the exact same calendar day."
+  },
+  {
+    q: "What is 00:00 GMT in HST?",
+    a: "00:00 (midnight) GMT equals 14:00 (2:00 PM) HST on the previous calendar day."
+  },
+  {
+    q: "Does GMT to HST change the date?",
+    a: "Yes. Because HST is 10 hours behind GMT, early morning GMT hours (from 00:00 to 09:59 GMT) take place during the afternoon or evening of the previous calendar day in Hawaii."
+  },
+  {
+    q: "Does Hawaii observe daylight saving time?",
+    a: "No. The state of Hawaii opted out of the Uniform Time Act in 1967 and remains on Hawaii Standard Time (HST, UTC−10) all 365 days of the year."
+  },
+  {
+    q: "Is HST always UTC−10?",
+    a: "Yes. By definition, Hawaii Standard Time (HST) represents the UTC−10 offset permanently."
+  },
+  {
+    q: "What is the difference between GMT and UTC?",
+    a: "GMT is a solar time zone designation situated at zero degrees longitude, whereas UTC (Coordinated Universal Time) is the atomic time standard anchoring all global civil offsets. For conversion purposes, GMT and UTC are identical."
+  },
+  {
+    q: "Is HST 10 hours behind GMT?",
+    a: "Yes. Hawaii Standard Time (HST, UTC−10) is always exactly 10 hours behind Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How accurate is a fixed GMT to HST conversion?",
+    a: "Because neither standard GMT nor Hawaii Standard Time (HST) observes daylight saving time shifts, the 10-hour offset between GMT and HST is 100% constant year-round."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to HST, GMT to HST converter, GMT HST converter, convert GMT to HST, Greenwich Mean Time to Hawaii Standard Time, GMT to Hawaii time, GMT HST time difference, GMT to HST time converter, GMT to HST conversion, GMT to HST calculator, GMT UTC+0, HST UTC-10, GMT vs HST, HST vs GMT, GMT to Hawaii time conversion, what time is GMT in Hawaii, GMT to HST time difference, Hawaii Standard Time converter",
+  image: "/assets/gmt-to-hst-og.webp",
+  imageAlt: "GMT to HST Converter - Greenwich Mean Time to Hawaii Standard Time",
+  faqs,
+  appDescription: "Free online GMT to HST converter tool. Convert Greenwich Mean Time to Hawaii Standard Time with instant previous-day date calculations, 24-hour schedules, and Hawaii business guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to HST",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Hawaii Standard Time (HST, UTC−10) by subtracting 10 hours.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the starting Greenwich Mean Time (UTC+0)." },
+    { name: "Subtract 10 hours", text: "Subtract 10 hours from the GMT time value." },
+    { name: "Check for previous-day rollover", text: "If the resulting hour is below 00:00 (midnight), add 24 hours to the time and set the date to the previous calendar day." },
+    { name: "Confirm final HST output", text: "Record the final converted HST time and calendar date (UTC−10)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to HST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">HST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Hawaii Standard Time (HST) instantly. Hawaii Standard Time is <strong>UTC−10</strong>, which is exactly <strong>10 hours behind</strong> GMT (UTC+0). Our date-aware tool computes exact Hawaii local times and automatic previous-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to HST Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to HST, subtract exactly 10 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 GMT</strong> = 02:00 HST (2:00 AM)</span>
+        <span><strong>06:00 GMT</strong> = 20:00 HST (Previous Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to HST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to HST Conversion</h2>
+      <p>
+        Coordinating travel itineraries, remote work schedules, hospitality bookings, and international communications between European/African Greenwich Mean Time (GMT) regions and Hawaii requires accurate timezone calculations. When converting from <strong>Greenwich Mean Time (GMT)</strong> to <strong>Hawaii Standard Time (HST)</strong>, the foundational rule is that HST operates 10 hours behind the Prime Meridian baseline.
+      </p>
+      <p>
+        Greenwich Mean Time represents the zero-degree longitudinal reference point (UTC+0). Hawaii Standard Time is defined at <strong>UTC−10</strong>.
+      </p>
+      <p>
+        Whether you are scheduling business calls with Honolulu, planning flights to Daniel K. Inouye International Airport (HNL), or setting up automated server backups, using a date-aware converter ensures previous-day calendar shifts are handled accurately.
+      </p>
+    </section>
+
+    <!-- GMT to HST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and Hawaii Standard Time is <strong>10 hours</strong>. Hawaii Standard Time is permanently 10 hours behind Greenwich Mean Time.
+      </p>
+      <p>
+        The conversion mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">HST = GMT − 10 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 (Prime Meridian) → UTC−10 (Hawaii Standard Time)</p>
+      </div>
+      <p>
+        Because the offset is negative (−10), locations in Hawaii Standard Time experience clock hours 10 hours after Greenwich observatory coordinates do. When London or Greenwich marks 12:00 PM (noon) GMT, Honolulu is in pre-dawn hours at 02:00 AM HST.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hst-time-difference.webp"
+        alt="GMT to HST time difference showing a ten hour offset"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to HST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to HST</h2>
+      <p>
+        Converting Greenwich Mean Time to Hawaii Standard Time manually is straightforward when following a 7-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Identify the clock time in GMT (e.g., 18:30 GMT).</li>
+        <li><strong>Verify the GMT baseline:</strong> Confirm that the baseline uses UTC+0.</li>
+        <li><strong>Identify HST's offset:</strong> Note that Hawaii Standard Time operates at UTC−10.</li>
+        <li><strong>Subtract ten hours:</strong> Subtract 10 from the GMT hour figure (18:30 minus 10 hours = 08:30).</li>
+        <li><strong>Check whether the result falls below 00:00:</strong> If your calculated hour is negative, add 24 hours to the total.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the result went below 00:00 midnight, roll back the calendar day, month, or year by one.</li>
+        <li><strong>Confirm the final HST time:</strong> Record the resulting hour, minute, date, and HST label (e.g., 08:30 HST).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>18:30 GMT</strong> yields <strong>08:30 HST</strong> (8:30 AM HST) on the exact same date. However, converting <strong>05:30 GMT</strong> yields 05:30 minus 10 hours = −04:30. Adding 24 hours results in <strong>19:30 HST (7:30 PM HST) on the previous calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to Hawaii Standard Time. Rows highlighted in colored styling indicate times where subtracting 10 hours rolls the clock into the <strong>previous calendar day</strong> in Hawaii.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.hst}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.hst24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT hours from 00:00 through 09:00 occur during the afternoon and evening of the previous calendar day in Hawaii Standard Time.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST Conversion Examples</h2>
+      <p>
+        Review these 15 detailed conversion scenarios with explicit clock and calendar date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 14:00 HST (Previous Day)</strong><br />
+            When midnight arrives in Greenwich (00:00 GMT), Hawaii is at 14:00 (2:00 PM) on the previous afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT → 15:00 HST (Previous Day)</strong><br />
+            01:00 AM GMT corresponds to 15:00 (3:00 PM) HST on the previous afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 GMT → 16:00 HST (Previous Day)</strong><br />
+            02:00 AM GMT equals 16:00 (4:00 PM) HST on the previous afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Pre-Dawn GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT → 18:00 HST (Previous Day)</strong><br />
+            A 04:00 AM GMT system job runs at 18:00 (6:00 PM) HST the previous evening in Honolulu.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 20:00 HST (Previous Day)</strong><br />
+            06:00 AM GMT equals 20:00 (8:00 PM) HST on the previous evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Night Rollover Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>09:00 GMT → 23:00 HST (Previous Day)</strong><br />
+            09:00 AM GMT equals 23:00 (11:00 PM) HST, the final hour before midnight on the previous day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Same-Day Midnight</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>10:00 GMT → 00:00 HST (Same Day)</strong><br />
+            At exactly 10:00 AM GMT, Hawaii Standard Time reaches 00:00 midnight at the start of the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Mid-Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 02:00 HST (Same Day)</strong><br />
+            12:00 PM (noon) GMT translates to 02:00 AM HST in the pre-dawn hours.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Early Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:00 GMT → 04:00 HST (Same Day)</strong><br />
+            14:00 (2:00 PM) GMT equals 04:00 AM HST early morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: Mid-Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 06:00 HST (Same Day)</strong><br />
+            16:00 (4:00 PM) GMT equals 06:00 AM HST as Hawaiian morning routines begin.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: Late Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT → 08:00 HST (Same Day)</strong><br />
+            18:00 (6:00 PM) GMT translates to 08:00 AM HST right as business offices open in Honolulu.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 GMT → 10:00 HST (Same Day)</strong><br />
+            20:00 (8:00 PM) GMT equals 10:00 AM HST mid-morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: Late Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>22:00 GMT → 12:00 HST (Same Day)</strong><br />
+            22:00 (10:00 PM) GMT equals 12:00 PM (noon) HST lunch time in Hawaii.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: New Year's Eve Date Boundary</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>05:00 GMT (Jan 1, 2027) → 19:00 HST (Dec 31, 2026)</strong><br />
+            A 05:00 AM GMT timestamp on New Year's Day 2027 in London takes place at 19:00 (7:00 PM) HST on New Year's Eve 2026 in Honolulu!
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: Leap Year Date Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>05:00 GMT (March 1, 2028) → 19:00 HST (Feb 29, 2028)</strong><br />
+            On a leap year, 05:00 AM GMT on March 1 falls on 19:00 (7:00 PM) HST on Leap Day (February 29) in Hawaii.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> represents mean solar time calculated at the Royal Observatory in Greenwich, London, situated on the Prime Meridian (0° longitude).
+      </p>
+      <p>
+        Established at the 1884 International Meridian Conference, GMT served as the foundational global timekeeping baseline for over a century. While atomic Coordinated Universal Time (UTC) has replaced GMT in scientific and computer system standards, GMT remains the standard civil time zone name for the UK, West Africa, and global conversion tools.
+      </p>
+      <p>
+        GMT operates at <strong>UTC+0</strong>. Standard GMT maintains a static zero offset throughout the year. You can learn more about GMT baseline logic on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or explore our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- What Is HST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is HST?</h2>
+      <p>
+        <strong>Hawaii Standard Time (HST)</strong> is the standard time zone observed across all Hawaiian Islands (Oahu, Maui, Hawaii Island, Kauai, Molokai, and Lanai). HST is defined strictly as <strong>UTC−10</strong> (Coordinated Universal Time minus 10 hours).
+      </p>
+      <p>
+        In computer systems and IANA timezone databases, Hawaii Standard Time is represented by the location key <code>Pacific/Honolulu</code>. Explore our dedicated <a href="/hst-to-est/" style="color: var(--accent);">HST to EST Converter</a> for Hawaii to US Eastern Time conversions.
+      </p>
+    </section>
+
+    <!-- GMT vs HST Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs HST Comparison</h2>
+      <p>
+        Review the structural attributes comparing Greenwich Mean Time and Hawaii Standard Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Hawaii Standard Time (HST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hawaii Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−10</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">10 hours ahead of HST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">10 hours behind GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Status</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Reference baseline (UK uses BST in summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">No DST (Year-Round UTC−10)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Royal Observatory, Greenwich / UK baseline</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">State of Hawaii (Honolulu, Hilo, Kahului)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Pacific/Honolulu</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Image 2: GMT vs HST Graphic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-vs-hst-timezone.webp"
+        alt="GMT versus HST timezone comparison showing UTC offsets"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Why Is HST 10 Hours Behind GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Is HST 10 Hours Behind GMT?</h2>
+      <p>
+        The 10-hour difference between GMT and HST is determined by longitudinal spacing across the globe:
+      </p>
+      <p>
+        GMT is centered at 0° longitude on the Prime Meridian. Hawaii Standard Time is centered near 150°W longitude in the Central Pacific Ocean. Because the Earth rotates 360 degrees in 24 hours (or 15 degrees per hour), the longitudinal gap of 150 degrees corresponds directly to 150° ÷ 15° per hour = 10 hours.
+      </p>
+    </section>
+
+    <!-- Does Hawaii Observe Daylight Saving Time? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does Hawaii Observe Daylight Saving Time?</h2>
+      <p>
+        <strong>No. The state of Hawaii does NOT observe Daylight Saving Time.</strong>
+      </p>
+      <p>
+        Under the US Uniform Time Act of 1966, states were granted the right to opt out of daylight saving time adjustments. Hawaii officially opted out in 1967 because its tropical location near the equator receives relatively consistent daylight hours year-round. Therefore, Honolulu, Maui, Kauai, and the Big Island stay on <strong>Hawaii Standard Time (HST, UTC−10) all 365 days of the year</strong>.
+      </p>
+    </section>
+
+    <!-- Image 3: Hawaii No DST Visual -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/hawaii-standard-time-no-daylight-saving.webp"
+        alt="Hawaii Standard Time UTC minus 10 and Hawaii daylight saving time explanation"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT vs UTC -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs UTC</h2>
+      <p>
+        To avoid technical ambiguity when handling cross-border schedules:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT (Greenwich Mean Time):</strong> A historic solar time zone designation situated at zero degrees longitude.</li>
+        <li><strong>UTC (Coordinated Universal Time):</strong> The modern atomic time standard anchoring all global civil offsets. GMT and UTC share the exact same clock time for conversion purposes.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HST Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST Date Changes</h2>
+      <p>
+        <strong>Yes. Because HST is 10 hours behind GMT, early morning GMT hours roll back into the previous calendar day in Hawaii.</strong>
+      </p>
+      <p>
+        Any GMT time occurring between 00:00 (midnight GMT) and 09:59 (9:59 AM GMT) takes place during the afternoon or evening of the <strong>previous calendar date</strong> in HST.
+      </p>
+
+      <h3>Date Transition Thresholds</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 09:59:</strong> Results in HST 14:00 to 23:59 on the <strong>PREVIOUS calendar date</strong>.</li>
+        <li><strong>GMT 10:00:</strong> Results in HST 00:00 (midnight) at the start of the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 12:00:</strong> Results in HST 02:00 AM on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 22:00:</strong> Results in HST 12:00 PM (noon) on the <strong>SAME calendar date</strong>.</li>
+      </ul>
+      <p>
+        For instance, a system maintenance window scheduled for 04:00 AM GMT on Friday, May 14 takes place at 18:00 (6:00 PM) HST on Thursday, May 13 in Honolulu.
+      </p>
+    </section>
+
+    <!-- Image 4: Previous-Day Rollover Timeline -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hst-previous-day-conversion.webp"
+        alt="GMT to HST conversion showing previous day date rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to HST for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST for Business Meetings</h2>
+      <p>
+        Coordinating business meetings between European or UK organizations and Hawaiian business hubs requires planning across a 10-hour time gap.
+      </p>
+
+      <h3>Overlap Windows & Business Hours</h3>
+      <p>
+        Standard office working hours in Honolulu run from 08:00 to 17:00 HST. Converting this range to GMT shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Hawaiian Workday (08:00–17:00 HST) = 18:00–03:00 GMT (Next Day)</p>
+      </div>
+      <p>
+        The prime overlapping meeting window occurs between 18:00 GMT and 19:00 GMT (08:00 HST to 09:00 HST), providing a brief end-of-day European window matching early Hawaiian mornings.
+      </p>
+    </section>
+
+    <!-- GMT to HST Working Hours Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HST Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">09:00 – 13:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">23:00 – 03:00 HST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">GMT Working / Hawaii Asleep</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">18:00 – 19:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">08:00 – 09:00 HST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hawaii Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">22:00 – 03:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">12:00 – 17:00 HST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">GMT Night / Hawaii Working</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to HST for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST for Remote Work</h2>
+      <p>
+        Distributed teams working across European and Pacific time zones rely heavily on asynchronous communication:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Hand-off Communication:</strong> GMT teams finishing their afternoon at 18:00 GMT pass progress updates to Hawaiian colleagues starting at 08:00 HST.</li>
+        <li><strong>Explicit Invites:</strong> Always include exact date, time, and timezone labels in calendar invites (e.g., <em>"Team meeting on June 10, 18:00 GMT / 08:00 HST"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HST for Travel -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST for Travel</h2>
+      <p>
+        Travelers flying between European airports and Hawaii destinations (Honolulu HNL, Kahului OGG, Kona KOA) must note that flight itineraries are printed in local airport time:
+      </p>
+      <p>
+        If a flight departs London Heathrow at 14:00 GMT, it will land in Honolulu local time adjusted for the 10-hour clock shift plus flight duration.
+      </p>
+    </section>
+
+    <!-- GMT to HST for Online Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST for Online Events</h2>
+      <p>
+        Webinars, virtual conferences, gaming streams, and keynotes broadcast globally attract audiences in HST:
+      </p>
+      <p>
+        A livestream broadcast at 19:00 GMT airs at 09:00 AM HST in Hawaii.
+      </p>
+    </section>
+
+    <!-- GMT to HST for Developers and Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST for Developers and Technology</h2>
+      <p>
+        Software engineers, DevOps leads, and database administrators handle timezone conversions when parsing logs, APIs, and scheduled tasks:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express GMT as <code>2026-06-14T18:00:00Z</code> and HST as <code>2026-06-14T08:00:00-10:00</code>.</li>
+        <li><strong>Cron Jobs:</strong> A database backup cron scheduled for 22:00 HST daily runs at <code>08:00 UTC</code> on the following calendar day.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC within database schemas, converting to <code>Pacific/Honolulu</code> dynamically at the application UI presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- Common GMT to HST Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to HST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Adding Hours Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Adding 10 hours instead of subtracting 10 hours creates a 20-hour calculation error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Using 9 or 11 Hours Difference</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Confusing Hawaii Standard Time (UTC−10) with Alaska or Aleutian daylight offsets.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Assuming Hawaii Observes DST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Assuming Hawaii shifts clocks in summer. Hawaii remains on HST (UTC−10) year-round.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Forgetting Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move early GMT hours (00:00 to 09:59) back to the previous calendar day in HST.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to HST Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: −10 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always subtract 10 hours to move from Greenwich Mean Time back to Hawaii Standard Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date for Early GMT Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT hour from 00:00 to 09:59 belongs to the previous calendar date in HST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Format</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military notation (e.g., 18:00 vs 06:00) prevents AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/hst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          HST to EST Converter
+        </a>
+        <a href="/gmt-to-hdt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HDT Converter
+        </a>
+        <a href="/gmt-to-akst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to AKST Converter
+        </a>
+        <a href="/gmt-to-pst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PST Converter
+        </a>
+        <a href="/gmt-to-mst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to MST Converter
+        </a>
+        <a href="/gmt-to-jst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to JST Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hst/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-hst/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-hst/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-hst/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to HST Converter", "item": "https://gmttoestconverter.com/gmt-to-hst/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-hst/#software-application",
+        "name": "GMT to HST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-hst/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-hst/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hst/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
