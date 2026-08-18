@@ -1,0 +1,843 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-mst";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to MST Converter";
+const seoTitle = "GMT to MST Converter – Convert GMT to Mountain Standard Time";
+const pageDescription = "Convert GMT to MST instantly with our free timezone converter. Mountain Standard Time (MST, UTC−7) is 7 hours behind Greenwich Mean Time (GMT, UTC+0). Features 24-hour conversion tables, previous-day date rollover guides, MST vs MDT rules, and developer timezone guides.";
+
+const context = {
+  from: "GMT",
+  to: "MST",
+  fromZone: "UTC",
+  toZone: "America/Denver"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → MST (UTC−7) = subtract 7 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let mstHour = hour - 7;
+  const prevDay = mstHour < 0;
+  if (prevDay) mstHour += 24;
+  return {
+    gmt: formatHour12(hour),
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    mst: formatHour12(mstHour),
+    mst24: `${String(mstHour).padStart(2, "0")}:00`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is GMT?",
+    a: "Greenwich Mean Time (GMT) is the historic solar time standard measured at the Royal Observatory in Greenwich, London, serving as the UTC+0 baseline."
+  },
+  {
+    q: "What is MST?",
+    a: "Mountain Standard Time (MST) is the standard time zone covering parts of North America (including Arizona year-round, as well as Colorado, Utah, and Alberta during winter), operating at UTC−7."
+  },
+  {
+    q: "How many hours behind GMT is MST?",
+    a: "Mountain Standard Time (MST, UTC−7) is exactly 7 hours behind Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How do I convert GMT to MST?",
+    a: "To convert GMT to MST, subtract 7 hours from the GMT time. If the resulting hour falls below 00:00 (midnight), add 24 hours to the result and set the date to the previous calendar day."
+  },
+  {
+    q: "What is 12 PM GMT in MST?",
+    a: "12:00 PM (noon) GMT equals 05:00 AM MST on the exact same calendar day."
+  },
+  {
+    q: "What is 12 AM GMT in MST?",
+    a: "00:00 (midnight) GMT equals 17:00 (5:00 PM) MST on the previous calendar day."
+  },
+  {
+    q: "What is 06:00 GMT in MST?",
+    a: "06:00 AM GMT equals 23:00 (11:00 PM) MST on the previous calendar day."
+  },
+  {
+    q: "What is 07:00 GMT in MST?",
+    a: "07:00 AM GMT equals 00:00 (midnight) MST at the very beginning of the same calendar day."
+  },
+  {
+    q: "Does GMT to MST ever change the date?",
+    a: "Yes. Because MST is 7 hours behind GMT, early morning GMT hours (from 00:00 to 06:59 GMT) take place during the evening of the previous calendar day in MST."
+  },
+  {
+    q: "What is the difference between MST and MDT?",
+    a: "MST is Mountain Standard Time (UTC−7, used in winter or year-round in Arizona), whereas MDT is Mountain Daylight Time (UTC−6, used during summer daylight saving time)."
+  },
+  {
+    q: "Is MST always UTC−7?",
+    a: "Yes. Standard MST is defined permanently as UTC−7. Locations observing daylight saving time switch to MDT (UTC−6) in summer."
+  },
+  {
+    q: "Does Mountain Time always use MST?",
+    a: "No. Most Mountain Time locations (such as Denver, Salt Lake City, and Calgary) use MST (UTC−7) in winter and MDT (UTC−6) in summer. Arizona (except Navajo Nation) uses MST (UTC−7) year-round."
+  },
+  {
+    q: "What is GMT to Mountain Time?",
+    a: "GMT to Mountain Time is calculated by subtracting 7 hours when Mountain locations observe MST (UTC−7), or subtracting 6 hours when they observe MDT (UTC−6)."
+  },
+  {
+    q: "What timezone is MST?",
+    a: "MST stands for Mountain Standard Time, operating at UTC−7 in North America."
+  },
+  {
+    q: "How can I convert GMT to MST accurately?",
+    a: "Use our interactive conversion tool above to calculate exact clock times, 7-hour offsets, and previous-day calendar shifts automatically."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to MST, GMT to MST converter, GMT MST converter, convert GMT to MST, GMT to Mountain Standard Time, GMT to Mountain Time, GMT MST time difference, GMT to MST time converter, GMT MST conversion, GMT to MST calculator, MST UTC-7, GMT UTC+0, GMT vs MST, MST vs GMT, GMT to Mountain time converter, what time is GMT in MST, GMT to MST time difference, GMT to MST conversion",
+  image: "/assets/gmt-to-mst-og.webp",
+  imageAlt: "GMT to MST Converter - Greenwich Mean Time to Mountain Standard Time",
+  faqs,
+  appDescription: "Free online GMT to MST converter tool. Convert Greenwich Mean Time to Mountain Standard Time with instant previous-day date calculations, 24-hour schedules, and Denver business guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to MST",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Mountain Standard Time (MST, UTC−7) by subtracting 7 hours.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the starting Greenwich Mean Time (UTC+0)." },
+    { name: "Subtract 7 hours", text: "Subtract 7 hours from the GMT time value." },
+    { name: "Check for previous-day rollover", text: "If the resulting hour is below 00:00 (midnight), add 24 hours to the time and set the date to the previous calendar day." },
+    { name: "Confirm final MST output", text: "Record the final converted MST time and calendar date (UTC−7)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to MST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">MST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Mountain Standard Time (MST) instantly. Mountain Standard Time is <strong>UTC−7</strong>, which is exactly <strong>7 hours behind</strong> GMT (UTC+0). Our date-aware tool calculates exact Rocky Mountain local times and automatic previous-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to MST Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to MST, subtract exactly 7 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 GMT</strong> = 05:00 MST (5:00 AM)</span>
+        <span><strong>03:00 GMT</strong> = 20:00 MST (Previous Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to MST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to MST Conversion</h2>
+      <p>
+        Managing cross-continental workflows, corporate meetings, remote development syncs, and travel logistics between the United Kingdom / West Africa and North America's Mountain region requires accurate timezone math. When converting from <strong>Greenwich Mean Time (GMT)</strong> to <strong>Mountain Standard Time (MST)</strong>, the fundamental rule is that MST operates 7 hours behind the Prime Meridian baseline.
+      </p>
+      <p>
+        Greenwich Mean Time serves as the zero-degree longitudinal reference point (UTC+0). Mountain Standard Time is centered on the 105th meridian west of Greenwich (passing near Denver, Colorado), positioning it at <strong>UTC−7</strong>.
+      </p>
+      <p>
+        Whether you are scheduling video calls with colleagues in Phoenix, Denver, Salt Lake City, Calgary, or Edmonton, parsing server logs, or booking flights across Atlantic and Rocky Mountain hubs, using a date-aware converter ensures previous-day calendar shifts are handled cleanly.
+      </p>
+    </section>
+
+    <!-- GMT to MST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and Mountain Standard Time is <strong>7 hours</strong>. Mountain Standard Time is permanently 7 hours behind Greenwich Mean Time.
+      </p>
+      <p>
+        The conversion mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">MST = GMT − 7 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 (Prime Meridian) → UTC−7 (Mountain Standard Time)</p>
+      </div>
+      <p>
+        Because the offset is negative (−7), locations in the Mountain time zone experience clock hours 7 hours after Greenwich observatory coordinates do. When London or Greenwich marks 12:00 PM (noon) GMT, cities in Mountain Standard Time are just waking up at 05:00 AM MST.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-mst-time-difference.webp"
+        alt="GMT to MST time difference showing a seven hour offset"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to MST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to MST</h2>
+      <p>
+        Converting Greenwich Mean Time to Mountain Standard Time manually is simple when following a step-by-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Identify the clock time in GMT (e.g., 14:30 GMT).</li>
+        <li><strong>Verify the GMT baseline:</strong> Confirm that the baseline uses UTC+0.</li>
+        <li><strong>Identify MST's offset:</strong> Note that Mountain Standard Time operates at UTC−7.</li>
+        <li><strong>Subtract seven hours:</strong> Subtract 7 from the GMT hour figure (14:30 minus 7 hours = 07:30).</li>
+        <li><strong>Check whether the result falls below 00:00:</strong> If your calculated hour is negative, add 24 hours to the total.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the result went below 00:00 midnight, roll back the calendar day, month, or year by one.</li>
+        <li><strong>Confirm the final MST time:</strong> Record the resulting hour, minute, date, and MST label (e.g., 07:30 MST).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>14:30 GMT</strong> yields <strong>07:30 MST</strong> (7:30 AM MST) on the exact same date. However, converting <strong>04:30 GMT</strong> yields 04:30 minus 7 hours = −02:30. Adding 24 hours results in <strong>21:30 MST (9:30 PM MST) on the previous calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to Mountain Standard Time. Rows highlighted in colored styling indicate times where subtracting 7 hours rolls the clock into the <strong>previous calendar day</strong> in MST.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">MST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">MST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.mst}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.mst24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT hours from 00:00 through 06:00 occur during the late afternoon and evening of the previous calendar day in MST.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST Conversion Examples</h2>
+      <p>
+        Review these 15 detailed conversion scenarios with explicit clock and calendar date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 17:00 MST (Previous Day)</strong><br />
+            When a new calendar day starts at midnight in Greenwich (00:00 GMT), Mountain Standard Time is at 17:00 (5:00 PM) MST on the previous evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT → 18:00 MST (Previous Day)</strong><br />
+            01:00 AM GMT corresponds to 18:00 (6:00 PM) MST on the previous calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Pre-Dawn GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>03:00 GMT → 20:00 MST (Previous Day)</strong><br />
+            A 03:00 AM GMT automated maintenance job runs at 20:00 (8:00 PM) MST the previous evening in Phoenix.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Night Rollover Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 23:00 MST (Previous Day)</strong><br />
+            06:00 AM GMT equals 23:00 (11:00 PM) MST on the previous calendar date.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Same-Day Midnight</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>07:00 GMT → 00:00 MST (Same Day)</strong><br />
+            At exactly 07:00 AM GMT, Mountain Standard Time reaches 00:00 midnight at the start of the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>09:00 GMT → 02:00 MST (Same Day)</strong><br />
+            When London offices open at 09:00 AM GMT, Phoenix and Denver are at 02:00 AM MST in the middle of the night.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Noon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 05:00 MST (Same Day)</strong><br />
+            12:00 PM (noon) GMT translates to 05:00 AM MST in the early morning across Mountain Standard Time locations.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Early Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:00 GMT → 07:00 MST (Same Day)</strong><br />
+            14:00 (2:00 PM) GMT equals 07:00 AM MST as early morning routines begin in the Mountain region.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Mid-Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 09:00 MST (Same Day)</strong><br />
+            16:00 (4:00 PM) GMT equals 09:00 AM MST right as Mountain offices open for the business day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: Late Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT → 11:00 MST (Same Day)</strong><br />
+            18:00 (6:00 PM) GMT translates to 11:00 AM MST late morning in Denver.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 GMT → 13:00 MST (Same Day)</strong><br />
+            20:00 (8:00 PM) GMT equals 13:00 (1:00 PM) MST right after lunch in the Mountain time zone.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: Half-Hour GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>21:30 GMT → 14:30 MST (Same Day)</strong><br />
+            21:30 (9:30 PM) GMT equals 14:30 (2:30 PM) MST mid-afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: New Year Eve Date Boundary</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>03:00 GMT (Jan 1, 2027) → 20:00 MST (Dec 31, 2026)</strong><br />
+            A 03:00 AM GMT timestamp on New Year's Day 2027 in London takes place at 20:00 (8:00 PM) MST on New Year's Eve 2026 in Phoenix!
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: Month Boundary Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT (March 1) → 21:00 MST (Feb 28)</strong><br />
+            04:00 AM GMT on March 1 rolls back to 21:00 (9:00 PM) MST on February 28 in Mountain Standard Time.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: Leap Year Date Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>05:00 GMT (March 1, 2028) → 22:00 MST (Feb 29, 2028)</strong><br />
+            On a leap year, 05:00 AM GMT on March 1 falls on 22:00 (10:00 PM) MST on Leap Day (February 29) in MST.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> represents mean solar time calculated at the Royal Observatory in Greenwich, London, situated on the Prime Meridian (0° longitude).
+      </p>
+      <p>
+        Established at the 1884 International Meridian Conference, GMT served as the foundational global timekeeping baseline for over a century. While atomic Coordinated Universal Time (UTC) has replaced GMT in scientific and computer system standards, GMT remains the standard civil time zone name for the UK, West Africa, and global conversion tools.
+      </p>
+      <p>
+        GMT operates at <strong>UTC+0</strong>. Unlike UK civil time (which shifts to BST / UTC+1 in summer), standard GMT maintains a static zero offset throughout the year. You can learn more about GMT baseline logic on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or explore our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- What Is MST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is MST?</h2>
+      <p>
+        <strong>Mountain Standard Time (MST)</strong> is the standard winter time zone covering parts of North America situated along the 105th meridian west of Greenwich. MST is defined strictly as <strong>UTC−7</strong> (Coordinated Universal Time minus 7 hours).
+      </p>
+      <p>
+        In computer systems and IANA timezone databases, Mountain Time is represented by location keys such as <code>America/Denver</code>, <code>America/Phoenix</code>, <code>America/Edmonton</code>, and <code>America/Boise</code>.
+      </p>
+    </section>
+
+    <!-- Image 2: Mountain Time Zone Visual -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/mountain-standard-time-mst-utc-minus-7.webp"
+        alt="Mountain Standard Time MST UTC minus seven timezone illustration"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- MST vs MDT Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>MST vs MDT: What Is the Difference?</h2>
+      <p>
+        It is essential to distinguish between <strong>Mountain Standard Time (MST)</strong> and <strong>Mountain Daylight Time (MDT)</strong>:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>MST (Mountain Standard Time):</strong> UTC−7 (used during standard winter months or year-round in non-DST areas).</li>
+        <li><strong>MDT (Mountain Daylight Time):</strong> UTC−6 (used during summer daylight saving time from March to November in most Mountain states).</li>
+      </ul>
+      <p>
+        The primary converter on this page is specifically configured for <strong>GMT → MST (UTC−7)</strong>, calculating an exact 7-hour deduction.
+      </p>
+    </section>
+
+    <!-- Does Mountain Time Always Use MST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does Mountain Time Always Use MST?</h2>
+      <p>
+        No. Daylight saving time rules vary across the Mountain region:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Arizona:</strong> Most of Arizona (including Phoenix and Tucson) remains on <strong>permanent MST (UTC−7)</strong> all year long and does not observe DST. (The Navajo Nation in northeastern Arizona is an exception and does observe DST).</li>
+        <li><strong>Colorado, Utah, Montana, Wyoming, Alberta:</strong> Observe <strong>MST (UTC−7)</strong> in winter and <strong>MDT (UTC−6)</strong> in summer.</li>
+        <li><strong>Sonora (Mexico):</strong> Remains on permanent MST (UTC−7) aligned with Arizona.</li>
+      </ul>
+    </section>
+
+    <!-- GMT vs MST Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs MST Comparison</h2>
+      <p>
+        Review the structural attributes comparing Greenwich Mean Time and Mountain Standard Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Mountain Standard Time (MST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Mountain Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−7</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">7 hours ahead of MST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">7 hours behind GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Status</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Reference baseline (UK uses BST in summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter standard (Arizona uses MST all year)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Royal Observatory, Greenwich / UK baseline</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">North America (Denver, Phoenix, Salt Lake City)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/Denver</code> / <code>America/Phoenix</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Image 3: GMT vs MST Comparison Graphic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-vs-mst-comparison.webp"
+        alt="GMT versus MST comparison showing UTC offsets and seven hour difference"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT vs UTC vs MST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT, UTC and MST Explained</h2>
+      <p>
+        To prevent technical confusion when coordinating international activities:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT (Greenwich Mean Time):</strong> Solar time zone and standard operating at UTC+0.</li>
+        <li><strong>UTC (Coordinated Universal Time):</strong> The atomic time standard anchoring all global civil offsets. GMT and UTC share the exact same clock time for conversion purposes.</li>
+        <li><strong>MST (Mountain Standard Time):</strong> The civil standard time zone operating at UTC−7 in North America.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to MST Date and Day Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST Date and Day Changes</h2>
+      <p>
+        <strong>Yes. Because MST is 7 hours behind GMT, early morning GMT hours roll back into the previous calendar day in MST.</strong>
+      </p>
+      <p>
+        Any GMT time occurring between 00:00 (midnight GMT) and 06:59 (6:59 AM GMT) takes place during the late afternoon or evening of the <strong>previous calendar date</strong> in MST.
+      </p>
+
+      <h3>Date Transition Thresholds</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 06:59:</strong> Results in MST 17:00 to 23:59 on the <strong>PREVIOUS calendar date</strong>.</li>
+        <li><strong>GMT 07:00:</strong> Results in MST 00:00 (midnight) at the start of the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 12:00:</strong> Results in MST 05:00 AM on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 19:00:</strong> Results in MST 12:00 PM (noon) on the <strong>SAME calendar date</strong>.</li>
+      </ul>
+      <p>
+        For instance, a system maintenance window scheduled for 03:00 AM GMT on Friday, April 16 takes place at 20:00 (8:00 PM) MST on Thursday, April 15 in Phoenix.
+      </p>
+    </section>
+
+    <!-- Image 4: Previous-Day Rollover Timeline -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-mst-previous-day-conversion.webp"
+        alt="GMT to MST conversion showing previous day rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to MST for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST for Business Meetings</h2>
+      <p>
+        Coordinating business meetings between European or UK organizations and Mountain region hubs (Denver, Phoenix, Salt Lake City, Calgary) requires strategic planning across a 7-hour time gap.
+      </p>
+
+      <h3>Overlap Windows & Business Hours</h3>
+      <p>
+        Standard office working hours in Denver or Phoenix run from 09:00 to 17:00 MST. Converting this range to GMT shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Mountain Workday (09:00–17:00 MST) = 16:00–00:00 GMT</p>
+      </div>
+      <p>
+        The prime overlapping meeting window occurs between 14:00 GMT and 17:00 GMT (07:00 MST to 10:00 MST), giving a 3-hour window connecting European afternoons with Mountain region mornings.
+      </p>
+    </section>
+
+    <!-- GMT to MST Working Hours Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">MST Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">09:00 – 13:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">02:00 – 06:00 MST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">GMT Working / Mountain Asleep</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">15:00 – 17:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">08:00 – 10:00 MST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Mountain Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">18:00 – 23:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">11:00 – 16:00 MST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">GMT Evening / Mountain Working</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to MST for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST for Remote Work</h2>
+      <p>
+        Distributed engineering and support teams operating across European and Mountain time zones rely heavily on asynchronous handoffs:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Morning Standups:</strong> GMT teams finishing their afternoon at 16:00 GMT catch Mountain colleagues starting their day at 09:00 MST.</li>
+        <li><strong>Explicit Invites:</strong> Always include exact date, time, and timezone labels in calendar invites (e.g., <em>"Sprint planning on Oct 14, 16:00 GMT / 09:00 MST"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- GMT to MST for Travel -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST for Travel</h2>
+      <p>
+        Travelers flying between European airports and Mountain region destinations (Denver DEN, Phoenix PHX, Salt Lake City SLC, Calgary YYC) must note that flight itineraries are printed in local airport time:
+      </p>
+      <p>
+        If a flight departs London Heathrow at 14:00 GMT and takes 10 hours, it will land in Denver at 17:00 (5:00 PM) MST on the exact same calendar day.
+      </p>
+    </section>
+
+    <!-- GMT to MST for Online Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST for Online Events</h2>
+      <p>
+        Webinars, virtual conferences, gaming livestreams, and tech keynotes broadcast in Europe or the US attract international viewers:
+      </p>
+      <p>
+        A live tech keynote streaming at 18:00 GMT airs at 11:00 AM MST in Denver and Phoenix.
+      </p>
+    </section>
+
+    <!-- GMT to MST for Developers and Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST for Developers and Technology</h2>
+      <p>
+        Software developers, DevOps engineers, and database administrators handle timezone conversions when managing server logs, APIs, and scheduled tasks:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express GMT as <code>2026-10-14T15:00:00Z</code> and MST as <code>2026-10-14T08:00:00-07:00</code>.</li>
+        <li><strong>Cron Jobs:</strong> A database backup cron scheduled for 20:00 MST daily runs at <code>03:00 UTC</code> on the following calendar day.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC within database schemas, converting to <code>America/Denver</code> or <code>America/Phoenix</code> dynamically at the application presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- Common GMT to MST Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to MST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Adding Hours Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Adding 7 hours instead of subtracting 7 hours creates a 14-hour calculation error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Confusing MST (UTC−7) with MDT (UTC−6)</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Confusing standard winter MST (UTC−7) with summer MDT (UTC−6) introduces a 1-hour scheduling error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Forgetting Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move early GMT hours (00:00 to 06:59) back to the previous calendar day in MST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Assuming All Mountain States Change Clocks</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Assuming Arizona changes clocks in summer alongside Colorado. Arizona stays on MST year-round.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to MST Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to MST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: −7 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always subtract 7 hours to move from Greenwich Mean Time back to Mountain Standard Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date for Early GMT Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT hour from 00:00 to 06:59 belongs to the previous calendar date in MST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Notation</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military format (e.g., 16:00 vs 04:00) prevents AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Tool</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/mst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          MST to EST Converter
+        </a>
+        <a href="/gmt-to-mdt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to MDT Converter
+        </a>
+        <a href="/gmt-to-pst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PST Converter
+        </a>
+        <a href="/gmt-to-cst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+        <a href="/gmt-to-jst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to JST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-mst/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-mst/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-mst/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-mst/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to MST Converter", "item": "https://gmttoestconverter.com/gmt-to-mst/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-mst/#software-application",
+        "name": "GMT to MST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-mst/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-mst/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-mst/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
