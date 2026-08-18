@@ -1,0 +1,870 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-nst";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to NST Converter";
+const seoTitle = "GMT to NST Converter – Convert GMT to Newfoundland Time";
+const pageDescription = "Convert GMT to NST instantly with our free timezone converter. Newfoundland Standard Time (NST, UTC−3:30) is 3 hours 30 minutes behind Greenwich Mean Time (GMT, UTC+0). Features 24-hour conversion tables, half-hour offset calculations, date-aware rollover, and NST vs NDT guides.";
+
+const context = {
+  from: "GMT",
+  to: "NST",
+  fromZone: "UTC",
+  toZone: "America/St_Johns"
+};
+
+function formatTime12(totalMinutes: number) {
+  let mins = (totalMinutes % 1440 + 1440) % 1440;
+  const hour = Math.floor(mins / 60);
+  const minute = mins % 60;
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  const mStr = String(minute).padStart(2, "0");
+  return `${h}:${mStr} ${ampm}`;
+}
+
+function formatTime24(totalMinutes: number) {
+  let mins = (totalMinutes % 1440 + 1440) % 1440;
+  const hour = Math.floor(mins / 60);
+  const minute = mins % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+// 24-hour table: GMT (UTC+0) → NST (UTC−3:30) = subtract 3 hours 30 minutes (210 minutes)
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const gmtTotalMinutes = hour * 60;
+  const nstTotalMinutes = gmtTotalMinutes - 210;
+  const prevDay = nstTotalMinutes < 0;
+
+  return {
+    gmt: `${hour % 12 || 12}:00 ${hour >= 12 ? "PM" : "AM"}`,
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    nst: formatTime12(nstTotalMinutes),
+    nst24: formatTime24(nstTotalMinutes),
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What does GMT stand for?",
+    a: "GMT stands for Greenwich Mean Time. It is the solar time standard measured at the Royal Observatory in Greenwich, London, serving as the UTC+0 baseline."
+  },
+  {
+    q: "What does NST stand for?",
+    a: "NST stands for Newfoundland Standard Time. It is the official standard time zone used in Newfoundland, Canada, operating at UTC−3:30."
+  },
+  {
+    q: "What is Newfoundland Standard Time?",
+    a: "Newfoundland Standard Time (NST) is a half-hour time zone (UTC−3:30) observed on the island of Newfoundland during the winter months when daylight saving time is not active."
+  },
+  {
+    q: "What is the GMT to NST time difference?",
+    a: "Newfoundland Standard Time (NST, UTC−3:30) is exactly 3 hours and 30 minutes behind Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How many hours behind GMT is NST?",
+    a: "NST is 3 hours and 30 minutes behind GMT."
+  },
+  {
+    q: "How do I convert GMT to NST?",
+    a: "To convert GMT to NST, subtract 3 hours and 30 minutes from the GMT time. If the resulting time falls before 00:00 (midnight), roll back to the previous calendar day."
+  },
+  {
+    q: "Why is NST UTC−3:30?",
+    a: "Newfoundland adopted a half-hour offset in 1935 to reflect the geographic location of St. John's (roughly halfway between Atlantic Time UTC-4 and Greenland Time UTC-3), providing better alignment with local solar noon."
+  },
+  {
+    q: "What is 12:00 GMT in NST?",
+    a: "12:00 PM (noon) GMT equals 08:30 AM NST on the exact same calendar day."
+  },
+  {
+    q: "What is 00:00 GMT in NST?",
+    a: "00:00 (midnight) GMT equals 20:30 (8:30 PM) NST on the previous calendar day."
+  },
+  {
+    q: "Why does GMT to NST sometimes show the previous day?",
+    a: "Because NST is 3 hours 30 minutes behind GMT, early morning hours in GMT (from 00:00 to 03:29) occur while Newfoundland is still experiencing the previous calendar evening."
+  },
+  {
+    q: "What is NDT?",
+    a: "NDT stands for Newfoundland Daylight Time. It is the daylight saving time zone (UTC−2:30) observed in Newfoundland from mid-March to early November."
+  },
+  {
+    q: "What is the difference between NST and NDT?",
+    a: "NST (Newfoundland Standard Time) is UTC−3:30 (used in winter), whereas NDT (Newfoundland Daylight Time) is UTC−2:30 (used in summer). NDT is 1 hour ahead of NST."
+  },
+  {
+    q: "Does Newfoundland observe daylight saving time?",
+    a: "Yes. Newfoundland observes Daylight Saving Time, switching from NST (UTC−3:30) to NDT (UTC−2:30) between the second Sunday in March and the first Sunday in November."
+  },
+  {
+    q: "Is NST always 3 hours 30 minutes behind GMT?",
+    a: "Standard NST is permanently 3 hours 30 minutes behind GMT. However, during summer daylight saving months, Newfoundland observes NDT (UTC−2:30), which is 2 hours 30 minutes behind GMT."
+  },
+  {
+    q: "Should I use NST or NDT for Newfoundland local time?",
+    a: "Use NST (UTC−3:30) for winter dates (November to March). Use NDT (UTC−2:30) for summer dates (March to November). Our interactive tool handles date-aware offsets automatically when set to America/St_Johns."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to NST, GMT to NST converter, convert GMT to NST, GMT to Newfoundland time, GMT to Newfoundland Standard Time, GMT NST conversion, GMT NST time difference, GMT NST converter, GMT to NST time converter, GMT to Newfoundland time converter, Newfoundland Standard Time UTC-3:30, NST UTC-3:30, GMT UTC+0, GMT to NST calculator, 12 GMT to NST, 00 GMT to NST, GMT to Newfoundland time difference, NST vs NDT, Newfoundland time zone, GMT to NDT",
+  image: "/assets/gmt-to-nst-og.webp",
+  imageAlt: "GMT to NST Converter - Greenwich Mean Time to Newfoundland Standard Time",
+  faqs,
+  appDescription: "Free online GMT to NST converter tool. Convert Greenwich Mean Time to Newfoundland Standard Time with instant 30-minute precision calculations, 24-hour schedules, and NST vs NDT guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to NST",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Newfoundland Standard Time (NST, UTC−3:30) by subtracting 3 hours and 30 minutes.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the starting Greenwich Mean Time (UTC+0)." },
+    { name: "Subtract 3 hours and 30 minutes", text: "Subtract 3 hours and 30 minutes from the GMT time value." },
+    { name: "Check for previous-day rollover", text: "If the resulting hour is before 00:00 midnight, add 24 hours to the time and set the date to the previous calendar day." },
+    { name: "Confirm final NST output", text: "Record the final converted NST time and calendar date (UTC−3:30)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to NST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">NST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Newfoundland Standard Time (NST) instantly. Newfoundland Standard Time is <strong>UTC−3:30</strong>, which is exactly <strong>3 hours 30 minutes behind</strong> GMT (UTC+0). Our converter preserves half-hour precision and handles automatic previous-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to NST Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to NST, subtract 3 hours and 30 minutes.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 GMT</strong> = 08:30 NST (8:30 AM)</span>
+        <span><strong>02:00 GMT</strong> = 22:30 NST (Previous Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prominent DST Callout Note -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--warn); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; font-size: 0.95rem; line-height: 1.6;">
+      <strong style="color: var(--warn);">Important Daylight Saving Note:</strong> Newfoundland observes seasonal Daylight Saving Time. Standard time is <strong>NST (UTC−3:30)</strong> during winter months, while summer daylight time is <strong>NDT (UTC−2:30)</strong>. This tool specifically performs <strong>GMT → NST</strong> conversions.
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to NST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to NST Conversion</h2>
+      <p>
+        Coordinating communications, flights, maritime logistics, software deployments, and remote meetings between the United Kingdom or Europe and the island of Newfoundland in Eastern Canada requires accounting for one of North America's most unique time zones: <strong>Newfoundland Standard Time (NST)</strong>.
+      </p>
+      <p>
+        Unlike the majority of North American time zones that operate on whole-hour offsets (such as Eastern Standard Time at UTC-5 or Atlantic Standard Time at UTC-4), Newfoundland operates on a <strong>half-hour offset of UTC−3:30</strong>. Greenwich Mean Time (GMT) serves as the zero-degree longitudinal reference point (UTC+0).
+      </p>
+      <p>
+        Because NST sits at UTC−3:30, Newfoundland is <strong>3 hours and 30 minutes behind GMT</strong>. When it is 12:00 PM noon in Greenwich, London, it is 08:30 AM in St. John's, Newfoundland. Our dedicated converter ensures the 30-minute minute-field precision is preserved while accurately computing date rollovers when converting early GMT morning hours.
+      </p>
+    </section>
+
+    <!-- GMT to NST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and Newfoundland Standard Time is <strong>3 hours and 30 minutes</strong>. Newfoundland Standard Time is 3 hours 30 minutes behind Greenwich Mean Time.
+      </p>
+      <p>
+        The mathematical formula for converting GMT to NST is:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">NST = GMT − 3 Hours 30 Minutes</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 (Prime Meridian) → UTC−3:30 (Newfoundland Standard Time)</p>
+      </div>
+      <p>
+        Because the offset is negative (−3:30), Newfoundland clocks show an earlier hour than Greenwich clocks on any given day. Furthermore, subtracting 3 hours and 30 minutes from early morning GMT times (between 00:00 and 03:29 GMT) shifts the local clock back into the <strong>previous calendar day</strong> in Newfoundland.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-nst-time-difference.webp"
+        alt="GMT UTC plus zero to NST UTC minus three thirty time difference"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to NST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to NST</h2>
+      <p>
+        To convert Greenwich Mean Time to Newfoundland Standard Time manually, follow this step-by-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Note the clock time in 24-hour or 12-hour format (e.g., 14:30 GMT).</li>
+        <li><strong>Confirm the GMT baseline:</strong> Ensure the starting figure uses UTC+0 without daylight saving modifications.</li>
+        <li><strong>Identify NST's offset:</strong> Recognize that Newfoundland Standard Time uses UTC−3:30.</li>
+        <li><strong>Subtract 3 hours and 30 minutes:</strong> Subtract 3 hours from the hour value, and 30 minutes from the minute value (14:30 − 3:30 = 11:00).</li>
+        <li><strong>Check for previous-day rollover:</strong> If the calculated time goes prior to 00:00 (midnight), add 24 hours to the time value.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the time crossed midnight backward, roll back the day, month, or year by one calendar day.</li>
+        <li><strong>Confirm final NST output:</strong> Record the converted time, date, and NST abbreviation (e.g., 11:00 AM NST).</li>
+      </ol>
+      <p>
+        For example, converting <strong>14:30 GMT</strong> gives <strong>11:00 NST</strong> on the exact same date. However, converting <strong>02:00 GMT</strong> requires subtracting 3 hours 30 minutes: 02:00 − 3:30 = −1:30. Adding 24 hours yields <strong>22:30 NST (10:30 PM NST) on the previous calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST 24-Hour Conversion Table</h2>
+      <p>
+        The comprehensive reference table below provides an hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to Newfoundland Standard Time (UTC−3:30). Rows highlighted in colored styling indicate GMT hours that fall on the <strong>previous calendar day</strong> in Newfoundland.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(251, 191, 36, 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.nst}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.nst24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: Notice how every converted NST time ends in <strong>:30</strong> when converting full GMT hours, preserving the 30-minute offset.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST Conversion Examples</h2>
+      <p>
+        Explore these 15 practical conversion examples illustrating full clock and date transitions:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 20:30 NST (Previous Day)</strong><br />
+            When a new calendar day begins at 00:00 midnight GMT, it is 8:30 PM (20:30) NST on the previous evening in St. John's.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: 01:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT → 21:30 NST (Previous Day)</strong><br />
+            01:00 AM GMT on January 15 corresponds to 9:30 PM (21:30) NST on January 14.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: 02:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 GMT → 22:30 NST (Previous Day)</strong><br />
+            02:00 AM GMT on December 1 translates to 10:30 PM (22:30) NST on November 30.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: 03:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>03:00 GMT → 23:30 NST (Previous Day)</strong><br />
+            03:00 AM GMT equals 11:30 PM (23:30) NST on the previous evening in Newfoundland.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: 04:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT → 00:30 NST (Same Day)</strong><br />
+            04:00 AM GMT is the first full hour of the day that reaches the same calendar date in Newfoundland (12:30 AM NST).
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: 06:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 02:30 NST (Same Day)</strong><br />
+            06:00 AM GMT equals 02:30 AM NST pre-dawn hours in Newfoundland.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: 08:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>08:00 GMT → 04:30 NST (Same Day)</strong><br />
+            08:00 AM GMT corresponds to 04:30 AM NST.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: 10:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>10:00 GMT → 06:30 NST (Same Day)</strong><br />
+            10:00 AM GMT equals 06:30 AM NST as early risers prepare in St. John's.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Noon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 08:30 NST (Same Day)</strong><br />
+            12:00 PM noon GMT equals 08:30 AM NST as offices open across Newfoundland.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: 14:30 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:30 GMT → 11:00 NST (Same Day)</strong><br />
+            14:30 (2:30 PM) GMT minus 3 hours 30 minutes equals 11:00 AM NST mid-morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: 16:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 12:30 NST (Same Day)</strong><br />
+            16:00 (4:00 PM) GMT equals 12:30 PM NST lunch hour in Newfoundland.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: 18:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT → 14:30 NST (Same Day)</strong><br />
+            18:00 (6:00 PM) GMT equals 14:30 (2:30 PM) NST afternoon hours.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: 20:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 GMT → 16:30 NST (Same Day)</strong><br />
+            20:00 (8:00 PM) GMT equals 16:30 (4:30 PM) NST late afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: 22:00 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>22:00 GMT → 18:30 NST (Same Day)</strong><br />
+            22:00 (10:00 PM) GMT equals 18:30 (6:30 PM) NST early evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: New Year Boundary</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT (Jan 1, 2027) → 21:30 NST (Dec 31, 2026)</strong><br />
+            A 01:00 AM GMT event on New Year's Day 2027 in Greenwich occurs at 9:30 PM NST on New Year's Eve 2026 in Newfoundland!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> is the historic solar time standard measured at the Royal Observatory in Greenwich, London, situated at 0° longitude (the Prime Meridian).
+      </p>
+      <p>
+        GMT serves as the international reference benchmark for UTC+0. Although Coordinated Universal Time (UTC) has replaced GMT as the formal atomic time standard in technology and navigation, GMT remains the standard civil reference name in the UK and worldwide conversion software. You can learn more about GMT on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or use our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- What Is NST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is NST?</h2>
+      <p>
+        <strong>Newfoundland Standard Time (NST)</strong> is the official standard time zone observed on the island of Newfoundland in the province of Newfoundland and Labrador, Canada.
+      </p>
+      <p>
+        NST operates at <strong>UTC−3:30</strong> (Coordinated Universal Time minus 3 hours and 30 minutes). In international software systems (the IANA Time Zone Database), Newfoundland Standard Time is represented by the location string <code>America/St_Johns</code>.
+      </p>
+    </section>
+
+    <!-- Image 2: Newfoundland Timezone Visual -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/newfoundland-standard-time-nst.webp"
+        alt="Newfoundland Standard Time NST UTC minus three thirty timezone illustration"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- What Is NDT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is NDT?</h2>
+      <p>
+        <strong>Newfoundland Daylight Time (NDT)</strong> is the seasonal daylight saving time zone observed in Newfoundland during the spring, summer, and early autumn months.
+      </p>
+      <p>
+        NDT operates at <strong>UTC−2:30</strong> (Coordinated Universal Time minus 2 hours and 30 minutes). Clocks in Newfoundland advance 1 hour forward from NST (UTC−3:30) to NDT (UTC−2:30) on the second Sunday in March and return to NST on the first Sunday in November.
+      </p>
+    </section>
+
+    <!-- GMT vs NST Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs NST Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Newfoundland Standard Time (NST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Newfoundland Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−3:30</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">3 hours 30 minutes ahead of NST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">3 hours 30 minutes behind GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Offset Structure</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Whole-hour baseline</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Half-hour (30-minute) offset</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Seasonal Partner</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">BST (UTC+1 in UK summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">NDT (UTC−2:30 in Newfoundland summer)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/St_Johns</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Why NST Has a 30-Minute Offset -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why NST Has a 30-Minute Offset</h2>
+      <p>
+        In 1935, prior to Newfoundland joining the Canadian Confederation in 1949, the Dominion of Newfoundland established its own official time zone. Because the island sits geographically between 52°W and 59°W longitude, standard noon solar time in St. John's lies approximately 3 hours and 30 minutes behind Greenwich longitude.
+      </p>
+      <p>
+        To align civil time closer to natural solar daylight, Newfoundland chose UTC−3:30 instead of rounding up to Atlantic Time (UTC-4) or down to Greenland Time (UTC-3). Today, it remains one of North America's most distinctive half-hour time zones.
+      </p>
+    </section>
+
+    <!-- Why GMT to NST Sometimes Changes the Date -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why GMT to NST Sometimes Changes the Date</h2>
+      <p>
+        Because NST is 3 hours 30 minutes behind GMT, early morning hours in GMT (from 00:00 to 03:29 GMT) correspond to the late evening hours of the <strong>previous calendar day</strong> in Newfoundland.
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>00:00 GMT:</strong> Equals 20:30 (8:30 PM) NST on the <strong>PREVIOUS calendar day</strong>.</li>
+        <li><strong>02:00 GMT:</strong> Equals 22:30 (10:30 PM) NST on the <strong>PREVIOUS calendar day</strong>.</li>
+        <li><strong>03:29 GMT:</strong> Equals 23:59 (11:59 PM) NST on the <strong>PREVIOUS calendar day</strong>.</li>
+        <li><strong>03:30 GMT:</strong> Reaches 00:00 midnight NST on the <strong>SAME calendar day</strong>.</li>
+      </ul>
+      <p>
+        For instance, an automated database task running at 01:00 AM GMT on January 1 occurs at 9:30 PM NST on December 31 in Newfoundland.
+      </p>
+    </section>
+
+    <!-- Image 3: Previous Day Rollover -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-nst-previous-day-conversion.webp"
+        alt="GMT to NST conversion showing previous day date rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to NST During Daylight Saving Time -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST During Daylight Saving Time</h2>
+      <p>
+        Newfoundland observes Daylight Saving Time from the second Sunday in March to the first Sunday in November. During this summer period, Newfoundland uses <strong>NDT (UTC−2:30)</strong>.
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+        <p style="margin: 0; font-weight: 600;">
+          • Standard Time (Winter): <strong>NST = UTC−3:30</strong> (Difference: GMT − 3:30)<br />
+          • Daylight Time (Summer): <strong>NDT = UTC−2:30</strong> (Difference: GMT − 2:30)
+        </p>
+      </div>
+      <p>
+        When scheduling summer events, remember that Newfoundland local time moves 1 hour ahead (NDT).
+      </p>
+    </section>
+
+    <!-- Image 4: NST vs NDT Comparison -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/nst-vs-ndt-time-zone.webp"
+        alt="NST and NDT comparison showing Newfoundland standard and daylight time offsets"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to NST for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST for Business Meetings</h2>
+      <p>
+        Scheduling meetings between London or European teams and Newfoundland offices requires coordinating across the 3.5-hour difference:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; text-align: center; margin: 1rem 0;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Newfoundland Workday (08:30–17:00 NST) = 12:00–20:30 GMT</p>
+      </div>
+      <p>
+        The prime live collaboration window occurs between <strong>12:00 GMT and 16:30 GMT</strong>, which corresponds to <strong>08:30 NST to 13:00 NST</strong> in St. John's.
+      </p>
+    </section>
+
+    <!-- GMT to NST Working Hours -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NST Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">08:00 – 11:30 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">04:30 – 08:00 NST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">GMT Active / Newfoundland Early Morning</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">12:00 – 16:30 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">08:30 – 13:00 NST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">17:00 – 20:30 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13:30 – 17:00 NST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">Newfoundland Afternoon / GMT End of Day</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to NST for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST for Remote Work</h2>
+      <p>
+        Remote professionals working between North America and Europe must account for Newfoundland's 30-minute offset when setting calendar events:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Meeting Invitations:</strong> Always specify the exact time with minutes (e.g., <em>"Meeting at 14:00 GMT / 10:30 NST"</em>).</li>
+        <li><strong>Calendar Softwares:</strong> Ensure Google Calendar or Outlook is configured with <code>America/St_Johns</code> to prevent rounding to Atlantic or Eastern time.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to NST for Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST for Technology</h2>
+      <p>
+        Software applications and database developers handling timestamp conversions must accommodate half-hour offsets:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Represent GMT as <code>2027-01-15T12:00:00Z</code> and NST as <code>2027-01-15T08:30:00-03:30</code>.</li>
+        <li><strong>Minute Math:</strong> Ensure date libraries add or subtract 210 minutes (3 hours × 60 + 30 minutes) rather than integer hour offsets.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to NST for Travel and Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST for Travel and Events</h2>
+      <p>
+        Travelers flying into St. John's International Airport (YYT) or tuning in to live European broadcasts must remember:
+      </p>
+      <p>
+        Airline schedules print local arrival and departure times. A flight departing London Heathrow at 12:00 GMT lands in St. John's at 14:30 NST local time for a 6-hour flight duration.
+      </p>
+    </section>
+
+    <!-- GMT, UTC, NST and NDT Educational Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT, UTC, NST and NDT Breakdown</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone</th>
+              <th style="padding: 12px 16px; text-align: right; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Status / Season</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); text-align: right; font-family: monospace;">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time Baseline</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); text-align: right; font-family: monospace;">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Coordinated Universal Time Atomic Baseline</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">NST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); text-align: right; font-family: monospace; font-weight: 600; color: var(--accent);">UTC−3:30</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Newfoundland Standard Time (Winter)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--warn);">NDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); text-align: right; font-family: monospace; font-weight: 600; color: var(--warn);">UTC−2:30</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Newfoundland Daylight Time (Summer)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Common Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to NST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Subtracting Only 3 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Forgetting the 30-minute component causes a 30-minute error on all calculations.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Forgetting Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move early GMT times (00:00–03:29) back to the previous calendar day.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Confusing NST with NDT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Using NST (UTC−3:30) for summer dates when Newfoundland is observing NDT (UTC−2:30).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Adding Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Adding 3.5 hours instead of subtracting 3.5 hours yields a 7-hour calculation error.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to NST Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: −3h 30m</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Subtract 3 hours and 30 minutes to move from GMT back to Newfoundland Standard Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date Before 03:30 GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT time prior to 03:30 AM falls on the previous calendar date in NST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">☀️ Check Summer DST Offset</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Verify whether Newfoundland is using NDT (UTC−2:30) on your targeted summer date.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Tool</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our date-aware converter at the top of this page for instant precise outputs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/nst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          NST to EST Converter
+        </a>
+        <a href="/gmt-to-utc/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to UTC Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+        <a href="/gmt-to-hkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HKT Converter
+        </a>
+        <a href="/gmt-to-pkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PKT Converter
+        </a>
+        <a href="/gmt-to-wib/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to WIB Converter
+        </a>
+        <a href="/sast-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          SAST to EST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-nst/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-nst/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-nst/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-nst/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to NST Converter", "item": "https://gmttoestconverter.com/gmt-to-nst/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-nst/#software-application",
+        "name": "GMT to NST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-nst/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-nst/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-nst/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
