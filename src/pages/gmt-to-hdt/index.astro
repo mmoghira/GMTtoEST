@@ -1,0 +1,839 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-hdt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to HDT Converter";
+const seoTitle = "GMT to HDT Converter – Convert GMT to Hawaii-Aleutian Daylight Time";
+const pageDescription = "Convert GMT to HDT instantly with our free timezone converter. Hawaii-Aleutian Daylight Time (HDT, UTC−9) is 9 hours behind Greenwich Mean Time (GMT, UTC+0). Features 24-hour conversion tables, previous-day date rollover guides, HDT vs HST rules, and developer timezone guides.";
+
+const context = {
+  from: "GMT",
+  to: "HDT",
+  fromZone: "UTC",
+  toZone: "America/Adak"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → HDT (UTC−9) = subtract 9 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let hdtHour = hour - 9;
+  const prevDay = hdtHour < 0;
+  if (prevDay) hdtHour += 24;
+  return {
+    gmt: formatHour12(hour),
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    hdt: formatHour12(hdtHour),
+    hdt24: `${String(hdtHour).padStart(2, "0")}:00`,
+    dayNote: prevDay ? "Previous day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is GMT?",
+    a: "Greenwich Mean Time (GMT) is the historic solar time standard measured at the Royal Observatory in Greenwich, London, serving as the UTC+0 baseline."
+  },
+  {
+    q: "What is HDT?",
+    a: "Hawaii-Aleutian Daylight Time (HDT) is the daylight saving time offset (UTC−9) observed in the Aleutian Islands of Alaska during summer months."
+  },
+  {
+    q: "How many hours behind GMT is HDT?",
+    a: "Hawaii-Aleutian Daylight Time (HDT, UTC−9) is exactly 9 hours behind Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How do I convert GMT to HDT?",
+    a: "To convert GMT to HDT, subtract 9 hours from the GMT time. If the resulting hour falls below 00:00 (midnight), add 24 hours to the result and set the date to the previous calendar day."
+  },
+  {
+    q: "What is 12 PM GMT in HDT?",
+    a: "12:00 PM (noon) GMT equals 03:00 AM HDT on the exact same calendar day."
+  },
+  {
+    q: "What is 12 AM GMT in HDT?",
+    a: "00:00 (midnight) GMT equals 15:00 (3:00 PM) HDT on the previous calendar day."
+  },
+  {
+    q: "What is 06:00 GMT in HDT?",
+    a: "06:00 AM GMT equals 21:00 (9:00 PM) HDT on the previous calendar day."
+  },
+  {
+    q: "What is 09:00 GMT in HDT?",
+    a: "09:00 AM GMT equals 00:00 (midnight) HDT at the very start of the same calendar day."
+  },
+  {
+    q: "Does GMT to HDT change the date?",
+    a: "Yes. Because HDT is 9 hours behind GMT, early morning GMT hours (from 00:00 to 08:59 GMT) take place during the afternoon or evening of the previous calendar day in HDT."
+  },
+  {
+    q: "What is the difference between HDT and HST?",
+    a: "HDT is Hawaii-Aleutian Daylight Time (UTC−9, used during summer daylight saving in the Aleutian Islands), whereas HST is Hawaii-Aleutian Standard Time (UTC−10, used during winter in the Aleutians and year-round in the state of Hawaii)."
+  },
+  {
+    q: "Does Hawaii use HDT?",
+    a: "No. The state of Hawaii does NOT observe daylight saving time and stays on Hawaii Standard Time (HST, UTC−10) year-round. HDT (UTC−9) applies specifically to the Aleutian Islands portion of Alaska during DST."
+  },
+  {
+    q: "Does Hawaii observe daylight saving time?",
+    a: "No. Hawaii is one of two US states (along with most of Arizona) that does not observe daylight saving time."
+  },
+  {
+    q: "What is GMT to Hawaii time?",
+    a: "Because Hawaii uses HST (UTC−10) year-round, Hawaii local time is calculated by subtracting 10 hours from GMT year-round. HDT (UTC−9) applies 9 hours behind GMT for the Aleutian Islands in summer."
+  },
+  {
+    q: "Is HDT always UTC−9?",
+    a: "Yes. By definition, Hawaii-Aleutian Daylight Time (HDT) represents the UTC−9 offset."
+  },
+  {
+    q: "How can I convert GMT to HDT accurately?",
+    a: "Use our interactive conversion tool above to calculate exact clock times, 9-hour offsets, and previous-day calendar shifts automatically."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to HDT, GMT to HDT converter, GMT HDT converter, convert GMT to HDT, GMT to Hawaii-Aleutian Daylight Time, GMT to Hawaii-Aleutian Time, GMT HDT time difference, GMT to HDT time converter, GMT HDT conversion, GMT to HDT calculator, HDT UTC-9, GMT UTC+0, GMT vs HDT, HDT vs GMT, HDT vs HST, GMT to Hawaii time, what time is GMT in HDT, GMT to HDT time difference, GMT to HDT conversion",
+  image: "/assets/gmt-to-hdt-og.webp",
+  imageAlt: "GMT to HDT Converter - Greenwich Mean Time to Hawaii-Aleutian Daylight Time",
+  faqs,
+  appDescription: "Free online GMT to HDT converter tool. Convert Greenwich Mean Time to Hawaii-Aleutian Daylight Time with instant previous-day date calculations, 24-hour schedules, and Aleutian business guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to HDT",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to Hawaii-Aleutian Daylight Time (HDT, UTC−9) by subtracting 9 hours.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the starting Greenwich Mean Time (UTC+0)." },
+    { name: "Subtract 9 hours", text: "Subtract 9 hours from the GMT time value." },
+    { name: "Check for previous-day rollover", text: "If the resulting hour is below 00:00 (midnight), add 24 hours to the time and set the date to the previous calendar day." },
+    { name: "Confirm final HDT output", text: "Record the final converted HDT time and calendar date (UTC−9)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to HDT Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">HDT</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to Hawaii-Aleutian Daylight Time (HDT) instantly. Hawaii-Aleutian Daylight Time is <strong>UTC−9</strong>, which is exactly <strong>9 hours behind</strong> GMT (UTC+0). Our date-aware tool computes exact Aleutian local times and automatic previous-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to HDT Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to HDT, subtract exactly 9 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 GMT</strong> = 03:00 HDT (3:00 AM)</span>
+        <span><strong>04:00 GMT</strong> = 19:00 HDT (Previous Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to HDT time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to HDT Conversion</h2>
+      <p>
+        Coordinating research projects, maritime navigation, aviation operations, and international communications between Greenwich Mean Time (GMT) regions and the Hawaii-Aleutian time zone demands precise timezone calculations. When converting from <strong>Greenwich Mean Time (GMT)</strong> to <strong>Hawaii-Aleutian Daylight Time (HDT)</strong>, the foundational rule is that HDT operates 9 hours behind the Prime Meridian baseline.
+      </p>
+      <p>
+        Greenwich Mean Time represents the zero-degree longitudinal reference point (UTC+0). Hawaii-Aleutian Daylight Time is defined at <strong>UTC−9</strong>.
+      </p>
+      <p>
+        Whether you are scheduling calls with research stations in Adak or Atka, tracking flight routes across the North Pacific, or configuring server backups, using a date-aware converter ensures previous-day calendar shifts are handled accurately.
+      </p>
+    </section>
+
+    <!-- GMT to HDT Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and Hawaii-Aleutian Daylight Time is <strong>9 hours</strong>. Hawaii-Aleutian Daylight Time is permanently 9 hours behind Greenwich Mean Time.
+      </p>
+      <p>
+        The conversion mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">HDT = GMT − 9 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 (Prime Meridian) → UTC−9 (Hawaii-Aleutian Daylight Time)</p>
+      </div>
+      <p>
+        Because the offset is negative (−9), locations in Hawaii-Aleutian Daylight Time experience clock hours 9 hours after Greenwich observatory coordinates do. When London or Greenwich marks 12:00 PM (noon) GMT, locations in HDT are in pre-dawn hours at 03:00 AM HDT.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hdt-time-difference.webp"
+        alt="GMT to HDT time difference showing a nine hour offset"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to HDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to HDT</h2>
+      <p>
+        Converting Greenwich Mean Time to Hawaii-Aleutian Daylight Time manually is straightforward when following a 7-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Identify the clock time in GMT (e.g., 14:30 GMT).</li>
+        <li><strong>Verify the GMT baseline:</strong> Confirm that the baseline uses UTC+0.</li>
+        <li><strong>Identify HDT's offset:</strong> Note that Hawaii-Aleutian Daylight Time operates at UTC−9.</li>
+        <li><strong>Subtract nine hours:</strong> Subtract 9 from the GMT hour figure (14:30 minus 9 hours = 05:30).</li>
+        <li><strong>Check whether the result falls below 00:00:</strong> If your calculated hour is negative, add 24 hours to the total.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the result went below 00:00 midnight, roll back the calendar day, month, or year by one.</li>
+        <li><strong>Confirm the final HDT time:</strong> Record the resulting hour, minute, date, and HDT label (e.g., 05:30 HDT).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>14:30 GMT</strong> yields <strong>05:30 HDT</strong> (5:30 AM HDT) on the exact same date. However, converting <strong>04:30 GMT</strong> yields 04:30 minus 9 hours = −04:30. Adding 24 hours results in <strong>19:30 HDT (7:30 PM HDT) on the previous calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to Hawaii-Aleutian Daylight Time. Rows highlighted in colored styling indicate times where subtracting 9 hours rolls the clock into the <strong>previous calendar day</strong> in HDT.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HDT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HDT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Previous day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.hdt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.hdt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT hours from 00:00 through 08:00 occur during the afternoon and evening of the previous calendar day in HDT.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT Conversion Examples</h2>
+      <p>
+        Review these 15 detailed conversion scenarios with explicit clock and calendar date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 15:00 HDT (Previous Day)</strong><br />
+            When midnight arrives in Greenwich (00:00 GMT), HDT is at 15:00 (3:00 PM) on the previous afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT → 16:00 HDT (Previous Day)</strong><br />
+            01:00 AM GMT corresponds to 16:00 (4:00 PM) HDT on the previous calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 GMT → 17:00 HDT (Previous Day)</strong><br />
+            02:00 AM GMT equals 17:00 (5:00 PM) HDT on the previous afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Pre-Dawn GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT → 19:00 HDT (Previous Day)</strong><br />
+            A 04:00 AM GMT system job runs at 19:00 (7:00 PM) HDT the previous evening in Adak.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 21:00 HDT (Previous Day)</strong><br />
+            06:00 AM GMT equals 21:00 (9:00 PM) HDT on the previous evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Night Rollover Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>08:00 GMT → 23:00 HDT (Previous Day)</strong><br />
+            08:00 AM GMT equals 23:00 (11:00 PM) HDT, the final hour before midnight on the previous day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Same-Day Midnight</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>09:00 GMT → 00:00 HDT (Same Day)</strong><br />
+            At exactly 09:00 AM GMT, Hawaii-Aleutian Daylight Time reaches 00:00 midnight at the start of the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Mid-Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>10:00 GMT → 01:00 HDT (Same Day)</strong><br />
+            10:00 AM GMT translates to 01:00 AM HDT early morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Noon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 03:00 HDT (Same Day)</strong><br />
+            12:00 PM (noon) GMT translates to 03:00 AM HDT in the pre-dawn hours.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: Early Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:00 GMT → 05:00 HDT (Same Day)</strong><br />
+            14:00 (2:00 PM) GMT equals 05:00 AM HDT early morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: Mid-Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 07:00 HDT (Same Day)</strong><br />
+            16:00 (4:00 PM) GMT equals 07:00 AM HDT as morning routines begin.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: Late Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT → 09:00 HDT (Same Day)</strong><br />
+            18:00 (6:00 PM) GMT translates to 09:00 AM HDT right as business offices open in the Aleutians.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 GMT → 11:00 HDT (Same Day)</strong><br />
+            20:00 (8:00 PM) GMT equals 11:00 AM HDT late morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: New Year Eve Date Boundary</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT (Jan 1, 2027) → 19:00 HDT (Dec 31, 2026)</strong><br />
+            A 04:00 AM GMT timestamp on New Year's Day 2027 in London takes place at 19:00 (7:00 PM) HDT on New Year's Eve 2026 in the Aleutian Islands!
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: Leap Year Date Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>05:00 GMT (March 1, 2028) → 20:00 HDT (Feb 29, 2028)</strong><br />
+            On a leap year, 05:00 AM GMT on March 1 falls on 20:00 (8:00 PM) HDT on Leap Day (February 29) in HDT.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> represents mean solar time calculated at the Royal Observatory in Greenwich, London, situated on the Prime Meridian (0° longitude).
+      </p>
+      <p>
+        Established at the 1884 International Meridian Conference, GMT served as the foundational global timekeeping baseline for over a century. While atomic Coordinated Universal Time (UTC) has replaced GMT in scientific and computer system standards, GMT remains the standard civil time zone name for the UK, West Africa, and global conversion tools.
+      </p>
+      <p>
+        GMT operates at <strong>UTC+0</strong>. Unlike UK civil time (which shifts to BST / UTC+1 in summer), standard GMT maintains a static zero offset throughout the year. You can learn more about GMT baseline logic on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or explore our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- What Is HDT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is HDT?</h2>
+      <p>
+        <strong>Hawaii-Aleutian Daylight Time (HDT)</strong> is the daylight saving time offset observed in the Aleutian Islands of Alaska (west of 169.5°W longitude, including Adak and Atka). HDT is defined strictly as <strong>UTC−9</strong> (Coordinated Universal Time minus 9 hours).
+      </p>
+      <p>
+        In computer systems and IANA timezone databases, Hawaii-Aleutian Daylight Time is represented by the location key <code>America/Adak</code>.
+      </p>
+    </section>
+
+    <!-- Image 2: HDT vs HST Visual -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/hdt-vs-hst-timezone.webp"
+        alt="HDT versus HST showing UTC minus nine and UTC minus ten offsets"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- HDT vs HST Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>HDT vs HST: What Is the Difference?</h2>
+      <p>
+        It is essential to distinguish between <strong>Hawaii-Aleutian Daylight Time (HDT)</strong> and <strong>Hawaii-Aleutian Standard Time (HST)</strong>:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>HDT (Hawaii-Aleutian Daylight Time):</strong> UTC−9 (used during summer daylight saving time in the Aleutian Islands).</li>
+        <li><strong>HST (Hawaii-Aleutian Standard Time):</strong> UTC−10 (used during winter standard time in the Aleutians, and year-round in the state of Hawaii).</li>
+      </ul>
+    </section>
+
+    <!-- Does Hawaii Use HDT or HST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does Hawaii Use HDT or HST?</h2>
+      <p>
+        <strong>The state of Hawaii does NOT use HDT. Hawaii operates on HST (UTC−10) year-round.</strong>
+      </p>
+      <p>
+        Hawaii opted out of the Uniform Time Act of 1966 and does not observe Daylight Saving Time. Therefore, Honolulu, Maui, Kauai, and the Big Island remain permanently at UTC−10 all 365 days of the year. HDT (UTC−9) applies specifically to the Aleutian Islands of Alaska during their summer daylight saving period (from the second Sunday in March to the first Sunday in November).
+      </p>
+    </section>
+
+    <!-- GMT vs HDT Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs HDT Comparison</h2>
+      <p>
+        Review the structural attributes comparing Greenwich Mean Time and Hawaii-Aleutian Daylight Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Hawaii-Aleutian Daylight Time (HDT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Hawaii-Aleutian Daylight Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−9</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">9 hours ahead of HDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">9 hours behind GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Status</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Reference baseline (UK uses BST in summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Summer Daylight Time (March to November in Aleutians)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Royal Observatory, Greenwich / UK baseline</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Aleutian Islands, Alaska (Adak, Atka)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/Adak</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Image 3: GMT vs HDT Comparison Graphic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-vs-hdt-comparison.webp"
+        alt="GMT versus HDT comparison showing UTC offsets and nine hour difference"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT vs UTC vs HDT vs HST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT, UTC, HDT and HST Explained</h2>
+      <p>
+        To avoid technical ambiguity when handling cross-border schedules:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT (Greenwich Mean Time):</strong> Solar time zone and standard operating at UTC+0.</li>
+        <li><strong>UTC (Coordinated Universal Time):</strong> Atomic time standard anchoring global civil offsets. GMT and UTC share the exact same clock time for conversion purposes.</li>
+        <li><strong>HDT (Hawaii-Aleutian Daylight Time):</strong> Civil daylight time offset of UTC−9.</li>
+        <li><strong>HST (Hawaii-Aleutian Standard Time):</strong> Civil standard time offset of UTC−10.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HDT Date and Day Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT Date and Day Changes</h2>
+      <p>
+        <strong>Yes. Because HDT is 9 hours behind GMT, early morning GMT hours roll back into the previous calendar day in HDT.</strong>
+      </p>
+      <p>
+        Any GMT time occurring between 00:00 (midnight GMT) and 08:59 (8:59 AM GMT) takes place during the afternoon or evening of the <strong>previous calendar date</strong> in HDT.
+      </p>
+
+      <h3>Date Transition Thresholds</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 08:59:</strong> Results in HDT 15:00 to 23:59 on the <strong>PREVIOUS calendar date</strong>.</li>
+        <li><strong>GMT 09:00:</strong> Results in HDT 00:00 (midnight) at the start of the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 12:00:</strong> Results in HDT 03:00 AM on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 21:00:</strong> Results in HDT 12:00 PM (noon) on the <strong>SAME calendar date</strong>.</li>
+      </ul>
+      <p>
+        For instance, a system maintenance window scheduled for 04:00 AM GMT on Friday, May 14 takes place at 19:00 (7:00 PM) HDT on Thursday, May 13 in Adak.
+      </p>
+    </section>
+
+    <!-- Image 4: Previous-Day Rollover Timeline -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-hdt-previous-day-conversion.webp"
+        alt="GMT to HDT conversion showing previous day rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to HDT for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT for Business Meetings</h2>
+      <p>
+        Coordinating business meetings between European or UK organizations and Hawaii-Aleutian time zone hubs requires planning across a 9-hour time gap.
+      </p>
+
+      <h3>Overlap Windows & Business Hours</h3>
+      <p>
+        Standard office working hours in Adak run from 09:00 to 17:00 HDT. Converting this range to GMT shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Aleutian Workday (09:00–17:00 HDT) = 18:00–02:00 GMT (Next Day)</p>
+      </div>
+      <p>
+        The prime overlapping meeting window occurs between 17:00 GMT and 18:00 GMT (08:00 HDT to 09:00 HDT), providing a brief end-of-day European window matching early Aleutian mornings.
+      </p>
+    </section>
+
+    <!-- GMT to HDT Working Hours Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">HDT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">09:00 – 13:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">00:00 – 04:00 HDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">GMT Working / Aleutian Asleep</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">17:00 – 19:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">08:00 – 10:00 HDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Aleutian Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">20:00 – 02:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">11:00 – 17:00 HDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">GMT Night / Aleutian Working</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to HDT for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT for Remote Work</h2>
+      <p>
+        Distributed teams working across European and Pacific/Aleutian time zones rely heavily on asynchronous communication:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Hand-off Communication:</strong> GMT teams finishing their afternoon at 18:00 GMT pass progress updates to Aleutian colleagues starting at 09:00 HDT.</li>
+        <li><strong>Explicit Invites:</strong> Always include exact date, time, and timezone labels in calendar invites (e.g., <em>"Team meeting on June 10, 18:00 GMT / 09:00 HDT"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- GMT to HDT for Travel -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT for Travel</h2>
+      <p>
+        Travelers flying between European airports and North Pacific destinations (Adak ADK, Honolulu HNL) must note that flight itineraries are printed in local airport time:
+      </p>
+      <p>
+        If a flight departs London Heathrow at 14:00 GMT, it will land in Adak local time adjusted for the 9-hour clock shift plus flight duration.
+      </p>
+    </section>
+
+    <!-- GMT to HDT for Online Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT for Online Events</h2>
+      <p>
+        Webinars, virtual conferences, gaming streams, and keynotes broadcast globally attract audiences in HDT:
+      </p>
+      <p>
+        A livestream broadcast at 19:00 GMT airs at 10:00 AM HDT in the Aleutian Islands.
+      </p>
+    </section>
+
+    <!-- GMT to HDT for Developers and Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT for Developers and Technology</h2>
+      <p>
+        Software engineers, DevOps leads, and database administrators handle timezone conversions when parsing logs, APIs, and scheduled tasks:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express GMT as <code>2026-06-14T18:00:00Z</code> and HDT as <code>2026-06-14T09:00:00-09:00</code>.</li>
+        <li><strong>Cron Jobs:</strong> A database backup cron scheduled for 22:00 HDT daily runs at <code>07:00 UTC</code> on the following calendar day.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC within database schemas, converting to <code>America/Adak</code> dynamically at the application UI presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- Common GMT to HDT Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to HDT Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Adding Hours Instead of Subtracting</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Adding 9 hours instead of subtracting 9 hours creates an 18-hour calculation error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Confusing HDT (UTC−9) with HST (UTC−10)</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Confusing daylight HDT (UTC−9) with standard HST (UTC−10) introduces a 1-hour scheduling error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Assuming Hawaii Observes DST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Assuming Hawaii uses HDT in summer. Hawaii stays on HST (UTC−10) year-round.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Forgetting Previous-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move early GMT hours (00:00 to 08:59) back to the previous calendar day in HDT.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to HDT Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to HDT Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: −9 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always subtract 9 hours to move from Greenwich Mean Time back to Hawaii-Aleutian Daylight Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date for Early GMT Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT hour from 00:00 to 08:59 belongs to the previous calendar date in HDT.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Format</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military notation (e.g., 18:00 vs 06:00) prevents AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/hdt-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          HDT to EST Converter
+        </a>
+        <a href="/gmt-to-pst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PST Converter
+        </a>
+        <a href="/gmt-to-mst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to MST Converter
+        </a>
+        <a href="/gmt-to-jst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to JST Converter
+        </a>
+        <a href="/gmt-to-hkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HKT Converter
+        </a>
+        <a href="/gmt-to-pkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PKT Converter
+        </a>
+        <a href="/gmt-to-cet/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to CET Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hdt/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-hdt/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-hdt/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-hdt/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to HDT Converter", "item": "https://gmttoestconverter.com/gmt-to-hdt/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-hdt/#software-application",
+        "name": "GMT to HDT Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-hdt/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-hdt/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-hdt/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
