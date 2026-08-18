@@ -1,0 +1,871 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "akst-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "AKST to EST Converter";
+const seoTitle = "AKST to EST Converter – Alaska Standard Time to Eastern Time";
+const pageDescription = "Convert AKST to EST instantly with our free timezone converter. Eastern Standard Time (EST, UTC−5) is 4 hours ahead of Alaska Standard Time (AKST, UTC−9). Features 24-hour conversion tables, next-day date rollover guides, AKST vs AKDT rules, and developer guides.";
+
+const context = {
+  from: "AKST",
+  to: "EST",
+  fromZone: "America/Anchorage",
+  toZone: "America/New_York"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: AKST (UTC−9) → EST (UTC−5) = add 4 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let estHour = hour + 4;
+  const nextDay = estHour >= 24;
+  if (nextDay) estHour -= 24;
+  return {
+    akst: formatHour12(hour),
+    akst24: `${String(hour).padStart(2, "0")}:00`,
+    est: formatHour12(estHour),
+    est24: `${String(estHour).padStart(2, "0")}:00`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is AKST?",
+    a: "Alaska Standard Time (AKST) is the standard time zone covering most of Alaska (including Anchorage, Fairbanks, and Juneau), operating at UTC−9 during winter months."
+  },
+  {
+    q: "What is EST?",
+    a: "Eastern Standard Time (EST) is the standard time zone covering Eastern North America (including New York, Toronto, Miami, and Atlanta), operating at UTC−5 during winter months."
+  },
+  {
+    q: "How many hours ahead is EST from AKST?",
+    a: "Eastern Standard Time (EST, UTC−5) is exactly 4 hours ahead of Alaska Standard Time (AKST, UTC−9)."
+  },
+  {
+    q: "How do I convert AKST to EST?",
+    a: "To convert AKST to EST, add 4 hours to the AKST time. If the resulting hour reaches or exceeds 24:00 (midnight), subtract 24 hours from the result and set the date to the next calendar day."
+  },
+  {
+    q: "What is 12 PM AKST in EST?",
+    a: "12:00 PM (noon) AKST equals 16:00 (4:00 PM) EST on the exact same calendar day."
+  },
+  {
+    q: "What is 12 AM AKST in EST?",
+    a: "00:00 (midnight) AKST equals 04:00 AM EST on the exact same calendar day."
+  },
+  {
+    q: "What is 06:00 AKST in EST?",
+    a: "06:00 AM AKST equals 10:00 AM EST on the exact same calendar day."
+  },
+  {
+    q: "What is 20:00 AKST in EST?",
+    a: "20:00 (8:00 PM) AKST equals 00:00 (midnight) EST at the very start of the next calendar day."
+  },
+  {
+    q: "Does AKST to EST change the date?",
+    a: "Yes. Because EST is 4 hours ahead of AKST, evening AKST hours (from 20:00 to 23:59 AKST) cross midnight and take place on the next calendar day in EST."
+  },
+  {
+    q: "What is the difference between AKST and AKDT?",
+    a: "AKST is Alaska Standard Time (UTC−9, used in winter), whereas AKDT is Alaska Daylight Time (UTC−8, used during summer daylight saving time)."
+  },
+  {
+    q: "What is the difference between EST and EDT?",
+    a: "EST is Eastern Standard Time (UTC−5, used in winter), whereas EDT is Eastern Daylight Time (UTC−4, used during summer daylight saving time)."
+  },
+  {
+    q: "Does Alaska use AKST all year?",
+    a: "No. Alaska observes daylight saving time from the second Sunday in March to the first Sunday in November, switching from AKST (UTC−9) to AKDT (UTC−8) in summer."
+  },
+  {
+    q: "Does Eastern Time use EST all year?",
+    a: "No. Eastern Time locations observe daylight saving time from March to November, switching from EST (UTC−5) to EDT (UTC−4) in summer."
+  },
+  {
+    q: "Is AKST always 4 hours behind EST?",
+    a: "Fixed AKST (UTC−9) is always 4 hours behind fixed EST (UTC−5). When both Alaska and Eastern regions observe summer DST (AKDT UTC−8 and EDT UTC−4), the local offset between Alaska and Eastern Time remains exactly 4 hours."
+  },
+  {
+    q: "How can I convert AKST to EST accurately?",
+    a: "Use our interactive conversion tool above to calculate exact clock times, 4-hour offsets, and next-day calendar shifts automatically."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "AKST to EST, AKST to EST converter, AKST EST converter, convert AKST to EST, Alaska Standard Time to Eastern Standard Time, AKST to Eastern Time, AKST EST time difference, AKST to EST time converter, AKST to EST conversion, AKST to EST calculator, AKST UTC-9, EST UTC-5, AKST vs EST, EST vs AKST, AKST vs AKDT, EST vs EDT, Alaska time to Eastern time, what time is AKST in EST, AKST to EST time difference",
+  image: "/assets/akst-to-est-og.webp",
+  imageAlt: "AKST to EST Converter - Alaska Standard Time to Eastern Standard Time",
+  faqs,
+  appDescription: "Free online AKST to EST converter tool. Convert Alaska Standard Time to Eastern Standard Time with instant next-day date calculations, 24-hour schedules, and US business guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert AKST to EST",
+  howToDescription: "Convert Alaska Standard Time (AKST, UTC−9) to Eastern Standard Time (EST, UTC−5) by adding 4 hours.",
+  howToSteps: [
+    { name: "Obtain the AKST date and time", text: "Identify the starting Alaska Standard Time (UTC−9)." },
+    { name: "Add 4 hours", text: "Add 4 hours to the AKST time value." },
+    { name: "Check for next-day rollover", text: "If the resulting hour reaches or exceeds 24:00 (midnight), subtract 24 hours from the time and set the date to the next calendar day." },
+    { name: "Confirm final EST output", text: "Record the final converted EST time and calendar date (UTC−5)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">AKST to EST Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">AKST to <span class="gradient-text">EST</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Alaska Standard Time (AKST) to Eastern Standard Time (EST) instantly. Eastern Standard Time is <strong>UTC−5</strong>, which is exactly <strong>4 hours ahead</strong> of Alaska Standard Time (UTC−9). Our date-aware tool computes exact East Coast local times and automatic next-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick AKST to EST Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert AKST to EST, add exactly 4 hours.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>12:00 AKST</strong> = 16:00 EST (4:00 PM)</span>
+        <span><strong>22:00 AKST</strong> = 02:00 EST (Next Day)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="AKST to EST time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the AKST to EST Conversion</h2>
+      <p>
+        Managing communications, business operations, freight logistics, and remote team scheduling between Alaska and the US East Coast requires accurate timezone calculations. When converting from <strong>Alaska Standard Time (AKST)</strong> to <strong>Eastern Standard Time (EST)</strong>, the foundational rule is that Eastern Standard Time operates 4 hours ahead of Alaska Standard Time.
+      </p>
+      <p>
+        Alaska Standard Time is defined at <strong>UTC−9</strong> (Coordinated Universal Time minus 9 hours). Eastern Standard Time is defined at <strong>UTC−5</strong> (Coordinated Universal Time minus 5 hours).
+      </p>
+      <p>
+        Whether you are scheduling calls between Anchorage or Fairbanks and New York or Toronto, booking cross-country flights, or deploying cloud server scripts, using a date-aware converter ensures next-day calendar shifts are calculated seamlessly.
+      </p>
+    </section>
+
+    <!-- AKST to EST Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST Time Difference</h2>
+      <p>
+        The precise time difference between Alaska Standard Time and Eastern Standard Time is <strong>4 hours</strong>. Eastern Standard Time is permanently 4 hours ahead of Alaska Standard Time.
+      </p>
+      <p>
+        The conversion mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">EST = AKST + 4 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC−9 (Alaska Standard Time) → UTC−5 (Eastern Standard Time)</p>
+      </div>
+      <p>
+        Because the offset difference is positive (+4), locations in Eastern Standard Time experience clock hours 4 hours earlier in the day than Alaska locations do. When Anchorage marks 08:00 AM AKST, New York and Toronto are already at 12:00 PM (noon) EST.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/akst-to-est-time-difference.webp"
+        alt="AKST to EST time difference showing a four hour offset"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert AKST to EST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert AKST to EST</h2>
+      <p>
+        Converting Alaska Standard Time to Eastern Standard Time manually is straightforward when following a 7-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the AKST date and time:</strong> Identify the clock time in AKST (e.g., 14:30 AKST).</li>
+        <li><strong>Verify the AKST baseline:</strong> Confirm that the baseline uses UTC−9.</li>
+        <li><strong>Identify EST's offset:</strong> Note that Eastern Standard Time operates at UTC−5.</li>
+        <li><strong>Add four hours:</strong> Add 4 to the AKST hour figure (14:30 plus 4 hours = 18:30).</li>
+        <li><strong>Check whether the result reaches or exceeds 24:00:</strong> If your calculated hour reaches 24:00 or higher, subtract 24 hours.</li>
+        <li><strong>Adjust the calendar date if needed:</strong> If the calculation crossed midnight, advance the calendar day, month, or year by one.</li>
+        <li><strong>Confirm the final EST time:</strong> Record the resulting hour, minute, date, and EST label (e.g., 18:30 EST).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>14:30 AKST</strong> yields <strong>18:30 EST</strong> (6:30 PM EST) on the exact same date. However, converting <strong>22:30 AKST</strong> yields 22:30 plus 4 hours = 26:30. Subtracting 24 hours results in <strong>02:30 EST (2:30 AM EST) on the next calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Alaska Standard Time (00:00 through 23:00) to Eastern Standard Time. Rows highlighted in colored styling indicate times where adding 4 hours pushes the clock into the <strong>next calendar day</strong> in EST.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">AKST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">AKST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">EST (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.akst}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.akst24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.est}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.est24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: AKST hours from 20:00 through 23:00 take place during the pre-dawn hours of the next calendar day in EST.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST Conversion Examples</h2>
+      <p>
+        Review these 15 detailed conversion scenarios with explicit clock and calendar date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 AKST → 04:00 EST (Same Day)</strong><br />
+            When midnight arrives in Anchorage (00:00 AKST), EST is at 04:00 AM early morning on the exact same date.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 AKST → 06:00 EST (Same Day)</strong><br />
+            02:00 AM AKST corresponds to 06:00 AM EST on the same morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Early Morning AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 AKST → 08:00 EST (Same Day)</strong><br />
+            04:00 AM AKST equals 08:00 AM EST as East Coast business hours begin.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Morning AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 AKST → 10:00 EST (Same Day)</strong><br />
+            06:00 AM AKST translates to 10:00 AM EST mid-morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Alaska Workday Start</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>08:00 AKST → 12:00 EST (Same Day)</strong><br />
+            08:00 AM AKST in Fairbanks corresponds to 12:00 PM (noon) EST lunch time in New York.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Mid-Morning AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>10:00 AKST → 14:00 EST (Same Day)</strong><br />
+            10:00 AM AKST equals 14:00 (2:00 PM) EST early afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Noon AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 AKST → 16:00 EST (Same Day)</strong><br />
+            12:00 PM (noon) AKST equals 16:00 (4:00 PM) EST late afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Early Afternoon AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:00 AKST → 18:00 EST (Same Day)</strong><br />
+            14:00 (2:00 PM) AKST translates to 18:00 (6:00 PM) EST early evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Late Afternoon AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 AKST → 20:00 EST (Same Day)</strong><br />
+            16:00 (4:00 PM) AKST translates to 20:00 (8:00 PM) EST evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: Evening AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 AKST → 22:00 EST (Same Day)</strong><br />
+            18:00 (6:00 PM) AKST equals 22:00 (10:00 PM) EST night time.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: Night Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>19:00 AKST → 23:00 EST (Same Day)</strong><br />
+            19:00 (7:00 PM) AKST equals 23:00 (11:00 PM) EST late evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: Next-Day Midnight Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 AKST → 00:00 EST (Next Day)</strong><br />
+            20:00 (8:00 PM) AKST in Anchorage reaches 00:00 (midnight) EST at the very start of the next calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: Late Evening AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>21:30 AKST → 01:30 EST (Next Day)</strong><br />
+            21:30 (9:30 PM) AKST equals 01:30 AM EST early the next morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: New Year's Eve Date Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>22:00 AKST (Dec 31, 2026) → 02:00 EST (Jan 1, 2027)</strong><br />
+            A 22:00 (10:00 PM) AKST celebration on New Year's Eve 2026 in Anchorage takes place at 02:00 AM EST on New Year's Day 2027 in New York!
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: Leap Year Date Transition</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>21:00 AKST (Feb 28, 2028) → 01:00 EST (Feb 29, 2028)</strong><br />
+            On a leap year, 21:00 AKST on February 28 advances to 01:00 AM EST on Leap Day (February 29) in Eastern Time.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is AKST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is AKST?</h2>
+      <p>
+        <strong>Alaska Standard Time (AKST)</strong> is the standard time zone covering the majority of the US state of Alaska (including Anchorage, Fairbanks, Juneau, Sitka, and Ketchikan). AKST is defined at <strong>UTC−9</strong> (Coordinated Universal Time minus 9 hours).
+      </p>
+      <p>
+        AKST is observed during the North American winter months (from the first Sunday in November until the second Sunday in March). During summer months, Alaska advances clocks by one hour to Alaska Daylight Time (AKDT, UTC−8).
+      </p>
+      <p>
+        In computer systems and IANA timezone databases, Alaska Standard Time is designated by the location key <code>America/Anchorage</code>. You can learn more about Alaska time conversions on our <a href="/gmt-to-akst/" style="color: var(--accent);">GMT to AKST Converter</a> page.
+      </p>
+    </section>
+
+    <!-- What Is EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is EST?</h2>
+      <p>
+        <strong>Eastern Standard Time (EST)</strong> is the standard time zone covering Eastern North America, including major economic hubs such as New York City, Toronto, Miami, Washington D.C., Atlanta, and Boston. EST is defined strictly at <strong>UTC−5</strong> (Coordinated Universal Time minus 5 hours).
+      </p>
+      <p>
+        EST is observed during winter months (from November to March). In summer months, Eastern locations observe Eastern Daylight Time (EDT, UTC−4). Explore our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a> for Greenwich to Eastern Time conversions.
+      </p>
+    </section>
+
+    <!-- AKST vs EST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST vs EST Comparison</h2>
+      <p>
+        Review the structural attributes comparing Alaska Standard Time and Eastern Standard Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Alaska Standard Time (AKST)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Eastern Standard Time (EST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Alaska Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−9</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−5</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">4 hours behind EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">4 hours ahead of AKST</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Summer DST Counterpart</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">AKDT (UTC−8)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">EDT (UTC−4)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Cities</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Anchorage, Fairbanks, Juneau</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">New York, Toronto, Miami, Atlanta</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/Anchorage</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>America/New_York</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Why Is EST 4 Hours Ahead of AKST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Is EST 4 Hours Ahead of AKST?</h2>
+      <p>
+        The 4-hour difference between AKST and EST is determined by longitudinal distance across the North American continent:
+      </p>
+      <p>
+        Alaska Standard Time is centered near 135°W to 150°W longitude (UTC−9), while Eastern Standard Time is centered near 75°W longitude (UTC−5). The longitudinal difference of 60 degrees corresponds directly to 60° ÷ 15° per hour = 4 hours.
+      </p>
+    </section>
+
+    <!-- AKST vs AKDT Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST vs AKDT</h2>
+      <p>
+        It is essential to understand the difference between <strong>AKST</strong> and <strong>AKDT</strong> in Alaska:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>AKST (Alaska Standard Time):</strong> UTC−9 (winter standard time, November to March).</li>
+        <li><strong>AKDT (Alaska Daylight Time):</strong> UTC−8 (summer daylight saving time, March to November).</li>
+      </ul>
+      <p>
+        When Alaska advances to AKDT in summer, clocks move one hour ahead. Check our <a href="/akdt-to-est/" style="color: var(--accent);">AKDT to EST Converter</a> guide for summer Alaska calculations.
+      </p>
+    </section>
+
+    <!-- Image 2: AKST vs AKDT Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/akst-vs-akdt-timezone.webp"
+        alt="AKST versus AKDT showing Alaska Standard Time and Alaska Daylight Time offsets"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- EST vs EDT Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>EST vs EDT</h2>
+      <p>
+        Similarly, Eastern Time alternates seasonally between standard and daylight saving time:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>EST (Eastern Standard Time):</strong> UTC−5 (winter standard time).</li>
+        <li><strong>EDT (Eastern Daylight Time):</strong> UTC−4 (summer daylight saving time).</li>
+      </ul>
+    </section>
+
+    <!-- Image 3: EST vs EDT Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/est-vs-edt-timezone.webp"
+        alt="EST versus EDT showing Eastern Standard Time and Eastern Daylight Time offsets"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Does Alaska Use AKST All Year? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does Alaska Use AKST All Year?</h2>
+      <p>
+        <strong>No. Most of Alaska observes Daylight Saving Time and uses AKST only during winter months.</strong>
+      </p>
+      <p>
+        In mid-March, Alaska advances clocks to AKDT (UTC−8). In early November, Alaska turns clocks back to AKST (UTC−9).
+      </p>
+    </section>
+
+    <!-- Does Eastern Time Always Use EST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does Eastern Time Always Use EST?</h2>
+      <p>
+        <strong>No. Eastern Time locations use EST (UTC−5) in winter and EDT (UTC−4) in summer.</strong>
+      </p>
+      <p>
+        Because both Alaska and Eastern regions transition to daylight saving time on the exact same dates in March and November, the real-world local clock difference between Anchorage and New York remains <strong>4 hours year-round</strong> (AKST to EST = 4h in winter; AKDT to EDT = 4h in summer).
+      </p>
+    </section>
+
+    <!-- AKST to EST Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST Date Changes</h2>
+      <p>
+        <strong>Yes. Because EST is 4 hours ahead of AKST, evening AKST hours cross midnight and advance into the next calendar day in EST.</strong>
+      </p>
+      <p>
+        Any AKST time occurring between 20:00 (8:00 PM AKST) and 23:59 (11:59 PM AKST) takes place during the pre-dawn hours of the <strong>next calendar date</strong> in EST.
+      </p>
+
+      <h3>Date Transition Thresholds</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>AKST 00:00 to 19:59:</strong> Results in EST 04:00 to 23:59 on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>AKST 20:00:</strong> Results in EST 00:00 (midnight) at the start of the <strong>NEXT calendar date</strong>.</li>
+        <li><strong>AKST 22:00:</strong> Results in EST 02:00 AM on the <strong>NEXT calendar date</strong>.</li>
+      </ul>
+      <p>
+        For instance, a sports broadcast scheduled for 21:00 (9:00 PM) AKST on Friday night in Anchorage airs at 01:00 AM EST on Saturday morning on the East Coast.
+      </p>
+    </section>
+
+    <!-- Image 4: Next-Day Rollover Timeline -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/akst-to-est-next-day-conversion.webp"
+        alt="AKST to EST conversion showing next day rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- AKST to EST for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST for Business Meetings</h2>
+      <p>
+        Coordinating commercial operations, legal reviews, and corporate meetings between Alaska offices and East Coast headquarters requires identifying optimal business hour overlaps across 4 time zones.
+      </p>
+
+      <h3>Optimal Meeting Overlap Windows</h3>
+      <p>
+        Standard business working hours run from 08:00 to 17:00 local time in both zones. Comparing Alaska and East Coast working hours shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">Prime Overlap: 08:00–13:00 AKST = 12:00–17:00 EST</p>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0.25rem 0 0;">Matches Alaska morning hours with East Coast afternoon hours.</p>
+      </div>
+      <p>
+        The 5-hour window between 08:00 AM AKST (12:00 PM EST) and 01:00 PM AKST (05:00 PM EST) provides the ideal period for real-time video calls and collaborative work sessions.
+      </p>
+    </section>
+
+    <!-- AKST to EST for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST for Remote Work</h2>
+      <p>
+        Distributed teams with Alaska-based remote employees working alongside East Coast team members benefit from structured communication workflows:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Morning Syncs:</strong> Hold daily standups at 09:00 AKST / 13:00 EST right after East Coast lunch.</li>
+        <li><strong>Asynchronous Afternoon Progress:</strong> Alaska workers enjoy focused afternoon hours (13:00–17:00 AKST) after East Coast offices close for the day (17:00–21:00 EST).</li>
+      </ul>
+    </section>
+
+    <!-- AKST to EST for Travel -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST for Travel</h2>
+      <p>
+        Passengers traveling between Alaska airports (Ted Stevens Anchorage International ANC, Fairbanks International FAI) and East Coast hubs (JFK, EWR, BOS, MIA, CLT) should remember that flight schedules state departure and arrival times in local airport time:
+      </p>
+      <p>
+        If a red-eye flight leaves Anchorage at 21:00 AKST, it arrives on the East Coast on the following morning adjusted for flight duration and the +4 hour time shift.
+      </p>
+    </section>
+
+    <!-- AKST to EST for Online Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST for Online Events</h2>
+      <p>
+        Virtual conferences, webinars, gaming tournaments, and live broadcasts hosted on the East Coast attract Alaskan participants:
+      </p>
+      <p>
+        An East Coast morning keynote scheduled for 10:00 AM EST streams at 06:00 AM AKST early in Alaska.
+      </p>
+    </section>
+
+    <!-- AKST to EST for Developers and Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST for Developers and Technology</h2>
+      <p>
+        Software engineers, DevOps leads, and database administrators handle timezone conversions when parsing logs, APIs, and scheduled tasks:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express AKST as <code>2026-12-15T14:00:00-09:00</code> and EST as <code>2026-12-15T18:00:00-05:00</code>.</li>
+        <li><strong>Cron Jobs:</strong> A maintenance cron scheduled for 22:00 AKST daily runs at <code>02:00 EST</code> on the following calendar day.</li>
+        <li><strong>Database Storage:</strong> Store all backend timestamps in UTC (<code>Etc/UTC</code>), resolving to <code>America/Anchorage</code> and <code>America/New_York</code> dynamically in the UI layer.</li>
+      </ul>
+    </section>
+
+    <!-- AKST, AKDT, EST and EDT Explained -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST, AKDT, EST and EDT Explained</h2>
+      <p>
+        Comprehensive 4-way offset summary:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Time Zone Abbreviation</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Full Name</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">UTC Offset</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Seasonal Application</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">AKST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Alaska Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−9</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter (Nov – Mar)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">AKDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Alaska Daylight Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−8</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Summer (Mar – Nov)</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">EST</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Standard Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−5</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Winter (Nov – Mar)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">EDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Eastern Daylight Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC−4</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Summer (Mar – Nov)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Common AKST to EST Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common AKST to EST Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Subtracting 4 Hours Instead of Adding</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Subtracting 4 hours instead of adding 4 hours creates an 8-hour error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Using 5 Hours Difference</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Confusing EST (UTC−5) with EDT (UTC−4) when performing fixed AKST calculations.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Forgetting Next-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to advance evening AKST times (20:00 to 23:59) to the next calendar date in EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Ignoring Seasonal DST Changes</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Assuming fixed standard abbreviations apply during summer months when AKDT and EDT are active.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AKST to EST Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>AKST to EST Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: +4 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always add 4 hours to move from Alaska Standard Time to Eastern Standard Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date for Evening AKST</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any AKST hour from 20:00 to 23:59 belongs to the next calendar date in EST.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Format</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military notation (e.g., 20:00 vs 08:00) prevents AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/gmt-to-akst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to AKST Converter
+        </a>
+        <a href="/akdt-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          AKDT to EST Converter
+        </a>
+        <a href="/pst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          PST to EST Converter
+        </a>
+        <a href="/mst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          MST to EST Converter
+        </a>
+        <a href="/cst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          CST to EST Converter
+        </a>
+        <a href="/hst-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          HST to EST Converter
+        </a>
+        <a href="/hdt-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          HDT to EST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/akst-to-est/#webpage",
+        "url": "https://gmttoestconverter.com/akst-to-est/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/akst-to-est/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/akst-to-est/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "AKST to EST Converter", "item": "https://gmttoestconverter.com/akst-to-est/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/akst-to-est/#software-application",
+        "name": "AKST to EST Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/akst-to-est/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/akst-to-est/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/akst-to-est/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
