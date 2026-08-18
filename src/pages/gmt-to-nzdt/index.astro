@@ -1,0 +1,865 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "gmt-to-nzdt";
+const t = getTranslation(lang);
+
+const pageTitle = "GMT to NZDT Converter";
+const seoTitle = "GMT to NZDT Converter – Greenwich Mean Time to New Zealand Time";
+const pageDescription = "Convert GMT to NZDT instantly with our free timezone converter. New Zealand Daylight Time (NZDT, UTC+13) is 13 hours ahead of Greenwich Mean Time (GMT, UTC+0). Features 24-hour conversion tables, next-day date rollover guides, NZDT vs NZST distinctions, and developer guides.";
+
+const context = {
+  from: "GMT",
+  to: "NZDT",
+  fromZone: "UTC",
+  toZone: "Pacific/Auckland"
+};
+
+function formatHour12(hour: number) {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 || 12;
+  return `${h}:00 ${ampm}`;
+}
+
+// 24-hour table: GMT (UTC+0) → NZDT (UTC+13) = add 13 hours
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  let nzdtHour = hour + 13;
+  const nextDay = nzdtHour >= 24;
+  if (nextDay) nzdtHour -= 24;
+  return {
+    gmt: formatHour12(hour),
+    gmt24: `${String(hour).padStart(2, "0")}:00`,
+    nzdt: formatHour12(nzdtHour),
+    nzdt24: `${String(nzdtHour).padStart(2, "0")}:00`,
+    dayNote: nextDay ? "Next day" : "Same day"
+  };
+});
+
+const faqs = [
+  {
+    q: "What is GMT?",
+    a: "Greenwich Mean Time (GMT) is the historic solar time baseline measured at the Royal Observatory in Greenwich, London, serving as the UTC+0 reference point."
+  },
+  {
+    q: "What is NZDT?",
+    a: "New Zealand Daylight Time (NZDT) is the summer daylight saving time zone observed across New Zealand, operating at UTC+13 from late September to early April."
+  },
+  {
+    q: "What is NZST?",
+    a: "New Zealand Standard Time (NZST) is the winter standard time zone observed across New Zealand, operating at UTC+12 from early April to late September."
+  },
+  {
+    q: "How many hours ahead of GMT is NZDT?",
+    a: "New Zealand Daylight Time (NZDT, UTC+13) is exactly 13 hours ahead of Greenwich Mean Time (GMT, UTC+0)."
+  },
+  {
+    q: "How do I convert GMT to NZDT?",
+    a: "To convert GMT to NZDT when daylight saving time is active, add 13 hours to the GMT time. If the resulting hour reaches or exceeds 24:00 (midnight), subtract 24 hours from the result and set the date to the next calendar day."
+  },
+  {
+    q: "What is 12 PM GMT in NZDT?",
+    a: "12:00 PM (noon) GMT equals 01:00 AM NZDT on the next calendar day."
+  },
+  {
+    q: "What is 12 AM GMT in NZDT?",
+    a: "00:00 (midnight) GMT equals 13:00 (1:00 PM) NZDT on the exact same calendar day."
+  },
+  {
+    q: "What is 06:00 GMT in NZDT?",
+    a: "06:00 AM GMT equals 19:00 (7:00 PM) NZDT on the exact same calendar day."
+  },
+  {
+    q: "What is 18:00 GMT in NZDT?",
+    a: "18:00 (6:00 PM) GMT equals 07:00 AM NZDT on the next calendar day."
+  },
+  {
+    q: "Does GMT to NZDT change the date?",
+    a: "Yes. Because NZDT is 13 hours ahead of GMT, GMT hours from 11:00 through 23:59 cross midnight and take place on the next calendar day in New Zealand."
+  },
+  {
+    q: "Does New Zealand observe daylight saving time?",
+    a: "Yes. New Zealand observes daylight saving time from the last Sunday in September to the first Sunday in April, switching from NZST (UTC+12) to NZDT (UTC+13)."
+  },
+  {
+    q: "Is NZDT always UTC+13?",
+    a: "Yes. By definition, New Zealand Daylight Time (NZDT) represents the UTC+13 offset. Outside daylight saving months, New Zealand uses NZST (UTC+12)."
+  },
+  {
+    q: "What is the difference between NZDT and NZST?",
+    a: "NZDT is New Zealand Daylight Time (UTC+13, summer), whereas NZST is New Zealand Standard Time (UTC+12, winter). The difference between them is 1 hour."
+  },
+  {
+    q: "What is GMT vs UTC?",
+    a: "GMT is a solar time zone designation situated at zero degrees longitude, whereas UTC (Coordinated Universal Time) is the atomic time standard anchoring all global civil offsets. For conversion purposes, GMT and UTC are identical."
+  },
+  {
+    q: "What timezone does New Zealand use outside daylight saving time?",
+    a: "Outside daylight saving time (from April to September), New Zealand operates on New Zealand Standard Time (NZST, UTC+12)."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "GMT to NZDT, GMT to NZDT converter, GMT NZDT converter, convert GMT to NZDT, Greenwich Mean Time to New Zealand Daylight Time, GMT to New Zealand time, GMT to NZDT time difference, GMT to NZDT conversion, GMT to NZDT calculator, GMT UTC+0, NZDT UTC+13, GMT vs NZDT, NZDT vs GMT, NZDT vs NZST, GMT to New Zealand time converter, what time is GMT in New Zealand, GMT to NZDT time converter",
+  image: "/assets/gmt-to-nzdt-og.webp",
+  imageAlt: "GMT to NZDT Converter - Greenwich Mean Time to New Zealand Daylight Time",
+  faqs,
+  appDescription: "Free online GMT to NZDT converter tool. Convert Greenwich Mean Time to New Zealand Daylight Time with instant next-day date calculations, 24-hour schedules, and NZ business guides.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert GMT to NZDT",
+  howToDescription: "Convert Greenwich Mean Time (GMT, UTC+0) to New Zealand Daylight Time (NZDT, UTC+13) by adding 13 hours.",
+  howToSteps: [
+    { name: "Obtain the GMT date and time", text: "Identify the starting Greenwich Mean Time (UTC+0)." },
+    { name: "Add 13 hours", text: "Add 13 hours to the GMT time value when NZDT is active." },
+    { name: "Check for next-day rollover", text: "If the resulting hour reaches or exceeds 24:00 (midnight), subtract 24 hours from the time and set the date to the next calendar day." },
+    { name: "Confirm final NZDT output", text: "Record the final converted NZDT time and calendar date (UTC+13)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 16px;">
+    <ol style="display: flex; align-items: center; gap: 0.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: var(--text-muted);">
+      <li><a href="/" style="color: var(--accent); text-decoration: none;">Home</a></li>
+      <li style="color: var(--text-muted);">›</li>
+      <li style="color: var(--text-primary);">GMT to NZDT Converter</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner" style="text-align: center; padding: 2.5rem 16px 2rem;">
+    <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
+      <span class="eyebrow">Time Zone Converter</span>
+      <h1 class="hero-banner-title">GMT to <span class="gradient-text">NZDT</span> Converter</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; max-width: 720px; margin: 0.75rem auto 0;">
+        Convert Greenwich Mean Time (GMT) to New Zealand Daylight Time (NZDT) instantly. New Zealand Daylight Time is <strong>UTC+13</strong>, which is exactly <strong>13 hours ahead</strong> of GMT (UTC+0). Our date-aware tool computes exact Auckland local times and automatic next-day calendar shifts.
+      </p>
+    </div>
+  </header>
+
+  <!-- Quick Answer Panel -->
+  <div style="max-width: 700px; margin: 0 auto 1.5rem; padding: 0 16px;">
+    <div style="background: var(--panel); border: 2px solid var(--accent); border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--accent);">Quick GMT to NZDT Summary</h2>
+      <p style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem;">To convert GMT to NZDT, add exactly 13 hours when daylight saving time is active.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; color: var(--text-muted);">
+        <span><strong>10:00 GMT</strong> = 23:00 NZDT (11:00 PM)</span>
+        <span><strong>11:00 GMT</strong> = 00:00 NZDT (Next Day)</span>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0.5rem 0 0;">
+        *Note: During winter months (April to September), New Zealand operates on NZST (UTC+12, +12 hours).
+      </p>
+    </div>
+  </div>
+
+  <!-- Interactive Converter Tool -->
+  <section style="max-width: 700px; margin: 0 auto 3rem; padding: 0 16px;" aria-label="GMT to NZDT time converter">
+    <Converter
+      from={context.from}
+      to={context.to}
+      fromZone={context.fromZone}
+      toZone={context.toZone}
+      t={t}
+      lang={lang}
+    />
+  </section>
+
+  <!-- Main Editorial Content -->
+  <article style="max-width: 800px; margin: 0 auto; padding: 0 16px 3rem; line-height: 1.8;">
+
+    <!-- Introduction -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Understanding the GMT to NZDT Conversion</h2>
+      <p>
+        Coordinating travel itineraries, remote work schedules, trading operations, and international communications between European/African Greenwich Mean Time (GMT) regions and New Zealand requires accurate timezone calculations. When converting from <strong>Greenwich Mean Time (GMT)</strong> to <strong>New Zealand Daylight Time (NZDT)</strong>, the foundational rule is that NZDT operates 13 hours ahead of the Prime Meridian baseline.
+      </p>
+      <p>
+        Greenwich Mean Time represents the zero-degree longitudinal reference point (UTC+0). New Zealand Daylight Time is defined at <strong>UTC+13</strong> during the southern hemisphere spring and summer months.
+      </p>
+      <p>
+        Whether you are scheduling business calls with Auckland or Wellington, planning long-haul flights to Auckland Airport (AKL), or configuring cloud software cron jobs, using a date-aware converter ensures next-day calendar shifts are calculated accurately.
+      </p>
+    </section>
+
+    <!-- GMT to NZDT Time Difference -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT Time Difference</h2>
+      <p>
+        The precise time difference between Greenwich Mean Time and New Zealand Daylight Time is <strong>13 hours</strong> when NZDT is in effect. New Zealand Daylight Time is 13 hours ahead of Greenwich Mean Time.
+      </p>
+      <p>
+        The conversion mathematical equation is expressed as:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; margin: 1.5rem 0;">
+        <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--accent);">NZDT = GMT + 13 Hours</p>
+        <p style="font-size: 0.95rem; margin: 0.5rem 0 0; color: var(--text-muted);">UTC+0 (Prime Meridian) → UTC+13 (New Zealand Daylight Time)</p>
+      </div>
+      <p>
+        Because the offset is positive (+13), locations in New Zealand experience clock hours 13 hours earlier in the day than Greenwich observatory coordinates do. When London or Greenwich marks 05:00 AM GMT, Auckland is already in the evening at 18:00 (6:00 PM) NZDT.
+      </p>
+    </section>
+
+    <!-- Image 1: Time Difference Infographic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-nzdt-time-difference.webp"
+        alt="GMT to NZDT time difference showing a thirteen hour offset"
+        width="1200" height="800"
+        loading="eager"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- How to Convert GMT to NZDT -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How to Convert GMT to NZDT</h2>
+      <p>
+        Converting Greenwich Mean Time to New Zealand Daylight Time manually is straightforward when following a 7-step procedure:
+      </p>
+      <ol style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Start with the GMT date and time:</strong> Identify the clock time in GMT (e.g., 18:30 GMT).</li>
+        <li><strong>Verify the GMT baseline:</strong> Confirm that the baseline uses UTC+0.</li>
+        <li><strong>Confirm that NZDT is active:</strong> Verify that the selected date falls between late September and early April when NZDT (UTC+13) is in effect.</li>
+        <li><strong>Add thirteen hours:</strong> Add 13 to the GMT hour figure (18:30 plus 13 hours = 31:30).</li>
+        <li><strong>Check whether the result reaches or exceeds 24:00:</strong> Since 31:30 exceeds 24 hours, subtract 24 hours (31:30 minus 24 = 07:30).</li>
+        <li><strong>Adjust the calendar date if needed:</strong> Advance the calendar day, month, or year by one day because the calculation crossed midnight.</li>
+        <li><strong>Confirm the final NZDT time:</strong> Record the resulting hour, minute, date, and NZDT label (e.g., 07:30 NZDT on the next day).</li>
+      </ol>
+      <p>
+        For instance, converting <strong>05:30 GMT</strong> yields <strong>18:30 NZDT</strong> (6:30 PM NZDT) on the exact same date. However, converting <strong>18:30 GMT</strong> yields 18:30 plus 13 hours = 31:30. Subtracting 24 hours results in <strong>07:30 NZDT (7:30 AM NZDT) on the next calendar day</strong>.
+      </p>
+    </section>
+
+    <!-- 24-Hour Conversion Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT 24-Hour Conversion Table</h2>
+      <p>
+        The standard reference table below provides a complete hour-by-hour map converting Greenwich Mean Time (00:00 through 23:00) to New Zealand Daylight Time. Rows highlighted in colored styling indicate times where adding 13 hours rolls the clock into the <strong>next calendar day</strong> in New Zealand.
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NZDT (12-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NZDT (24-Hour)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Calendar Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conversionRows.map((row, i) => (
+              <tr style={`background: ${row.dayNote === "Next day" ? "rgba(var(--accent-rgb, 99, 102, 241), 0.12)" : i % 2 === 0 ? "transparent" : "var(--panel)"}`}>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">{row.gmt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace;">{row.gmt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">{row.nzdt}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-family: monospace; font-weight: 600;">{row.nzdt24}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--text-muted);">{row.dayNote}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.75rem;">
+        Note: GMT hours from 11:00 through 23:00 occur during the morning and afternoon of the next calendar day in New Zealand Daylight Time.
+      </p>
+    </section>
+
+    <!-- Conversion Examples -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT Conversion Examples</h2>
+      <p>
+        Review these 15 detailed conversion scenarios with explicit clock and calendar date breakdowns:
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; margin: 1.5rem 0;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 1: Midnight GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>00:00 GMT → 13:00 NZDT (Same Day)</strong><br />
+            When midnight arrives in Greenwich (00:00 GMT), New Zealand is at 13:00 (1:00 PM) on the afternoon of the same calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 2: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>01:00 GMT → 14:00 NZDT (Same Day)</strong><br />
+            01:00 AM GMT corresponds to 14:00 (2:00 PM) NZDT on the same afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 3: Early Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>02:00 GMT → 15:00 NZDT (Same Day)</strong><br />
+            02:00 AM GMT equals 15:00 (3:00 PM) NZDT on the same afternoon.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 4: Pre-Dawn GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>04:00 GMT → 17:00 NZDT (Same Day)</strong><br />
+            A 04:00 AM GMT system job runs at 17:00 (5:00 PM) NZDT in Auckland.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 5: Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>06:00 GMT → 19:00 NZDT (Same Day)</strong><br />
+            06:00 AM GMT equals 19:00 (7:00 PM) NZDT on the same evening.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 6: Mid-Morning GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>10:00 GMT → 23:00 NZDT (Same Day)</strong><br />
+            10:00 AM GMT equals 23:00 (11:00 PM) NZDT, the final hour before midnight on the same day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 7: Next-Day Midnight Threshold</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>11:00 GMT → 00:00 NZDT (Next Day)</strong><br />
+            At 11:00 AM GMT, New Zealand Daylight Time reaches 00:00 midnight at the start of the next calendar day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 8: Noon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>12:00 GMT → 01:00 NZDT (Next Day)</strong><br />
+            12:00 PM (noon) GMT translates to 01:00 AM NZDT in the early hours of the next day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 9: Early Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>14:30 GMT → 03:30 NZDT (Next Day)</strong><br />
+            14:30 (2:30 PM) GMT equals 03:30 AM NZDT early morning the following day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 10: Mid-Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>16:00 GMT → 05:00 NZDT (Next Day)</strong><br />
+            16:00 (4:00 PM) GMT equals 05:00 AM NZDT early morning.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 11: Late Afternoon GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:30 GMT → 07:30 NZDT (Next Day)</strong><br />
+            18:30 (6:30 PM) GMT translates to 07:30 AM NZDT right as morning routines begin in New Zealand.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 12: Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>20:00 GMT → 09:00 NZDT (Next Day)</strong><br />
+            20:00 (8:00 PM) GMT equals 09:00 AM NZDT as office doors open in Auckland and Wellington.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 13: Late Evening GMT</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>23:30 GMT → 12:30 NZDT (Next Day)</strong><br />
+            23:30 (11:30 PM) GMT equals 12:30 PM NZDT lunch hour on the following day.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 14: New Year's Eve Date Boundary</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT (Dec 31, 2026) → 07:00 NZDT (Jan 1, 2027)</strong><br />
+            An 18:00 (6:00 PM) GMT timestamp on New Year's Eve 2026 in London takes place at 07:00 AM NZDT on New Year's Day 2027 in Auckland (+1 day)!
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--accent);">Example 15: Leap Year Date Shift</h3>
+          <p style="margin: 0; font-size: 0.93rem;">
+            <strong>18:00 GMT (Feb 28, 2028) → 07:00 NZDT (Feb 29, 2028)</strong><br />
+            On a leap year, 18:00 GMT on February 28 falls on 07:00 AM NZDT on Leap Day (February 29) in New Zealand.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Is GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is GMT?</h2>
+      <p>
+        <strong>Greenwich Mean Time (GMT)</strong> represents mean solar time calculated at the Royal Observatory in Greenwich, London, situated on the Prime Meridian (0° longitude).
+      </p>
+      <p>
+        Established at the 1884 International Meridian Conference, GMT served as the foundational global timekeeping baseline for over a century. While atomic Coordinated Universal Time (UTC) has replaced GMT in scientific and computer system standards, GMT remains the standard civil time zone name for the UK, West Africa, and global conversion tools.
+      </p>
+      <p>
+        GMT operates at <strong>UTC+0</strong>. Standard GMT maintains a static zero offset throughout the year. You can learn more about GMT baseline logic on our <a href="/blog/what-is-gmt/" style="color: var(--accent);">What Is GMT guide</a> or explore our primary <a href="/" style="color: var(--accent);">GMT to EST Converter</a>.
+      </p>
+    </section>
+
+    <!-- What Is NZDT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is NZDT?</h2>
+      <p>
+        <strong>New Zealand Daylight Time (NZDT)</strong> is the summer daylight saving time zone observed across the North Island, South Island, and Stewart Island of New Zealand. NZDT is defined strictly as <strong>UTC+13</strong> (Coordinated Universal Time plus 13 hours).
+      </p>
+      <p>
+        In computer systems and IANA timezone databases, New Zealand Daylight Time is represented by the location key <code>Pacific/Auckland</code> during daylight saving months. Explore our dedicated <a href="/nzdt-to-est/" style="color: var(--accent);">NZDT to EST Converter</a> for New Zealand to US Eastern Time conversions.
+      </p>
+    </section>
+
+    <!-- What Is NZST? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>What Is NZST?</h2>
+      <p>
+        <strong>New Zealand Standard Time (NZST)</strong> is the standard winter time zone observed in New Zealand when daylight saving time is not active. NZST operates at <strong>UTC+12</strong> (Coordinated Universal Time plus 12 hours).
+      </p>
+      <p>
+        New Zealand returns to NZST (UTC+12) on the first Sunday in April and advances back to NZDT (UTC+13) on the last Sunday in September. For winter calculations, visit our <a href="/gmt-to-nzst/" style="color: var(--accent);">GMT to NZST Converter</a>.
+      </p>
+    </section>
+
+    <!-- GMT vs NZDT Comparison Table -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs NZDT Comparison</h2>
+      <p>
+        Review the structural attributes comparing Greenwich Mean Time and New Zealand Daylight Time:
+      </p>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Feature</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Greenwich Mean Time (GMT)</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">New Zealand Daylight Time (NZDT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Full Name</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Greenwich Mean Time</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">New Zealand Daylight Time</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">UTC Offset</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+0</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">UTC+13</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Relative Difference</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13 hours behind NZDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13 hours ahead of GMT</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Daylight Saving Status</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Reference baseline (UK uses BST in summer)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Active late September to early April</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Primary Region</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">Royal Observatory, Greenwich / UK baseline</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">New Zealand (Auckland, Wellington, Christchurch)</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">IANA Key</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Etc/GMT</code> or <code>UTC</code></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><code>Pacific/Auckland</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Image 2: NZDT vs NZST Graphic -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/nzdt-vs-nzst-timezone.webp"
+        alt="NZDT versus NZST comparison showing UTC plus 13 and UTC plus 12"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- Why Is NZDT 13 Hours Ahead of GMT? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Why Is NZDT 13 Hours Ahead of GMT?</h2>
+      <p>
+        The 13-hour difference between GMT and NZDT is determined by longitudinal spacing across the globe:
+      </p>
+      <p>
+        GMT is centered at 0° longitude on the Prime Meridian. New Zealand is situated near 175°E longitude in the South Pacific Ocean. Because the Earth rotates 360 degrees in 24 hours (or 15 degrees per hour), 180 degrees corresponds to 12 hours. New Zealand's daylight saving adjustment (+1 hour) advances the UTC+12 standard offset to UTC+13, creating an exact 13-hour lead over GMT.
+      </p>
+    </section>
+
+    <!-- Does New Zealand Observe Daylight Saving Time? -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Does New Zealand Observe Daylight Saving Time?</h2>
+      <p>
+        <strong>Yes. New Zealand observes daylight saving time seasonally.</strong>
+      </p>
+      <p>
+        Daylight saving time in New Zealand begins on the <strong>last Sunday in September</strong> (clocks advance 1 hour from NZST UTC+12 to NZDT UTC+13) and ends on the <strong>first Sunday in April</strong> (clocks turn back 1 hour from NZDT UTC+13 to NZST UTC+12).
+      </p>
+    </section>
+
+    <!-- Image 3: GMT New Zealand Time Zones Visual -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-new-zealand-time-zones.webp"
+        alt="GMT compared with New Zealand daylight and standard time zones"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- NZDT vs NZST -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>NZDT vs NZST</h2>
+      <p>
+        Understanding the seasonal shift in New Zealand time is essential for accurate year-round scheduling:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>NZDT (New Zealand Daylight Time):</strong> UTC+13 (September to April, GMT + 13 hours).</li>
+        <li><strong>NZST (New Zealand Standard Time):</strong> UTC+12 (April to September, GMT + 12 hours).</li>
+      </ul>
+      <p>
+        When converting GMT to New Zealand time in winter months, use our <a href="/gmt-to-nzst/" style="color: var(--accent);">GMT to NZST Converter</a>.
+      </p>
+    </section>
+
+    <!-- GMT vs UTC -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT vs UTC</h2>
+      <p>
+        To avoid technical ambiguity when handling cross-border schedules:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT (Greenwich Mean Time):</strong> A historic solar time zone designation situated at zero degrees longitude.</li>
+        <li><strong>UTC (Coordinated Universal Time):</strong> The modern atomic time standard anchoring all global civil offsets. GMT and UTC share the exact same clock time for conversion purposes.</li>
+      </ul>
+    </section>
+
+    <!-- GMT to NZDT Date Changes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT Date Changes</h2>
+      <p>
+        <strong>Yes. Because NZDT is 13 hours ahead of GMT, evening GMT hours roll forward into the next calendar day in New Zealand.</strong>
+      </p>
+      <p>
+        Any GMT time occurring between 11:00 (11:00 AM GMT) and 23:59 (11:59 PM GMT) takes place during the early morning, morning, or afternoon of the <strong>next calendar date</strong> in NZDT.
+      </p>
+
+      <h3>Date Transition Thresholds</h3>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>GMT 00:00 to 10:59:</strong> Results in NZDT 13:00 to 23:59 on the <strong>SAME calendar date</strong>.</li>
+        <li><strong>GMT 11:00:</strong> Results in NZDT 00:00 (midnight) at the start of the <strong>NEXT calendar date</strong>.</li>
+        <li><strong>GMT 12:00:</strong> Results in NZDT 01:00 AM on the <strong>NEXT calendar date</strong>.</li>
+        <li><strong>GMT 18:00:</strong> Results in NZDT 07:00 AM on the <strong>NEXT calendar date</strong>.</li>
+      </ul>
+      <p>
+        For instance, a system maintenance window scheduled for 18:00 GMT on Friday, November 14 takes place at 07:00 AM NZDT on Saturday, November 15 in Auckland.
+      </p>
+    </section>
+
+    <!-- Image 4: Next-Day Rollover Timeline -->
+    <div style="max-width: 750px; margin: 0 auto 2.5rem;">
+      <img
+        src="/assets/gmt-to-nzdt-next-day-conversion.webp"
+        alt="GMT to NZDT conversion showing next day date rollover"
+        width="1200" height="800"
+        loading="lazy"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line);"
+      />
+    </div>
+
+    <!-- GMT to NZDT for Business Meetings -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT for Business Meetings</h2>
+      <p>
+        Coordinating business meetings between European or UK organizations and New Zealand business hubs requires planning across a 13-hour time gap.
+      </p>
+
+      <h3>Overlap Windows & Business Hours</h3>
+      <p>
+        Standard office working hours in Auckland and Wellington run from 08:30 to 17:00 NZDT. Converting this range to GMT shows:
+      </p>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin: 1rem 0; text-align: center;">
+        <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">New Zealand Workday (08:30–17:00 NZDT) = 19:30–04:00 GMT (Previous Day)</p>
+      </div>
+      <p>
+        The prime overlapping meeting window occurs between 19:30 GMT and 21:00 GMT (08:30 NZDT to 10:00 NZDT next day), providing a late-evening European window matching early New Zealand mornings.
+      </p>
+    </section>
+
+    <!-- GMT to NZDT Working Hours Comparison -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT Working Hours Comparison</h2>
+      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--line);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel);">
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Phase of Day</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">GMT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">NZDT Time</th>
+              <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--line);">Collaboration Feasibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">GMT Morning</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">09:00 – 13:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">22:00 – 02:00 NZDT (+1)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: #fbbf24;">GMT Working / NZ Asleep</td>
+            </tr>
+            <tr style="background: var(--panel);">
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Prime Overlap</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">20:00 – 22:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">09:00 – 11:00 NZDT (+1)</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--accent);">Optimal Live Meeting Window</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">New Zealand Afternoon</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">00:00 – 04:00 GMT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">13:00 – 17:00 NZDT</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--text-muted);">GMT Night / NZ Working</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GMT to NZDT for Remote Work -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT for Remote Work</h2>
+      <p>
+        Distributed teams working across European and South Pacific time zones rely heavily on asynchronous communication:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>Hand-off Communication:</strong> GMT teams finishing their evening at 20:00 GMT pass progress updates to New Zealand colleagues starting at 09:00 NZDT on the next day.</li>
+        <li><strong>Explicit Invites:</strong> Always include exact date, time, and timezone labels in calendar invites (e.g., <em>"Team meeting on November 10, 20:00 GMT / November 11, 09:00 NZDT"</em>).</li>
+      </ul>
+    </section>
+
+    <!-- GMT to NZDT for Travel -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT for Travel</h2>
+      <p>
+        Travelers flying between European airports and New Zealand airports (Auckland AKL, Wellington WLG, Christchurch CHC) must note that flight itineraries are printed in local airport time:
+      </p>
+      <p>
+        If a flight departs London Heathrow at 18:00 GMT, it will land in Auckland local time adjusted for the 13-hour clock shift plus flight duration.
+      </p>
+    </section>
+
+    <!-- GMT to NZDT for Online Events -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT for Online Events</h2>
+      <p>
+        Webinars, virtual conferences, gaming streams, and keynotes broadcast globally attract audiences in NZDT:
+      </p>
+      <p>
+        A livestream broadcast at 18:00 GMT airs at 07:00 AM NZDT on the following morning in New Zealand.
+      </p>
+    </section>
+
+    <!-- GMT to NZDT for Developers and Technology -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT for Developers and Technology</h2>
+      <p>
+        Software engineers, DevOps leads, and database administrators handle timezone conversions when parsing logs, APIs, and scheduled tasks:
+      </p>
+      <ul style="padding-left: 1.2rem; line-height: 1.9;">
+        <li><strong>ISO 8601 Strings:</strong> Express GMT as <code>2026-11-14T18:00:00Z</code> and NZDT as <code>2026-11-15T07:00:00+13:00</code>.</li>
+        <li><strong>Cron Jobs:</strong> A database backup cron scheduled for 07:00 NZDT daily runs at <code>18:00 UTC</code> on the preceding calendar day.</li>
+        <li><strong>Database Timestamp Storage:</strong> Always store timestamps in UTC within database schemas, converting to <code>Pacific/Auckland</code> dynamically at the application UI presentation layer.</li>
+      </ul>
+    </section>
+
+    <!-- Common GMT to NZDT Conversion Mistakes -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Common GMT to NZDT Conversion Mistakes</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">1. Subtracting Hours Instead of Adding</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Subtracting 13 hours instead of adding 13 hours creates a 26-hour calculation error.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">2. Using 12 Hours Difference During Summer</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Confusing New Zealand Daylight Time (UTC+13) with winter New Zealand Standard Time (UTC+12).</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">3. Assuming NZDT Is Year-Round</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Assuming NZDT operates year-round. New Zealand returns to NZST (UTC+12) from April to September.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #ef4444;">4. Forgetting Next-Day Rollover</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Failing to move GMT hours from 11:00 through 23:59 forward to the next calendar day in NZDT.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GMT to NZDT Conversion Tips -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>GMT to NZDT Conversion Tips</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📌 Memory Rule: +13 Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Always add 13 hours when converting Greenwich Mean Time to New Zealand Daylight Time.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">📅 Check Date for Late GMT Hours</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Any GMT hour from 11:00 to 23:59 belongs to the next calendar date in NZDT.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">🌐 Use 24-Hour Format</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Utilizing 24-hour military notation (e.g., 18:00 vs 06:00) prevents AM/PM confusion.</p>
+        </div>
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent);">⚡ Use Our Interactive Converter</h3>
+          <p style="margin: 0; font-size: 0.93rem;">Rely on our automated tool at the top of this page for accurate date-aware conversions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      {faqs.map((faq) => (
+        <details style="margin-bottom: 0.75rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+          <summary style="padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; font-size: 1rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            {faq.q}
+            <span style="flex-shrink: 0; margin-left: 1rem; font-size: 1.2rem; color: var(--accent);">+</span>
+          </summary>
+          <div style="padding: 0 1.25rem 1rem;">
+            <p style="margin: 0; line-height: 1.7; color: var(--text-secondary);">{faq.a}</p>
+          </div>
+        </details>
+      ))}
+    </section>
+
+    <!-- Related Converters Grid -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Related Time Zone Converters</h2>
+      <p>Explore other verified time zone conversion tools across our platform:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+        <a href="/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to EST Converter
+        </a>
+        <a href="/nzdt-to-est/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          NZDT to EST Converter
+        </a>
+        <a href="/gmt-to-nzst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to NZST Converter
+        </a>
+        <a href="/gmt-to-jst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to JST Converter
+        </a>
+        <a href="/gmt-to-hkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HKT Converter
+        </a>
+        <a href="/gmt-to-pkt/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PKT Converter
+        </a>
+        <a href="/gmt-to-pst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to PST Converter
+        </a>
+        <a href="/gmt-to-hst/" style="display: block; padding: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--text-primary); font-weight: 500;">
+          GMT to HST Converter
+        </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#webpage",
+        "url": "https://gmttoestconverter.com/gmt-to-nzdt/",
+        "name": seoTitle,
+        "description": pageDescription,
+        "isPartOf": { "@id": "https://gmttoestconverter.com/#website" },
+        "breadcrumb": { "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#breadcrumb" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gmttoestconverter.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GMT to NZDT Converter", "item": "https://gmttoestconverter.com/gmt-to-nzdt/" }
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#software-application",
+        "name": "GMT to NZDT Converter",
+        "description": meta.appDescription,
+        "url": "https://gmttoestconverter.com/gmt-to-nzdt/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "HowTo",
+        "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#howto",
+        "name": meta.howToName,
+        "description": meta.howToDescription,
+        "step": meta.howToSteps.map((s, i) => ({
+          "@type": "HowToStep",
+          "position": i + 1,
+          "name": s.name,
+          "text": s.text
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gmttoestconverter.com/gmt-to-nzdt/#faq",
+        "mainEntity": faqs.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      }
+    ]
+  })} />
+
+</BaseLayout>
