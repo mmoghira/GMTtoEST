@@ -70,10 +70,10 @@
     return applyZoneLabel(f.format(date), date, timeZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
   }
 
-  function compact(date, timeZone, use24) {
+  function compact(date, timeZone, use24 = true) {
     const f = getFormatter("compact", timeZone, use24, {
-      hour: "numeric", minute: "2-digit", second: "2-digit",
-      hour12: !use24, timeZoneName: "short"
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: !use24, hourCycle: use24 ? "h23" : "h12"
     });
     return f.format(date);
   }
@@ -238,6 +238,7 @@
       formatToggle.addEventListener("change", (e) => {
         state.use24 = e.target.checked;
         convert();
+        tickClocks();
       });
     }
 
@@ -301,8 +302,11 @@
       const sLabel = firstConverter?.dataset.sourceLabel || "GMT";
       const tLabel = firstConverter?.dataset.targetLabel || "EST";
 
-      if (gmtClock) gmtClock.textContent = compact(now, sZone, true);
-      if (estClock) estClock.textContent = compact(now, tZone, true);
+      const formatToggle = document.querySelector('[data-role="formatToggle"]') || document.querySelector('#formatToggle');
+      const use24 = formatToggle ? formatToggle.checked : true;
+
+      if (gmtClock) gmtClock.textContent = compact(now, sZone, use24);
+      if (estClock) estClock.textContent = compact(now, tZone, use24);
       if (estZone) estZone.textContent = zoneName(now, tZone, sLabel, tLabel, sZone, tZone);
     } catch (e) {
       console.error("Clock tick error:", e);
@@ -411,4 +415,10 @@
   } else {
     init();
   }
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      tickClocks();
+    }
+  });
 })();
