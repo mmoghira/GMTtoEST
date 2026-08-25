@@ -1,5 +1,6 @@
 ---
-const { intent = "converter", t, context } = Astro.props;
+const { intent = "converter", t, context, lang = "en" } = Astro.props;
+const isEs = lang === "es";
 const variant = t.converter.variants[intent] || t.converter.variants.converter;
 
 function replaceTemplates(text: string, replacements: Record<string, string>): string {
@@ -23,7 +24,20 @@ const sourceZone = context ? context.fromZone : "UTC";
 const targetZone = context ? context.toZone : "America/New_York";
 const sourceLabel = context?.from || "GMT";
 const targetLabel = context?.to === "EST" ? "EST / EDT" : context?.to || "EST / EDT";
-const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `${context.to} time` : t.converter.toEastern;
+const targetTimeLabel = context?.to === "EST"
+  ? (isEs ? "la hora del Este" : "Eastern Time")
+  : context?.to
+    ? (isEs ? `hora ${context.to}` : `${context.to} time`)
+    : (t.converter.toEastern || (isEs ? "la hora del Este" : "Eastern Time"));
+
+const toPrefix = isEs ? "a " : "to ";
+const inputLabel = context
+  ? (isEs ? `Hora ${sourceLabel}` : `${sourceLabel} time`)
+  : input;
+const swapAria = t.converter.swap || (isEs ? "Cambiar dirección de conversión" : "Swap conversion direction");
+const directionAria = t.converter.direction || (isEs ? "Dirección de la conversión" : "Conversion direction");
+const copyAria = isEs ? "Copiar resultado de la conversión al portapapeles" : "Copy conversion result to clipboard";
+const copyTitle = isEs ? "Copiar al portapapeles" : "Copy to clipboard";
 ---
 
 <form
@@ -42,15 +56,15 @@ const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `
       <span class="step">1</span>
       <strong data-role="converterHeading">{heading}</strong>
     </div>
-    {variant.swap && <button type="button" data-role="swap" class="swap-button" aria-label={t.converter.swap || "Swap conversion direction"}>⇄</button>}
+    {variant.swap && <button type="button" data-role="swap" class="swap-button" aria-label={swapAria}>⇄</button>}
   </div>
-  <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={t.converter.direction || "Conversion direction"}>
-    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from}</span><b>{sourceLabel}</b><small>to {targetTimeLabel}</small></button>
-    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from}</span><b>{targetLabel}</b><small>to {sourceLabel}</small></button>
+  <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={directionAria}>
+    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from || (isEs ? "De" : "From")}</span><b>{sourceLabel}</b><small>{toPrefix}{targetTimeLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from || (isEs ? "De" : "From")}</span><b>{targetLabel}</b><small>{toPrefix}{sourceLabel}</small></button>
   </div>
   <label class="datetime-label">
-    <span data-role="inputZoneName">{context ? `${sourceLabel} time` : input}</span>
-    <input data-role="datetime" type="datetime-local" aria-label={input || `${sourceLabel} date and time input`} />
+    <span data-role="inputZoneName">{inputLabel}</span>
+    <input data-role="datetime" type="datetime-local" aria-label={inputLabel || `${sourceLabel} date and time input`} />
   </label>
   <div class="controls">
     <button type="button" data-role="now">{t.converter.now}</button>
@@ -74,9 +88,10 @@ const targetTimeLabel = context?.to === "EST" ? "Eastern Time" : context?.to ? `
       <button
         type="button"
         data-role="copy-result"
-        data-copied={t.converter.copied}
-        aria-label="Copy conversion result to clipboard"
-        title="Copy to clipboard"
+        data-copied={t.converter.copied || (isEs ? "¡Copiado!" : "Copied")}
+        data-copy-failed={t.converter.copyFailed || (isEs ? "Error al copiar" : "Copy failed")}
+        aria-label={copyAria}
+        title={copyTitle}
       >{t.converter.copy}</button>
     </div>
   </div>

@@ -336,18 +336,20 @@ function uppercaseZone(value: string) {
   return value.toUpperCase();
 }
 
-export function getConverterDisplayName(page: any) {
+export function getConverterDisplayName(page: any, lang = "en") {
   if (!page || !["converter", "reverse", "difference", "dynamic"].includes(page.kind)) return undefined;
-  if (!page.slug) return "GMT to EST Converter";
-  if (page.slug === "est-to-gmt") return "EST to GMT Converter";
-  if (page.slug === "gmt-vs-est") return "GMT vs EST Difference";
-  if (page.context?.from && page.context?.to) return `${page.context.from} to ${page.context.to} Converter`;
+  const isEs = lang === "es";
+  if (!page.slug) return isEs ? "Convertidor GMT a EST" : "GMT to EST Converter";
+  if (page.slug === "gmt-to-est") return isEs ? "Convertidor GMT a EST" : "GMT to EST Converter";
+  if (page.slug === "est-to-gmt") return isEs ? "Convertidor EST a GMT" : "EST to GMT Converter";
+  if (page.slug === "gmt-vs-est") return isEs ? "Diferencia entre GMT y EST" : "GMT vs EST Difference";
+  if (page.context?.from && page.context?.to) return isEs ? `Convertidor ${page.context.from} a ${page.context.to}` : `${page.context.from} to ${page.context.to} Converter`;
 
   const toEstMatch = page.slug.match(/^([a-z0-9]+)-to-est$/i);
-  if (toEstMatch) return `${uppercaseZone(toEstMatch[1])} to EST Converter`;
+  if (toEstMatch) return isEs ? `Convertidor ${uppercaseZone(toEstMatch[1])} a EST` : `${uppercaseZone(toEstMatch[1])} to EST Converter`;
 
   const gmtToMatch = page.slug.match(/^gmt-to-([a-z0-9]+)$/i);
-  if (gmtToMatch) return `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;
+  if (gmtToMatch) return isEs ? `Convertidor GMT a ${uppercaseZone(gmtToMatch[1])}` : `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;
 
   return undefined;
 }

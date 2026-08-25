@@ -197,21 +197,26 @@ const mapDiagramMap = {
 };
 const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/world-time-map.svg";
 
-function formatChartHour(hour: number) {
+function formatChartHour(hour: number, currentLang = "en") {
   const normalized = ((hour % 24) + 24) % 24;
+  if (currentLang === "es") {
+    return `${String(normalized).padStart(2, "0")}:00`;
+  }
   const period = normalized < 12 ? "AM" : "PM";
   const displayHour = normalized % 12 || 12;
   return `${String(displayHour).padStart(2, "0")}:00 ${period}`;
 }
 
-function easternChartValue(gmtHour: number, offset: number, label: string) {
+function easternChartValue(gmtHour: number, offset: number, label: string, currentLang = "en") {
   const easternHour = gmtHour + offset;
-  return `${formatChartHour(easternHour)} ${label}${easternHour < 0 ? " (prev day)" : ""}`;
+  const prevDayText = currentLang === "es" ? " (día anterior)" : " (prev day)";
+  return `${formatChartHour(easternHour, currentLang)} ${label}${easternHour < 0 ? prevDayText : ""}`;
 }
 
+const isEs = lang === "es";
 const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
   gmt: `${String(hour).padStart(2, "0")}:00 GMT`,
-  eastern: `${easternChartValue(hour, -5, "EST")} / ${easternChartValue(hour, -4, "EDT")}`,
+  eastern: `${easternChartValue(hour, -5, "EST", lang)} / ${easternChartValue(hour, -4, "EDT", lang)}`,
   offset: "UTC−5 / UTC−4",
 }));
 ---
@@ -239,16 +244,16 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </picture>
         </figure>
       </div>
-      <Converter intent={kind} t={t} context={context} />
+      <Converter intent={kind} t={t} context={context} lang={lang} />
     </section>
 
     {showArticleMeta && (
-      <section class="home-meta" aria-label="Publication details">
+      <section class="home-meta" aria-label={isEs ? "Detalles de publicación" : "Publication details"}>
         <p class="post-meta home-meta__line">
-          <span>Published</span>
+          <span>{isEs ? "Publicado" : "Published"}</span>
           <time datetime={meta.pubDate} itemprop="datePublished">{publishedDateLabel}</time>
           <span aria-hidden="true">|</span>
-          <span>Last updated</span>
+          <span>{isEs ? "Última actualización" : "Last updated"}</span>
           <time datetime={meta.updatedDate || meta.pubDate} itemprop="dateModified">{updatedDateLabel}</time>
         </p>
       </section>
@@ -256,8 +261,8 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {showArticleMeta && (
       <nav class="table-of-contents" aria-labelledby="table-of-contents">
-        <p class="toc-kicker">Navigation aid</p>
-        <h2 id="table-of-contents">Table of Contents</h2>
+        <p class="toc-kicker">{isEs ? "Guía de navegación" : "Navigation aid"}</p>
+        <h2 id="table-of-contents">{isEs ? "Tabla de contenidos" : "Table of Contents"}</h2>
         <ol>
           {tocItems.map((item) => (
             <li><a href={item.href}>{item.label}</a></li>
@@ -266,45 +271,47 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
       </nav>
     )}
 
-    <VisualLab t={t} keywordHeading={seoKeyword} />
+    <VisualLab t={t} keywordHeading={seoKeyword} lang={lang} />
 
     {showEditorialSections && (
       <section class="method-section" id="how-it-works" aria-labelledby="how-it-works-title">
         <div class="method-intro">
-          <p class="eyebrow">Conversion method</p>
-          <h2 id="how-it-works-title">How this GMT to EST conversion works</h2>
+          <p class="eyebrow">{isEs ? "Método de conversión" : "Conversion method"}</p>
+          <h2 id="how-it-works-title">{isEs ? "Cómo funciona la conversión de GMT a hora del Este" : "How this GMT to EST conversion works"}</h2>
           <p>
-            The converter treats GMT as UTC+0 and Eastern Time as the IANA zone
-            <code>America/New_York</code>. That distinction matters because Eastern Time is EST
-            at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.
+            {isEs ? (
+              <>El convertidor trata GMT como UTC+0 y la hora del Este como la zona IANA <code>America/New_York</code>. Esta distinción es fundamental porque Eastern Time opera en EST (UTC−5) durante el horario estándar y en EDT (UTC−4) durante el horario de verano.</>
+            ) : (
+              <>The converter treats GMT as UTC+0 and Eastern Time as the IANA zone <code>America/New_York</code>. That distinction matters because Eastern Time is EST at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.</>
+            )}
           </p>
         </div>
         <div class="method-grid">
           <article class="method-card">
-            <h3>Date-aware offset</h3>
-            <p>The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time.</p>
+            <h3>{isEs ? "Desfase según la fecha" : "Date-aware offset"}</h3>
+            <p>{isEs ? "La fecha seleccionada forma parte del cálculo, por lo que enero y julio muestran desfases distintos para la misma hora GMT." : "The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time."}</p>
           </article>
           <article class="method-card">
-            <h3>Named zone rules</h3>
-            <p>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</p>
+            <h3>{isEs ? "Reglas de zona oficial" : "Named zone rules"}</h3>
+            <p>{isEs ? <>Utilizar la zona <code>America/New_York</code> evita asumir erróneamente que la hora del Este siempre es EST.</> : <>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</>}</p>
           </article>
           <article class="method-card">
-            <h3>Human-readable result</h3>
-            <p>The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it.</p>
+            <h3>{isEs ? "Resultado claro y verificable" : "Human-readable result"}</h3>
+            <p>{isEs ? "El convertidor muestra la hora convertida, la etiqueta activa (EST o EDT) y el desfase con GMT para que verifiques todo antes de compartirlo." : "The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it."}</p>
           </article>
         </div>
       </section>
     )}
 
     <section class="clock-grid" aria-labelledby="live-clocks">
-      <h2 id="live-clocks">{clocksTitle}</h2>
+      <h2 id="live-clocks">{t.clocks?.title || (isEs ? "Relojes en vivo" : clocksTitle)}</h2>
       <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
       <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
     <section class="band" id="quick-presets">
       <div>
-        <h2>{seoKeyword} Quick Presets</h2>
+        <h2>{t.presets?.title || (isEs ? "Accesos rápidos" : `${seoKeyword} Quick Presets`)}</h2>
         <div class="preset-row">
           <button type="button" data-preset="meeting">{t.presets.meeting}</button>
           <button type="button" data-preset="event">{t.presets.event}</button>
@@ -318,17 +325,17 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">GMT to EST Current Offset Summary</h2>
-        <p>A quick summary of standard and daylight saving offsets between GMT and Eastern Time.</p>
+        <h2 id="comparison-table-title">{isEs ? "Resumen de la diferencia horaria actual" : "GMT to EST Current Offset Summary"}</h2>
+        <p>{isEs ? "Un resumen rápido de las diferencias horarias entre GMT y Eastern Time durante el horario estándar y el horario de verano." : "A quick summary of standard and daylight saving offsets between GMT and Eastern Time."}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">GMT to EST Standard and Daylight Saving Offset Summary</caption>
+            <caption class="sr-only">{isEs ? "Resumen de la diferencia horaria entre GMT y Eastern Time" : "GMT to EST Standard and Daylight Saving Offset Summary"}</caption>
             <thead>
-              <tr><th>Time Zone</th><th>Standard Time Offset</th><th>Daylight Saving Offset</th><th>Status</th></tr>
+              <tr><th>{isEs ? "Zona horaria" : "Time Zone"}</th><th>{isEs ? "Hora estándar" : "Standard Time Offset"}</th><th>{isEs ? "Horario de verano" : "Daylight Saving Offset"}</th><th>{isEs ? "Estado" : "Status"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>Greenwich Mean Time (GMT)</td><td>UTC+0</td><td>UTC+0</td><td>Permanent</td></tr>
-              <tr><td>Eastern Standard Time (EST)</td><td>UTC-5</td><td>UTC-4 (EDT)</td><td>Seasonal</td></tr>
+              <tr><td>Greenwich Mean Time (GMT)</td><td>UTC+0</td><td>UTC+0</td><td>{isEs ? "Permanente" : "Permanent"}</td></tr>
+              <tr><td>Eastern Standard Time (EST)</td><td>UTC-5</td><td>UTC-4 (EDT)</td><td>{isEs ? "Estacional" : "Seasonal"}</td></tr>
             </tbody>
           </table>
         </div>
@@ -337,21 +344,20 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {showEditorialSections && (
       <section class="examples-section" id="conversion-examples" aria-labelledby="conversion-examples-title">
-        <h2 id="conversion-examples-title">GMT to Eastern Time examples</h2>
+        <h2 id="conversion-examples-title">{isEs ? "Ejemplos de conversión de GMT a hora del Este" : "GMT to Eastern Time examples"}</h2>
         <p>
-          These examples show why a date-aware converter is safer than subtracting five hours every time.
-          Use the input above for the exact date and time you need.
+          {isEs ? "Estos ejemplos demuestran por qué un convertidor con detección de fecha es más seguro que restar cinco horas en todo momento. Usa el selector arriba para la fecha exacta que necesites." : "These examples show why a date-aware converter is safer than subtracting five hours every time. Use the input above for the exact date and time you need."}
         </p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">GMT to Eastern Time conversions examples by season</caption>
+            <caption class="sr-only">{isEs ? "Ejemplos de conversión de GMT a hora del Este por estación" : "GMT to Eastern Time conversions examples by season"}</caption>
             <thead>
-              <tr><th>GMT time</th><th>Eastern result</th><th>Why it changes</th></tr>
+              <tr><th>{isEs ? "Hora GMT" : "GMT time"}</th><th>{isEs ? "Resultado en hora del Este" : "Eastern result"}</th><th>{isEs ? "Motivo del cambio" : "Why it changes"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>January 15, 12:00 GMT</td><td>7:00 AM EST</td><td>Eastern Time is on standard time, UTC-5.</td></tr>
-              <tr><td>July 15, 12:00 GMT</td><td>8:00 AM EDT</td><td>Eastern Time is on daylight time, UTC-4.</td></tr>
-              <tr><td>November transition dates</td><td>Check the exact date</td><td>The local offset changes near the daylight saving transition.</td></tr>
+              <tr><td>{isEs ? "15 de enero, 12:00 GMT" : "January 15, 12:00 GMT"}</td><td>{isEs ? "07:00 EST" : "7:00 AM EST"}</td><td>{isEs ? "Eastern Time opera en horario estándar (EST, UTC−5)." : "Eastern Time is on standard time, UTC-5."}</td></tr>
+              <tr><td>{isEs ? "15 de julio, 12:00 GMT" : "July 15, 12:00 GMT"}</td><td>{isEs ? "08:00 EDT" : "8:00 AM EDT"}</td><td>{isEs ? "Eastern Time opera en horario de verano (EDT, UTC−4)." : "Eastern Time is on daylight time, UTC-4."}</td></tr>
+              <tr><td>{isEs ? "Fechas de cambio estacional" : "November transition dates"}</td><td>{isEs ? "Verificar fecha exacta" : "Check the exact date"}</td><td>{isEs ? "El desfase cambia entre 4 y 5 horas según la fecha del cambio." : "The local offset changes near the daylight saving transition."}</td></tr>
             </tbody>
           </table>
         </div>
@@ -360,22 +366,20 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {showEditorialSections && (
       <section class="source-notes" id="source-notes" aria-labelledby="source-notes-title">
-        <h2 id="source-notes-title">Sources and maintenance</h2>
+        <h2 id="source-notes-title">{isEs ? "Fuentes y mantenimiento" : "Sources and maintenance"}</h2>
         <p>
-          This site is maintained as a practical scheduling utility. Time zone rules can change by law,
-          so critical travel, legal, medical, broadcast, or financial schedules should still be checked
-          against the official organizer or local authority.
+          {isEs ? "Este sitio se mantiene como una utilidad práctica de programación y coordinación horaria. Las normativas de zonas horarias pueden cambiar por legislación oficial, por lo que recomendamos verificar horarios críticos con la autoridad u organizador correspondiente." : "This site is maintained as a practical scheduling utility. Time zone rules can change by law, so critical travel, legal, medical, broadcast, or financial schedules should still be checked against the official organizer or local authority."}
         </p>
         <ul>
-          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">IANA Time Zone Database</a> for named time zone rule data.</li>
-          <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">NIST Time and Frequency Division</a> for official timekeeping context.</li>
-          <li><a href="/disclaimer/">Accuracy disclaimer</a> for limitations and recommended verification steps.</li>
+          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">{isEs ? "Base de datos de zonas horarias de la IANA" : "IANA Time Zone Database"}</a> {isEs ? "para las reglas oficiales de zonas con nombre." : "for named time zone rule data."}</li>
+          <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">{isEs ? "División de Tiempo y Frecuencia del NIST" : "NIST Time and Frequency Division"}</a> {isEs ? "para el contexto oficial de medición horaria." : "for official timekeeping context."}</li>
+          <li><a href={isEs ? "/es/disclaimer/" : "/disclaimer/"}>{isEs ? "Descargo de responsabilidad y precisión" : "Accuracy disclaimer"}</a> {isEs ? "para límites y recomendaciones de verificación." : "for limitations and recommended verification steps."}</li>
         </ul>
       </section>
     )}
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">{seoKeyword} Popular Time Zone Tools</h2>
+      <h2 id="other-tools">{t.otherTools?.title || (isEs ? "Herramientas y funciones populares" : `${seoKeyword} Popular Time Zone Tools`)}</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -387,10 +391,10 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section aria-labelledby="chart">
-      <h2 id="chart">{seoKeyword} Chart</h2>
+      <h2 id="chart">{t.chart?.title || (isEs ? "Tabla de conversión" : `${seoKeyword} Chart`)}</h2>
       <div class="table-wrap">
-        <table id="gmt-est-chart" aria-label="GMT to EST conversion chart">
-          <caption class="sr-only">{seoKeyword} conversion grid mapping every hour of the day</caption>
+        <table id="gmt-est-chart" aria-label={isEs ? "Tabla de conversión GMT a EST" : "GMT to EST conversion chart"}>
+          <caption class="sr-only">{isEs ? "Tabla de conversión horaria para cada hora del día" : `${seoKeyword} conversion grid mapping every hour of the day`}</caption>
           <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
           <tbody>
             {gmtEstChartRows.map((row) => (
@@ -403,16 +407,16 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </tbody>
         </table>
       </div>
-      <p class="chart-note">During daylight saving time (mid-March to early November), Eastern Time uses EDT (UTC−4). Outside this period, EST (UTC−5) applies.</p>
+      <p class="chart-note">{isEs ? "Durante el horario de verano (de mediados de marzo a principios de noviembre), la hora del Este utiliza EDT (UTC−4). Fuera de este período, utiliza EST (UTC−5)." : "During daylight saving time (mid-March to early November), Eastern Time uses EDT (UTC−4). Outside this period, EST (UTC−5) applies."}</p>
     </section>
 
     <section aria-labelledby="strip">
-      <h2 id="strip">{seoKeyword} Workday Overlap</h2>
+      <h2 id="strip">{t.strip?.title || (isEs ? "Solapamiento de la jornada laboral" : `${seoKeyword} Workday Overlap`)}</h2>
       <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{seoKeyword} Use Cases</h2>
+      <h2 id="uses">{t.useCases?.title || (isEs ? "Casos de uso" : `${seoKeyword} Use Cases`)}</h2>
       {activeUseCases.map((item: any) => (
         <article><h3>{item.title}</h3><p>{item.text}</p></article>
       ))}
@@ -420,7 +424,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {activeTopics && activeTopics.length > 0 && (
       <section class="content" aria-labelledby="topics">
-        <h2 id="topics">{seoKeyword} Time Zone Authority</h2>
+        <h2 id="topics">{t.topics?.title || (isEs ? "Información sobre zonas horarias" : `${seoKeyword} Time Zone Authority`)}</h2>
         {activeTopics.map((topic: any) => (
           <article>
             <h3>{topic.title}</h3>
@@ -431,7 +435,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{seoKeyword} FAQs</h2>
+      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : `${seoKeyword} FAQs`)}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
@@ -442,9 +446,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </figure>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading}</h2>
+      <h2>{pageConclusionHeading || (isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>Next Step:</strong> {pageCTA}</p>
+      <p><strong>{isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
@@ -456,9 +460,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
       <div class="hero-copy">
         <p class="eyebrow">{pageEyebrow}</p>
         <p>
-          Greenwich Mean Time (GMT) is a fixed reference at UTC+0. Eastern Time is a
-          seasonal civil time zone: it uses Eastern Standard Time (EST, UTC−5) in
-          winter and Eastern Daylight Time (EDT, UTC−4) during daylight saving time.
+          {isEs ? "Greenwich Mean Time (GMT) es una referencia fija en UTC+0. Eastern Time es una zona horaria civil estacional: utiliza Eastern Standard Time (EST, UTC−5) en invierno y Eastern Daylight Time (EDT, UTC−4) durante el horario de verano." : "Greenwich Mean Time (GMT) is a fixed reference at UTC+0. Eastern Time is a seasonal civil time zone: it uses Eastern Standard Time (EST, UTC−5) in winter and Eastern Daylight Time (EDT, UTC−4) during daylight saving time."}
         </p>
         <figure class="hero-visual reveal">
           <picture>
@@ -466,38 +468,33 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </picture>
         </figure>
       </div>
-      <Converter intent={kind} t={t} context={context} />
+      <Converter intent={kind} t={t} context={context} lang={lang} />
     </section>
 
     <section class="method-section" id="historical-context" aria-labelledby="historical-context-title">
       <div class="method-intro">
-        <h2 id="historical-context-title">{lang === "en" ? "GMT vs EST" : title}: Historical Context</h2>
+        <h2 id="historical-context-title">{isEs ? "Contexto histórico de GMT y EST" : `${lang === "en" ? "GMT vs EST" : title}: Historical Context`}</h2>
         <p>
-          GMT developed from observations at the Royal Observatory in Greenwich,
-          founded in 1675. At the 1884 International Meridian Conference, delegates
-          selected the Greenwich meridian as the world’s prime meridian. In North
-          America, railroads introduced standardized regional time in 1883, and the
-          U.S. Standard Time Act of 1918 formally recognized the Eastern time zone
-          and established national daylight saving rules.
+          {isEs ? "GMT se desarrolló a partir de las observaciones del Real Observatorio de Greenwich fundado en 1675. En la Conferencia Internacional del Meridiano de 1884, se seleccionó el meridiano de Greenwich como meridiano cero. En Norteamérica, los ferrocarriles introdujeron horarios estándar en 1883, y la Standard Time Act de 1918 reconoció formalmente la zona horaria del Este y sus reglas de horario de verano." : "GMT developed from observations at the Royal Observatory in Greenwich, founded in 1675. At the 1884 International Meridian Conference, delegates selected the Greenwich meridian as the world’s prime meridian. In North America, railroads introduced standardized regional time in 1883, and the U.S. Standard Time Act of 1918 formally recognized the Eastern time zone and established national daylight saving rules."}
         </p>
       </div>
     </section>
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">Offset Comparison Table</h2>
-        <p>GMT stays fixed while the Eastern offset changes when daylight saving time begins and ends.</p>
+        <h2 id="comparison-table-title">{isEs ? "Tabla comparativa de desfases" : "Offset Comparison Table"}</h2>
+        <p>{isEs ? "GMT se mantiene constante a lo largo de todo el año, mientras que la hora del Este cambia cuando entra en vigor el horario de verano." : "GMT stays fixed while the Eastern offset changes when daylight saving time begins and ends."}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">GMT and Eastern Time offset comparison by season and transition</caption>
+            <caption class="sr-only">{isEs ? "Comparativa de desfases entre GMT y Eastern Time por estación" : "GMT and Eastern Time offset comparison by season and transition"}</caption>
             <thead>
-              <tr><th>Period</th><th>Eastern Label</th><th>UTC Offset</th><th>Hours Behind GMT</th></tr>
+              <tr><th>{isEs ? "Período" : "Period"}</th><th>{isEs ? "Etiqueta" : "Eastern Label"}</th><th>{isEs ? "Desfase UTC" : "UTC Offset"}</th><th>{isEs ? "Diferencia con GMT" : "Hours Behind GMT"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>Early Nov – Mid Mar (Winter)</td><td>EST</td><td>UTC−5</td><td>5 hours</td></tr>
-              <tr><td>Mid Mar – Early Nov (Summer)</td><td>EDT</td><td>UTC−4</td><td>4 hours</td></tr>
-              <tr><td>DST Transition (Spring)</td><td>EST → EDT</td><td>Clocks spring forward 1 hour</td><td>Changes from 5 to 4</td></tr>
-              <tr><td>DST Transition (Fall)</td><td>EDT → EST</td><td>Clocks fall back 1 hour</td><td>Changes from 4 to 5</td></tr>
+              <tr><td>{isEs ? "Noviembre a marzo (invierno)" : "Early Nov – Mid Mar (Winter)"}</td><td>EST</td><td>UTC−5</td><td>{isEs ? "5 horas detrás" : "5 hours"}</td></tr>
+              <tr><td>{isEs ? "Marzo a noviembre (verano)" : "Mid Mar – Early Nov (Summer)"}</td><td>EDT</td><td>UTC−4</td><td>{isEs ? "4 horas detrás" : "4 hours"}</td></tr>
+              <tr><td>{isEs ? "Cambio de primavera" : "DST Transition (Spring)"}</td><td>EST → EDT</td><td>{isEs ? "Los relojes se adelantan 1 hora" : "Clocks spring forward 1 hour"}</td><td>{isEs ? "Cambia de 5 a 4 horas" : "Changes from 5 to 4"}</td></tr>
+              <tr><td>{isEs ? "Cambio de otoño" : "DST Transition (Fall)"}</td><td>EDT → EST</td><td>{isEs ? "Los relojes se atrasan 1 hora" : "Clocks fall back 1 hour"}</td><td>{isEs ? "Cambia de 4 a 5 horas" : "Changes from 4 to 5"}</td></tr>
             </tbody>
           </table>
         </div>
@@ -505,27 +502,27 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="content" id="dst-dates-2026" aria-labelledby="dst-dates-2026-title">
-      <h2 id="dst-dates-2026-title">2026 DST Dates</h2>
+      <h2 id="dst-dates-2026-title">{isEs ? "Fechas de horario de verano en 2026" : "2026 DST Dates"}</h2>
       <ul>
-        <li><strong>Sunday, March 8, 2026, at 2:00 AM local time:</strong> clocks move forward to 3:00 AM and Eastern Time changes from EST (UTC−5) to EDT (UTC−4).</li>
-        <li><strong>Sunday, November 1, 2026, at 2:00 AM local time:</strong> clocks move back to 1:00 AM and Eastern Time changes from EDT (UTC−4) to EST (UTC−5).</li>
+        <li><strong>{isEs ? "Domingo 8 de marzo de 2026, a las 2:00 AM hora local:" : "Sunday, March 8, 2026, at 2:00 AM local time:"}</strong> {isEs ? "los relojes se adelantan a las 3:00 AM y Eastern Time cambia de EST (UTC−5) a EDT (UTC−4)." : "clocks move forward to 3:00 AM and Eastern Time changes from EST (UTC−5) to EDT (UTC−4)."}</li>
+        <li><strong>{isEs ? "Domingo 1 de noviembre de 2026, a las 2:00 AM hora local:" : "Sunday, November 1, 2026, at 2:00 AM local time:"}</strong> {isEs ? "los relojes se atrasan a la 1:00 AM y Eastern Time cambia de EDT (UTC−4) a EST (UTC−5)." : "clocks move back to 1:00 AM and Eastern Time changes from EDT (UTC−4) to EST (UTC−5)."}</li>
       </ul>
-      <p>These dates apply in U.S. locations that observe Eastern Time and daylight saving time.</p>
+      <p>{isEs ? "Estas fechas aplican en los estados y territorios de EE. UU. que observan la hora del Este y el horario de verano." : "These dates apply in U.S. locations that observe Eastern Time and daylight saving time."}</p>
     </section>
 
     <section class="clock-grid" aria-labelledby="live-clocks">
-      <h2 id="live-clocks">{clocksTitle}</h2>
+      <h2 id="live-clocks">{t.clocks?.title || (isEs ? "Relojes en vivo" : clocksTitle)}</h2>
       <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
       <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">GMT vs EST FAQs</h2>
+      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : "GMT vs EST FAQs")}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">GMT and Eastern Time Resources</h2>
+      <h2 id="other-tools">{isEs ? "Recursos de GMT y hora del Este" : "GMT and Eastern Time Resources"}</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -551,23 +548,23 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </picture>
         </figure>
       </div>
-      <Converter intent={kind} t={t} context={context} />
+      <Converter intent={kind} t={t} context={context} lang={lang} />
     </section>
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">{title}: Business Hour Overlap</h2>
-        <p>Understand the standard business crossover hours when converting from Eastern Time back to GMT.</p>
+        <h2 id="comparison-table-title">{isEs ? "Solapamiento de jornada laboral" : `${title}: Business Hour Overlap`}</h2>
+        <p>{isEs ? "Conoce las franjas horarias comerciales al convertir de la hora del Este a GMT." : "Understand the standard business crossover hours when converting from Eastern Time back to GMT."}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">Eastern Time to GMT business hour overlap crossover grid</caption>
+            <caption class="sr-only">{isEs ? "Solapamiento de horario laboral entre Eastern Time y GMT" : "Eastern Time to GMT business hour overlap crossover grid"}</caption>
             <thead>
-              <tr><th>Eastern Time (EST/EDT)</th><th>Corresponding GMT</th><th>Scheduling Practicality</th></tr>
+              <tr><th>{isEs ? "Hora del Este (EST/EDT)" : "Eastern Time (EST/EDT)"}</th><th>{isEs ? "Hora GMT correspondiente" : "Corresponding GMT"}</th><th>{isEs ? "Solapamiento laboral" : "Scheduling Practicality"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>9:00 AM Eastern</td><td>2:00 PM / 1:00 PM GMT</td><td>Perfect morning synchronization.</td></tr>
-              <tr><td>12:00 PM Eastern</td><td>5:00 PM / 4:00 PM GMT</td><td>End of GMT business day alignment.</td></tr>
-              <tr><td>2:00 PM Eastern</td><td>7:00 PM / 6:00 PM GMT</td><td>Out of office hours for GMT.</td></tr>
+              <tr><td>{isEs ? "9:00 AM hora del Este" : "9:00 AM Eastern"}</td><td>{isEs ? "14:00 GMT / 13:00 GMT" : "2:00 PM / 1:00 PM GMT"}</td><td>{isEs ? "Solapamiento matutino ideal para reuniones." : "Perfect morning synchronization."}</td></tr>
+              <tr><td>{isEs ? "12:00 PM hora del Este" : "12:00 PM Eastern"}</td><td>{isEs ? "17:00 GMT / 16:00 GMT" : "5:00 PM / 4:00 PM GMT"}</td><td>{isEs ? "Alineación con el final de la jornada en GMT." : "End of GMT business day alignment."}</td></tr>
+              <tr><td>{isEs ? "2:00 PM hora del Este" : "2:00 PM Eastern"}</td><td>{isEs ? "19:00 GMT / 18:00 GMT" : "7:00 PM / 6:00 PM GMT"}</td><td>{isEs ? "Fuera del horario comercial en GMT." : "Out of office hours for GMT."}</td></tr>
             </tbody>
           </table>
         </div>
@@ -584,13 +581,13 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="clock-grid" aria-labelledby="live-clocks">
-      <h2 id="live-clocks">{clocksTitle}</h2>
+      <h2 id="live-clocks">{t.clocks?.title || (isEs ? "Relojes en vivo" : clocksTitle)}</h2>
       <div class="clock-card"><span>{t.clocks.gmt}</span><strong id="gmtClock">--:--</strong></div>
       <div class="clock-card"><span>{t.clocks.eastern}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{seoKeyword} Scenarios</h2>
+      <h2 id="uses">{t.useCases?.title || (isEs ? "Casos de uso" : `${seoKeyword} Scenarios`)}</h2>
       {activeUseCases.map((item: any) => (
         <article><h3>{item.title}</h3><p>{item.text}</p></article>
       ))}
@@ -598,7 +595,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {activeTopics && activeTopics.length > 0 && (
       <section class="content" aria-labelledby="topics">
-        <h2 id="topics">{seoKeyword} Conversion Tips</h2>
+        <h2 id="topics">{t.topics?.title || (isEs ? "Información sobre zonas horarias" : `${seoKeyword} Conversion Tips`)}</h2>
         {activeTopics.map((topic: any) => (
           <article>
             <h3>{topic.title}</h3>
@@ -609,7 +606,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{seoKeyword} FAQs</h2>
+      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : `${seoKeyword} FAQs`)}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
@@ -620,7 +617,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </figure>
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">{seoKeyword} Reverse Tools</h2>
+      <h2 id="other-tools">{isEs ? "Herramientas de conversión inversa" : `${seoKeyword} Reverse Tools`}</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -632,9 +629,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading}</h2>
+      <h2>{pageConclusionHeading || (isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>Next Step:</strong> {pageCTA}</p>
+      <p><strong>{isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
@@ -665,18 +662,18 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">Timeline of Global Timekeeping Standards</h2>
-        <p>Key historical milestones in the establishment of standard civil time zones and timekeeping references.</p>
+        <h2 id="comparison-table-title">{isEs ? "Evolución histórica de los estándares horarios" : "Timeline of Global Timekeeping Standards"}</h2>
+        <p>{isEs ? "Hitos históricos clave en el establecimiento de los husos horarios civiles y referencias horarias internacionales." : "Key historical milestones in the establishment of standard civil time zones and timekeeping references."}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">Timeline of standard civil time zones and coordinates history</caption>
+            <caption class="sr-only">{isEs ? "Historia de los husos horarios y coordenadas mundiales" : "Timeline of standard civil time zones and coordinates history"}</caption>
             <thead>
-              <tr><th>Year</th><th>Standard Established</th><th>Key Contribution to Timekeeping</th></tr>
+              <tr><th>{isEs ? "Año" : "Year"}</th><th>{isEs ? "Estándar establecido" : "Standard Established"}</th><th>{isEs ? "Contribución principal" : "Key Contribution to Timekeeping"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>1884</td><td>Greenwich Prime Meridian</td><td>Greenwich selected as longitude 0° for global marine navigation.</td></tr>
-              <tr><td>1918</td><td>Standard Time Act</td><td>Official US standard time zones and daylight saving rules introduced.</td></tr>
-              <tr><td>1972</td><td>Coordinated Universal Time (UTC)</td><td>UTC adopted globally to replace astronomical solar time references.</td></tr>
+              <tr><td>1884</td><td>{isEs ? "Meridiano de Greenwich" : "Greenwich Prime Meridian"}</td><td>{isEs ? "Greenwich seleccionado como longitud 0° para la navegación marítima mundial." : "Greenwich selected as longitude 0° for global marine navigation."}</td></tr>
+              <tr><td>1918</td><td>{isEs ? "Ley de Hora Estándar (EE. UU.)" : "Standard Time Act"}</td><td>{isEs ? "Se formalizan las zonas horarias estándar de EE. UU. y el horario de verano." : "Official US standard time zones and daylight saving rules introduced."}</td></tr>
+              <tr><td>1972</td><td>{isEs ? "Tiempo Universal Coordinado (UTC)" : "Coordinated Universal Time (UTC)"}</td><td>{isEs ? "UTC se adopta globalmente sustituyendo las referencias astronómicas solares." : "UTC adopted globally to replace astronomical solar time references."}</td></tr>
             </tbody>
           </table>
         </div>
@@ -684,7 +681,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{seoKeyword} Syllabus</h2>
+      <h2 id="uses">{t.useCases?.title || (isEs ? "Casos de uso" : `${seoKeyword} Syllabus`)}</h2>
       {activeUseCases.map((item: any) => (
         <article><h3>{item.title}</h3><p>{item.text}</p></article>
       ))}
@@ -692,7 +689,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {activeTopics && activeTopics.length > 0 && (
       <section class="content" aria-labelledby="topics">
-        <h2 id="topics">History and Evolution Topics</h2>
+        <h2 id="topics">{t.topics?.title || (isEs ? "Información sobre zonas horarias" : "History and Evolution Topics")}</h2>
         {activeTopics.map((topic: any) => (
           <article>
             <h3>{topic.title}</h3>
@@ -703,28 +700,28 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{seoKeyword} Educational FAQs</h2>
+      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : `${seoKeyword} Educational FAQs`)}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">Educational Resources</h2>
+      <h2 id="other-tools">{isEs ? "Recursos educativos" : "Educational Resources"}</h2>
       <div class="related-grid">
         <article class="related-card">
-          <h3><a href="/about-us/">{lang === "es" ? "Sobre Nosotros" : "About Our Database"}</a></h3>
-          <p>{lang === "es" ? "Conozca cómo mantenemos la precisión de los datos horaria." : "Learn how we maintain and verify our time zone database."}</p>
+          <h3><a href={isEs ? "/es/about-us/" : "/about-us/"}>{isEs ? "Sobre nosotros" : "About Our Database"}</a></h3>
+          <p>{isEs ? "Conozca cómo mantenemos la precisión de los datos horarios." : "Learn how we maintain and verify our time zone database."}</p>
         </article>
         <article class="related-card">
-          <h3><a href="/author/">{lang === "es" ? "Equipo Editorial" : "Editorial Board"}</a></h3>
-          <p>{lang === "es" ? "Conozca a los expertos detrás de nuestras guías y artículos." : "Meet the timezone experts and developers behind the tool."}</p>
+          <h3><a href={isEs ? "/es/author/" : "/author/"}>{isEs ? "Equipo editorial" : "Editorial Board"}</a></h3>
+          <p>{isEs ? "Conozca a los expertos detrás de nuestras guías y artículos." : "Meet the timezone experts and developers behind the tool."}</p>
         </article>
       </div>
     </section>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading}</h2>
+      <h2>{pageConclusionHeading || (isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>Next Step:</strong> {pageCTA}</p>
+      <p><strong>{isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
@@ -742,7 +739,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </picture>
         </figure>
       </div>
-      <Converter intent={kind} t={t} context={context} />
+      <Converter intent={kind} t={t} context={context} lang={lang} />
     </section>
 
     {pageExplanation && (
@@ -756,18 +753,18 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">{context?.from} to {context?.to} Schedule Overlap</h2>
-        <p>Compare standard business hours and overlaps between {context?.from} and {context?.to}.</p>
+        <h2 id="comparison-table-title">{isEs ? `Solapamiento de horarios entre ${context?.from} y ${context?.to}` : `${context?.from} to ${context?.to} Schedule Overlap`}</h2>
+        <p>{isEs ? `Compara las jornadas laborales estándar y el solapamiento horario entre ${context?.from} y ${context?.to}.` : `Compare standard business hours and overlaps between ${context?.from} and ${context?.to}.`}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">{context?.from} to {context?.to} Schedule Overlap and standard business hour matching</caption>
+            <caption class="sr-only">{isEs ? `Solapamiento de horarios entre ${context?.from} y ${context?.to}` : `${context?.from} to ${context?.to} Schedule Overlap and standard business hour matching`}</caption>
             <thead>
-              <tr><th>{context?.from} Time</th><th>{context?.to} Time (Standard Offset)</th><th>{context?.to} Time (Daylight Offset)</th><th>Scheduling Status</th></tr>
+              <tr><th>{isEs ? `Hora ${context?.from}` : `${context?.from} Time`}</th><th>{isEs ? `Hora ${context?.to} (Estándar)` : `${context?.to} Time (Standard Offset)`}</th><th>{isEs ? `Hora ${context?.to} (Verano)` : `${context?.to} Time (Daylight Offset)`}</th><th>{isEs ? "Estado de programación" : "Scheduling Status"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>9:00 AM</td><td>10:00 PM</td><td>11:00 PM</td><td>Time shift gap</td></tr>
-              <tr><td>1:00 PM</td><td>2:00 AM</td><td>3:00 AM</td><td>Out of hours</td></tr>
-              <tr><td>5:00 PM</td><td>6:00 AM</td><td>7:00 AM</td><td>Early morning</td></tr>
+              <tr><td>9:00 AM</td><td>10:00 PM</td><td>11:00 PM</td><td>{isEs ? "Diferencia de jornada" : "Time shift gap"}</td></tr>
+              <tr><td>1:00 PM</td><td>2:00 AM</td><td>3:00 AM</td><td>{isEs ? "Fuera de horario laboral" : "Out of hours"}</td></tr>
+              <tr><td>5:00 PM</td><td>6:00 AM</td><td>7:00 AM</td><td>{isEs ? "Madrugada" : "Early morning"}</td></tr>
             </tbody>
           </table>
         </div>
@@ -775,10 +772,10 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section aria-labelledby="chart">
-      <h2 id="chart">{seoKeyword} Hourly Schedule Grid</h2>
+      <h2 id="chart">{t.chart?.title || (isEs ? "Tabla de horarios de 24 horas" : `${seoKeyword} Hourly Schedule Grid`)}</h2>
       <div class="table-wrap">
         <table id="timeTable">
-          <caption class="sr-only">{seoKeyword} conversion grid mapping every hour of the day</caption>
+          <caption class="sr-only">{isEs ? "Tabla de conversión horaria para cada hora del día" : `${seoKeyword} conversion grid mapping every hour of the day`}</caption>
           <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
           <tbody></tbody>
         </table>
@@ -786,18 +783,18 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="clock-grid" aria-labelledby="live-clocks">
-      <h2 id="live-clocks">{clocksTitle}</h2>
-      <div class="clock-card"><span>Current {from}</span><strong id="gmtClock">--:--</strong></div>
-      <div class="clock-card"><span>Current {to}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
+      <h2 id="live-clocks">{t.clocks?.title || (isEs ? "Relojes en vivo" : clocksTitle)}</h2>
+      <div class="clock-card"><span>{isEs ? `Hora ${from} actual` : `Current ${from}`}</span><strong id="gmtClock">--:--</strong></div>
+      <div class="clock-card"><span>{isEs ? `Hora ${to} actual` : `Current ${to}`}</span><strong id="estClock">--:--</strong><em id="estZone">EST</em></div>
     </section>
 
     <section aria-labelledby="strip">
-      <h2 id="strip">{seoKeyword} Overlap Visualizer</h2>
+      <h2 id="strip">{t.strip?.title || (isEs ? "Solapamiento de la jornada laboral" : `${seoKeyword} Overlap Visualizer`)}</h2>
       <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{seoKeyword} Regional Use Cases</h2>
+      <h2 id="uses">{t.useCases?.title || (isEs ? "Casos de uso" : `${seoKeyword} Regional Use Cases`)}</h2>
       {activeUseCases.map((item: any) => (
         <article><h3>{item.title}</h3><p>{item.text}</p></article>
       ))}
@@ -805,7 +802,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {activeTopics && activeTopics.length > 0 && (
       <section class="content" aria-labelledby="topics">
-        <h2 id="topics">Time Zone Details for {from} and {to}</h2>
+        <h2 id="topics">{t.topics?.title || (isEs ? `Información de zonas horarias para ${from} y ${to}` : `Time Zone Details for ${from} and ${to}`)}</h2>
         {activeTopics.map((topic: any) => (
           <article>
             <h3>{topic.title}</h3>
@@ -816,7 +813,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{seoKeyword} Zone FAQs</h2>
+      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : `${seoKeyword} Zone FAQs`)}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
@@ -827,7 +824,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </figure>
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">Related {from} and {to} Converters</h2>
+      <h2 id="other-tools">{isEs ? `Convertidores relacionados entre ${from} y ${to}` : `Related ${from} and ${to} Converters`}</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -839,9 +836,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading}</h2>
+      <h2>{pageConclusionHeading || (isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>Next Step:</strong> {pageCTA}</p>
+      <p><strong>{isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}

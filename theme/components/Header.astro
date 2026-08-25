@@ -2,16 +2,20 @@
 const { lang, t, slug = "" } = Astro.props;
 import { pageUrl, languages } from "theme/i18n/config";
 
+const isEs = lang === "es";
 const navItems = [
-  { href: "/world-clock/", label: "World Clock", position: 2, key: "world-clock" },
-  { href: "/meeting-planner/", label: "Meeting Planner", position: 3, key: "meeting-planner" },
-  { href: "/time-zone-map/", label: "Map", position: 4, key: "time-zone-map" },
-  { href: "/developer-tools/", label: "Dev Tools", position: 5, key: "developer-tools" },
-  { href: pageUrl(lang, "time-zone-guide"), label: t.nav.guide || "Guide", position: 6, key: "time-zone-guide" },
-  { href: "/blog/", label: t.nav.blog || "Blog", position: 7, key: "blog" },
+  { href: "/world-clock/", label: t.nav?.worldClock || (isEs ? "Reloj mundial" : "World Clock"), position: 2, key: "world-clock" },
+  { href: "/meeting-planner/", label: t.nav?.meetingPlanner || (isEs ? "Planificador de reuniones" : "Meeting Planner"), position: 3, key: "meeting-planner" },
+  { href: "/time-zone-map/", label: t.nav?.map || (isEs ? "Mapa" : "Map"), position: 4, key: "time-zone-map" },
+  { href: "/developer-tools/", label: t.nav?.developerTools || (isEs ? "Herramientas para desarrolladores" : "Dev Tools"), position: 5, key: "developer-tools" },
+  { href: pageUrl(lang, "time-zone-guide"), label: t.nav?.guide || (isEs ? "Guía" : "Guide"), position: 6, key: "time-zone-guide" },
+  { href: "/blog/", label: t.nav?.blog || (isEs ? "Blog" : "Blog"), position: 7, key: "blog" },
 ];
 
 const isCurrentItem = (key: string) => key === "" ? slug === "" : slug === key || slug.startsWith(`${key}/`);
+const navAriaLabel = isEs ? "Navegación principal" : "Primary";
+const searchAriaLabel = t.nav?.searchAriaLabel || (isEs ? "Buscar en el sitio (Ctrl+K)" : "Search site (Ctrl+K)");
+const searchBtnText = t.nav?.search || (isEs ? "Buscar..." : "Search...");
 ---
 
 <header class="header" role="banner">
@@ -25,7 +29,7 @@ const isCurrentItem = (key: string) => key === "" ? slug === "" : slug === key |
     </div>
 
     <!-- Navigation Section -->
-    <nav class="nav-section" aria-label="Primary" role="navigation">
+    <nav class="nav-section" aria-label={navAriaLabel} role="navigation">
       <ul class="nav-list" itemscope itemtype="https://schema.org/SiteNavigationElement">
         {navItems.map((item) => (
           <li class="nav-item" data-position={item.position}>
@@ -44,12 +48,12 @@ const isCurrentItem = (key: string) => key === "" ? slug === "" : slug === key |
     </nav>
 
     <!-- Global Search Trigger Button -->
-    <button type="button" class="trigger-global-search search-header-btn" aria-label="Search site (Ctrl+K)">
+    <button type="button" class="trigger-global-search search-header-btn" aria-label={searchAriaLabel}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <span class="search-btn-text">Search...</span>
+      <span class="search-btn-text">{searchBtnText}</span>
       <kbd>⌘K</kbd>
     </button>
   </div>
