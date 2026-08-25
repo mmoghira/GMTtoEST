@@ -196,11 +196,28 @@ export function getTranslation(code: string): any {
   return deepMerge(english, selected);
 }
 
-function replaceTemplates(text: string, replacements: Record<string, string>): string {
+export function replaceTemplates(text: string, replacements: Record<string, string> = {}): string {
   if (!text) return "";
   let result = text;
   for (const [key, value] of Object.entries(replacements)) {
-    result = result.replace(new RegExp(`{${key}}`, "g"), value);
+    if (value !== undefined && value !== null) {
+      result = result.replace(new RegExp(`{${key}}`, "g"), String(value));
+    }
+  }
+  // Safe interpolation: replace any unresolved tokens with safe fallbacks and never leak raw {token}
+  if (result.includes("{")) {
+    const fromFallback = replacements.from || "GMT";
+    const toFallback = replacements.to || "EST";
+    result = result
+      .replace(/{from}/g, fromFallback)
+      .replace(/{to}/g, toFallback)
+      .replace(/{source}/g, fromFallback)
+      .replace(/{target}/g, toFallback)
+      .replace(/{fromZone}/g, replacements.fromZone || "UTC")
+      .replace(/{toZone}/g, replacements.toZone || "America/New_York")
+      .replace(/{hours}/g, replacements.hours || "5")
+      .replace(/{date}/g, replacements.date || "")
+      .replace(/{[a-zA-Z0-9_-]+}/g, "");
   }
   return result;
 }
@@ -209,19 +226,22 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
   const t = getTranslation(code);
   const english = (modules["./translations/en.json"] as any)?.default || {};
   const selected = (modules[`./translations/${code}.json`] as any)?.default || english;
-  const specificDynamicKeys = ["cdtToEst", "cstToEst", "kstToEst", "pdtToEst", "mstToEst", "astToEst", "gmtToAkdt", "gmtToAwst", "witaToEst", "gmtToMet", "gmtToPdt"];
-  const isSpecificDynamic = specificDynamicKeys.includes(labelKey);
 
-  if ((labelKey === "dynamic" || isSpecificDynamic) && pageContext) {
-    const { from, to, fromZone, toZone } = pageContext;
-    const replacements = { from, to, fromZone: fromZone || "UTC", toZone: toZone || "UTC" };
+  if (pageContext || labelKey === "dynamic") {
+    const from = pageContext?.from || "GMT";
+    const to = pageContext?.to || "EST";
+    const fromZone = pageContext?.fromZone || "UTC";
+    const toZone = pageContext?.toZone || "UTC";
+    const replacements = { from, to, fromZone, toZone, source: from, target: to };
 
     const selectedSpecificMeta = selected.pages?.[labelKey];
     const englishSpecificMeta = english.pages?.[labelKey];
     const usesEnglishSpecificFallback =
       code !== "en" &&
-      isSpecificDynamic &&
-      selectedSpecificMeta?.title === englishSpecificMeta?.title;
+      selectedSpecificMeta?.title &&
+      englishSpecificMeta?.title &&
+      selectedSpecificMeta.title === englishSpecificMeta.title;
+
     const localizedHomeMeta = selected.pages?.home || t.pages?.home || {};
     const localizedPairMeta = {
       ...(selected.pages?.dynamic || t.pages?.dynamic || {}),
@@ -232,37 +252,41 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
         ?.replace(/\bGMT\b/g, "{from}")
         .replace(/\bEST\b/g, "{to}")
     };
+
     const baseMeta = usesEnglishSpecificFallback
       ? localizedPairMeta
-      : selectedSpecificMeta || t.pages[labelKey] || t.pages.dynamic || {};
-    const rawTitle = isSpecificDynamic
-      ? localizedPairMeta.title || baseMeta.title || "{from} to {to} Converter"
-      : baseMeta.title || "{from} to {to} Converter";
-    const rawDescription = baseMeta.description || "Use this {from} to {to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.";
-    
+      : (selectedSpecificMeta || t.pages[labelKey] || t.pages.dynamic || localizedPairMeta || {});
+
+    const rawTitle = selectedSpecificMeta?.title
+      ? selectedSpecificMeta.title
+      : (localizedPairMeta.title || baseMeta.title || "{from} to {to} Converter");
+    const rawDescription = selectedSpecificMeta?.description
+      ? selectedSpecificMeta.description
+      : (baseMeta.description || "Use this {from} to {to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.");
+
     const title = replaceTemplates(rawTitle, replacements);
     const description = replaceTemplates(rawDescription, replacements);
 
-    const faqsSource = isSpecificDynamic && !usesEnglishSpecificFallback
-      ? (t[`faqs_${labelKey}`]?.items || [])
-      : (selected.faqs_dynamic || t.faqs_dynamic || []);
-    const useCasesSource = isSpecificDynamic && !usesEnglishSpecificFallback
-      ? (t[`useCases_${labelKey}`]?.items || [])
-      : (selected.useCases_dynamic || t.useCases_dynamic || []);
-    const topicsSource = isSpecificDynamic && !usesEnglishSpecificFallback
-      ? (t[`topics_${labelKey}`]?.items || [])
-      : (selected.topics_dynamic || t.topics_dynamic || []);
+    const faqsSource = (selectedSpecificMeta && selected[`faqs_${labelKey}`]?.items)
+      ? selected[`faqs_${labelKey}`].items
+      : (t[`faqs_${labelKey}`]?.items || selected.faqs_dynamic || t.faqs_dynamic || []);
+    const useCasesSource = (selectedSpecificMeta && selected[`useCases_${labelKey}`]?.items)
+      ? selected[`useCases_${labelKey}`].items
+      : (t[`useCases_${labelKey}`]?.items || selected.useCases_dynamic || t.useCases_dynamic || []);
+    const topicsSource = (selectedSpecificMeta && selected[`topics_${labelKey}`]?.items)
+      ? selected[`topics_${labelKey}`].items
+      : (t[`topics_${labelKey}`]?.items || selected.topics_dynamic || t.topics_dynamic || []);
 
     const faqs = faqsSource.map((faq: any) => ({
       q: replaceTemplates(faq.q, replacements),
       a: replaceTemplates(faq.a, replacements)
     }));
-    
+
     const useCases = useCasesSource.map((uc: any) => ({
       title: replaceTemplates(uc.title, replacements),
       text: replaceTemplates(uc.text, replacements)
     }));
-    
+
     const topics = topicsSource.map((topic: any) => ({
       title: replaceTemplates(topic.title, replacements),
       text: replaceTemplates(topic.text, replacements)
@@ -273,7 +297,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
       description,
       keywords: `${title}, ${from} to ${to}, convert ${from} to ${to}, ${from} to ${to} time difference`,
       image: baseMeta.image || "/images/og/default.png",
-      imageAlt: baseMeta.imageAlt || `${from} to ${to} Converter - timezone conversion tool`,
+      imageAlt: replaceTemplates(baseMeta.imageAlt || `${from} to ${to} Converter - timezone conversion tool`, replacements),
       faqs,
       useCases,
       topics

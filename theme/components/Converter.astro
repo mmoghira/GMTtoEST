@@ -3,25 +3,17 @@ const { intent = "converter", t, context, lang = "en" } = Astro.props;
 const isEs = lang === "es";
 const variant = t.converter.variants[intent] || t.converter.variants.converter;
 
-function replaceTemplates(text: string, replacements: Record<string, string>): string {
-  if (!text) return "";
-  let result = text;
-  for (const [key, value] of Object.entries(replacements)) {
-    result = result.replace(new RegExp(`{${key}}`, "g"), value);
-  }
-  return result;
-}
+import { replaceTemplates } from "theme/i18n/config";
 
 const from = context?.from || "GMT";
 const to = context?.to || "EST";
-const replacements = { from, to };
+const sourceZone = context ? context.fromZone : "UTC";
+const targetZone = context ? context.toZone : "America/New_York";
+const replacements = { from, to, fromZone: sourceZone, toZone: targetZone, source: from, target: to };
 
 const heading = replaceTemplates(variant.heading, replacements);
 const input = replaceTemplates(variant.input, replacements);
 const note = replaceTemplates(variant.note, replacements);
-
-const sourceZone = context ? context.fromZone : "UTC";
-const targetZone = context ? context.toZone : "America/New_York";
 const sourceLabel = context?.from || "GMT";
 const targetLabel = context?.to === "EST" ? "EST / EDT" : context?.to || "EST / EDT";
 const targetTimeLabel = context?.to === "EST"
@@ -38,6 +30,7 @@ const swapAria = t.converter.swap || (isEs ? "Cambiar dirección de conversión"
 const directionAria = t.converter.direction || (isEs ? "Dirección de la conversión" : "Conversion direction");
 const copyAria = isEs ? "Copiar resultado de la conversión al portapapeles" : "Copy conversion result to clipboard";
 const copyTitle = isEs ? "Copiar al portapapeles" : "Copy to clipboard";
+const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replacements);
 ---
 
 <form
@@ -45,7 +38,7 @@ const copyTitle = isEs ? "Copiar al portapapeles" : "Copy to clipboard";
   data-component="converter"
   data-intent={intent}
   data-start-mode={variant.startMode}
-  data-labels={JSON.stringify(t.converter)}
+  data-labels={converterLabelsJson}
   data-source-zone={sourceZone}
   data-target-zone={targetZone}
   data-source-label={sourceLabel}

@@ -1,34 +1,39 @@
 ---
 import Converter from "theme/components/Converter.astro";
 import VisualLab from "theme/components/VisualLab.astro";
-import { dynamicConvertersEnabled, pageUrl } from "theme/i18n/config";
+import { dynamicConvertersEnabled, pageUrl, replaceTemplates } from "theme/i18n/config";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
 const { labelKey = "home", title, description, kind, t, context, lang = "en", primaryKeyword, meta = {} } = Astro.props;
 
-function replaceTemplates(text: string, replacements: Record<string, string>): string {
-  if (!text) return "";
-  let result = text;
-  for (const [key, value] of Object.entries(replacements)) {
-    result = result.replace(new RegExp(`{${key}}`, "g"), value);
-  }
-  return result;
-}
-
 const from = context?.from || "GMT";
 const to = context?.to || "EST";
 const fromZone = context?.fromZone || "UTC";
-const toZone = context?.toZone || "UTC";
-const replacements = { from, to, fromZone, toZone };
+const toZone = context?.toZone || "America/New_York";
+const replacements = { from, to, fromZone, toZone, source: from, target: to };
 
-// Resolve page-specific arrays and text blocks
-const activeFaqs = meta.faqs || t.faqs?.items || [];
-const activeUseCases = meta.useCases || t.useCases?.items || [];
-const activeTopics = meta.topics || t.topics?.items || [];
+const activeKey = labelKey || kind;
+
+// Resolve page-specific arrays and text blocks with safe template interpolation
+const rawFaqs = meta.faqs || t[`faqs_${activeKey}`]?.items || t[`faqs_${kind}`]?.items || t.faqs_dynamic || t.faqs?.items || [];
+const rawUseCases = meta.useCases || t[`useCases_${activeKey}`]?.items || t[`useCases_${kind}`]?.items || t.useCases_dynamic || t.useCases?.items || [];
+const rawTopics = meta.topics || t[`topics_${activeKey}`]?.items || t[`topics_${kind}`]?.items || t.topics_dynamic || t.topics?.items || [];
+
+const activeFaqs = rawFaqs.map((item: any) => ({
+  q: replaceTemplates(item.q, replacements),
+  a: replaceTemplates(item.a, replacements)
+}));
+const activeUseCases = rawUseCases.map((item: any) => ({
+  title: replaceTemplates(item.title, replacements),
+  text: replaceTemplates(item.text, replacements)
+}));
+const activeTopics = rawTopics.map((topic: any) => ({
+  title: replaceTemplates(topic.title, replacements),
+  text: replaceTemplates(topic.text, replacements)
+}));
 
 const pageH1 = replaceTemplates(title || t.pages[labelKey]?.title || "GMT to EST Converter", replacements);
 
-const activeKey = labelKey || kind;
 const pageIntro = replaceTemplates(t[`intro_${activeKey}`] || t[`intro_${kind}`] || description, replacements);
 const pageExplanation = replaceTemplates(t[`explanation_${activeKey}`] || t[`explanation_${kind}`] || "", replacements);
 const pageConclusion = replaceTemplates(t[`conclusion_${activeKey}`] || t[`conclusion_${kind}`] || "", replacements);
@@ -776,7 +781,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
       <div class="table-wrap">
         <table id="timeTable">
           <caption class="sr-only">{isEs ? "Tabla de conversión horaria para cada hora del día" : `${seoKeyword} conversion grid mapping every hour of the day`}</caption>
-          <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
+          <thead><tr><th>{isEs ? (from === "GMT" ? "Hora GMT" : `Hora ${from}`) : `${from} Time`}</th><th>{isEs ? (to === "EST" ? "Hora del Este" : `Hora ${to}`) : `${to} Time`}</th><th>{isEs ? "Diferencia" : (t.chart?.offset || "Offset")}</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>

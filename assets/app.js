@@ -31,18 +31,67 @@
   }
 
   function zoneName(date, zone, configuredSourceLabel = "", configuredTargetLabel = "", sourceZone = "UTC", targetZone = "America/New_York") {
-    const shortName = parts(date, zone).timeZoneName || "ET";
-    if (zone === "UTC") {
+    if (zone === "UTC" || zone === "Etc/UTC" || zone === "GMT") {
       if (zone === sourceZone && configuredSourceLabel) return configuredSourceLabel;
       if (zone === targetZone && configuredTargetLabel) return configuredTargetLabel;
       return "GMT";
     }
-    if (zone === "Australia/Adelaide") {
-      const offset = offsetMinutes(date, zone);
-      if (offset === 630) return "ACDT";
-      if (offset === 570) return "ACST";
+    const offset = offsetMinutes(date, zone);
+    if (zone === "Australia/Sydney" || zone === "Australia/Melbourne" || zone === "Australia/Brisbane" || zone === "Australia/Hobart" || zone === "Australia/Canberra") {
+      return offset === 660 ? "AEDT" : "AEST";
     }
-    return shortName;
+    if (zone === "Australia/Adelaide" || zone === "Australia/Darwin" || zone === "Australia/Broken_Hill") {
+      return offset === 630 ? "ACDT" : "ACST";
+    }
+    if (zone === "Australia/Perth") {
+      return "AWST";
+    }
+    if (zone === "America/Denver" || zone === "America/Edmonton" || zone === "America/Boise") {
+      return offset === -360 ? "MDT" : "MST";
+    }
+    if (zone === "America/Chicago" || zone === "America/Winnipeg" || zone === "America/Mexico_City") {
+      return offset === -300 ? "CDT" : "CST";
+    }
+    if (zone === "America/Los_Angeles" || zone === "America/Vancouver" || zone === "America/Tijuana") {
+      return offset === -420 ? "PDT" : "PST";
+    }
+    if (zone === "America/New_York" || zone === "America/Toronto" || zone === "America/Montreal") {
+      return offset === -240 ? "EDT" : "EST";
+    }
+    if (zone === "America/Halifax") {
+      return offset === -180 ? "ADT" : "AST";
+    }
+    if (zone === "America/St_Johns") {
+      return offset === -150 ? "NDT" : "NST";
+    }
+    if (zone === "America/Anchorage") {
+      return offset === -480 ? "AKDT" : "AKST";
+    }
+    if (zone === "Pacific/Auckland") {
+      return offset === 780 ? "NZDT" : "NZST";
+    }
+    if (zone === "Europe/London") {
+      return offset === 60 ? "BST" : "GMT";
+    }
+    if (zone === "Europe/Athens" || zone === "Europe/Bucharest" || zone === "Europe/Helsinki") {
+      return offset === 180 ? "EEST" : "EET";
+    }
+    if (zone === "Europe/Paris" || zone === "Europe/Berlin" || zone === "Europe/Rome" || zone === "Europe/Madrid" || zone === "Europe/Amsterdam") {
+      return offset === 120 ? "CEST" : "CET";
+    }
+    if (zone === "Europe/Moscow") return "MSK";
+    if (zone === "Asia/Tokyo") return "JST";
+    if (zone === "Asia/Seoul") return "KST";
+    if (zone === "Asia/Kolkata") return "IST";
+    if (zone === "Pacific/Honolulu") return "HST";
+    if (zone === "Asia/Jerusalem") return offset === 180 ? "IDT" : "IST";
+
+    const shortName = parts(date, zone).timeZoneName;
+    if (!shortName || shortName.startsWith("GMT") || shortName.startsWith("UTC") || shortName.startsWith("Etc/")) {
+      if (zone === sourceZone && configuredSourceLabel) return configuredSourceLabel;
+      if (zone === targetZone && configuredTargetLabel) return configuredTargetLabel;
+    }
+    return shortName || (zone === sourceZone ? configuredSourceLabel : configuredTargetLabel) || "ET";
   }
 
   function localToUtc(value, zone) {
@@ -147,7 +196,8 @@
       const z1 = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       const z2 = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       if (isEs) {
-        return z2 + " está " + diffHours + " horas por detrás de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es esencial realizar la conversión teniendo en cuenta la fecha.";
+        const hoursText = diffHours === 1 ? "1 hora" : diffHours + " horas";
+        return z2 + " está " + hoursText + " por detrás de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es importante realizar una conversión basada en la fecha.";
       }
       return z2 + " is " + diffHours + " hours difference from " + z1 + " on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.";
     }
@@ -176,7 +226,7 @@
 
       if (resultOutput) {
         resultOutput.textContent = intent === "difference"
-          ? (isEs ? diffHours + " horas de diferencia" : diffHours + " " + (labels.hoursBehindGmt || "hours difference"))
+          ? (isEs ? (diffHours === 1 ? "1 hora de diferencia" : diffHours + " horas de diferencia") : (diffHours + " " + (labels.hoursBehindGmt || "hours difference")))
           : shortFormat(date, target, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         
         // CSS pulse animation without layout thrashing
@@ -193,9 +243,12 @@
           : explain(date);
       }
       if (offsetBadge) {
+        const diffBadgeText = isEs
+          ? (diffHours === 1 ? "Diferencia de 1 hora" : "Diferencia de " + diffHours + " horas")
+          : (diffHours + "h difference");
         offsetBadge.textContent = isEs
-          ? "Diferencia de " + diffHours + " horas — " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone)
-          : diffHours + "h difference - " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
+          ? diffBadgeText + " — " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone)
+          : diffBadgeText + " - " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       }
     }
 
@@ -337,7 +390,6 @@
     const tLabel = firstConverter?.dataset.targetLabel || "EST";
     const p = parts(today, sZone);
 
-    const diffSuffix = isEs ? "horas de diferencia" : "hours diff";
     const fragment = document.createDocumentFragment();
     for (let h = 0; h < 24; h += 1) {
       let rowDate;
@@ -347,8 +399,11 @@
         rowDate = localToUtc(p.year + "-" + p.month + "-" + p.day + "T" + String(h).padStart(2, '0') + ":00", sZone);
       }
       const diffHours = Math.abs((offsetMinutes(rowDate, tZone) - offsetMinutes(rowDate, sZone)) / 60);
+      const diffText = isEs
+        ? (diffHours === 1 ? "Diferencia de 1 hora" : "Diferencia de " + diffHours + " horas")
+        : (diffHours + " hours diff");
       const tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + String(h).padStart(2, "0") + ":00 " + zoneName(rowDate, sZone, sLabel, tLabel, sZone, tZone) + "</td><td>" + format(rowDate, tZone, true, sLabel, tLabel, sZone, tZone) + "</td><td>" + diffHours + " " + diffSuffix + "</td>";
+      tr.innerHTML = "<td>" + String(h).padStart(2, "0") + ":00 " + zoneName(rowDate, sZone, sLabel, tLabel, sZone, tZone) + "</td><td>" + format(rowDate, tZone, true, sLabel, tLabel, sZone, tZone) + "</td><td>" + diffText + "</td>";
       fragment.appendChild(tr);
     }
     tbody.innerHTML = "";
