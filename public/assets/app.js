@@ -1,6 +1,6 @@
 (() => {
   // Cached Intl.DateTimeFormat instances for performance
-  const formatters = { parts: {}, format: {}, compact: {}, short: {} };
+  const formatters = { parts: {}, format: {}, compact: {}, short: {}, isoDay: {} };
 
   function getFormatter(group, timeZone, use24, options) {
     const pageLang = document.body?.dataset?.lang || document.documentElement?.lang || "en";
@@ -48,6 +48,9 @@
     }
     if (zone === "America/Denver" || zone === "America/Edmonton" || zone === "America/Boise") {
       return offset === -360 ? "MDT" : "MST";
+    }
+    if (zone === "America/Phoenix") {
+      return "MST";
     }
     if (zone === "America/Chicago" || zone === "America/Winnipeg" || zone === "America/Mexico_City") {
       return offset === -300 ? "CDT" : "CST";
@@ -107,6 +110,41 @@
     }
     return new Date(guess);
   }
+
+  function getDayRelation(sourceDate, targetDate, sourceTimeZone, targetTimeZone) {
+    const sFmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: sourceTimeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+    const tFmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: targetTimeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+
+    const sourceDay = sFmt.format(sourceDate);
+    const targetDay = tFmt.format(targetDate);
+
+    if (targetDay < sourceDay) return "previousDay";
+    if (targetDay > sourceDay) return "nextDay";
+    return "sameDay";
+  }
+
+  const dayRelationLabel = {
+    es: {
+      previousDay: "día anterior",
+      sameDay: "mismo día",
+      nextDay: "día siguiente"
+    },
+    en: {
+      previousDay: "previous day",
+      sameDay: "same day",
+      nextDay: "next day"
+    }
+  };
 
   function applyZoneLabel(text, date, timeZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone) {
     const intlName = parts(date, timeZone).timeZoneName;
@@ -197,14 +235,17 @@
       const z2 = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       if (isEs) {
         const hoursText = diffHours === 1 ? "1 hora" : diffHours + " horas";
-        return z2 + " estÃ¡ " + hoursText + " por detrÃ¡s de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es importante realizar una conversiÃ³n basada en la fecha.";
+        return z2 + " está " + hoursText + " por detrás de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es importante realizar una conversión basada en la fecha.";
       }
       return z2 + " is " + diffHours + " hours difference from " + z1 + " on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.";
     }
 
     function convert() {
       const date = parseInput();
-      if (!date || Number.isNaN(date.getTime())) return;
+      if (!date || Number.isNaN(date.getTime())) {
+        if (resultOutput) resultOutput.textContent = isEs ? "Introduce una fecha y hora válidas." : "Enter a valid date and time.";
+        return;
+      }
       const target = state.mode === "gmt-est" ? targetZone : sourceZone;
       const source = state.mode === "gmt-est" ? sourceZone : targetZone;
 
@@ -243,13 +284,16 @@
           : explain(date);
       }
       if (offsetBadge) {
+        const targetAbbr = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         const diffBadgeText = isEs
           ? (diffHours === 1 ? "Diferencia de 1 hora" : "Diferencia de " + diffHours + " horas")
           : (diffHours + "h difference");
         offsetBadge.textContent = isEs
-          ? diffBadgeText + " â€” " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone)
-          : diffBadgeText + " - " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
+          ? diffBadgeText + " — " + targetAbbr
+          : diffBadgeText + " - " + targetAbbr;
       }
+
+      buildTable(date);
     }
 
     function applyMode(mode) {
@@ -325,14 +369,14 @@
         const original = copyBtn.textContent;
         try {
           await navigator.clipboard.writeText(state.lastText);
-          copyBtn.textContent = copyBtn.dataset.copied || (isEs ? "Â¡Copiado!" : "Copied!");
-          copyBtn.setAttribute("aria-label", isEs ? "Copiado al portapapeles" : "Copied to clipboard");
+          copyBtn.textContent = copyBtn.dataset.copied || (isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
+          copyBtn.setAttribute("aria-label", isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
           setTimeout(() => {
             copyBtn.textContent = original;
-            copyBtn.setAttribute("aria-label", isEs ? "Copiar resultado de la conversiÃ³n al portapapeles" : "Copy conversion result to clipboard");
+            copyBtn.setAttribute("aria-label", isEs ? "Copiar resultado de la conversión al portapapeles" : "Copy conversion result to clipboard");
           }, 2000);
         } catch (err) {
-          copyBtn.textContent = copyBtn.dataset.copyFailed || (isEs ? "Error al copiar" : "Copy failed");
+          copyBtn.textContent = copyBtn.dataset.copyFailed || (isEs ? "No se pudo copiar el resultado" : "Copy failed");
           setTimeout(() => { copyBtn.textContent = original; }, 2000);
         }
       });
@@ -377,18 +421,18 @@
     }
   }
 
-  function buildTable() {
+  function buildTable(currentDate) {
     const tbody = document.querySelector("#timeTable tbody");
     if (!tbody) return;
     const pageLang = document.body?.dataset?.lang || document.documentElement?.lang || "en";
     const isEs = pageLang === "es";
-    const today = new Date();
+    const baseDate = currentDate || new Date();
     const firstConverter = document.querySelector('[data-component="converter"]') || document.querySelector('.converter');
     const sZone = firstConverter?.dataset.sourceZone || "UTC";
     const tZone = firstConverter?.dataset.targetZone || "America/New_York";
     const sLabel = firstConverter?.dataset.sourceLabel || "GMT";
     const tLabel = firstConverter?.dataset.targetLabel || "EST";
-    const p = parts(today, sZone);
+    const p = parts(baseDate, sZone);
 
     const fragment = document.createDocumentFragment();
     for (let h = 0; h < 24; h += 1) {
@@ -402,8 +446,17 @@
       const diffText = isEs
         ? (diffHours === 1 ? "Diferencia de 1 hora" : "Diferencia de " + diffHours + " horas")
         : (diffHours + " hours diff");
+
+      const relation = getDayRelation(rowDate, rowDate, sZone, tZone);
+      const relationText = isEs
+        ? (relation !== "sameDay" ? " (" + dayRelationLabel.es[relation] + ")" : "")
+        : (relation !== "sameDay" ? " (" + dayRelationLabel.en[relation] + ")" : "");
+
+      const sAbbr = zoneName(rowDate, sZone, sLabel, tLabel, sZone, tZone);
+      const targetTimeFormatted = format(rowDate, tZone, true, sLabel, tLabel, sZone, tZone);
+
       const tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + String(h).padStart(2, "0") + ":00 " + zoneName(rowDate, sZone, sLabel, tLabel, sZone, tZone) + "</td><td>" + format(rowDate, tZone, true, sLabel, tLabel, sZone, tZone) + "</td><td>" + diffText + "</td>";
+      tr.innerHTML = "<td>" + String(h).padStart(2, "0") + ":00 " + sAbbr + "</td><td>" + targetTimeFormatted + relationText + "</td><td>" + diffText + "</td>";
       fragment.appendChild(tr);
     }
     tbody.innerHTML = "";
