@@ -71,11 +71,11 @@ const heroAlt = ensureKeywordInAlt(t.images.heroAlt, keyword, `${keyword} featur
 const clockAlt = ensureKeywordInAlt(t.images.clockAlt, keyword, `${keyword} clock comparison image`);
 const mapAlt = ensureKeywordInAlt(t.images.mapAlt, keyword, `${keyword} world time map image`);
 
-const showArticleMeta = kind === "converter" && lang === "en" && !!meta?.pubDate;
+const showArticleMeta = kind === "converter" && (lang === "en" || lang === "de") && !!meta?.pubDate;
 const formatHomeDate = (value?: string) => {
   if (!value) return "";
   const datePart = value.slice(0, 10);
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -85,17 +85,18 @@ const formatHomeDate = (value?: string) => {
 const publishedDateLabel = formatHomeDate(meta?.pubDate);
 const updatedDateLabel = formatHomeDate(meta?.updatedDate || meta?.pubDate);
 
-// Show editorial sections only on homepage in English
-const showEditorialSections = kind === "converter" && lang === "en";
+// Show editorial sections on homepage in English and German
+const showEditorialSections = kind === "converter" && (lang === "en" || lang === "de");
 
 // TOC Items
 const tocItems = [
   { href: "#converter", label: seoKeyword },
-  ...(kind === "converter" ? [{ href: "#visual-lab", label: t.visual.title }] : []),
+  ...(kind === "converter" ? [{ href: "#visual-lab", label: t.visual?.title || (isDe ? "Live-Zeitumrechnung" : "Visual Lab") }] : []),
   ...(showEditorialSections ? [
-    { href: "#how-it-works", label: "How the conversion works" },
-    { href: "#conversion-examples", label: "Conversion examples" },
-    { href: "#source-notes", label: "Sources and maintenance" },
+    { href: "#how-it-works", label: isDe ? "Berechnungsmethode" : "How the conversion works" },
+    { href: "#conversion-examples", label: isDe ? "Umrechnungsbeispiele" : "Conversion examples" },
+    ...(isDe ? [{ href: "#deutschland-gmt-new-york", label: "Deutschland, GMT & New York" }] : []),
+    { href: "#source-notes", label: isDe ? "Quellen & Datenpflege" : "Sources and maintenance" },
   ] : []),
   ...(kind !== "guide" && kind !== "difference" && kind !== "reverse" ? [
     { href: "#live-clocks", label: t.clocks.title },
@@ -373,6 +374,59 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
               <tr><td>{isDe ? "Umschalttermine im März/November" : isEs ? "Fechas de cambio estacional" : "November transition dates"}</td><td>{isDe ? "Exaktes Datum prüfen" : isEs ? "Verificar fecha exacta" : "Check the exact date"}</td><td>{isDe ? "Die Zeitverschiebung wechselt zwischen 4 und 5 Stunden." : isEs ? "El desfase cambia entre 4 y 5 horas según la fecha del cambio." : "The local offset changes near the daylight saving transition."}</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+    )}
+
+    {isDe && kind === "converter" && (
+      <section class="examples-section" id="deutschland-gmt-new-york" aria-labelledby="de-ny-vergleich-title" style="padding-top: 20px; padding-bottom: 25px;">
+        <div>
+          <h2 id="de-ny-vergleich-title">Deutschland, GMT und New York im Vergleich</h2>
+          <p>
+            Für Nutzer in Deutschland, Österreich und der Schweiz ist die Beziehung zwischen der mitteleuropäischen Zeit (MEZ/MESZ), Greenwich Mean Time (GMT) und der US-Ostküste (New York / Eastern Time) von zentraler Bedeutung für die tägliche Terminplanung:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Vergleich der Zeitzonen zwischen Deutschland, GMT und New York</caption>
+              <thead>
+                <tr>
+                  <th>Standort / Zone</th>
+                  <th>Winterzeit (Normalzeit)</th>
+                  <th>Sommerzeit (DST)</th>
+                  <th>Differenz zu GMT</th>
+                  <th>Differenz zu New York</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Deutschland (Berlin / MEZ / MESZ)</strong></td>
+                  <td>MEZ (UTC+1)</td>
+                  <td>MESZ (UTC+2)</td>
+                  <td>+1 Std. / +2 Std.</td>
+                  <td>6 Std. voraus (Normal)</td>
+                </tr>
+                <tr>
+                  <td><strong>Greenwich Mean Time (GMT / UTC)</strong></td>
+                  <td>GMT (UTC+0)</td>
+                  <td>GMT (UTC+0, ganzjährig)</td>
+                  <td>0 Std. (Referenz)</td>
+                  <td>5 Std. / 4 Std. voraus</td>
+                </tr>
+                <tr>
+                  <td><strong>New York (Eastern Time / EST / EDT)</strong></td>
+                  <td>EST (UTC−5)</td>
+                  <td>EDT (UTC−4)</td>
+                  <td>5 Std. / 4 Std. zurück</td>
+                  <td>0 Std. (Referenz)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-top: 1.25rem;">
+            <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">
+              <strong>Wichtiger Hinweis zu den Sommerzeit-Umschaltterminen:</strong> Die Europäische Union und die USA stellen ihre Uhren an unterschiedlichen Sonntagen um. In den USA beginnt die Sommerzeit (EDT) am <strong>zweiten Sonntag im März</strong>, während Europa (MESZ) erst am <strong>letzten Sonntag im März</strong> umstellt. Im Herbst enden die Sommerzeiten ebenfalls versetzt (Europa: letzter Sonntag im Oktober; USA: erster Sonntag im November). In diesen zwei- bis dreiwöchigen Übergangsphasen im Frühjahr und Herbst beträgt der Zeitunterschied zwischen Deutschland und New York <strong>nur 5 Stunden statt der regulären 6 Stunden</strong>.
+            </p>
+          </div>
         </div>
       </section>
     )}

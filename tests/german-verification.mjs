@@ -10,7 +10,7 @@ const primaryPages = [
   {
     path: path.join(deRoot, "index.html"),
     url: "https://gmttoestconverter.com/de/",
-    expectedTitle: "GMT zu EST Umrechner – GMT in EST/EDT umrechnen",
+    expectedTitle: "GMT zu EST Umrechner – Aktuelle Uhrzeit & 24-Stunden-Tabelle",
     expectedH1: "GMT zu EST Umrechner",
     expectedDesc: "GMT zu EST einfach und schnell umrechnen. Sehen Sie den Zeitunterschied, aktuelle GMT- und EST/EDT-Uhrzeiten sowie eine 24-Stunden-Umrechnungstabelle."
   },

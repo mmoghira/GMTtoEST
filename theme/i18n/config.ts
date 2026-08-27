@@ -343,6 +343,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
 
   const description = code !== "en" &&
     labelKey !== "home" &&
+    labelKey !== "gmtToEst" &&
     baseMeta.description === t.pages?.home?.description
       ? `${baseMeta.title}. ${baseMeta.description}`
       : baseMeta.description;
