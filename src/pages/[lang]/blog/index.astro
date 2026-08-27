@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "theme/layouts/BaseLayout.astro";
-import { getPageMeta, siteUrl, languages, getLang } from "theme/i18n/config";
+import { getPageMeta, siteUrl, languages, getLang, getTranslation } from "theme/i18n/config";
 import { getCollection } from "astro:content";
 import { ensureKeywordInAlt, getPrimaryKeyword } from "theme/utils/seo";
 
@@ -13,13 +13,15 @@ export async function getStaticPaths() {
 }
 
 const lang = getLang(Astro.params.lang);
-const metaBase = getPageMeta(lang.code, "home");
+const t = getTranslation(lang.code);
+const isDe = lang.code === "de";
+
 const meta = {
-  title: "Blog - GMT to EST",
-  description: "Read the latest updates and articles about GMT and EST timezone conversions.",
-  keywords: "GMT to EST blog, EST to GMT guides, timezone conversion articles, daylight saving time",
+  title: isDe ? "Blog & Ratgeber | GMT zu EST Umrechner" : (t.pages?.blog?.title || `Blog - ${t.brand || "GMT to EST"}`),
+  description: isDe ? "Aktuelle Leitfäden, Zeitzonen-Updates und praktische Tipps zur Umrechnung zwischen GMT und Eastern Time." : (t.pages?.blog?.description || "Read the latest updates and articles about GMT and EST timezone conversions."),
+  keywords: isDe ? "GMT zu EST Blog, GMT EST Ratgeber, Zeitzonenumrechnung, Sommerzeit Artikel" : "GMT to EST blog, EST to GMT guides, timezone conversion articles, daylight saving time",
   image: "/assets/gmt-to-est-converter-featured-image-960.avif",
-  imageAlt: "GMT to EST Converter blog - timezone guides and conversion tips",
+  imageAlt: isDe ? "GMT zu EST Blog und Zeitzonen-Ratgeber" : "GMT to EST Converter blog - timezone guides and conversion tips",
   robots: undefined
 };
 
@@ -33,12 +35,12 @@ const posts = allPosts
 
 <BaseLayout lang={lang.code} dir={lang.dir} title={meta.title} description={meta.description} slug="blog" meta={meta}>
   <section class="content blog-index" aria-labelledby="blog-title">
-    <h1 id="blog-title">Blog</h1>
-    <p>Read the latest updates, guides, and articles about GMT and EST timezones.</p>
+    <h1 id="blog-title">{isDe ? "Blog & Ratgeber" : (t.nav?.blog || "Blog")}</h1>
+    <p>{isDe ? "Aktuelle Leitfäden, Zeitzonen-Updates und praxisnahe Tipps zur Umrechnung zwischen GMT und Eastern Time." : "Read the latest updates, guides, and articles about GMT and EST timezones."}</p>
     
     <div class="blog-grid">
       {posts.length === 0 ? (
-        <p>No articles published yet. Check back soon!</p>
+        <p>{isDe ? "Noch keine Artikel in dieser Sprache veröffentlicht." : "No articles published yet. Check back soon!"}</p>
       ) : (
         posts.map(post => {
           const slug = post.id.split('/').slice(1).join('/');
@@ -63,7 +65,7 @@ const posts = allPosts
                   {post.data.pubDate.toLocaleDateString(lang.code, { year: "numeric", month: "long", day: "numeric" })}
                 </time>
                 <p>{post.data.description}</p>
-                <a class="read-more" href={`/${lang.code}/blog/${slug}/`}>Read {post.data.title} &rarr;</a>
+                <a class="read-more" href={`/${lang.code}/blog/${slug}/`}>{isDe ? `Artikel lesen: ${post.data.title} \u2192` : `Read ${post.data.title} \u2192`}</a>
               </div>
             </article>
           );

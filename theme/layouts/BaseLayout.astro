@@ -111,12 +111,16 @@ const hreflangAlternates = isNoindexPage
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = (lang === "en" ? meta?.seoTitle : undefined) || title;
 const titleNeedsLongBrand = seoTitle.length < 30;
-const titleCanUseShortBrand = !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
-const brandedTitle = titleNeedsLongBrand
-  ? `${seoTitle} | GMT to EST Time Converter`
-  : titleCanUseShortBrand
-    ? `${seoTitle} | GMT to EST`
-    : seoTitle;
+const titleCanUseShortBrand = !["de", "es"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
+const brandedTitle = isDe
+  ? (titleNeedsLongBrand && !seoTitle.includes("GMT zu EST") ? `${seoTitle} | GMT zu EST Umrechner` : seoTitle)
+  : isEs
+    ? (titleNeedsLongBrand && !seoTitle.includes("GMT a EST") ? `${seoTitle} | Convertidor GMT a EST` : seoTitle)
+    : titleNeedsLongBrand
+      ? `${seoTitle} | GMT to EST Time Converter`
+      : titleCanUseShortBrand
+        ? `${seoTitle} | GMT to EST`
+        : seoTitle;
 const documentTitle = truncateSeoText(brandedTitle, 60);
 const descriptionWithContext = description.length < 70 ? `${title}. ${description}` : description;
 const descriptionExtensions: Record<string, string> = {
@@ -329,12 +333,18 @@ const comparisonSchema = isComparison ? [
     publisher: {
       "@type": "Organization",
       name: t.brand || "GMT to EST Converter",
+
+
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.svg`
       }
     },
-    articleBody: "Detailed timezone comparison between Greenwich Mean Time and Eastern Standard Time. Analyzing standard hours, seasonal shifts, and common scheduling pitfalls."
+    articleBody: isDe
+      ? "Detaillierter Zeitzonenvergleich zwischen Greenwich Mean Time (GMT) und Eastern Standard Time (EST/EDT). Analyse von Normalzeit, Sommerzeit-Verschiebungen und praktischer Terminplanung."
+      : isEs
+        ? "Comparativa detallada de zonas horarias entre Greenwich Mean Time y Eastern Standard Time. Análisis de horarios estándar, cambios estacionales y programación internacional."
+        : "Detailed timezone comparison between Greenwich Mean Time and Eastern Standard Time. Analyzing standard hours, seasonal shifts, and common scheduling pitfalls."
   }
 ] : [];
 
@@ -360,7 +370,11 @@ const guideSchema = isGuide ? [
         url: `${siteUrl}/logo.svg`
       }
     },
-    articleBody: "An educational hub regarding Coordinated Universal Time (UTC), Greenwich Mean Time (GMT), and Eastern Standard Time (EST). Explores DST history and offsets."
+    articleBody: isDe
+      ? "Umfassender Ratgeber zu koordinierter Weltzeit (UTC), Greenwich Mean Time (GMT) und Eastern Time (EST/EDT) mit historischer Entwicklung und Sommerzeit-Regeln."
+      : isEs
+        ? "Guía educativa sobre Tiempo Universal Coordinado (UTC), Greenwich Mean Time (GMT) y Eastern Standard Time (EST). Historia de los husos horarios y reglas de horario de verano."
+        : "An educational hub regarding Coordinated Universal Time (UTC), Greenwich Mean Time (GMT), and Eastern Standard Time (EST). Explores DST history and offsets."
   }
 ] : [];
 
@@ -371,7 +385,26 @@ const reverseSchema = isReverse ? [
     "@id": `${canonical}#howto`,
     name: seoTitle,
     description: description,
-    step: [
+    step: isDe ? [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "Eastern-Time-Status ermitteln",
+        text: "Prüfe, ob an der US-Ostküste aktuell Normalzeit (EST, UTC−5) oder Sommerzeit (EDT, UTC−4) gilt."
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "Zeitverschiebung anwenden",
+        text: "Addiere 5 Stunden zur EST-Uhrzeit (im Winter) bzw. 4 Stunden zur EDT-Uhrzeit (im Sommer), um die GMT-Zeit zu erhalten."
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "Ergebnis abgleichen",
+        text: "Überprüfe das berechnete GMT-Ergebnis anhand der 24-Stunden-Zeitskala für fehlerfreie Termine."
+      }
+    ] : [
       {
         "@type": "HowToStep",
         position: 1,

@@ -70,7 +70,7 @@ Viele Menschen, die nach "GMT zu EST" suchen, vergessen diese saisonale Zeitumst
 | 18:00 | 13:00 | 14:00 |
 | 21:00 | 16:00 | 17:00 |
 
-Nutzen Sie für datumsabhängige Umrechnungen unseren [GMT to EST Converter](/), der automatisch den korrekten Sommerzeit-Offset für das gewählte Datum berechnet.
+Nutzen Sie für datumsabhängige Umrechnungen unseren [GMT zu EST Umrechner](/de/), der automatisch den korrekten Sommerzeit-Offset für das gewählte Datum berechnet.
 
 ## Schnelle Umrechnungsregeln
 
