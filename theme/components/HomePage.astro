@@ -32,7 +32,10 @@ const activeTopics = rawTopics.map((topic: any) => ({
   text: replaceTemplates(topic.text, replacements)
 }));
 
-const pageH1 = replaceTemplates(title || t.pages[labelKey]?.title || "GMT to EST Converter", replacements);
+const pageH1 = replaceTemplates(meta.h1 || t.pages[labelKey]?.h1 || title || t.pages[labelKey]?.title || "GMT to EST Converter", replacements);
+
+const isEs = lang === "es";
+const isDe = lang === "de";
 
 const pageIntro = replaceTemplates(t[`intro_${activeKey}`] || t[`intro_${kind}`] || description, replacements);
 const pageExplanation = replaceTemplates(t[`explanation_${activeKey}`] || t[`explanation_${kind}`] || "", replacements);
@@ -40,19 +43,19 @@ const pageConclusion = replaceTemplates(t[`conclusion_${activeKey}`] || t[`concl
 const pageCTA = replaceTemplates(t[`cta_${activeKey}`] || t[`cta_${kind}`] || "", replacements);
 
 const explanationHeadingMap = {
-  difference: lang === "es" ? "Análisis de la diferencia horaria" : "Analyzing the Time Gap",
-  reverse: lang === "es" ? "Cómo funciona la conversión inversa" : "How the Reverse Calculation Works",
-  guide: lang === "es" ? "Evolución histórica y estándares" : "Evolution of Global Time Standards",
-  dynamic: lang === "es" ? "Cómo calcular la hora entre {from} y {to}" : "Calculating Time Between {from} and {to}"
+  difference: isDe ? "Analyse des Zeitunterschieds" : isEs ? "Análisis de la diferencia horaria" : "Analyzing the Time Gap",
+  reverse: isDe ? "So funktioniert die Rückrechnung" : isEs ? "Cómo funciona la conversión inversa" : "How the Reverse Calculation Works",
+  guide: isDe ? "Historische Entwicklung und Zeitzonen-Standards" : isEs ? "Evolución histórica y estándares" : "Evolution of Global Time Standards",
+  dynamic: isDe ? "Uhrzeit zwischen {from} und {to} berechnen" : isEs ? "Cómo calcular la hora entre {from} y {to}" : "Calculating Time Between {from} and {to}"
 };
 const pageExplanationHeading = `${title}: ${replaceTemplates(explanationHeadingMap[kind] || "Understanding the timezone difference", replacements)}`;
 
 const conclusionHeadingMap = {
-  converter: lang === "es" ? "Conclusión y Siguiente Paso" : "Quick Summary & Next Steps",
-  difference: lang === "es" ? "Resumen de la Diferencia" : "Key Takeaways on Time Differences",
-  reverse: lang === "es" ? "Resumen de Conversión Inversa" : "Final Thoughts on Reverse Scheduling",
-  guide: lang === "es" ? "Resumen del Aprendizaje" : "Time Standards Wrap-Up",
-  dynamic: lang === "es" ? "Resumen de {from} a {to}" : "Summary of {from} to {to} Conversion"
+  converter: isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Conclusión y Siguiente Paso" : "Quick Summary & Next Steps",
+  difference: isDe ? "Wichtigste Erkenntnisse zum Zeitunterschied" : isEs ? "Resumen de la Diferencia" : "Key Takeaways on Time Differences",
+  reverse: isDe ? "Zusammenfassung der Rückrechnung" : isEs ? "Resumen de Conversión Inversa" : "Final Thoughts on Reverse Scheduling",
+  guide: isDe ? "Zusammenfassung der Zeitzonen-Grundlagen" : isEs ? "Resumen del Aprendizaje" : "Time Standards Wrap-Up",
+  dynamic: isDe ? "Zusammenfassung der Umrechnung von {from} in {to}" : isEs ? "Resumen de {from} a {to}" : "Summary of {from} to {to} Conversion"
 };
 const pageConclusionHeading = replaceTemplates(conclusionHeadingMap[kind] || conclusionHeadingMap.converter, replacements);
 
@@ -204,7 +207,7 @@ const mapDiagram = mapDiagramMap[labelKey] || mapDiagramMap[kind] || "/assets/wo
 
 function formatChartHour(hour: number, currentLang = "en") {
   const normalized = ((hour % 24) + 24) % 24;
-  if (currentLang === "es") {
+  if (currentLang === "es" || currentLang === "de") {
     return `${String(normalized).padStart(2, "0")}:00`;
   }
   const period = normalized < 12 ? "AM" : "PM";
@@ -214,11 +217,10 @@ function formatChartHour(hour: number, currentLang = "en") {
 
 function easternChartValue(gmtHour: number, offset: number, label: string, currentLang = "en") {
   const easternHour = gmtHour + offset;
-  const prevDayText = currentLang === "es" ? " (día anterior)" : " (prev day)";
+  const prevDayText = currentLang === "de" ? " (Vortag)" : currentLang === "es" ? " (día anterior)" : " (prev day)";
   return `${formatChartHour(easternHour, currentLang)} ${label}${easternHour < 0 ? prevDayText : ""}`;
 }
 
-const isEs = lang === "es";
 const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
   gmt: `${String(hour).padStart(2, "0")}:00 GMT`,
   eastern: `${easternChartValue(hour, -5, "EST", lang)} / ${easternChartValue(hour, -4, "EDT", lang)}`,
@@ -330,17 +332,17 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     <section class="examples-section" id="comparison-table" aria-labelledby="comparison-table-title" style="padding-top: 20px; padding-bottom: 25px;">
       <div>
-        <h2 id="comparison-table-title">{isEs ? "Resumen de la diferencia horaria actual" : "GMT to EST Current Offset Summary"}</h2>
-        <p>{isEs ? "Un resumen rápido de las diferencias horarias entre GMT y Eastern Time durante el horario estándar y el horario de verano." : "A quick summary of standard and daylight saving offsets between GMT and Eastern Time."}</p>
+        <h2 id="comparison-table-title">{isDe ? "Übersicht der aktuellen Zeitdifferenz" : isEs ? "Resumen de la diferencia horaria actual" : "GMT to EST Current Offset Summary"}</h2>
+        <p>{isDe ? "Eine kompakte Übersicht der Normalzeit- und Sommerzeit-Verschiebungen zwischen GMT und Eastern Time." : isEs ? "Un resumen rápido de las diferencias horarias entre GMT y Eastern Time durante el horario estándar y el horario de verano." : "A quick summary of standard and daylight saving offsets between GMT and Eastern Time."}</p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">{isEs ? "Resumen de la diferencia horaria entre GMT y Eastern Time" : "GMT to EST Standard and Daylight Saving Offset Summary"}</caption>
+            <caption class="sr-only">{isDe ? "Übersicht der Zeitunterschiede zwischen GMT und Eastern Time nach Normal- und Sommerzeit" : isEs ? "Resumen de la diferencia horaria entre GMT y Eastern Time" : "GMT to EST Standard and Daylight Saving Offset Summary"}</caption>
             <thead>
-              <tr><th>{isEs ? "Zona horaria" : "Time Zone"}</th><th>{isEs ? "Hora estándar" : "Standard Time Offset"}</th><th>{isEs ? "Horario de verano" : "Daylight Saving Offset"}</th><th>{isEs ? "Estado" : "Status"}</th></tr>
+              <tr><th>{isDe ? "Zeitzone" : isEs ? "Zona horaria" : "Time Zone"}</th><th>{isDe ? "Normalzeit (Winter)" : isEs ? "Hora estándar" : "Standard Time Offset"}</th><th>{isDe ? "Sommerzeit (Sommer)" : isEs ? "Horario de verano" : "Daylight Saving Offset"}</th><th>{isDe ? "Status" : isEs ? "Estado" : "Status"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>Greenwich Mean Time (GMT)</td><td>UTC+0</td><td>UTC+0</td><td>{isEs ? "Permanente" : "Permanent"}</td></tr>
-              <tr><td>Eastern Standard Time (EST)</td><td>UTC-5</td><td>UTC-4 (EDT)</td><td>{isEs ? "Estacional" : "Seasonal"}</td></tr>
+              <tr><td>Greenwich Mean Time (GMT)</td><td>UTC+0</td><td>UTC+0</td><td>{isDe ? "Ganzjährig" : isEs ? "Permanente" : "Permanent"}</td></tr>
+              <tr><td>Eastern Standard Time (EST)</td><td>UTC-5</td><td>UTC-4 (EDT)</td><td>{isDe ? "Saisonal" : isEs ? "Estacional" : "Seasonal"}</td></tr>
             </tbody>
           </table>
         </div>
@@ -384,7 +386,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="other-tools" aria-labelledby="other-tools">
-      <h2 id="other-tools">{t.otherTools?.title || (isEs ? "Herramientas y funciones populares" : `${seoKeyword} Popular Time Zone Tools`)}</h2>
+      <h2 id="other-tools">{t.otherTools?.title || (isDe ? "Beliebte Zeitzonen-Tools" : isEs ? "Herramientas y funciones populares" : `${seoKeyword} Popular Time Zone Tools`)}</h2>
       <div class="related-grid">
         {activeRelatedResources.map((item) => (
           <article class="related-card">
@@ -396,10 +398,10 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section aria-labelledby="chart">
-      <h2 id="chart">{t.chart?.title || (isEs ? "Tabla de conversión" : `${seoKeyword} Chart`)}</h2>
+      <h2 id="chart">{t.chart?.title || (isDe ? "24-Stunden-Umrechnungstabelle" : isEs ? "Tabla de conversión" : `${seoKeyword} Chart`)}</h2>
       <div class="table-wrap">
-        <table id="gmt-est-chart" aria-label={isEs ? "Tabla de conversión GMT a EST" : "GMT to EST conversion chart"}>
-          <caption class="sr-only">{isEs ? "Tabla de conversión horaria para cada hora del día" : `${seoKeyword} conversion grid mapping every hour of the day`}</caption>
+        <table id="gmt-est-chart" aria-label={isDe ? "24-Stunden-Umrechnungstabelle GMT zu EST" : isEs ? "Tabla de conversión GMT a EST" : "GMT to EST conversion chart"}>
+          <caption class="sr-only">{isDe ? "Stündliche Umrechnungstabelle von GMT in EST und EDT" : isEs ? "Tabla de conversión horaria para cada hora del día" : `${seoKeyword} conversion grid mapping every hour of the day`}</caption>
           <thead><tr><th>GMT</th><th>{t.chart.eastern}</th><th>{t.chart.offset}</th></tr></thead>
           <tbody>
             {gmtEstChartRows.map((row) => (
@@ -412,16 +414,16 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </tbody>
         </table>
       </div>
-      <p class="chart-note">{isEs ? "Durante el horario de verano (de mediados de marzo a principios de noviembre), la hora del Este utiliza EDT (UTC−4). Fuera de este período, utiliza EST (UTC−5)." : "During daylight saving time (mid-March to early November), Eastern Time uses EDT (UTC−4). Outside this period, EST (UTC−5) applies."}</p>
+      <p class="chart-note">{isDe ? "Während der nordamerikanischen Sommerzeit (März bis November) gilt an der Ostküste EDT (UTC−4). Außerhalb dieses Zeitraums gilt die Normalzeit EST (UTC−5)." : isEs ? "Durante el horario de verano (de mediados de marzo a principios de noviembre), la hora del Este utiliza EDT (UTC−4). Fuera de este período, utiliza EST (UTC−5)." : "During daylight saving time (mid-March to early November), Eastern Time uses EDT (UTC−4). Outside this period, EST (UTC−5) applies."}</p>
     </section>
 
     <section aria-labelledby="strip">
-      <h2 id="strip">{t.strip?.title || (isEs ? "Solapamiento de la jornada laboral" : `${seoKeyword} Workday Overlap`)}</h2>
+      <h2 id="strip">{t.strip?.title || (isDe ? "Gemeinsame Geschäftszeiten" : isEs ? "Solapamiento de la jornada laboral" : `${seoKeyword} Workday Overlap`)}</h2>
       <div class="time-strip" id="timeStrip" aria-label={t.strip.aria}></div>
     </section>
 
     <section class="use-cases" aria-labelledby="uses">
-      <h2 id="uses">{t.useCases?.title || (isEs ? "Casos de uso" : `${seoKeyword} Use Cases`)}</h2>
+      <h2 id="uses">{t.useCases?.title || (isDe ? "Praktische Anwendungsbereiche" : isEs ? "Casos de uso" : `${seoKeyword} Use Cases`)}</h2>
       {activeUseCases.map((item: any) => (
         <article><h3>{item.title}</h3><p>{item.text}</p></article>
       ))}
@@ -429,7 +431,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {activeTopics && activeTopics.length > 0 && (
       <section class="content" aria-labelledby="topics">
-        <h2 id="topics">{t.topics?.title || (isEs ? "Información sobre zonas horarias" : `${seoKeyword} Time Zone Authority`)}</h2>
+        <h2 id="topics">{t.topics?.title || (isDe ? "Hintergrundwissen & Zeitzonen-Fakten" : isEs ? "Información sobre zonas horarias" : `${seoKeyword} Time Zone Authority`)}</h2>
         {activeTopics.map((topic: any) => (
           <article>
             <h3>{topic.title}</h3>
@@ -440,7 +442,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     )}
 
     <section class="faq" aria-labelledby="faq">
-      <h2 id="faq">{t.faqs?.title || (isEs ? "Preguntas frecuentes" : `${seoKeyword} FAQs`)}</h2>
+      <h2 id="faq">{t.faqs?.title || (isDe ? "Häufig gestellte Fragen (FAQ)" : isEs ? "Preguntas frecuentes" : `${seoKeyword} FAQs`)}</h2>
       {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
     </section>
 
@@ -451,9 +453,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </figure>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading || (isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
+      <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>{isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
+      <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
