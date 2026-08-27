@@ -240,9 +240,13 @@
       const diffHours = Math.abs((offsetMinutes(date, targetZone) - offsetMinutes(date, sourceZone)) / 60);
       const z1 = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       const z2 = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
+      if (isDe) {
+        const hoursText = diffHours === 1 ? "1 Stunde" : diffHours + " Stunden";
+        return z2 + " liegt an diesem Datum " + hoursText + " hinter " + z1 + ". Durch die Sommerzeitumstellung können sich lokale Zeitabstände verschieben, weshalb eine datumsbasierte Umrechnung wichtig ist.";
+      }
       if (isEs) {
         const hoursText = diffHours === 1 ? "1 hora" : diffHours + " horas";
-        return z2 + " est� " + hoursText + " por detr�s de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es importante realizar una conversi�n basada en la fecha.";
+        return z2 + " está " + hoursText + " por detrás de " + z1 + " en esta fecha. Los cambios de horario de verano pueden crear horas omitidas o repetidas, por lo que es importante realizar una conversión basada en la fecha.";
       }
       return z2 + " is " + diffHours + " hours difference from " + z1 + " on this date. DST transitions can create skipped or repeated local hours, so date-aware conversion is essential.";
     }
@@ -297,9 +301,7 @@
           : isEs
           ? (diffHours === 1 ? "Diferencia de 1 hora" : "Diferencia de " + diffHours + " horas")
           : (diffHours + "h difference");
-        offsetBadge.textContent = isEs
-          ? diffBadgeText + " � " + targetAbbr
-          : diffBadgeText + " - " + targetAbbr;
+        offsetBadge.textContent = diffBadgeText + " • " + targetAbbr;
       }
 
       buildTable(date);
