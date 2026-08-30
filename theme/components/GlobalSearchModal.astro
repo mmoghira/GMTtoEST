@@ -1,5 +1,7 @@
 ---
 // Global Search Modal Component (Module 14 - Intelligent Search)
+import { pageUrl } from "theme/i18n/config";
+
 const { lang = "en", t } = Astro.props;
 const isEs = lang === "es";
 const isDe = lang === "de";
@@ -16,7 +18,7 @@ const footerNav = isDe ? "Navigation: ↑ ↓ zum Auswählen" : isEs ? "Navegaci
 const footerOpen = isDe ? "Öffnen: ↵ Enter" : isEs ? "Abrir: ↵ Enter" : "Open: ↵ Enter";
 const footerClose = isDe ? "Schließen: ESC" : isEs ? "Cerrar: ESC" : "Close: ESC";
 ---
-<div id="global-search-modal" class="search-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+<div id="global-search-modal" class="search-modal-backdrop" data-lang={lang} aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
   <div class="search-modal-container">
     <div class="search-modal-header">
       <div class="search-input-wrapper">
@@ -41,10 +43,10 @@ const footerClose = isDe ? "Schließen: ESC" : isEs ? "Cerrar: ESC" : "Close: ES
       <div id="search-quick-links" class="search-categories">
         <div class="category-title">{categoryTitle}</div>
         <div class="quick-tags">
-          <a href="/world-clock/" class="search-tag">{tagWorldClock}</a>
-          <a href="/meeting-planner/" class="search-tag">{tagMeetingPlanner}</a>
-          <a href="/time-difference-calculator/" class="search-tag">{tagTimeDiff}</a>
-          <a href="/developer-tools/" class="search-tag">{tagDevTools}</a>
+          <a href={pageUrl(lang, "world-clock")} class="search-tag">{tagWorldClock}</a>
+          <a href={pageUrl(lang, "meeting-planner")} class="search-tag">{tagMeetingPlanner}</a>
+          <a href={pageUrl(lang, "time-difference-calculator")} class="search-tag">{tagTimeDiff}</a>
+          <a href={pageUrl(lang, "developer-tools")} class="search-tag">{tagDevTools}</a>
           <a href="/time-zone-map/" class="search-tag">{tagMap}</a>
           <a href="/travel-time-planner/" class="search-tag">{tagTravel}</a>
         </div>
@@ -342,15 +344,28 @@ const footerClose = isDe ? "Schließen: ESC" : isEs ? "Cerrar: ESC" : "Close: ES
         return;
       }
 
-      resultsContainer.innerHTML = filtered.map(item => `
-        <a href="${item.url}" class="result-item">
+      const currentLang = modal.getAttribute('data-lang') || 'en';
+      const localizedConverters = new Set([
+        '/world-clock/', '/meeting-planner/', '/time-difference-calculator/', '/developer-tools/',
+        '/event-time-converter/', '/business-hours-overlap/',
+        '/gmt-to-est/', '/est-to-gmt/', '/gmt-to-pst/', '/gmt-to-cst/', '/gmt-to-utc/',
+        '/ist-to-est/', '/bst-to-est/', '/cet-to-est/', '/gmt-vs-est/'
+      ]);
+
+      resultsContainer.innerHTML = filtered.map(item => {
+        const itemUrl = (currentLang !== 'en' && localizedConverters.has(item.url))
+          ? `/${currentLang}${item.url}`
+          : item.url;
+        return `
+        <a href="${itemUrl}" class="result-item">
           <div>
             <div class="result-title">${item.title}</div>
             <div class="result-desc">${item.desc}</div>
           </div>
           <span class="result-badge">${item.category}</span>
         </a>
-      `).join('');
+      `;
+      }).join('');
     });
   });
 </script>

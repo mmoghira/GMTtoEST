@@ -24,6 +24,9 @@ const allExistingRoutes = new Set(allHtmlFiles.map(f => {
   const rel = path.relative(root, path.dirname(f)).replaceAll("\\", "/");
   return `/${rel ? `${rel}/` : ""}`;
 }));
+allExistingRoutes.add("/sitemap-index.xml");
+allExistingRoutes.add("/sitemap.xml");
+allExistingRoutes.add("/sitemap-0.xml");
 
 const vercelJson = JSON.parse(fs.readFileSync("vercel.json", "utf8"));
 const redirects = vercelJson.redirects || [];
@@ -102,10 +105,12 @@ for (const file of deHtmlFiles) {
   }
 
   // 6. Internal links
-  const anchors = [...html.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)];
+  const langCodes = new Set(['EN', 'ES', 'DE', 'FR', 'JA', 'ZH', 'HI', 'AR', 'PT', 'KO', 'IT', 'TR', 'UR', 'BN', 'VI', 'TH', 'ID', 'FA', 'PL']);
+  const anchors = [...html.matchAll(/<a\b([^>]*)href="([^"]*)"([^>]*)>([\s\S]*?)<\/a>/gi)];
   for (const m of anchors) {
-    const href = m[1];
-    const anchorText = text(m[2]);
+    const fullTag = m[1] + m[3];
+    const href = m[2];
+    const anchorText = text(m[4]);
 
     if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("https://") || href.startsWith("http://")) {
       continue;
@@ -118,7 +123,9 @@ for (const file of deHtmlFiles) {
     }
 
     // Check if link goes to English page when German equivalent exists
-    if (!targetPath.startsWith("/de/")) {
+    // (excluding intentional language switcher buttons and sitemap cross-language links with hreflang)
+    const isLangSwitch = langCodes.has(anchorText) || /hreflang=/i.test(fullTag);
+    if (!isLangSwitch && !targetPath.startsWith("/de/")) {
       const deTarget = `/de${targetPath}`;
       if (allExistingRoutes.has(deTarget)) {
         issues.englishLinksOnGermanPages.push({ from: route, href, suggestedDe: deTarget, text: anchorText });
