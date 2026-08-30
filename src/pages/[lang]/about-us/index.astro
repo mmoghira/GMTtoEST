@@ -7,9 +7,12 @@ export function getStaticPaths() {
 }
 
 const lang = getLang(Astro.params.lang);
+const isDe = lang.code === "de";
 const metaBase = getPageMeta(lang.code, "about");
 const meta = {
   ...metaBase,
+  title: isDe ? "Über uns – GMT zu EST Umrechner" : metaBase.title,
+  description: isDe ? "Erfahren Sie mehr über unsere Mission: Präzise, datumsgenaue Zeitzonenumrechnungen zwischen GMT, EST, EDT und weltweiten Zeitzonen." : metaBase.description,
   keywords: "about gmt to est, about GMTtoEST, about us GMT to EST, timezone converter about",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -29,23 +32,25 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter"
     },
     about: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "GMT to EST Converter",
-      url: siteUrl,
+      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter",
+      url: `${siteUrl}/${isDe ? "de/" : ""}`,
       logo: `${siteUrl}/assets/logo.png`,
       email: "contact@gmttoestconverter.com",
-      description: "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
+      description: isDe
+        ? "Kostenloser, präziser Zeitzonenumrechner und Ratgeber für GMT- und Eastern Time (EST/EDT) Umrechnungen."
+        : "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
       foundingDate: "2024"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: "About Us", item: pageUrl }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Über uns" : "About Us", item: pageUrl }
       ]
     }
   }
@@ -56,10 +61,22 @@ const schema = [
   <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
   <section class="content" aria-labelledby="about">
     <h1 id="about">{meta.title}</h1>
-    <p>GMT to EST Converter provides fast, date-aware timezone conversions between GMT (UTC) and Eastern Time (EST/EDT). Our mission is to make scheduling across time zones simple and reliable.</p>
-    <h2>Our approach</h2>
-    <p>We use the IANA timezone rules (for example, <code>America/New_York</code>) to account for daylight saving transitions. The converter shows whether a result is EST or EDT and the exact offset for the selected date.</p>
-    <h2>Contribute</h2>
-    <p>If you'd like to help with translations, report an issue, or suggest improvements, please visit the <a href={`/${lang.code}/contact-us/`}>Contact</a> page.</p>
+    {isDe ? (
+      <>
+        <p>Der GMT zu EST Umrechner bietet schnelle, datumsgenaue Zeitzonenumrechnungen zwischen Greenwich Mean Time (GMT / UTC) und Eastern Time (EST / EDT). Unsere Mission ist es, die internationale Terminplanung über Zeitzonen hinweg einfach, transparent und fehlerfrei zu gestalten.</p>
+        <h2>Unsere Methodik</h2>
+        <p>Wir verwenden die offiziellen IANA-Zeitzonenregeln (wie z. B. <code>America/New_York</code> und <code>Europe/Berlin</code>), um Sommerzeitumstellungen automatisch und sekundengenau zu berücksichtigen. Unser Umrechner zeigt für jedes gewählte Datum sofort an, ob Standardzeit (EST, UTC−5) oder Sommerzeit (EDT, UTC−4) gilt.</p>
+        <h2>Mitwirken & Feedback</h2>
+        <p>Möchten Sie einen Fehler melden, Feedback geben oder Verbesserungsvorschläge einbringen? Nutzen Sie gern unsere <a href={`/${lang.code}/contact-us/`}>Kontaktseite</a>.</p>
+      </>
+    ) : (
+      <>
+        <p>GMT to EST Converter provides fast, date-aware timezone conversions between GMT (UTC) and Eastern Time (EST/EDT). Our mission is to make scheduling across time zones simple and reliable.</p>
+        <h2>Our approach</h2>
+        <p>We use the IANA timezone rules (for example, <code>America/New_York</code>) to account for daylight saving transitions. The converter shows whether a result is EST or EDT and the exact offset for the selected date.</p>
+        <h2>Contribute</h2>
+        <p>If you'd like to help with translations, report an issue, or suggest improvements, please visit the <a href={`/${lang.code}/contact-us/`}>Contact</a> page.</p>
+      </>
+    )}
   </section>
 </BaseLayout>

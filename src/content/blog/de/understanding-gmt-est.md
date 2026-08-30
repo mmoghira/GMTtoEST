@@ -55,7 +55,7 @@ Vom **zweiten Sonntag im März** bis zum **ersten Sonntag im November** stellen 
 
 Das bedeutet konkret:
 - **November bis März (Winter):** GMT ist 5 Stunden vor der Eastern Time (EST)
-- **März bis November (Sommer):** GMT is 4 Stunden vor der Eastern Time (EDT)
+- **März bis November (Sommer):** GMT ist 4 Stunden vor der Eastern Time (EDT)
 
 Viele Menschen, die nach "GMT zu EST" suchen, vergessen diese saisonale Zeitumstellung. Prüfen Sie daher immer, ob das gewünschte Datum in die Standard- oder Sommerzeit fällt.
 

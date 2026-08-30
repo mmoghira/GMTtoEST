@@ -77,13 +77,20 @@ const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
 const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
 let computedHreflangCodes = hreflangCodes;
 
+const globalStaticSlugs = [
+  "terms-of-service",
+  "contact-us",
+  "about-us",
+  "author",
+  "author/jackie-bruce",
+  "privacy-policy",
+  "disclaimer",
+  "sitemap"
+];
+
 if (!hreflangCodes) {
-  if (mainTranslatedSlugs.includes(slug)) {
+  if (mainTranslatedSlugs.includes(slug) || globalStaticSlugs.includes(slug)) {
     computedHreflangCodes = languages.map((item) => item.code);
-  } else if (slug === "terms-of-service") {
-    computedHreflangCodes = ["en", "ja"];
-  } else if (slug === "contact-us") {
-    computedHreflangCodes = ["en", "th"];
   } else if (slug === "blog") {
     computedHreflangCodes = ["en", "zh", "ar", "ko", "de", "it", "fa", "bn", "ru"];
   } else if (pages.some((p: any) => p.slug === slug)) {
@@ -156,26 +163,26 @@ const preloadImageType = meta?.preloadImageType || "image/avif";
 
 // Navigation structure for schema
 const navItems = [
-  { url: homePathResolved, name: t.pages?.gmtToEst?.title || (isEs ? "Convertidor GMT a EST" : "GMT to EST Converter"), position: 1 },
-  { url: pageUrl(lang, "est-to-gmt"), name: t.pages?.estToGmt?.title || (isEs ? "Convertidor EST a GMT" : "EST to GMT Converter"), position: 2 },
-  { url: pageUrl(lang, "gmt-vs-est"), name: t.pages?.gmtVsEst?.title || (isEs ? "Diferencia entre GMT y EST" : "GMT vs EST Difference"), position: 3 },
-  { url: pageUrl(lang, "time-zone-guide"), name: t.pages?.guide?.title || (isEs ? "Guía de zonas horarias" : "Time Zone Guide"), position: 4 }
+  { url: homePathResolved, name: t.pages?.gmtToEst?.title || (isEs ? "Convertidor GMT a EST" : isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter"), position: 1 },
+  { url: pageUrl(lang, "est-to-gmt"), name: t.pages?.estToGmt?.title || (isEs ? "Convertidor EST a GMT" : isDe ? "EST in GMT umrechnen" : "EST to GMT Converter"), position: 2 },
+  { url: pageUrl(lang, "gmt-vs-est"), name: t.pages?.gmtVsEst?.title || (isEs ? "Diferencia entre GMT y EST" : isDe ? "GMT vs. EST Unterschied" : "GMT vs EST Difference"), position: 3 },
+  { url: pageUrl(lang, "time-zone-guide"), name: t.pages?.guide?.title || (isEs ? "Guía de zonas horarias" : isDe ? "Zeitzonen-Ratgeber" : "Time Zone Guide"), position: 4 }
 ];
 
 const companyFooterLinks = [
-  { href: lang === "ar" ? "/ar/about-us/" : (isEs ? "/es/about-us/" : "/about-us/"), label: t.footer.about || (isDe ? "Über uns" : isEs ? "Sobre nosotros" : "About Us") },
+  { href: isDe ? "/de/about-us/" : (lang === "ar" ? "/ar/about-us/" : (isEs ? "/es/about-us/" : "/about-us/")), label: t.footer.about || (isDe ? "Über uns" : isEs ? "Sobre nosotros" : "About Us") },
   { href: "/editorial-policy/", label: isDe ? "Redaktionsrichtlinien" : isEs ? "Política editorial" : "Editorial Policy" },
-  { href: lang === "th" ? "/th/contact-us/" : (isEs ? "/es/contact-us/" : "/contact-us/"), label: t.footer.contact || (isDe ? "Kontakt" : isEs ? "Contacto" : "Contact Us") },
-  { href: "/author/", label: t.footer.author || (isDe ? "Autor" : isEs ? "Autor" : "Author") },
-  { href: "/privacy-policy/", label: t.footer.privacy || (isDe ? "Datenschutz" : isEs ? "Política de privacidad" : "Privacy Policy") },
-  { href: "/privacy-policy/#privacy-rights", label: isDe ? "Datenschutzeinstellungen" : isEs ? "Opciones de privacidad" : "Privacy Choices" },
-  { href: lang === "ja" ? "/ja/terms-of-service/" : "/terms-of-service/", label: t.footer.terms || (isDe ? "Nutzungsbedingungen" : isEs ? "Términos del servicio" : "Terms of Service") },
-  { href: lang === "ar" ? "/ar/disclaimer/" : (isEs ? "/es/disclaimer/" : "/disclaimer/"), label: t.footer.disclaimer || (isDe ? "Haftungsausschluss" : isEs ? "Descargo de responsabilidad" : "Disclaimer") },
+  { href: isDe ? "/de/contact-us/" : (lang === "th" ? "/th/contact-us/" : (isEs ? "/es/contact-us/" : "/contact-us/")), label: t.footer.contact || (isDe ? "Kontakt" : isEs ? "Contacto" : "Contact Us") },
+  { href: isDe ? "/de/author/" : "/author/", label: t.footer.author || (isDe ? "Autor" : isEs ? "Autor" : "Author") },
+  { href: isDe ? "/de/privacy-policy/" : "/privacy-policy/", label: t.footer.privacy || (isDe ? "Datenschutz" : isEs ? "Política de privacidad" : "Privacy Policy") },
+  { href: isDe ? "/de/privacy-policy/#privacy-rights" : "/privacy-policy/#privacy-rights", label: isDe ? "Datenschutzeinstellungen" : isEs ? "Opciones de privacidad" : "Privacy Choices" },
+  { href: isDe ? "/de/terms-of-service/" : (lang === "ja" ? "/ja/terms-of-service/" : "/terms-of-service/"), label: t.footer.terms || (isDe ? "Nutzungsbedingungen" : isEs ? "Términos del servicio" : "Terms of Service") },
+  { href: isDe ? "/de/disclaimer/" : (lang === "ar" ? "/ar/disclaimer/" : (isEs ? "/es/disclaimer/" : "/disclaimer/")), label: t.footer.disclaimer || (isDe ? "Haftungsausschluss" : isEs ? "Descargo de responsabilidad" : "Disclaimer") },
   { href: "/glossary/", label: isDe ? "Glossar" : isEs ? "Glosario" : "Glossary" },
   { href: "/corporate-timezone-scheduling/", label: isDe ? "Unternehmensplanung" : isEs ? "Programación corporativa" : "Corporate Scheduling" },
   { href: "/flight-time-calculator/", label: isDe ? "Flugzeit-Rechner" : isEs ? "Calculadora de vuelos" : "Flight Calculator" },
   { href: "/time-zone-cheatsheet/", label: isDe ? "Übersicht" : isEs ? "Hoja de referencia" : "Cheatsheet" },
-  { href: "/sitemap/", label: t.footer.sitemap || (isDe ? "Sitemap" : isEs ? "Mapa del sitio" : "Sitemap") }
+  { href: isDe ? "/de/sitemap/" : "/sitemap/", label: t.footer.sitemap || (isDe ? "Sitemap" : isEs ? "Mapa del sitio" : "Sitemap") }
 ];
 
 const guideFooterLinks = isDe ? [
@@ -209,9 +216,10 @@ const geoFooterLinks = [
 const currentConverterLinks = [
   { href: pageUrl(lang, ""), label: isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : "GMT to EST Converter" },
   { href: pageUrl(lang, "est-to-gmt"), label: isDe ? "EST zu GMT Umrechner" : isEs ? "Convertidor EST a GMT" : "EST to GMT Converter" },
-  { href: pageUrl(lang, "est-to-pst"), label: isDe ? "EST zu PST Umrechner" : isEs ? "Convertidor EST a PST" : "EST to PST Converter" },
-  { href: pageUrl(lang, "est-to-cst"), label: isDe ? "EST zu CST Umrechner" : isEs ? "Convertidor EST a CST" : "EST to CST Converter" },
+  { href: pageUrl(lang, "pst-to-est"), label: isDe ? "PST zu EST Umrechner" : isEs ? "Convertidor PST a EST" : "PST to EST Converter" },
   { href: pageUrl(lang, "cst-to-est"), label: isDe ? "CST zu EST Umrechner" : isEs ? "Convertidor CST a EST" : "CST to EST Converter" },
+  { href: pageUrl(lang, "gmt-to-pst"), label: isDe ? "GMT zu PST Umrechner" : isEs ? "Convertidor GMT a PST" : "GMT to PST Converter" },
+  { href: pageUrl(lang, "gmt-to-cst"), label: isDe ? "GMT zu CST Umrechner" : isEs ? "Convertidor GMT a CST" : "GMT to CST Converter" },
   { href: pageUrl(lang, "pdt-to-est"), label: isDe ? "PDT zu EST Umrechner" : isEs ? "Convertidor PDT a EST" : "PDT to EST Converter" },
   { href: pageUrl(lang, "cdt-to-est"), label: isDe ? "CDT zu EST Umrechner" : isEs ? "Convertidor CDT a EST" : "CDT to EST Converter" },
   { href: pageUrl(lang, "mst-to-est"), label: isDe ? "MST zu EST Umrechner" : isEs ? "Convertidor MST a EST" : "MST to EST Converter" },

@@ -7,12 +7,13 @@ export function getStaticPaths() {
 }
 
 const lang = getLang(Astro.params.lang);
+const isDe = lang.code === "de";
 const email    = "contact@gmttoestconverter.com";
 const metaBase = getPageMeta(lang.code, "contact");
 const meta = {
   ...metaBase,
-  title: lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title,
-  description: lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description,
+  title: isDe ? "Kontakt | GMT zu EST Umrechner" : (lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title),
+  description: isDe ? "Kontaktieren Sie das Team von GMT zu EST Umrechner für Fragen, Feedback, Funktionswünsche oder Partnerschaften." : (lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description),
   keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -34,13 +35,13 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: lang.code === "th" ? "ติดต่อเรา" : "Contact Us", item: pageCanonical }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Kontakt" : (lang.code === "th" ? "ติดต่อเรา" : "Contact Us"), item: pageCanonical }
       ]
     }
   }
@@ -52,7 +53,77 @@ const schema = [
 
   <section class="contact-page" aria-labelledby="contact-heading">
 
-    {lang.code === "th" ? (
+    {isDe ? (
+      <div class="contact-header">
+        <h1 id="contact-heading">Kontakt (Contact Us)</h1>
+        <p>Haben Sie Fragen, Feedback oder Verbesserungsvorschläge? Füllen Sie das Formular aus und wir melden uns innerhalb von 1–2 Werktagen.</p>
+        <p class="contact-email-line">
+          Oder schreiben Sie uns direkt per E-Mail:
+          <a href={`mailto:${email}`}>{email}</a>
+        </p>
+      </div>
+
+      <!-- Success message -->
+      <div class="contact-success" id="contact-success" hidden>
+        <span class="success-icon">✓</span>
+        <div>
+          <strong>Nachricht erfolgreich gesendet!</strong>
+          <p>Vielen Dank für Ihre Kontaktaufnahme. Wir antworten in der Regel innerhalb von 1–2 Werktagen.</p>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <form
+        id="contact-form"
+        class="contact-form"
+        action={`https://formsubmit.co/${email}`}
+        method="POST"
+      >
+        <input type="hidden" name="_subject"  value="New contact from gmttoestconverter.com (DE)" />
+        <input type="hidden" name="_captcha"  value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next"     value={`${siteUrl}/${lang.code}/contact-us/?sent=1`} />
+        <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="cf-name">Vollständiger Name <span class="req">*</span></label>
+            <input id="cf-name" type="text" name="name" placeholder="Max Mustermann" required autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="cf-email">E-Mail-Adresse <span class="req">*</span></label>
+            <input id="cf-email" type="email" name="email" placeholder="name@beispiel.de" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-subject">Betreff <span class="req">*</span></label>
+          <select id="cf-subject" name="subject" required>
+            <option value="" disabled selected>Betreff auswählen…</option>
+            <option value="General Question">Allgemeine Anfrage</option>
+            <option value="Bug Report">Fehler melden (Bug Report)</option>
+            <option value="Feature Request">Funktionsvorschlag</option>
+            <option value="Translation Help">Übersetzungshilfe</option>
+            <option value="Partnership / Advertising">Kooperation / Partnerschaft</option>
+            <option value="Privacy / Data Request">Datenschutzanfrage</option>
+            <option value="Other">Sonstiges</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-message">Nachricht <span class="req">*</span></label>
+          <textarea id="cf-message" name="message" rows="6" placeholder="Wie können wir Ihnen helfen?…" required></textarea>
+        </div>
+
+        <button type="submit" class="form-submit">
+          Nachricht senden <span class="arrow">→</span>
+        </button>
+
+        <p class="form-note">
+          Mit dem Absenden erklären Sie sich mit unserer <a href={`/${lang.code}/privacy-policy/`}>Datenschutzerklärung</a> einverstanden.
+        </p>
+      </form>
+    ) : lang.code === "th" ? (
       <div class="contact-header">
         <h1 id="contact-heading">ติดต่อเรา (Contact Us)</h1>
         <p>มีคำถามหรือข้อเสนอแนะใช่หรือไม่? กรอกแบบฟอร์มด้านล่างแล้วเราจะติดต่อกลับภายใน 1–2 วันทำการ</p>

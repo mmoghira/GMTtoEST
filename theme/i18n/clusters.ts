@@ -1,4 +1,4 @@
-import { pages, pageUrl } from "./config";
+import { getConverterDisplayName, pages, pageUrl } from "./config";
 
 export interface ClusterLink {
   href: string;
@@ -161,6 +161,9 @@ const regionMap: Record<string, { countries: ClusterLink[]; cities: ClusterLink[
  * Returns 8-12 semantically related converter pages for a given slug.
  */
 export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterLink[] {
+  const isDe = lang === "de";
+  const isEs = lang === "es";
+
   const converterPages = pages.filter(
     (page: any) =>
       ["converter", "reverse", "difference", "dynamic"].includes(page.kind) &&
@@ -176,10 +179,12 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     const reverseSlug = `${zone}-to-est`;
     const reversePage = converterPages.find((p) => p.slug === reverseSlug);
     if (reversePage) {
+      const label = getConverterDisplayName(reversePage, lang) || (isDe ? `${zone.toUpperCase()} zu EST Umrechner` : isEs ? `Convertidor ${zone.toUpperCase()} a EST` : `${zone.toUpperCase()} to EST Converter`);
+      const description = isDe ? `Rechne ${zone.toUpperCase()} direkt in Eastern Standard Time um.` : isEs ? `Convierte ${zone.toUpperCase()} directamente a EST.` : `Convert ${zone.toUpperCase()} directly to Eastern Standard Time.`;
       matches.push({
         href: pageUrl(lang, reversePage.slug),
-        label: `${zone.toUpperCase()} to EST Converter`,
-        description: `Convert ${zone.toUpperCase()} directly to Eastern Standard Time.`,
+        label,
+        description,
       });
     }
   } else if (targetLower.endsWith("-to-est")) {
@@ -187,26 +192,30 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     const gmtSlug = `gmt-to-${zone}`;
     const gmtPage = converterPages.find((p) => p.slug === gmtSlug);
     if (gmtPage) {
+      const label = getConverterDisplayName(gmtPage, lang) || (isDe ? `GMT zu ${zone.toUpperCase()} Umrechner` : isEs ? `Convertidor GMT a ${zone.toUpperCase()}` : `GMT to ${zone.toUpperCase()} Converter`);
+      const description = isDe ? `Rechne Greenwich Mean Time direkt in ${zone.toUpperCase()} um.` : isEs ? `Convierte GMT directamente a ${zone.toUpperCase()}.` : `Convert Greenwich Mean Time to ${zone.toUpperCase()}.`;
       matches.push({
         href: pageUrl(lang, gmtPage.slug),
-        label: `GMT to ${zone.toUpperCase()} Converter`,
-        description: `Convert Greenwich Mean Time to ${zone.toUpperCase()}.`,
+        label,
+        description,
       });
     }
   }
 
-  const staples = ["gmt-to-est", "est-to-gmt", "gmt-vs-est", "gmt-to-pst", "gmt-to-cst", "gmt-to-utc", "ist-to-est", "bst-to-est", "cet-to-est"];
+  const staples = ["gmt-to-est", "est-to-gmt", "gmt-vs-est", "gmt-to-pst", "gmt-to-cst", "gmt-to-utc", "ist-to-est", "bst-to-est", "cet-to-est", "pst-to-est", "cst-to-est"];
   for (const staple of staples) {
     if (staple !== currentSlug && matches.length < 12) {
       const p = pages.find((item) => item.slug === staple);
       if (p && !matches.some((m) => m.href === pageUrl(lang, p.slug))) {
+        const label = getConverterDisplayName(p, lang) || (p.slug === "gmt-to-est" ? (isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter")
+          : p.slug === "est-to-gmt" ? (isDe ? "EST in GMT umrechnen" : "EST to GMT Converter")
+          : p.slug === "gmt-vs-est" ? (isDe ? "GMT vs. EST Unterschied" : "GMT vs EST Difference")
+          : `${p.context?.from || "GMT"} to ${p.context?.to || "EST"} Converter`);
+        const description = isDe ? `Präzise Zeitberechnung für ${label}.` : isEs ? `Cálculo instantáneo para ${label}.` : `Instant calculation for ${label}.`;
         matches.push({
           href: pageUrl(lang, p.slug),
-          label: p.slug === "gmt-to-est" ? "GMT to EST Converter"
-            : p.slug === "est-to-gmt" ? "EST to GMT Converter"
-            : p.slug === "gmt-vs-est" ? "GMT vs EST Difference"
-            : `${p.context?.from || "GMT"} to ${p.context?.to || "EST"} Converter`,
-          description: `Instant calculation for ${p.slug}.`,
+          label,
+          description,
         });
       }
     }
@@ -216,11 +225,9 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     if (matches.length >= 10) break;
     const href = pageUrl(lang, page.slug);
     if (!matches.some((m) => m.href === href)) {
-      const label = page.slug === "est-to-gmt" ? "EST to GMT Converter"
-        : page.slug === "gmt-vs-est" ? "GMT vs EST Difference"
-        : page.context?.from && page.context?.to ? `${page.context.from} to ${page.context.to} Converter`
-        : page.slug;
-      matches.push({ href, label, description: `Time conversion guide for ${label}.` });
+      const label = getConverterDisplayName(page, lang) || page.slug;
+      const description = isDe ? `Zeitzonen-Leitfaden für ${label}.` : isEs ? `Guía de conversión para ${label}.` : `Time conversion guide for ${label}.`;
+      matches.push({ href, label, description });
     }
   }
 
@@ -231,27 +238,32 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
  * Returns "Users Also Visit" recommendations.
  */
 export function getUsersAlsoVisit(currentSlug: string, lang = "en"): ClusterLink[] {
+  const isDe = lang === "de";
+  const isEs = lang === "es";
   const currentLower = currentSlug.toLowerCase();
   const suggestions: ClusterLink[] = [];
 
-  const candidates = [
-    { slug: "gmt-to-est", label: "GMT to EST Converter" },
-    { slug: "gmt-to-cst", label: "GMT to CST Converter" },
-    { slug: "gmt-to-pst", label: "GMT to PST Converter" },
-    { slug: "gmt-to-utc", label: "GMT to UTC Converter" },
-    { slug: "ist-to-est", label: "IST to EST Converter" },
-    { slug: "bst-to-est", label: "BST to EST Converter" },
-    { slug: "cet-to-est", label: "CET to EST Converter" },
-    { slug: "est-to-gmt", label: "EST to GMT Converter" },
-    { slug: "gmt-vs-est", label: "GMT vs EST Difference" },
+  const candidateSlugs = [
+    "gmt-to-est",
+    "gmt-to-cst",
+    "gmt-to-pst",
+    "gmt-to-utc",
+    "ist-to-est",
+    "bst-to-est",
+    "cet-to-est",
+    "est-to-gmt",
+    "gmt-vs-est",
   ];
 
-  for (const item of candidates) {
-    if (item.slug !== currentLower) {
+  for (const itemSlug of candidateSlugs) {
+    if (itemSlug !== currentLower) {
+      const p = pages.find((item) => item.slug === itemSlug);
+      const label = p ? (getConverterDisplayName(p, lang) || itemSlug) : itemSlug;
+      const description = isDe ? "Beliebter Zeitzonen-Vergleich für internationale Terminplanung." : isEs ? "Comparación popular para gestionar relojes globales." : "Popular comparison for users managing global clocks.";
       suggestions.push({
-        href: pageUrl(lang, item.slug),
-        label: item.label,
-        description: `Popular comparison for users managing global clocks.`,
+        href: pageUrl(lang, itemSlug),
+        label,
+        description,
       });
     }
   }

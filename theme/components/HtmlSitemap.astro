@@ -164,6 +164,32 @@ const groups = [
   { title: "Blog posts", items: blogPosts },
 ].filter((group) => group.items.length);
 
+const allBlogPosts = await getCollection("blog");
+
+function getLocalizedLabel(item: SitemapItem, languageCode: string): string {
+  const p = pages.find((page) => page.slug === item.slug);
+  if (p) {
+    const disp = getConverterDisplayName(p, languageCode);
+    if (disp) return disp;
+    const meta = getPageMeta(languageCode, p.labelKey, p.context);
+    if (meta?.title) return meta.title;
+  }
+  if (item.slug.startsWith("blog/")) {
+    const blogSlug = item.slug.replace("blog/", "");
+    const post = allBlogPosts.find((b) => b.id === `${languageCode}/${blogSlug}.md` || b.id === `${languageCode}/${blogSlug}.mdx` || b.id === `${languageCode}/${blogSlug}`);
+    if (post?.data?.title) return post.data.title;
+  }
+  if (item.slug === "about-us") return languageCode === "de" ? "Über uns" : languageCode === "es" ? "Sobre nosotros" : "About Us";
+  if (item.slug === "author") return languageCode === "de" ? "Autorenteam" : languageCode === "es" ? "Autor" : "Author";
+  if (item.slug === "contact-us") return languageCode === "de" ? "Kontakt" : languageCode === "es" ? "Contacto" : languageCode === "th" ? "ติดต่อเรา" : "Contact Us";
+  if (item.slug === "privacy-policy") return languageCode === "de" ? "Datenschutzerklärung" : languageCode === "es" ? "Política de privacidad" : "Privacy Policy";
+  if (item.slug === "terms-of-service") return languageCode === "de" ? "Nutzungsbedingungen" : languageCode === "es" ? "Términos del servicio" : languageCode === "ja" ? "利用規約" : "Terms of Service";
+  if (item.slug === "disclaimer") return languageCode === "de" ? "Haftungsausschluss" : languageCode === "es" ? "Descargo de responsabilidad" : "Disclaimer";
+  if (item.slug === "sitemap") return languageCode === "de" ? "Sitemap" : languageCode === "es" ? "Mapa del sitio" : "Sitemap";
+  if (item.slug === "blog") return languageCode === "de" ? "Blog & Ratgeber" : "Blog";
+  return item.label;
+}
+
 const englishOnlySlugs = new Set([
   ...educationalSitemap.map((item) => item.slug),
   ...dstSitemap.map((item) => item.slug),
@@ -171,11 +197,19 @@ const englishOnlySlugs = new Set([
   ...citySitemap.map((item) => item.slug),
   ...businessSitemap.map((item) => item.slug),
   ...developerSitemap.map((item) => item.slug),
-  ...sitePages.map((item) => item.slug),
-  ...blogPosts.map((item) => item.slug),
+  "editorial-policy"
 ]);
-const isAvailableForLanguage = (item: SitemapItem, languageCode: string) =>
-  languageCode === "en" || !englishOnlySlugs.has(item.slug);
+
+const isAvailableForLanguage = (item: SitemapItem, languageCode: string) => {
+  if (languageCode === "en") return true;
+  if (englishOnlySlugs.has(item.slug)) return false;
+  if (item.slug.startsWith("blog/")) {
+    const blogSlug = item.slug.replace("blog/", "");
+    return allBlogPosts.some((b) => b.id.startsWith(`${languageCode}/${blogSlug}`));
+  }
+  return true;
+};
+
 const totalUrls = languages.reduce(
   (total, language) =>
     total + groups.reduce(
@@ -188,8 +222,11 @@ const totalUrls = languages.reduce(
 
 <div class="html-sitemap">
   <p class="sitemap-summary">
-    This sitemap links the public pages and language versions on GMT to EST Converter.
-    It includes {totalUrls} internal URLs across {languages.length} languages.
+    {lang === "de" ? (
+      <>Diese Sitemap verlinkt die öffentlichen Seiten und Sprachversionen auf dem GMT zu EST Umrechner. Sie umfasst {totalUrls} interne URLs in {languages.length} Sprachen.</>
+    ) : (
+      <>This sitemap links the public pages and language versions on GMT to EST Converter. It includes {totalUrls} internal URLs across {languages.length} languages.</>
+    )}
   </p>
 
   <nav class="language-jump" aria-label="Sitemap language sections">
@@ -212,7 +249,7 @@ const totalUrls = languages.reduce(
               .map((item) => (
               <li>
                 <a href={pageUrl(language.code, item.slug)} hreflang={language.code}>
-                  {item.label}
+                  {getLocalizedLabel(item, language.code)}
                 </a>
               </li>
             ))}

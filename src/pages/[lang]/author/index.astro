@@ -7,9 +7,12 @@ export function getStaticPaths() {
 }
 
 const lang = getLang(Astro.params.lang);
+const isDe = lang.code === "de";
 const metaBase = getPageMeta(lang.code, "author");
 const meta = {
   ...metaBase,
+  title: isDe ? "Unser Autoren- und Redaktionsteam | GMT zu EST Umrechner" : metaBase.title,
+  description: isDe ? "Lernen Sie die Experten und Redakteure hinter dem GMT zu EST Umrechner kennen. Spezialisten für Zeitzonen, Sommerzeit und globale Zeitkonvertierung." : metaBase.description,
   keywords: "GMT to EST author, timezone author, GMT to EST editorial team, Jackie Bruce",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -35,7 +38,7 @@ const schema = {
         item: {
           "@type": "Person",
           name: "Jackie Bruce",
-          jobTitle: "Timezone Content Specialist"
+          jobTitle: isDe ? "Spezialistin für Zeitzoneninhalte" : "Timezone Content Specialist"
         }
       }
     ]
@@ -43,8 +46,8 @@ const schema = {
   breadcrumb: {
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/${lang.code}/` },
-      { "@type": "ListItem", position: 2, name: "Author", item: pageUrl }
+      { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : "Home", item: `${siteUrl}/${lang.code}/` },
+      { "@type": "ListItem", position: 2, name: isDe ? "Autoren" : "Author", item: pageUrl }
     ]
   }
 };
@@ -54,22 +57,24 @@ const schema = {
   <script type="application/ld+json" set:html={JSON.stringify(schema)} slot="head" />
 
   <section class="content author-hub" aria-labelledby="author-hub-title">
-    <h1 id="author-hub-title">Author</h1>
+    <h1 id="author-hub-title">{isDe ? "Autoren- und Redaktionsteam" : "Author"}</h1>
     <p>
-      GMT to EST Converter content is written and reviewed by a focused editorial team that specializes in timezone
-      conversion accuracy, daylight saving transitions, and practical scheduling guidance.
+      {isDe
+        ? "Die Inhalte auf GMT zu EST Umrechner werden von einem spezialisierten Redaktionsteam verfasst und geprüft, das auf Zeitzonenpräzision, Sommerzeitumstellungen und praxistaugliche Terminplanung fokussiert ist."
+        : "GMT to EST Converter content is written and reviewed by a focused editorial team that specializes in timezone conversion accuracy, daylight saving transitions, and practical scheduling guidance."}
     </p>
 
     <article class="author-card" aria-labelledby="jackie-bruce">
       <h2 id="jackie-bruce">
         <a href={`/${lang.code}/author/jackie-bruce/`} rel="author">Jackie Bruce</a>
       </h2>
-      <p class="role">Timezone Content Specialist</p>
+      <p class="role">{isDe ? "Spezialistin für Zeitzoneninhalte" : "Timezone Content Specialist"}</p>
       <p>
-        Jackie covers GMT, EST, EDT, and date-aware conversion scenarios for remote teams, events, and international
-        scheduling.
+        {isDe
+          ? "Jackie behandelt GMT, EST, EDT und datumsbezogene Umrechnungsszenarien für globale Teams, Events und internationale Zeitpläne."
+          : "Jackie covers GMT, EST, EDT, and date-aware conversion scenarios for remote teams, events, and international scheduling."}
       </p>
-      <p><a class="profile-link" href={`/${lang.code}/author/jackie-bruce/`}>View full author profile</a></p>
+      <p><a class="profile-link" href={`/${lang.code}/author/jackie-bruce/`}>{isDe ? "Vollständiges Autorenprofil ansehen →" : "View full author profile"}</a></p>
     </article>
   </section>
 </BaseLayout>
