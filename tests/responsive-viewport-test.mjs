@@ -164,17 +164,34 @@ async function runTests() {
         const searchBtn = document.querySelector('.search-header-btn');
         const menuBtn = document.querySelector('#mobile-menu-toggle');
         const desktopNav = document.querySelector('.desktop-nav');
+        const main = document.querySelector('main');
+        const tables = [...document.querySelectorAll('table')];
         const docWidth = document.documentElement.scrollWidth;
         const bodyWidth = document.body.scrollWidth;
         const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
         const headerRect = header ? header.getBoundingClientRect() : null;
+        const mainRect = main ? main.getBoundingClientRect() : null;
+        const siteNameRect = siteName ? siteName.getBoundingClientRect() : null;
+
+        // Check if any table overflows outside its wrapper or viewport
+        const tableOverflows = tables.some(t => {
+          const parentWrap = t.closest('.table-wrap') || t.closest('.time-strip');
+          if (parentWrap) return false; // Handled by horizontal scroll container
+          return t.scrollWidth > winWidth;
+        });
 
         return {
           winWidth,
+          winHeight,
           docWidth,
           bodyWidth,
           hasHorizontalOverflow: docWidth > winWidth + 1,
+          tableOverflows,
           headerHeight: headerRect ? headerRect.height : 0,
+          headerViewportRatio: headerRect ? (headerRect.height / winHeight) : 0,
+          contentStartsBelowHeader: mainRect && headerRect ? (mainRect.top >= 0) : true,
+          siteNameVisible: siteNameRect ? (siteNameRect.width > 0 && siteNameRect.right <= winWidth) : false,
           searchBtnVisible: searchBtn && getComputedStyle(searchBtn).display !== 'none',
           menuBtnVisible: menuBtn && getComputedStyle(menuBtn).display !== 'none',
           desktopNavVisible: desktopNav && getComputedStyle(desktopNav).display !== 'none'
@@ -182,15 +199,17 @@ async function runTests() {
       })()`);
 
       const isMobile = width <= 768;
-      const overflowPass = !metrics.hasHorizontalOverflow;
-      const heightPass = isMobile ? (metrics.headerHeight >= 45 && metrics.headerHeight <= 70) : (metrics.headerHeight <= 80);
+      const overflowPass = !metrics.hasHorizontalOverflow && !metrics.tableOverflows;
+      const heightPass = isMobile ? (metrics.headerHeight >= 45 && metrics.headerHeight <= 70 && metrics.headerViewportRatio < 0.12) : (metrics.headerHeight <= 80);
       const navModePass = isMobile ? (metrics.menuBtnVisible && !metrics.desktopNavVisible) : (!metrics.menuBtnVisible && metrics.desktopNavVisible);
+      const titlePass = metrics.siteNameVisible;
+      const contentPass = metrics.contentStartsBelowHeader;
 
-      if (!overflowPass || !heightPass || !navModePass) {
-        console.error(`❌ FAIL at ${width}x${height}: overflow=${metrics.hasHorizontalOverflow} (${metrics.docWidth}px vs ${width}px), headerHeight=${metrics.headerHeight}px, menuBtn=${metrics.menuBtnVisible}, desktopNav=${metrics.desktopNavVisible}`);
+      if (!overflowPass || !heightPass || !navModePass || !titlePass || !contentPass) {
+        console.error(`❌ FAIL at ${width}x${height}: overflow=${metrics.hasHorizontalOverflow}, headerHeight=${metrics.headerHeight}px (${Math.round(metrics.headerViewportRatio*100)}% of VP), menuBtn=${metrics.menuBtnVisible}, titleVisible=${metrics.siteNameVisible}`);
         allPassed = false;
       } else {
-        console.log(`✅ PASS: ${width}x${height} | Header H=${Math.round(metrics.headerHeight)}px | Overflow=NO | NavMode=${isMobile ? 'Mobile Hamburger' : 'Desktop Bar'}`);
+        console.log(`✅ PASS: ${width}x${height} | Header H=${Math.round(metrics.headerHeight)}px (${Math.round(metrics.headerViewportRatio*100)}% of VP) | Overflow=NO | Title=OK | NavMode=${isMobile ? 'Mobile Hamburger' : 'Desktop Bar'}`);
       }
     }
   }
