@@ -5,6 +5,11 @@ import fs from "node:fs";
 
 const chromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const distDir = path.resolve("dist/client");
+const screenshotsDir = path.resolve("screenshots");
+
+if (!fs.existsSync(screenshotsDir)) {
+  fs.mkdirSync(screenshotsDir, { recursive: true });
+}
 
 // Simple static server for dist/client
 function createServer(port) {
@@ -87,6 +92,14 @@ class CDPClient {
     return res.result ? res.result.value : undefined;
   }
 
+  async screenshot(filename) {
+    const res = await this.send("Page.captureScreenshot", { format: "png" });
+    const buffer = Buffer.from(res.data, "base64");
+    const filePath = path.join(screenshotsDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    return filePath;
+  }
+
   close() {
     if (this.ws) this.ws.close();
   }
@@ -137,183 +150,378 @@ async function runTests() {
   await cdp.send("DOM.enable");
   await cdp.send("Runtime.enable");
 
-  const viewportWidths = [320, 360, 375, 390, 412, 430, 546, 768, 1024, 1280, 1440, 1920];
-  const viewportHeights = [667, 720, 800, 844, 932];
+  const mobileViewports = [
+    { w: 320, h: 667, name: "320x667 (iPhone SE 1)" },
+    { w: 360, h: 720, name: "360x720 (Android Small)" },
+    { w: 375, h: 844, name: "375x844 (iPhone 12/13/14)" },
+    { w: 390, h: 844, name: "390x844 (iPhone 13/14 Pro)" },
+    { w: 412, h: 932, name: "412x932 (Pixel 7 / Galaxy)" },
+    { w: 430, h: 932, name: "430x932 (iPhone 14/15 Pro Max)" },
+    { w: 546, h: 800, name: "546x800 (Foldable / Phablet)" },
+    { w: 768, h: 932, name: "768x932 (iPad Mini Portrait)" }
+  ];
 
-  console.log("\n==================================================");
-  console.log("1. TESTING MOBILE VIEWPORT DIMENSIONS & HEADER METRICS");
-  console.log("==================================================\n");
+  const desktopViewports = [
+    { w: 1024, h: 800, name: "1024x800 (Tablet Landscape / Laptop)" },
+    { w: 1280, h: 800, name: "1280x800 (MacBook Air / Laptop)" },
+    { w: 1440, h: 900, name: "1440x900 (Standard Desktop)" },
+    { w: 1920, h: 1080, name: "1920x1080 (Full HD Desktop)" }
+  ];
 
   let allPassed = true;
 
-  for (const width of viewportWidths) {
-    for (const height of viewportHeights) {
-      await cdp.send("Emulation.setDeviceMetricsOverride", {
-        width,
-        height,
-        deviceScaleFactor: 2,
-        mobile: width <= 768
-      });
+  console.log("\n==================================================");
+  console.log("1. DEEP TABLE OVERFLOW & WRAPPER CONTAINMENT AUDIT");
+  console.log("==================================================");
 
-      await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
-      await new Promise(r => setTimeout(r, 300));
+  for (const vp of [mobileViewports[0], mobileViewports[2]]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: vp.w,
+      height: vp.h,
+      deviceScaleFactor: 2,
+      mobile: true
+    });
+    await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+    await new Promise(r => setTimeout(r, 400));
 
-      const metrics = await cdp.eval(`(() => {
-        const header = document.querySelector('.header');
-        const siteName = document.querySelector('.site-name');
-        const searchBtn = document.querySelector('.search-header-btn');
-        const menuBtn = document.querySelector('#mobile-menu-toggle');
-        const desktopNav = document.querySelector('.desktop-nav');
-        const main = document.querySelector('main');
-        const tables = [...document.querySelectorAll('table')];
-        const docWidth = document.documentElement.scrollWidth;
-        const bodyWidth = document.body.scrollWidth;
-        const winWidth = window.innerWidth;
-        const winHeight = window.innerHeight;
-        const headerRect = header ? header.getBoundingClientRect() : null;
-        const mainRect = main ? main.getBoundingClientRect() : null;
-        const siteNameRect = siteName ? siteName.getBoundingClientRect() : null;
-
-        // Check if any table overflows outside its wrapper or viewport
-        const tableOverflows = tables.some(t => {
-          const parentWrap = t.closest('.table-wrap') || t.closest('.time-strip');
-          if (parentWrap) return false; // Handled by horizontal scroll container
-          return t.scrollWidth > winWidth;
-        });
-
+    const tableReport = await cdp.eval(`(() => {
+      const winWidth = window.innerWidth;
+      const tables = [...document.querySelectorAll('table')];
+      return tables.map(table => {
+        const tableRect = table.getBoundingClientRect();
+        const wrapper = table.closest('.table-wrap') || table.closest('.time-strip') || table.parentElement;
+        const wrapRect = wrapper.getBoundingClientRect();
+        const wrapStyle = getComputedStyle(wrapper);
+        const isScrollContained = wrapStyle.overflowX === 'auto' || wrapStyle.overflowX === 'scroll' || wrapStyle.overflow === 'auto' || wrapStyle.overflow === 'scroll';
+        
         return {
-          winWidth,
-          winHeight,
-          docWidth,
-          bodyWidth,
-          hasHorizontalOverflow: docWidth > winWidth + 1,
-          tableOverflows,
-          headerHeight: headerRect ? headerRect.height : 0,
-          headerViewportRatio: headerRect ? (headerRect.height / winHeight) : 0,
-          contentStartsBelowHeader: mainRect && headerRect ? (mainRect.top >= 0) : true,
-          siteNameVisible: siteNameRect ? (siteNameRect.width > 0 && siteNameRect.right <= winWidth) : false,
-          searchBtnVisible: searchBtn && getComputedStyle(searchBtn).display !== 'none',
-          menuBtnVisible: menuBtn && getComputedStyle(menuBtn).display !== 'none',
-          desktopNavVisible: desktopNav && getComputedStyle(desktopNav).display !== 'none'
+          tableWidth: Math.round(tableRect.width),
+          tableScrollWidth: table.scrollWidth,
+          tableWrapperWidth: Math.round(wrapRect.width),
+          tableWrapperLeft: Math.round(wrapRect.left),
+          tableWrapperRight: Math.round(wrapRect.right),
+          tableWrapperOverflowsViewport: wrapRect.right > winWidth + 1 || wrapRect.left < -1,
+          tableHasContainedHorizontalScroll: isScrollContained
         };
-      })()`);
+      });
+    })()`);
 
-      const isMobile = width <= 768;
-      const overflowPass = !metrics.hasHorizontalOverflow && !metrics.tableOverflows;
-      const heightPass = isMobile ? (metrics.headerHeight >= 45 && metrics.headerHeight <= 70 && metrics.headerViewportRatio < 0.12) : (metrics.headerHeight <= 80);
-      const navModePass = isMobile ? (metrics.menuBtnVisible && !metrics.desktopNavVisible) : (!metrics.menuBtnVisible && metrics.desktopNavVisible);
-      const titlePass = metrics.siteNameVisible;
-      const contentPass = metrics.contentStartsBelowHeader;
-
-      if (!overflowPass || !heightPass || !navModePass || !titlePass || !contentPass) {
-        console.error(`❌ FAIL at ${width}x${height}: overflow=${metrics.hasHorizontalOverflow}, headerHeight=${metrics.headerHeight}px (${Math.round(metrics.headerViewportRatio*100)}% of VP), menuBtn=${metrics.menuBtnVisible}, titleVisible=${metrics.siteNameVisible}`);
-        allPassed = false;
+    console.log(`\nTable Report at ${vp.name}: (${tableReport.length} tables found)`);
+    for (let i = 0; i < tableReport.length; i++) {
+      const rep = tableReport[i];
+      const pass = !rep.tableWrapperOverflowsViewport && rep.tableHasContainedHorizontalScroll;
+      if (pass) {
+        console.log(`  ✅ Table #${i+1}: tableWidth=${rep.tableWidth}px, wrapperWidth=${rep.tableWrapperWidth}px (L=${rep.tableWrapperLeft}, R=${rep.tableWrapperRight}), wrapperOverflowsVP=${rep.tableWrapperOverflowsViewport ? 'YES (FAIL)' : 'NO (PASS)'}, containedScroll=${rep.tableHasContainedHorizontalScroll ? 'YES (PASS)' : 'NO'}`);
       } else {
-        console.log(`✅ PASS: ${width}x${height} | Header H=${Math.round(metrics.headerHeight)}px (${Math.round(metrics.headerViewportRatio*100)}% of VP) | Overflow=NO | Title=OK | NavMode=${isMobile ? 'Mobile Hamburger' : 'Desktop Bar'}`);
+        console.error(`  ❌ Table #${i+1} FAIL: wrapperOverflowsVP=${rep.tableWrapperOverflowsViewport}, containedScroll=${rep.tableHasContainedHorizontalScroll}`);
+        allPassed = false;
       }
     }
   }
 
   console.log("\n==================================================");
-  console.log("2. TESTING SCROLL BEHAVIOR & STICKY POSITIONING");
-  console.log("==================================================\n");
+  console.log("2. EXHAUSTIVE DOM HORIZONTAL OVERFLOW SCAN (* query)");
+  console.log("==================================================");
 
-  // Test scroll behavior at 375x812
-  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
-  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
-  await new Promise(r => setTimeout(r, 300));
+  for (const vp of mobileViewports) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: vp.w,
+      height: vp.h,
+      deviceScaleFactor: 2,
+      mobile: true
+    });
+    await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+    await new Promise(r => setTimeout(r, 400));
 
-  const scrollPositions = [0, 200, 500, 1200, 2500, 4000];
-  for (const scrollY of scrollPositions) {
-    await cdp.eval(`window.scrollTo(0, ${scrollY})`);
-    await new Promise(r => setTimeout(r, 100));
-
-    const scrollMetrics = await cdp.eval(`(() => {
-      const header = document.querySelector('.header');
-      const rect = header.getBoundingClientRect();
-      const docScrollWidth = document.documentElement.scrollWidth;
+    const domScan = await cdp.eval(`(() => {
       const winWidth = window.innerWidth;
+      const allElements = [...document.querySelectorAll('*')];
+      const overflowing = [];
+
+      for (const el of allElements) {
+        // Skip elements inside a known horizontal scroll/clipped container
+        if (el.closest('.table-wrap') && el !== el.closest('.table-wrap')) continue;
+        if (el.closest('.time-strip') && el !== el.closest('.time-strip')) continue;
+        if (el.closest('.mobile-nav-drawer')) continue; // drawer manages its own bounds
+
+        const rect = el.getBoundingClientRect();
+        // Ignore invisible or zero-size elements
+        if (rect.width === 0 || rect.height === 0) continue;
+        const style = getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+
+        if (rect.right > winWidth + 1 || rect.left < -1) {
+          overflowing.push({
+            tag: el.tagName.toLowerCase(),
+            className: el.className || '',
+            id: el.id || '',
+            parent: el.parentElement ? (el.parentElement.tagName.toLowerCase() + '.' + (el.parentElement.className || '')) : 'none',
+            text: (el.textContent || '').slice(0, 40).trim(),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width)
+          });
+        }
+      }
+
+      const docWidth = document.documentElement.scrollWidth;
+      const bodyWidth = document.body.scrollWidth;
+
       return {
-        scrollY: window.scrollY,
-        headerTop: rect.top,
-        headerHeight: rect.height,
-        hasHorizontalOverflow: docScrollWidth > winWidth + 1
+        winWidth,
+        docWidth,
+        bodyWidth,
+        hasDocOverflow: docWidth > winWidth + 1,
+        overflowingElements: overflowing.slice(0, 5)
       };
     })()`);
 
-    const stickyPass = Math.abs(scrollMetrics.headerTop) <= 2;
-    const heightPass = scrollMetrics.headerHeight >= 45 && scrollMetrics.headerHeight <= 70;
-    const noOverflow = !scrollMetrics.hasHorizontalOverflow;
-
-    if (stickyPass && heightPass && noOverflow) {
-      console.log(`✅ Scroll at Y=${scrollY}px: Header sticky at top=${Math.round(scrollMetrics.headerTop)}px, Height=${Math.round(scrollMetrics.headerHeight)}px, Overflow=NO`);
+    if (!domScan.hasDocOverflow && domScan.overflowingElements.length === 0) {
+      console.log(`✅ ${vp.name}: 0 overflowing elements (docWidth=${domScan.docWidth}px, vpWidth=${domScan.winWidth}px)`);
     } else {
-      console.error(`❌ FAIL Scroll at Y=${scrollY}px: top=${scrollMetrics.headerTop}, height=${scrollMetrics.headerHeight}`);
+      console.error(`❌ ${vp.name} FAIL: ${domScan.overflowingElements.length} overflowing elements found!`, domScan.overflowingElements);
       allPassed = false;
     }
   }
 
   console.log("\n==================================================");
-  console.log("3. TESTING MOBILE NAVIGATION DRAWER OPEN & CLOSE");
-  console.log("==================================================\n");
+  console.log("3. HEADER BOUNDARIES, CONTENT CLEARANCE & SITE TITLE");
+  console.log("==================================================");
 
-  const menuTest = await cdp.eval(`(() => {
-    const btn = document.querySelector('#mobile-menu-toggle');
+  for (const vp of mobileViewports) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: vp.w,
+      height: vp.h,
+      deviceScaleFactor: 2,
+      mobile: true
+    });
+    await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+    await new Promise(r => setTimeout(r, 400));
+
+    const headerMetrics = await cdp.eval(`(() => {
+      const header = document.querySelector('.header');
+      const headerContainer = document.querySelector('.header-container');
+      const logoLink = document.querySelector('.logo-link');
+      const logoIcon = document.querySelector('.logo-icon');
+      const siteName = document.querySelector('.site-name');
+      const main = document.querySelector('main');
+      const firstContent = main ? (main.querySelector('nav.breadcrumb') || main.querySelector('section') || main.firstElementChild) : null;
+      const winWidth = window.innerWidth;
+      const winHeight = window.innerHeight;
+
+      const hRect = header ? header.getBoundingClientRect() : null;
+      const hcRect = headerContainer ? headerContainer.getBoundingClientRect() : null;
+      const sRect = siteName ? siteName.getBoundingClientRect() : null;
+      const lRect = logoIcon ? logoIcon.getBoundingClientRect() : null;
+      const fcRect = firstContent ? firstContent.getBoundingClientRect() : null;
+
+      return {
+        headerLeft: hRect ? Math.round(hRect.left) : -999,
+        headerRight: hRect ? Math.round(hRect.right) : -999,
+        headerWidth: hRect ? Math.round(hRect.width) : -999,
+        headerHeight: hRect ? Math.round(hRect.height) : -999,
+        headerBottom: hRect ? Math.round(hRect.bottom) : -999,
+        headerRatio: hRect ? (hRect.height / winHeight) : 1,
+        siteNameLeft: sRect ? Math.round(sRect.left) : -999,
+        siteNameRight: sRect ? Math.round(sRect.right) : -999,
+        siteNameWidth: sRect ? Math.round(sRect.width) : 0,
+        logoVisible: lRect ? (lRect.width > 0 && lRect.left >= 0) : false,
+        firstContentTop: fcRect ? Math.round(fcRect.top) : -999,
+        contentClearedHeader: fcRect && hRect ? (fcRect.top >= hRect.bottom - 2) : false
+      };
+    })()`);
+
+    const boundsPass = headerMetrics.headerLeft >= 0 && headerMetrics.headerRight <= vp.w && headerMetrics.headerWidth <= vp.w;
+    const heightPass = headerMetrics.headerHeight >= 48 && headerMetrics.headerHeight <= 60 && headerMetrics.headerRatio <= 0.10;
+    const titlePass = headerMetrics.siteNameLeft >= 0 && headerMetrics.siteNameRight <= vp.w && headerMetrics.siteNameWidth > 0 && headerMetrics.logoVisible;
+    const clearancePass = headerMetrics.contentClearedHeader;
+
+    if (boundsPass && heightPass && titlePass && clearancePass) {
+      console.log(`✅ ${vp.name} | Header: ${headerMetrics.headerWidth}x${headerMetrics.headerHeight}px (L=${headerMetrics.headerLeft}, R=${headerMetrics.headerRight}, ${Math.round(headerMetrics.headerRatio*100)}% of VP) | Title: ${headerMetrics.siteNameWidth}px (L=${headerMetrics.siteNameLeft}, R=${headerMetrics.siteNameRight}) | Content Top=${headerMetrics.firstContentTop}px (Cleared: YES)`);
+    } else {
+      console.error(`❌ ${vp.name} FAIL: boundsPass=${boundsPass}, heightPass=${heightPass} (H=${headerMetrics.headerHeight}px), titlePass=${titlePass}, clearancePass=${clearancePass} (contentTop=${headerMetrics.firstContentTop} vs headerBottom=${headerMetrics.headerBottom})`);
+      allPassed = false;
+    }
+  }
+
+  console.log("\n==================================================");
+  console.log("4. STICKY HEADER ACCESSIBILITY & SCROLL STABILITY");
+  console.log("==================================================");
+
+  // Test across scroll positions at 375x844
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 844, deviceScaleFactor: 2, mobile: true });
+  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+  await new Promise(r => setTimeout(r, 400));
+
+  const scrollOffsets = [0, 200, 500, 1200, 2500, 4000];
+  for (const scrollY of scrollOffsets) {
+    await cdp.eval(`window.scrollTo(0, ${scrollY})`);
+    await new Promise(r => setTimeout(r, 120));
+
+    const scrollCheck = await cdp.eval(`(() => {
+      const header = document.querySelector('.header');
+      const hRect = header.getBoundingClientRect();
+      const docWidth = document.documentElement.scrollWidth;
+      const winWidth = window.innerWidth;
+
+      return {
+        scrollY: window.scrollY,
+        top: Math.round(hRect.top),
+        height: Math.round(hRect.height),
+        width: Math.round(hRect.width),
+        overflow: docWidth > winWidth + 1
+      };
+    })()`);
+
+    const pass = Math.abs(scrollCheck.top) <= 1 && scrollCheck.height <= 60 && !scrollCheck.overflow;
+    if (pass) {
+      console.log(`✅ Scroll Y=${scrollY}px: Sticky Header Top=${scrollCheck.top}px, Height=${scrollCheck.height}px, Width=${scrollCheck.width}px, Overflow=NO`);
+    } else {
+      console.error(`❌ Scroll Y=${scrollY}px FAIL: top=${scrollCheck.top}, height=${scrollCheck.height}, overflow=${scrollCheck.overflow}`);
+      allPassed = false;
+    }
+  }
+
+  console.log("\n==================================================");
+  console.log("5. INTERACTION AUDIT: SEARCH, HAMBURGER & CLEAN CLOSING");
+  console.log("==================================================");
+
+  const interactionCheck = await cdp.eval(`(() => {
+    const searchBtn = document.querySelector('.search-header-btn');
+    const searchModal = document.querySelector('#global-search-modal');
+    const searchClose = document.querySelector('#search-modal-close');
+    const menuBtn = document.querySelector('#mobile-menu-toggle');
     const drawer = document.querySelector('#mobile-nav-drawer');
-    const initialClosed = !drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'true';
 
-    // Click to open
-    btn.click();
-    const afterOpen = drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'false' && btn.getAttribute('aria-expanded') === 'true';
-    const drawerRect = drawer.getBoundingClientRect();
+    // 1. Test Search Modal Open
+    searchBtn.click();
+    const searchOpened = searchModal.classList.contains('is-open') && searchModal.getAttribute('aria-hidden') === 'false';
+    const searchBackdropVisible = getComputedStyle(searchModal).visibility === 'visible';
 
-    // Click to close
-    btn.click();
-    const afterClose = !drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'true' && btn.getAttribute('aria-expanded') === 'false';
+    // Close Search Modal
+    if (searchClose) searchClose.click();
+    const searchClosed = !searchModal.classList.contains('is-open') && searchModal.getAttribute('aria-hidden') === 'true';
+    const searchNoBackdrop = getComputedStyle(searchModal).visibility === 'hidden' || getComputedStyle(searchModal).opacity === '0';
+
+    // 2. Test Mobile Menu Open
+    menuBtn.click();
+    const menuOpened = drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'false' && menuBtn.getAttribute('aria-expanded') === 'true';
+    const drawerHeight = drawer.getBoundingClientRect().height;
+
+    // Close Mobile Menu
+    menuBtn.click();
+    const menuClosed = !drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'true' && menuBtn.getAttribute('aria-expanded') === 'false';
+    const drawerHidden = getComputedStyle(drawer).visibility === 'hidden' || getComputedStyle(drawer).opacity === '0';
+
+    // 3. Verify no lingering overlay or scroll lock
+    const bodyScrollLocked = document.body.classList.contains('nav-open') || getComputedStyle(document.body).overflow === 'hidden';
 
     return {
-      initialClosed,
-      afterOpen,
-      drawerHeight: drawerRect.height,
-      afterClose
+      searchOpened,
+      searchBackdropVisible,
+      searchClosed,
+      searchNoBackdrop,
+      menuOpened,
+      drawerHeight: Math.round(drawerHeight),
+      menuClosed,
+      drawerHidden,
+      bodyScrollLocked
     };
   })()`);
 
-  if (menuTest.initialClosed && menuTest.afterOpen && menuTest.afterClose) {
-    console.log(`✅ Mobile menu open/close interaction passed cleanly! Drawer height when open: ${Math.round(menuTest.drawerHeight)}px`);
+  const searchPass = interactionCheck.searchOpened && interactionCheck.searchClosed && interactionCheck.searchNoBackdrop;
+  const menuPass = interactionCheck.menuOpened && interactionCheck.menuClosed && interactionCheck.drawerHidden && !interactionCheck.bodyScrollLocked;
+
+  if (searchPass && menuPass) {
+    console.log(`✅ Search Modal: Opens properly, Closes cleanly with NO invisible overlay blocking page.`);
+    console.log(`✅ Mobile Drawer: Opens properly (Height=${interactionCheck.drawerHeight}px), Closes cleanly with NO lingering backdrop or scroll lock.`);
   } else {
-    console.error("❌ FAIL mobile menu interaction:", menuTest);
+    console.error("❌ Interaction FAIL:", interactionCheck);
     allPassed = false;
   }
 
   console.log("\n==================================================");
-  console.log("4. TESTING SEARCH MODAL TRIGGER ON MOBILE");
-  console.log("==================================================\n");
+  console.log("6. DESKTOP VIEWPORT INTEGRITY VERIFICATION");
+  console.log("==================================================");
 
-  const searchTest = await cdp.eval(`(() => {
-    const searchBtn = document.querySelector('.search-header-btn');
-    const modal = document.querySelector('#global-search-modal');
-    const initialClosed = !modal.classList.contains('is-open');
+  for (const vp of desktopViewports) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: vp.w,
+      height: vp.h,
+      deviceScaleFactor: 1,
+      mobile: false
+    });
+    await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+    await new Promise(r => setTimeout(r, 400));
 
-    searchBtn.click();
-    const afterOpen = modal.classList.contains('is-open') && modal.getAttribute('aria-hidden') === 'false';
+    const deskMetrics = await cdp.eval(`(() => {
+      const header = document.querySelector('.header');
+      const desktopNav = document.querySelector('.desktop-nav');
+      const menuBtn = document.querySelector('#mobile-menu-toggle');
+      const searchBtnText = document.querySelector('.search-btn-text');
+      const searchBtnKbd = document.querySelector('.search-btn-kbd');
+      const docWidth = document.documentElement.scrollWidth;
+      const winWidth = window.innerWidth;
+      const hRect = header ? header.getBoundingClientRect() : null;
 
-    const closeBtn = document.querySelector('#search-modal-close');
-    if (closeBtn) closeBtn.click();
-    const afterClose = !modal.classList.contains('is-open');
+      const navItems = desktopNav ? [...desktopNav.querySelectorAll('.nav-link')].map(a => a.textContent.trim()) : [];
 
-    return {
-      initialClosed,
-      afterOpen,
-      afterClose
-    };
-  })()`);
+      return {
+        docWidth,
+        winWidth,
+        overflow: docWidth > winWidth + 1,
+        headerHeight: hRect ? Math.round(hRect.height) : 0,
+        desktopNavVisible: desktopNav && getComputedStyle(desktopNav).display !== 'none',
+        menuBtnHidden: !menuBtn || getComputedStyle(menuBtn).display === 'none',
+        searchTextVisible: searchBtnText && getComputedStyle(searchBtnText).display !== 'none',
+        searchKbdVisible: searchBtnKbd && getComputedStyle(searchBtnKbd).display !== 'none',
+        navCount: navItems.length
+      };
+    })()`);
 
-  if (searchTest.initialClosed && searchTest.afterOpen && searchTest.afterClose) {
-    console.log("✅ Search modal opens and closes correctly on mobile trigger button click!");
-  } else {
-    console.error("❌ FAIL search modal trigger:", searchTest);
-    allPassed = false;
+    const pass = !deskMetrics.overflow && deskMetrics.desktopNavVisible && deskMetrics.menuBtnHidden && deskMetrics.searchTextVisible && deskMetrics.navCount === 6;
+    if (pass) {
+      console.log(`✅ ${vp.name} | Header Height=${deskMetrics.headerHeight}px | Nav Items=${deskMetrics.navCount} (Visible) | Hamburger=HIDDEN | Search Bar=FULL`);
+    } else {
+      console.error(`❌ ${vp.name} FAIL:`, deskMetrics);
+      allPassed = false;
+    }
+  }
+
+  console.log("\n==================================================");
+  console.log("7. CAPTURING REAL BROWSER SCREENSHOTS");
+  console.log("==================================================");
+
+  const screenshotSpecs = [
+    { w: 320, h: 667, scrollY: 0, file: "mobile-320x667-top.png" },
+    { w: 320, h: 667, scrollY: 500, file: "mobile-320x667-scroll500.png" },
+    { w: 320, h: 667, scrollY: 1200, file: "mobile-320x667-scroll1200.png" },
+    { w: 360, h: 720, scrollY: 0, file: "mobile-360x720-top.png" },
+    { w: 360, h: 720, scrollY: 500, file: "mobile-360x720-scroll500.png" },
+    { w: 375, h: 844, scrollY: 0, file: "mobile-375x844-top.png" },
+    { w: 375, h: 844, scrollY: 500, file: "mobile-375x844-scroll500.png" },
+    { w: 375, h: 844, scrollY: 1200, file: "mobile-375x844-scroll1200.png" },
+    { w: 390, h: 844, scrollY: 0, file: "mobile-390x844-top.png" },
+    { w: 412, h: 932, scrollY: 0, file: "mobile-412x932-top.png" },
+    { w: 430, h: 932, scrollY: 0, file: "mobile-430x932-top.png" },
+    { w: 1440, h: 900, scrollY: 0, file: "desktop-1440x900-top.png" }
+  ];
+
+  for (const s of screenshotSpecs) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: s.w,
+      height: s.h,
+      deviceScaleFactor: 2,
+      mobile: s.w <= 768
+    });
+    await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/` });
+    await new Promise(r => setTimeout(r, 400));
+    if (s.scrollY > 0) {
+      await cdp.eval(`window.scrollTo(0, ${s.scrollY})`);
+      await new Promise(r => setTimeout(r, 150));
+    }
+    const savedPath = await cdp.screenshot(s.file);
+    console.log(`📸 Captured screenshot: ${s.file} (${s.w}x${s.h}, Y=${s.scrollY}) -> ${savedPath}`);
   }
 
   cdp.close();
@@ -321,10 +529,12 @@ async function runTests() {
   server.close();
 
   if (allPassed) {
-    console.log("\n🎉 ALL RESPONSIVE VIEWPORT & MOBILE HEADER TESTS PASSED 100%!\n");
+    console.log("\n==================================================");
+    console.log("🎉 ALL IN-DEPTH BEHAVIORAL & VISUAL CHECKS PASSED!");
+    console.log("==================================================\n");
     process.exit(0);
   } else {
-    console.error("\n❌ SOME RESPONSIVE TESTS FAILED.\n");
+    console.error("\n❌ TESTS FAILED.\n");
     process.exit(1);
   }
 }
