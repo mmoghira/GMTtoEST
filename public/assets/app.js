@@ -265,7 +265,7 @@
     function convert() {
       const date = parseInput();
       if (!date || Number.isNaN(date.getTime())) {
-        if (resultOutput) resultOutput.textContent = isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora v�lidas." : "Enter a valid date and time.";
+        if (resultOutput) resultOutput.textContent = isFr ? "Veuillez saisir une date et une heure valides." : isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora válidas." : "Enter a valid date and time.";
         return;
       }
       const target = state.mode === "gmt-est" ? targetZone : sourceZone;
