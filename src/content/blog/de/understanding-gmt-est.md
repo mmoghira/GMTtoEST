@@ -28,7 +28,7 @@ faq:
 
 <div class="article-takeaway">
   <strong>Schnelle Antwort</strong>
-  <p>Die Eastern Standard Time (EST) hat eine Abweichung von UTC−5 (5 Stunden hinter der Greenwich Mean Time GMT). Die Sommerzeit (EDT, UTC−4, 4 Stunden hinter GMT) gilt in der Eastern Time in der Regel vom zweiten Sonntag im März bis zum ersten Sonntag im November.</p>
+  <p>Die Eastern Standard Time (EST) hat eine Abweichung von UTC−5 (5 Stunden hinter der Greenwich Mean Time, GMT). Die Sommerzeit (EDT, UTC−4, 4 Stunden hinter GMT) gilt in der Eastern Time in der Regel vom zweiten Sonntag im März bis zum ersten Sonntag im November.</p>
 </div>
 
 Zeitzonen können verwirrend sein, insbesondere bei der Koordinierung von Anrufen oder Meetings über den Atlantik. Zwei der am häufigsten genannten Zeitzonen sind die **Greenwich Mean Time (GMT)** und die **Eastern Standard Time (EST)**. Dieser Leitfaden erklärt, was jede Zeitzone bedeutet, wie sie sich unterscheiden und wie man Zeiten korrekt umrechnet – auch während der Sommerzeit.
