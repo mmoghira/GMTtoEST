@@ -28,7 +28,7 @@ faq:
 
 <div class="article-takeaway">
   <strong>Schnelle Antwort</strong>
-  <p>Die Eastern Standard Time (EST) hat eine Abweichung von UTC-5 (5 Stunden hinter der Greenwich Mean Time GMT). Während der Sommermonate (März bis November) wechselt die Eastern Time jedoch zur Eastern Daylight Time (EDT) mit einer Abweichung von UTC-4 (nur 4 Stunden hinter GMT).</p>
+  <p>Die Eastern Standard Time (EST) hat eine Abweichung von UTC−5 (5 Stunden hinter der Greenwich Mean Time GMT). Die Sommerzeit (EDT, UTC−4, 4 Stunden hinter GMT) gilt in der Eastern Time in der Regel vom zweiten Sonntag im März bis zum ersten Sonntag im November.</p>
 </div>
 
 Zeitzonen können verwirrend sein, insbesondere bei der Koordinierung von Anrufen oder Meetings über den Atlantik. Zwei der am häufigsten genannten Zeitzonen sind die **Greenwich Mean Time (GMT)** und die **Eastern Standard Time (EST)**. Dieser Leitfaden erklärt, was jede Zeitzone bedeutet, wie sie sich unterscheiden und wie man Zeiten korrekt umrechnet – auch während der Sommerzeit.
@@ -47,15 +47,15 @@ GMT wird häufig verwendet in:
 
 Die Eastern Standard Time (EST) entspricht UTC−5, was bedeutet, dass sie genau **5 Stunden hinter der GMT** liegt. Sie gilt in den östlichen Regionen Nordamerikas während der winterlichen Standardzeitperiode und deckt Gebiete von Maine bis Florida sowie Ontario und Teile der Karibik ab.
 
-Zu den wichtigsten Städten in der EST-Zeitzone gehören New York City, Washington D.C., Toronto, Atlanta, Boston und Miami.
+Zu den wichtigsten Städten in der EST-Zeitzone gehören New York City, Washington D.C., Toronto, Atlanta, Boston und Miami. Washington, D.C. folgt der Eastern Time und wechselt zwischen EST (UTC−5) während der Normalzeit und EDT (UTC−4) während der Sommerzeit.
 
 ## Der Sommerzeit-Faktor: EDT
 
-Vom **zweiten Sonntag im März** bis zum **ersten Sonntag im November** stellen die meisten Regionen der Eastern Time ihre Uhren um eine Stunde vor auf die **Eastern Daylight Time (EDT)**. Diese entspricht UTC−4 und liegt somit nur **4 Stunden hinter der GMT**.
+Die Sommerzeit (EDT) gilt in der Eastern Time in der Regel vom **zweiten Sonntag im März** bis zum **ersten Sonntag im November**. In diesem Zeitraum stellen die meisten Regionen der Eastern Time ihre Uhren um eine Stunde vor auf die **Eastern Daylight Time (EDT)**. Diese entspricht UTC−4 und liegt somit nur **4 Stunden hinter der GMT**.
 
 Das bedeutet konkret:
-- **November bis März (Winter):** GMT ist 5 Stunden vor der Eastern Time (EST)
-- **März bis November (Sommer):** GMT ist 4 Stunden vor der Eastern Time (EDT)
+- **Winter (erster Sonntag im November bis zweiter Sonntag im März):** GMT ist 5 Stunden vor der Eastern Time (EST)
+- **Sommerzeit (zweiter Sonntag im März bis erster Sonntag im November):** GMT ist 4 Stunden vor der Eastern Time (EDT)
 
 Viele Menschen, die nach "GMT zu EST" suchen, vergessen diese saisonale Zeitumstellung. Prüfen Sie daher immer, ob das gewünschte Datum in die Standard- oder Sommerzeit fällt.
 
