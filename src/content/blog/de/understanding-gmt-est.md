@@ -35,7 +35,7 @@ Zeitzonen können verwirrend sein, insbesondere bei der Koordinierung von Anrufe
 
 ## Was ist GMT?
 
-Die Greenwich Mean Time (GMT) ist die mittlere Sonnenzeit am Royal Observatory in Greenwich, London. Sie dient als universelle Basis, an der alle anderen Zeitzonen weltweit gemessen werden. GMT liegt bei UTC±0 und kennt **keine** Sommerzeit – sie bleibt das ganze Jahr über gleich.
+GMT (Greenwich Mean Time) ist ein historischer Zeitstandard am Nullmeridian von Greenwich und entspricht für allgemeine Zeitumrechnungen UTC+0. Der moderne internationale Zeitstandard ist UTC. GMT kennt **keine** Sommerzeit – sie bleibt das ganze Jahr über konstant bei UTC+0.
 
 GMT wird häufig verwendet in:
 - Der internationalen Luft- und Seefahrtkoordination
