@@ -8,11 +8,12 @@ export function getStaticPaths() {
 
 const lang = getLang(Astro.params.lang);
 const isDe = lang.code === "de";
+const isFr = lang.code === "fr";
 const metaBase = getPageMeta(lang.code, "about");
 const meta = {
   ...metaBase,
-  title: isDe ? "Über uns – GMT zu EST Umrechner" : metaBase.title,
-  description: isDe ? "Erfahren Sie mehr über unsere Mission: Präzise, datumsgenaue Zeitzonenumrechnungen zwischen GMT, EST, EDT und weltweiten Zeitzonen." : metaBase.description,
+  title: isDe ? "Über uns – GMT zu EST Umrechner" : isFr ? "À propos | Convertisseur GMT vers EST" : metaBase.title,
+  description: isDe ? "Erfahren Sie mehr über unsere Mission: Präzise, datumsgenaue Zeitzonenumrechnungen zwischen GMT, EST, EDT und weltweiten Zeitzonen." : isFr ? "Découvrez notre mission : proposer des conversions d'heure précises, synchronisées et tenant compte de l'heure d'été entre GMT, EST, EDT et le monde entier." : metaBase.description,
   keywords: "about gmt to est, about GMTtoEST, about us GMT to EST, timezone converter about",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -32,25 +33,27 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter"
     },
     about: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter",
-      url: `${siteUrl}/${isDe ? "de/" : ""}`,
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter",
+      url: `${siteUrl}/${isDe ? "de/" : isFr ? "fr/" : ""}`,
       logo: `${siteUrl}/assets/logo.png`,
       email: "contact@gmttoestconverter.com",
       description: isDe
         ? "Kostenloser, präziser Zeitzonenumrechner und Ratgeber für GMT- und Eastern Time (EST/EDT) Umrechnungen."
-        : "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
+        : isFr
+          ? "Outil en ligne gratuit et précis pour convertir l'heure entre le méridien de Greenwich (GMT/UTC) et l'heure de l'Est (EST/EDT)."
+          : "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
       foundingDate: "2024"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: isDe ? "Über uns" : "About Us", item: pageUrl }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Über uns" : isFr ? "À propos" : "About Us", item: pageUrl }
       ]
     }
   }
@@ -68,6 +71,16 @@ const schema = [
         <p>Wir verwenden die offiziellen IANA-Zeitzonenregeln (wie z. B. <code>America/New_York</code> und <code>Europe/Berlin</code>), um Sommerzeitumstellungen automatisch und sekundengenau zu berücksichtigen. Unser Umrechner zeigt für jedes gewählte Datum sofort an, ob Standardzeit (EST, UTC−5) oder Sommerzeit (EDT, UTC−4) gilt.</p>
         <h2>Mitwirken & Feedback</h2>
         <p>Möchten Sie einen Fehler melden, Feedback geben oder Verbesserungsvorschläge einbringen? Nutzen Sie gern unsere <a href={`/${lang.code}/contact-us/`}>Kontaktseite</a>.</p>
+      </>
+    ) : isFr ? (
+      <>
+        <p>Le <strong>Convertisseur GMT vers EST</strong> a été développé pour fournir des conversions horaires instantanées et rigoureusement exactes entre le Greenwich Mean Time (GMT/UTC) et l'heure de l'Est nord-américaine (EST/EDT). Notre mission est de rendre la planification et la communication internationales simples, fiables et transparentes pour tous les utilisateurs francophones.</p>
+        <h2>Notre démarche et méthodologie</h2>
+        <p>Pour éliminer tout risque d'erreur d'une heure lors des changements saisonniers, notre plateforme s'appuie directement sur les définitions officielles de la base de données des fuseaux horaires IANA (TZDB) et l'identifiant <code>America/New_York</code>. Notre algorithme prend automatiquement en compte la date sélectionnée pour déterminer si le décalage applicable est l'heure normale (EST, UTC−5) ou l'heure d'été (EDT, UTC−4).</p>
+        <h2>Principes éditoriaux et révision</h2>
+        <p>Tous les guides, tableaux de conversion et contenus explicatifs sont rédigés et vérifiés selon des critères stricts de rigueur scientifique et de clarté pédagogique. Nous croisons nos données avec les publications de référence du Bureau International des Poids et Mesures (BIPM) et du NIST.</p>
+        <h2>Nous contacter et contribuer</h2>
+        <p>Vous souhaitez signaler une anomalie, poser une question technique ou suggérer une amélioration ? Rendez-vous sur notre page <a href={`/${lang.code}/contact-us/`}>Contactez-nous</a>.</p>
       </>
     ) : (
       <>

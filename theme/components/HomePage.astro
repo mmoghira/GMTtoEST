@@ -91,17 +91,17 @@ const publishedDateLabel = formatHomeDate(meta?.pubDate);
 const updatedDateLabel = formatHomeDate(meta?.updatedDate || meta?.pubDate);
 
 // Show editorial sections on homepage in English and German
-const showEditorialSections = kind === "converter" && (lang === "en" || lang === "de");
+const showEditorialSections = kind === "converter" && (lang === "en" || lang === "de" || lang === "fr");
 
 // TOC Items
 const tocItems = [
   { href: "#converter", label: seoKeyword },
   ...(kind === "converter" ? [{ href: "#visual-lab", label: t.visual?.title || (isDe ? "Live-Zeitumrechnung" : "Visual Lab") }] : []),
   ...(showEditorialSections ? [
-    { href: "#how-it-works", label: isDe ? "Berechnungsmethode" : "How the conversion works" },
-    { href: "#conversion-examples", label: isDe ? "Umrechnungsbeispiele" : "Conversion examples" },
-    ...(isDe ? [{ href: "#deutschland-gmt-new-york", label: "Deutschland, GMT & New York" }] : []),
-    { href: "#source-notes", label: isDe ? "Quellen & Datenpflege" : "Sources and maintenance" },
+    { href: "#how-it-works", label: isDe ? "Berechnungsmethode" : isFr ? "Méthode de calcul" : "How the conversion works" },
+    { href: "#conversion-examples", label: isDe ? "Umrechnungsbeispiele" : isFr ? "Exemples de conversion" : "Conversion examples" },
+    ...(isDe ? [{ href: "#deutschland-gmt-new-york", label: "Deutschland, GMT & New York" }] : isFr ? [{ href: "#france-gmt-new-york", label: "France, GMT et New York" }] : []),
+    { href: "#source-notes", label: isDe ? "Quellen & Datenpflege" : isFr ? "Sources et méthodologie" : "Sources and maintenance" },
   ] : []),
   ...(kind !== "guide" && kind !== "difference" && kind !== "reverse" ? [
     { href: "#live-clocks", label: t.clocks.title },
@@ -303,13 +303,15 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     {showEditorialSections && (
       <section class="method-section" id="how-it-works" aria-labelledby="how-it-works-title">
         <div class="method-intro">
-          <p class="eyebrow">{isDe ? "Berechnungsmethode" : isEs ? "Método de conversión" : "Conversion method"}</p>
-          <h2 id="how-it-works-title">{isDe ? "So funktioniert die Umrechnung von GMT in Eastern Time" : isEs ? "Cómo funciona la conversión de GMT a hora del Este" : "How this GMT to EST conversion works"}</h2>
+          <p class="eyebrow">{isDe ? "Berechnungsmethode" : isEs ? "Método de conversión" : isFr ? "Méthode de calcul" : "Conversion method"}</p>
+          <h2 id="how-it-works-title">{isDe ? "So funktioniert die Umrechnung von GMT in Eastern Time" : isEs ? "Cómo funciona la conversión de GMT a hora del Este" : isFr ? "Comment fonctionne la conversion de GMT vers l'heure de l'Est" : "How this GMT to EST conversion works"}</h2>
           <p>
             {isDe ? (
               <>Der Umrechner behandelt GMT als UTC+0 und Eastern Time als IANA-Zone <code>America/New_York</code>. Diese Unterscheidung ist entscheidend, da die Eastern Time im Winter EST (UTC−5) und während der Sommerzeit EDT (UTC−4) verwendet.</>
             ) : isEs ? (
               <>El convertidor trata GMT como UTC+0 y la hora del Este como la zona IANA <code>America/New_York</code>. Esta distinción es fundamental porque Eastern Time opera en EST (UTC−5) durante el horario estándar y en EDT (UTC−4) durante el horario de verano.</>
+            ) : isFr ? (
+              <>Notre convertisseur traite le GMT comme UTC+0 et l'heure de l'Est comme la zone IANA officielle <code>America/New_York</code>. Cette précision est capitale, car l'heure de l'Est applique l'heure normale EST (UTC−5) en hiver et l'heure d'été EDT (UTC−4) en été.</>
             ) : (
               <>The converter treats GMT as UTC+0 and Eastern Time as the IANA zone <code>America/New_York</code>. That distinction matters because Eastern Time is EST at UTC-5 during standard time and EDT at UTC-4 during daylight saving time.</>
             )}
@@ -317,16 +319,16 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
         </div>
         <div class="method-grid">
           <article class="method-card">
-            <h3>{isDe ? "Datumsabhängige Zeitverschiebung" : isEs ? "Desfase según la fecha" : "Date-aware offset"}</h3>
-            <p>{isDe ? "Das gewählte Datum fließt in die Berechnung ein. Daher zeigen Januar und Juli unterschiedliche Zeitabstände für dieselbe GMT-Uhrzeit an." : isEs ? "La fecha seleccionada forma parte del cálculo, por lo que enero y julio muestran desfases distintos para la misma hora GMT." : "The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time."}</p>
+            <h3>{isDe ? "Datumsabhängige Zeitverschiebung" : isEs ? "Desfase según la fecha" : isFr ? "Décalage tenant compte de la date" : "Date-aware offset"}</h3>
+            <p>{isDe ? "Das gewählte Datum fließt in die Berechnung ein. Daher zeigen Januar und Juli unterschiedliche Zeitabstände für dieselbe GMT-Uhrzeit an." : isEs ? "La fecha seleccionada forma parte del cálculo, por lo que enero y julio muestran desfases distintos para la misma hora GMT." : isFr ? "La date sélectionnée est intégrée au calcul. Ainsi, le convertisseur affiche automatiquement 5 heures de décalage en janvier et 4 heures en juillet pour la même heure GMT." : "The selected date is part of the calculation, so January and July can return different Eastern Time labels for the same GMT clock time."}</p>
           </article>
           <article class="method-card">
-            <h3>{isDe ? "Offizielle IANA-Zeitzonenregeln" : isEs ? "Reglas de zona oficial" : "Named zone rules"}</h3>
-            <p>{isDe ? <>Die Verwendung der Zone <code>America/New_York</code> stellt sicher, dass Sommerzeit-Wechsel präzise berücksichtigt werden.</> : isEs ? <>Utilizar la zona <code>America/New_York</code> evita asumir erróneamente que la hora del Este siempre es EST.</> : <>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</>}</p>
+            <h3>{isDe ? "Offizielle IANA-Zeitzonenregeln" : isEs ? "Reglas de zona oficial" : isFr ? "Règles officielles de fuseau IANA" : "Named zone rules"}</h3>
+            <p>{isDe ? <>Die Verwendung der Zone <code>America/New_York</code> stellt sicher, dass Sommerzeit-Wechsel präzise berücksichtigt werden.</> : isEs ? <>Utilizar la zona <code>America/New_York</code> evita asumir erróneamente que la hora del Este siempre es EST.</> : isFr ? <>L'utilisation de l'identifiant officiel <code>America/New_York</code> évite l'erreur fréquente de supposer que l'heure de l'Est reste fixée à EST toute l'année.</> : <>Using <code>America/New_York</code> avoids assuming that Eastern Time is always EST, which is a common scheduling mistake.</>}</p>
           </article>
           <article class="method-card">
-            <h3>{isDe ? "Präzise und verifizierbare Ergebnisse" : isEs ? "Resultado claro y verificable" : "Human-readable result"}</h3>
-            <p>{isDe ? "Das Tool zeigt die konvertierte Uhrzeit, den aktiven Status (EST oder EDT) und die Differenz zu GMT übersichtlich an." : isEs ? "El convertidor muestra la hora convertida, la etiqueta activa (EST o EDT) y el desfase con GMT para que verifiques todo antes de compartirlo." : "The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it."}</p>
+            <h3>{isDe ? "Präzise und verifizierbare Ergebnisse" : isEs ? "Resultado claro y verificable" : isFr ? "Résultats clairs et vérifiables" : "Human-readable result"}</h3>
+            <p>{isDe ? "Das Tool zeigt die konvertierte Uhrzeit, den aktiven Status (EST oder EDT) und die Differenz zu GMT übersichtlich an." : isEs ? "El convertidor muestra la hora convertida, la etiqueta activa (EST o EDT) y el desfase con GMT para que verifiques todo antes de compartirlo." : isFr ? "L'outil affiche l'heure convertie, l'indicateur actif (EST ou EDT) et le décalage effectif avec GMT pour vérifier vos horaires avant tout partage d'agenda." : "The output shows the converted time, the active EST or EDT label, and the GMT offset so you can verify the result before sharing it."}</p>
           </article>
         </div>
       </section>
@@ -373,22 +375,77 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {showEditorialSections && (
       <section class="examples-section" id="conversion-examples" aria-labelledby="conversion-examples-title">
-        <h2 id="conversion-examples-title">{isDe ? "Beispiele für die Umrechnung von GMT in Eastern Time" : isEs ? "Ejemplos de conversión de GMT a hora del Este" : "GMT to Eastern Time examples"}</h2>
+        <h2 id="conversion-examples-title">{isDe ? "Beispiele für die Umrechnung von GMT in Eastern Time" : isEs ? "Ejemplos de conversión de GMT a hora del Este" : isFr ? "Exemples de conversion de GMT vers l'heure de l'Est" : "GMT to Eastern Time examples"}</h2>
         <p>
-          {isDe ? "Diese Beispiele verdeutlichen den Unterschied zwischen Sommer- und Winterzeit. Nutzen Sie den Rechner oben für Ihr Wunschdatum." : isEs ? "Estos ejemplos demuestran por qué un convertidor con detección de fecha es más seguro que restar cinco horas en todo momento. Usa el selector arriba para la fecha exacta que necesites." : "These examples show why a date-aware converter is safer than subtracting five hours every time. Use the input above for the exact date and time you need."}
+          {isDe ? "Diese Beispiele verdeutlichen den Unterschied zwischen Sommer- und Winterzeit. Nutzen Sie den Rechner oben für Ihr Wunschdatum." : isEs ? "Estos ejemplos demuestran por qué un convertidor con detección de fecha es más seguro que restar cinco horas en todo momento. Usa el selector arriba para la fecha exacta que necesites." : isFr ? "Ces exemples illustrent concrètement l'impact de l'heure d'été nord-américaine. Utilisez notre convertisseur interactif ci-dessus pour calculer l'heure exacte à la date de votre choix." : "These examples show why a date-aware converter is safer than subtracting five hours every time. Use the input above for the exact date and time you need."}
         </p>
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">{isDe ? "Beispiele für die Zeitumrechnung zwischen GMT und Eastern Time nach Jahreszeiten" : isEs ? "Ejemplos de conversión de GMT a hora del Este por estación" : "GMT to Eastern Time conversions examples by season"}</caption>
+            <caption class="sr-only">{isDe ? "Beispiele für die Zeitumrechnung zwischen GMT und Eastern Time nach Jahreszeiten" : isEs ? "Ejemplos de conversión de GMT a hora del Este por estación" : isFr ? "Exemples de conversion de GMT vers l'heure de l'Est selon les saisons et l'heure d'été" : "GMT to Eastern Time conversions examples by season"}</caption>
             <thead>
-              <tr><th>{isDe ? "GMT-Uhrzeit" : isEs ? "Hora GMT" : "GMT time"}</th><th>{isDe ? "Eastern Time Ergebnis" : isEs ? "Resultado en hora del Este" : "Eastern result"}</th><th>{isDe ? "Hintergrund" : isEs ? "Motivo del cambio" : "Why it changes"}</th></tr>
+              <tr><th>{isDe ? "GMT-Uhrzeit" : isEs ? "Hora GMT" : isFr ? "Heure GMT" : "GMT time"}</th><th>{isDe ? "Eastern Time Ergebnis" : isEs ? "Resultado en hora del Este" : isFr ? "Résultat en heure de l'Est" : "Eastern result"}</th><th>{isDe ? "Hintergrund" : isEs ? "Motivo del cambio" : isFr ? "Contexte et décalage" : "Why it changes"}</th></tr>
             </thead>
             <tbody>
-              <tr><td>{isDe ? "15. Januar, 12:00 Uhr GMT" : isEs ? "15 de enero, 12:00 GMT" : "January 15, 12:00 GMT"}</td><td>{isDe ? "07:00 Uhr EST" : isEs ? "07:00 EST" : "7:00 AM EST"}</td><td>{isDe ? "Eastern Time befindet sich in der Normalzeit (EST, UTC−5)." : isEs ? "Eastern Time opera en horario estándar (EST, UTC−5)." : "Eastern Time is on standard time, UTC-5."}</td></tr>
-              <tr><td>{isDe ? "15. Juli, 12:00 Uhr GMT" : isEs ? "15 de julio, 12:00 GMT" : "July 15, 12:00 GMT"}</td><td>{isDe ? "08:00 Uhr EDT" : isEs ? "08:00 EDT" : "8:00 AM EDT"}</td><td>{isDe ? "Eastern Time befindet sich in der Sommerzeit (EDT, UTC−4)." : isEs ? "Eastern Time opera en horario de verano (EDT, UTC−4)." : "Eastern Time is on daylight time, UTC-4."}</td></tr>
-              <tr><td>{isDe ? "Umschalttermine im März/November" : isEs ? "Fechas de cambio estacional" : "November transition dates"}</td><td>{isDe ? "Exaktes Datum prüfen" : isEs ? "Verificar fecha exacta" : "Check the exact date"}</td><td>{isDe ? "Die Zeitverschiebung wechselt zwischen 4 und 5 Stunden." : isEs ? "El desfase cambia entre 4 y 5 horas según la fecha del cambio." : "The local offset changes near the daylight saving transition."}</td></tr>
+              <tr><td>{isDe ? "15. Januar, 12:00 Uhr GMT" : isEs ? "15 de enero, 12:00 GMT" : isFr ? "15 janvier à 12:00 GMT" : "January 15, 12:00 GMT"}</td><td>{isDe ? "07:00 Uhr EST" : isEs ? "07:00 EST" : isFr ? "07:00 EST" : "7:00 AM EST"}</td><td>{isDe ? "Eastern Time befindet sich in der Normalzeit (EST, UTC−5)." : isEs ? "Eastern Time opera en horario estándar (EST, UTC−5)." : isFr ? "L'heure de l'Est est en heure normale (EST, UTC−5, 5 heures de retard)." : "Eastern Time is on standard time, UTC-5."}</td></tr>
+              <tr><td>{isDe ? "15. Juli, 12:00 Uhr GMT" : isEs ? "15 de julio, 12:00 GMT" : isFr ? "15 juillet à 12:00 GMT" : "July 15, 12:00 GMT"}</td><td>{isDe ? "08:00 Uhr EDT" : isEs ? "08:00 EDT" : isFr ? "08:00 EDT" : "8:00 AM EDT"}</td><td>{isDe ? "Eastern Time befindet sich in der Sommerzeit (EDT, UTC−4)." : isEs ? "Eastern Time opera en horario de verano (EDT, UTC−4)." : isFr ? "L'heure de l'Est est en heure d'été (EDT, UTC−4, 4 heures de retard)." : "Eastern Time is on daylight time, UTC-4."}</td></tr>
+              <tr><td>{isDe ? "Umschalttermine im März/November" : isEs ? "Fechas de cambio estacional" : isFr ? "Périodes de bascule (mars et novembre)" : "November transition dates"}</td><td>{isDe ? "Exaktes Datum prüfen" : isEs ? "Verificar fecha exacta" : isFr ? "Vérifier la date exacte" : "Check the exact date"}</td><td>{isDe ? "Die Zeitverschiebung wechselt zwischen 4 und 5 Stunden." : isEs ? "El desfase cambia entre 4 y 5 horas según la fecha del cambio." : isFr ? "Le décalage horaire passe de 5 heures à 4 heures au printemps, puis de 4 à 5 heures en automne." : "The local offset changes near the daylight saving transition."}</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+    )}
+
+    
+
+    {isFr && kind === "converter" && (
+      <section class="examples-section" id="france-gmt-new-york" aria-labelledby="fr-ny-vergleich-title" style="padding-top: 20px; padding-bottom: 25px;">
+        <div>
+          <h2 id="fr-ny-vergleich-title">France (Paris), GMT et New York : comparaison des décalages horaires</h2>
+          <p>
+            Pour les professionnels et particuliers situés en France, en Belgique, en Suisse ou au Canada francophone, la coordination entre l'heure d'Europe centrale (CET/CEST), le temps moyen de Greenwich (GMT/UTC) et l'heure de l'Est américaine (New York / EST / EDT) est essentielle au quotidien :
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Comparaison des fuseaux horaires entre la France (Paris), GMT et New York</caption>
+              <thead>
+                <tr>
+                  <th>Zone / Ville</th>
+                  <th>Heure normale (Hiver)</th>
+                  <th>Heure d'été (DST)</th>
+                  <th>Différence avec GMT</th>
+                  <th>Différence avec New York</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>France & Europe centrale (Paris / CET / CEST)</strong></td>
+                  <td>CET (UTC+1)</td>
+                  <td>CEST (UTC+2)</td>
+                  <td>+1 h en hiver / +2 h en été</td>
+                  <td>6 heures d'avance (régulier)</td>
+                </tr>
+                <tr>
+                  <td><strong>Greenwich Mean Time (GMT / UTC)</strong></td>
+                  <td>GMT (UTC+0)</td>
+                  <td>GMT (UTC+0 permanent)</td>
+                  <td>0 h (référence)</td>
+                  <td>5 h (hiver) / 4 h (été) d'avance</td>
+                </tr>
+                <tr>
+                  <td><strong>New York (Eastern Time / EST / EDT)</strong></td>
+                  <td>EST (UTC−5)</td>
+                  <td>EDT (UTC−4)</td>
+                  <td>5 h (hiver) / 4 h (été) de retard</td>
+                  <td>0 h (référence locale)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-top: 1.25rem;">
+            <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">
+              <strong>Point d'attention sur les décalages de changement d'heure en 2026 :</strong> L'Union européenne et les États-Unis n'effectuent pas leurs passages à l'heure d'été aux mêmes dates. En 2026, les États-Unis basculent vers l'EDT le <strong>dimanche 8 mars 2026</strong>, tandis que la France et l'Europe ne passent à l'heure d'été (CEST) que le <strong>dimanche 29 mars 2026</strong>. Durant ces 3 semaines au printemps, le décalage horaire entre Paris et New York est réduit temporairement à <strong>5 heures au lieu des 6 heures habituelles</strong>. De même en automne, l'Europe repasse à l'heure d'hiver (CET) le <strong>dimanche 25 octobre 2026</strong> alors que les États-Unis restent en EDT jusqu'au <strong>dimanche 1er novembre 2026</strong>, créant une semaine de transition où le décalage est également de <strong>5 heures</strong>.
+            </p>
+          </div>
         </div>
       </section>
     )}
@@ -448,14 +505,14 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
 
     {showEditorialSections && (
       <section class="source-notes" id="source-notes" aria-labelledby="source-notes-title">
-        <h2 id="source-notes-title">{isDe ? "Quellen und Datenpflege" : isEs ? "Fuentes y mantenimiento" : "Sources and maintenance"}</h2>
+        <h2 id="source-notes-title">{isDe ? "Quellen und Datenpflege" : isEs ? "Fuentes y mantenimiento" : isFr ? "Sources et méthodologie éditoriale" : "Sources and maintenance"}</h2>
         <p>
-          {isDe ? "Diese Website wird als praktisches Tool zur Termin- und Reiseplanung gepflegt. Da Zeitzonenregeln gesetzlichen Änderungen unterliegen können, empfehlen wir bei geschäftskritischen Terminen eine zusätzliche Überprüfung mit den jeweiligen Veranstaltern." : isEs ? "Este sitio se mantiene como una utilidad práctica de programación y coordinación horaria. Las normativas de zonas horarias pueden cambiar por legislación oficial, por lo que recomendamos verificar horarios críticos con la autoridad u organizador correspondiente." : "This site is maintained as a practical scheduling utility. Time zone rules can change by law, so critical travel, legal, medical, broadcast, or financial schedules should still be checked against the official organizer or local authority."}
+          {isDe ? "Diese Website wird als praktisches Tool zur Termin- und Reiseplanung gepflegt. Da Zeitzonenregeln gesetzlichen Änderungen unterliegen können, empfehlen wir bei geschäftskritischen Terminen eine zusätzliche Überprüfung mit den jeweiligen Veranstaltern." : isEs ? "Este sitio se mantiene como una utilidad práctica de programación y coordinación horaria. Las normativas de zonas horarias pueden cambiar por legislación oficial, por lo que recomendamos verificar horarios críticos con la autoridad u organizador correspondiente." : isFr ? "Ce site est maintenu comme un outil pratique de conversion et de planification internationale. Les règles de fuseaux horaires étant régies par des décisions législatives officielles, nous recommandons pour les échéances critiques de vérifier auprès des organismes concernés." : "This site is maintained as a practical scheduling utility. Time zone rules can change by law, so critical travel, legal, medical, broadcast, or financial schedules should still be checked against the official organizer or local authority."}
         </p>
         <ul>
-          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">{isDe ? "IANA Zeitzonen-Datenbank" : isEs ? "Base de datos de zonas horarias de la IANA" : "IANA Time Zone Database"}</a> {isDe ? "für offizielle Zeitzonendefinitionen." : isEs ? "para las reglas oficiales de zonas con nombre." : "for named time zone rule data."}</li>
-          <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">{isDe ? "NIST Time and Frequency Division" : isEs ? "División de Tiempo y Frecuencia del NIST" : "NIST Time and Frequency Division"}</a> {isDe ? "für amtliche Zeitmessungsstandards." : isEs ? "para el contexto oficial de medición horaria." : "for official timekeeping context."}</li>
-          <li><a href={isDe ? "/de/disclaimer/" : isEs ? "/es/disclaimer/" : "/disclaimer/"}>{isDe ? "Haftungsausschluss & Genauigkeit" : isEs ? "Descargo de responsabilidad y precisión" : "Accuracy disclaimer"}</a> {isDe ? "für Nutzungshinweise und Prüfempfehlungen." : isEs ? "para límites y recomendaciones de verificación." : "for limitations and recommended verification steps."}</li>
+          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">{isDe ? "IANA Zeitzonen-Datenbank" : isEs ? "Base de datos de zonas horarias de la IANA" : isFr ? "Base de données des fuseaux horaires IANA (TZDB)" : "IANA Time Zone Database"}</a> {isDe ? "für offizielle Zeitzonendefinitionen." : isEs ? "para las reglas oficiales de zonas con nombre." : isFr ? "pour les définitions et transitions officielles des fuseaux horaires." : "for named time zone rule data."}</li>
+          <li><a href="https://www.nist.gov/pml/time-and-frequency-division" target="_blank" rel="noopener noreferrer">{isDe ? "NIST Time and Frequency Division" : isEs ? "División de Tiempo y Frecuencia del NIST" : isFr ? "NIST & Bureau International des Poids et Mesures (BIPM)" : "NIST Time and Frequency Division"}</a> {isDe ? "für amtliche Zeitmessungsstandards." : isEs ? "para el contexto oficial de medición horaria." : isFr ? "pour les normes internationales de mesure du temps (UTC/temps atomique)." : "for official timekeeping context."}</li>
+          <li><a href={isDe ? "/de/disclaimer/" : isEs ? "/es/disclaimer/" : isFr ? "/fr/disclaimer/" : "/disclaimer/"}>{isDe ? "Haftungsausschluss & Genauigkeit" : isEs ? "Descargo de responsabilidad y precisión" : isFr ? "Avis de non-responsabilité et limites d'utilisation" : "Accuracy disclaimer"}</a> {isDe ? "für Nutzungshinweise und Prüfempfehlungen." : isEs ? "para límites y recomendaciones de verificación." : isFr ? "pour les recommandations de vérification et conditions d'usage." : "for limitations and recommended verification steps."}</li>
         </ul>
       </section>
     )}
@@ -711,9 +768,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
+      <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : isFr ? "Résumé et prochaines étapes" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
+      <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : isFr ? "Prochaine étape :" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
@@ -801,9 +858,9 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
     </section>
 
     <section class="source-notes" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
-      <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : "Quick Summary & Next Steps")}</h2>
+      <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : isFr ? "Résumé et prochaines étapes" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
-      <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : "Next Step:"}</strong> {pageCTA}</p>
+      <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : isFr ? "Prochaine étape :" : "Next Step:"}</strong> {pageCTA}</p>
     </section>
   </>
 )}
@@ -921,6 +978,119 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
       <h2>{pageConclusionHeading || (isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen y siguiente paso" : isFr ? "Résumé et prochaines étapes" : "Quick Summary & Next Steps")}</h2>
       <p>{pageConclusion}</p>
       <p><strong>{isDe ? "Nächster Schritt:" : isEs ? "Siguiente paso:" : isFr ? "Prochaine étape :" : "Next Step:"}</strong> {pageCTA}</p>
+    </section>
+  </>
+)}
+
+<!-- 6. DEDICATED TOOL LAYOUT SEQUENCE -->
+{kind === "tool" && (
+  <>
+    <section class="hero" style="grid-template-columns: 1fr; max-width: 900px; margin: 0 auto 2rem;">
+      <div class="hero-copy">
+        <p class="eyebrow">{pageEyebrow}</p>
+        <p style="font-size: 1.15rem; line-height: 1.7; color: var(--text-muted);">{meta.description || description}</p>
+      </div>
+    </section>
+
+    {labelKey === "tools" && (
+      <section class="other-tools" style="max-width: 1000px; margin: 0 auto 3rem;">
+        <h2 style="font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">{isFr ? "Tous nos outils et convertisseurs de fuseaux horaires" : "All Time Zone Tools"}</h2>
+        <div class="related-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "world-clock")}>🌍 {isFr ? "Horloge mondiale" : "World Clock"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Heure exacte en direct dans plus de 200 villes du monde avec indicateurs jour/nuit." : "Live time in 200+ cities worldwide."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "meeting-planner")}>📅 {isFr ? "Planificateur de réunion" : "Meeting Planner"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Trouvez facilement les créneaux communs et heures de travail entre plusieurs villes." : "Find overlapping work hours across multiple cities."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "time-difference-calculator")}>⚖️ {isFr ? "Calculateur de décalage horaire" : "Time Difference Calculator"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Calculez le nombre d'heures de différence exact entre deux villes ou fuseaux." : "Calculate exact time gap between any two cities."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "event-time-converter")}>🎯 {isFr ? "Convertisseur d'heure d'événement" : "Event Time Converter"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Créez des liens d'événements et exportez vers les calendriers .ics." : "Create shareable event links and export .ics calendar events."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "business-hours-overlap")}>💼 {isFr ? "Chevauchement des heures de bureau" : "Business Hours Overlap"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Visualisez les plages de travail compatibles pour équipes à distance." : "Visualize remote team working hours & optimal overlap windows."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "holiday-calendar")}>🎉 {isFr ? "Calendrier des jours fériés" : "Holiday Calendar"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Jours fériés internationaux et calcul des jours ouvrés dans 40+ pays." : "Public holidays and business day calculator for 40+ countries."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "travel-planner")}>✈️ {isFr ? "Planificateur de voyage" : "Travel Planner"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Heures d'arrivée locales et conseils pour limiter le décalage horaire (jet lag)." : "Arrival times, jet lag score & flight planning across time zones."}</p>
+          </article>
+          <article class="related-card" style="padding: 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;">
+            <h3 style="margin: 0 0 0.5rem;"><a href={pageUrl(lang, "developer-tools")}>🛠️ {isFr ? "Outils pour développeurs" : "Developer Toolkit"}</a></h3>
+            <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">{isFr ? "Timestamp Unix, générateur ISO 8601, fuseaux IANA et extraits de code." : "Unix timestamp converter, ISO 8601 builder & code snippets."}</p>
+          </article>
+        </div>
+      </section>
+    )}
+
+    {labelKey !== "tools" && (
+      <section class="content" style="max-width: 900px; margin: 0 auto 3rem;">
+        <article style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.6rem; margin-top: 0;">{isFr ? "Présentation et mode d'emploi" : "Tool Overview & Instructions"}</h2>
+          <p style="line-height: 1.7; color: var(--text-muted);">{pageExplanation || (isFr ? "Cet outil a été conçu pour simplifier vos calculs d'horaires et faciliter la coordination entre fuseaux horaires internationaux." : "This tool is designed to simplify time calculations and coordinate across international time zones.")}</p>
+          
+          <h3 style="font-size: 1.3rem; margin-top: 1.5rem;">{isFr ? "Pour qui est conçu cet outil ?" : "Who is this tool for?"}</h3>
+          <p style="line-height: 1.7; color: var(--text-muted);">{isFr ? "Ce module s'adresse aux équipes distribuées, aux gestionnaires de projets internationaux, aux voyageurs et à toute personne devant planifier des activités transfrontalières sans commettre d'erreur de fuseau." : "This module is built for distributed teams, international project managers, travelers, and anyone coordinating across borders."}</p>
+
+          <h3 style="font-size: 1.3rem; margin-top: 1.5rem;">{isFr ? "Conseils pour éviter les erreurs fréquentes" : "Best Practices & Common Mistakes"}</h3>
+          <ul style="line-height: 1.7; color: var(--text-muted); padding-left: 1.25rem;">
+            <li>{isFr ? "Vérifiez toujours si l'une des villes applique l'heure d'été (DST) à la date prévue de l'événement." : "Always check whether daylight saving time is active at the planned date."}</li>
+            <li>{isFr ? "Faites attention au passage de la date (changement de jour lors du franchissement de minuit)." : "Be mindful of date rollover when crossing midnight."}</li>
+            <li>{isFr ? "Utilisez le format 24 heures pour éliminer toute ambiguïté entre matin (AM) et après-midi (PM)." : "Use 24-hour military time to avoid AM/PM confusion."}</li>
+          </ul>
+        </article>
+      </section>
+    )}
+
+    <section class="use-cases" aria-labelledby="uses">
+      <h2 id="uses">{t.useCases?.title || (isFr ? "Cas d'usage pratiques" : "Use Cases")}</h2>
+      {activeUseCases.map((item: any) => (
+        <article><h3>{item.title}</h3><p>{item.text}</p></article>
+      ))}
+    </section>
+
+    {activeTopics && activeTopics.length > 0 && (
+      <section class="content" aria-labelledby="topics">
+        <h2 id="topics">{t.topics?.title || (isFr ? "Repères essentiels" : "Key Topics")}</h2>
+        {activeTopics.map((topic: any) => (
+          <article>
+            <h3>{topic.title}</h3>
+            <p>{topic.text}</p>
+          </article>
+        ))}
+      </section>
+    )}
+
+    <section class="faq" aria-labelledby="faq">
+      <h2 id="faq">{t.faqs?.title || (isFr ? "Foire aux questions (FAQ)" : "FAQs")}</h2>
+      {activeFaqs.map((item: any) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+    </section>
+
+    <section class="other-tools" aria-labelledby="other-tools">
+      <h2 id="other-tools">{isFr ? "Autres outils recommandés" : "Recommended Tools"}</h2>
+      <div class="related-grid">
+        <article class="related-card">
+          <div class="related-card-title"><a href={pageUrl(lang, "")}>{isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter"}</a></div>
+          <div class="related-card-text">{isFr ? "Convertissez l'heure GMT en direct vers l'heure de l'Est (EST/EDT) avec tableau 24 h." : "Convert GMT directly to Eastern Time."}</div>
+        </article>
+        <article class="related-card">
+          <div class="related-card-title"><a href={pageUrl(lang, "world-clock")}>{isFr ? "Horloge mondiale" : "World Clock"}</a></div>
+          <div class="related-card-text">{isFr ? "Consultez l'heure actuelle dans plus de 200 métropoles mondiales." : "Live time in 200+ cities worldwide."}</div>
+        </article>
+        <article class="related-card">
+          <div class="related-card-title"><a href={pageUrl(lang, "time-zone-guide")}>{isFr ? "Guide des fuseaux horaires" : "Time Zone Guide"}</a></div>
+          <div class="related-card-text">{isFr ? "Comprenez le fonctionnement de l'UTC, du GMT, de l'EST et des décalages d'heure d'été." : "Learn the fundamentals of UTC, GMT and DST."}</div>
+        </article>
+      </div>
     </section>
   </>
 )}

@@ -8,12 +8,13 @@ export function getStaticPaths() {
 
 const lang = getLang(Astro.params.lang);
 const isDe = lang.code === "de";
+const isFr = lang.code === "fr";
 const email    = "contact@gmttoestconverter.com";
 const metaBase = getPageMeta(lang.code, "contact");
 const meta = {
   ...metaBase,
-  title: isDe ? "Kontakt | GMT zu EST Umrechner" : (lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title),
-  description: isDe ? "Kontaktieren Sie das Team von GMT zu EST Umrechner für Fragen, Feedback, Funktionswünsche oder Partnerschaften." : (lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description),
+  title: isDe ? "Kontakt | GMT zu EST Umrechner" : isFr ? "Contactez-nous | Convertisseur GMT vers EST" : (lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title),
+  description: isDe ? "Kontaktieren Sie das Team von GMT zu EST Umrechner für Fragen, Feedback, Funktionswünsche oder Partnerschaften." : isFr ? "Contactez l'équipe du Convertisseur GMT vers EST pour vos questions, remarques, suggestions d'amélioration ou partenariats." : (lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description),
   keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -35,13 +36,13 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: isDe ? "Kontakt" : (lang.code === "th" ? "ติดต่อเรา" : "Contact Us"), item: pageCanonical }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Kontakt" : isFr ? "Contactez-nous" : (lang.code === "th" ? "ติดต่อเรา" : "Contact Us"), item: pageCanonical }
       ]
     }
   }
@@ -53,7 +54,77 @@ const schema = [
 
   <section class="contact-page" aria-labelledby="contact-heading">
 
-    {isDe ? (
+    {isFr ? (
+      <div class="contact-header">
+        <h1 id="contact-heading">Contactez-nous</h1>
+        <p>Vous avez une question, une remarque ou une suggestion d'amélioration ? Remplissez le formulaire ci-dessous et notre équipe vous répondra sous 1 à 2 jours ouvrés.</p>
+        <p class="contact-email-line">
+          Ou écrivez-nous directement par e-mail :
+          <a href={`mailto:${email}`}>{email}</a>
+        </p>
+      </div>
+
+      <!-- Success message -->
+      <div class="contact-success" id="contact-success" hidden>
+        <span class="success-icon">✓</span>
+        <div>
+          <strong>Message envoyé avec succès !</strong>
+          <p>Merci de nous avoir contactés. Nous vous répondrons dans un délai de 1 à 2 jours ouvrés.</p>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <form
+        id="contact-form"
+        class="contact-form"
+        action={`https://formsubmit.co/${email}`}
+        method="POST"
+      >
+        <input type="hidden" name="_subject"  value="Nouveau message depuis gmttoestconverter.com (FR)" />
+        <input type="hidden" name="_captcha"  value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next"     value={`${siteUrl}/${lang.code}/contact-us/?sent=1`} />
+        <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="cf-name">Nom complet <span class="req">*</span></label>
+            <input id="cf-name" type="text" name="name" placeholder="Jean Dupont" required autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="cf-email">Adresse e-mail <span class="req">*</span></label>
+            <input id="cf-email" type="email" name="email" placeholder="nom@exemple.fr" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-subject">Sujet <span class="req">*</span></label>
+          <select id="cf-subject" name="subject" required>
+            <option value="" disabled selected>Sélectionnez un sujet…</option>
+            <option value="General Question">Question générale</option>
+            <option value="Bug Report">Signaler une anomalie (Bug Report)</option>
+            <option value="Feature Request">Suggestion de fonctionnalité</option>
+            <option value="Translation Help">Aide à la traduction</option>
+            <option value="Partnership / Advertising">Partenariat / Collaboration</option>
+            <option value="Privacy / Data Request">Demande relative aux données personnelles</option>
+            <option value="Other">Autre</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-message">Message <span class="req">*</span></label>
+          <textarea id="cf-message" name="message" rows="6" placeholder="Comment pouvons-nous vous aider ?…" required></textarea>
+        </div>
+
+        <button type="submit" class="form-submit">
+          Envoyer le message <span class="arrow">→</span>
+        </button>
+
+        <p class="form-note">
+          En soumettant ce formulaire, vous acceptez notre <a href={`/${lang.code}/privacy-policy/`}>Politique de confidentialité</a>.
+        </p>
+      </form>
+    ) : isDe ? (
       <div class="contact-header">
         <h1 id="contact-heading">Kontakt (Contact Us)</h1>
         <p>Haben Sie Fragen, Feedback oder Verbesserungsvorschläge? Füllen Sie das Formular aus und wir melden uns innerhalb von 1–2 Werktagen.</p>
