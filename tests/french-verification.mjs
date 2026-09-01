@@ -80,7 +80,6 @@ const requiredFrench = [
   'CONVERTISSEURS',
   'GUIDES',
   'OUTILS',
-  'RÉGIONS',
   'ENTREPRISE',
   'CONTACT',
   'LANGUE',
