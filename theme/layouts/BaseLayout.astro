@@ -56,6 +56,7 @@ const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:
 const isEs = lang === "es";
 const isDe = lang === "de";
 const isFr = lang === "fr";
+const isIt = lang === "it";
 const ogLocaleMap: Record<string, string> = {
   de: "de_DE",
   es: "es_ES",
@@ -73,7 +74,7 @@ const ogLocaleMap: Record<string, string> = {
   en: "en_US"
 };
 const ogLocale = ogLocaleMap[lang] || "en_US";
-const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startseite" : isFr ? "Accueil" : "Home");
+const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : "Home");
 const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
 const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
 let computedHreflangCodes = hreflangCodes;
@@ -119,18 +120,20 @@ const hreflangAlternates = isNoindexPage
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = (lang === "en" ? meta?.seoTitle : undefined) || title;
 const titleNeedsLongBrand = seoTitle.length < 30;
-const titleCanUseShortBrand = !["de", "es", "fr"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
+const titleCanUseShortBrand = !["de", "es", "fr", "it"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
 const brandedTitle = isDe
   ? (titleNeedsLongBrand && !seoTitle.includes("GMT zu EST") ? `${seoTitle} | GMT zu EST Umrechner` : seoTitle)
   : isEs
     ? (titleNeedsLongBrand && !seoTitle.includes("GMT a EST") ? `${seoTitle} | Convertidor GMT a EST` : seoTitle)
     : isFr
       ? (titleNeedsLongBrand && !seoTitle.includes("GMT vers EST") ? `${seoTitle} | Convertisseur GMT vers EST` : seoTitle)
-      : titleNeedsLongBrand
-        ? `${seoTitle} | GMT to EST Time Converter`
-        : titleCanUseShortBrand
-          ? `${seoTitle} | GMT to EST`
-          : seoTitle;
+      : isIt
+        ? (titleNeedsLongBrand && !seoTitle.includes("da GMT a EST") && !seoTitle.includes("GMT a EST") ? `${seoTitle} | Convertitore da GMT a EST` : seoTitle)
+        : titleNeedsLongBrand
+          ? `${seoTitle} | GMT to EST Time Converter`
+          : titleCanUseShortBrand
+            ? `${seoTitle} | GMT to EST`
+            : seoTitle;
 const documentTitle = truncateSeoText(brandedTitle, 60);
 const descriptionWithContext = description.length < 70 ? `${title}. ${description}` : description;
 const descriptionExtensions: Record<string, string> = {
