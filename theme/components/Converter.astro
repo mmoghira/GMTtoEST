@@ -3,6 +3,7 @@ const { intent = "converter", t, context, lang = "en" } = Astro.props;
 const isEs = lang === "es";
 const isDe = lang === "de";
 const isFr = lang === "fr";
+const isIt = lang === "it";
 const variant = t.converter.variants[intent] || t.converter.variants.converter;
 
 import { replaceTemplates } from "theme/i18n/config";
@@ -19,19 +20,19 @@ const note = replaceTemplates(variant.note, replacements);
 const sourceLabel = context?.from || "GMT";
 const targetLabel = context?.to === "EST" ? "EST / EDT" : context?.to || "EST / EDT";
 const targetTimeLabel = context?.to === "EST"
-  ? (isDe ? "Eastern Time" : isEs ? "la hora del Este" : isFr ? "l'heure de l'Est" : "Eastern Time")
+  ? (isDe ? "Eastern Time" : isEs ? "la hora del Este" : isFr ? "l'heure de l'Est" : isIt ? "l'Eastern Time" : "Eastern Time")
   : context?.to
-    ? (isDe ? `${context.to}-Zeit` : isEs ? `hora ${context.to}` : isFr ? `heure ${context.to}` : `${context.to} time`)
-    : (t.converter.toEastern || (isDe ? "Eastern Time" : isEs ? "la hora del Este" : isFr ? "l'heure de l'Est" : "Eastern Time"));
+    ? (isDe ? `${context.to}-Zeit` : isEs ? `hora ${context.to}` : isFr ? `heure ${context.to}` : isIt ? `ora ${context.to}` : `${context.to} time`)
+    : (t.converter.toEastern || (isDe ? "Eastern Time" : isEs ? "la hora del Este" : isFr ? "l'heure de l'Est" : isIt ? "l'Eastern Time" : "Eastern Time"));
 
-const toPrefix = isDe ? "in " : isEs ? "a " : isFr ? "vers " : "to ";
+const toPrefix = isDe ? "in " : isEs ? "a " : isFr ? "vers " : isIt ? "in " : "to ";
 const inputLabel = context
-  ? (isDe ? `${sourceLabel}-Zeit` : isEs ? `Hora ${sourceLabel}` : isFr ? `Heure ${sourceLabel}` : `${sourceLabel} time`)
+  ? (isDe ? `${sourceLabel}-Zeit` : isEs ? `Hora ${sourceLabel}` : isFr ? `Heure ${sourceLabel}` : isIt ? `Ora ${sourceLabel}` : `${sourceLabel} time`)
   : input;
-const swapAria = t.converter.swap || (isDe ? "Umrechnungsrichtung wechseln" : isEs ? "Cambiar dirección de conversión" : isFr ? "Inverser le sens de conversion" : "Swap conversion direction");
-const directionAria = t.converter.direction || (isDe ? "Umrechnungsrichtung" : isEs ? "Dirección de la conversión" : isFr ? "Sens de la conversion" : "Conversion direction");
-const copyAria = isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : "Copy conversion result to clipboard";
-const copyTitle = isDe ? "In Zwischenablage kopieren" : isEs ? "Copiar al portapapeles" : isFr ? "Copier dans le presse-papiers" : "Copy to clipboard";
+const swapAria = t.converter.swap || (isDe ? "Umrechnungsrichtung wechseln" : isEs ? "Cambiar dirección de conversión" : isFr ? "Inverser le sens de conversion" : isIt ? "Inverti direzione di conversione" : "Swap conversion direction");
+const directionAria = t.converter.direction || (isDe ? "Umrechnungsrichtung" : isEs ? "Dirección de la conversión" : isFr ? "Sens de la conversion" : isIt ? "Direzione della conversione" : "Conversion direction");
+const copyAria = isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : isIt ? "Copia il risultato della conversione negli appunti" : "Copy conversion result to clipboard";
+const copyTitle = isDe ? "In Zwischenablage kopieren" : isEs ? "Copiar al portapapeles" : isFr ? "Copier dans le presse-papiers" : isIt ? "Copia negli appunti" : "Copy to clipboard";
 const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replacements);
 ---
 
@@ -54,8 +55,8 @@ const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replac
     {variant.swap && <button type="button" data-role="swap" class="swap-button" aria-label={swapAria}>⇄</button>}
   </div>
   <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={directionAria}>
-    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : "From")}</span><b>{sourceLabel}</b><small>{toPrefix}{targetTimeLabel}</small></button>
-    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : "From")}</span><b>{targetLabel}</b><small>{toPrefix}{sourceLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : "From")}</span><b>{sourceLabel}</b><small>{toPrefix}{targetTimeLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : "From")}</span><b>{targetLabel}</b><small>{toPrefix}{sourceLabel}</small></button>
   </div>
   <label class="datetime-label">
     <span data-role="inputZoneName">{inputLabel}</span>
@@ -83,8 +84,8 @@ const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replac
       <button
         type="button"
         data-role="copy-result"
-        data-copied={t.converter.copied || (isDe ? "Kopiert!" : isEs ? "¡Copiado!" : isFr ? "Copié !" : "Copied")}
-        data-copy-failed={t.converter.copyFailed || (isDe ? "Fehler beim Kopieren" : isEs ? "Error al copiar" : isFr ? "Échec de la copie" : "Copy failed")}
+        data-copied={t.converter.copied || (isDe ? "Kopiert!" : isEs ? "¡Copiado!" : isFr ? "Copié !" : isIt ? "Copiato!" : "Copied")}
+        data-copy-failed={t.converter.copyFailed || (isDe ? "Fehler beim Kopieren" : isEs ? "Error al copiar" : isFr ? "Échec de la copie" : isIt ? "Copia non riuscita" : "Copy failed")}
         aria-label={copyAria}
         title={copyTitle}
       >{t.converter.copy}</button>
