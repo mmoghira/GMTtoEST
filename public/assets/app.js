@@ -8,7 +8,8 @@
     const isDe = pageLang === "de";
     const isFr = pageLang === "fr";
     const isIt = pageLang === "it";
-    const locale = isEs ? "es-ES" : isDe ? "de-DE" : isFr ? "fr-FR" : isIt ? "it-IT" : "en-US";
+    const isPt = pageLang === "pt";
+    const locale = isPt ? "pt-BR" : isEs ? "es-ES" : isDe ? "de-DE" : isFr ? "fr-FR" : isIt ? "it-IT" : "en-US";
     const key = timeZone + "_" + use24 + "_" + locale;
     if (!formatters[group][key]) {
       formatters[group][key] = new Intl.DateTimeFormat(locale, { timeZone, ...options });
@@ -137,6 +138,11 @@
   }
 
   const dayRelationLabel = {
+    pt: {
+      previousDay: "dia anterior",
+      sameDay: "mesmo dia",
+      nextDay: "dia seguinte"
+    },
     it: {
       previousDay: "giorno precedente",
       sameDay: "stesso giorno",
@@ -203,6 +209,7 @@
     const isDe = pageLang === "de";
     const isFr = pageLang === "fr";
     const isIt = pageLang === "it";
+    const isPt = pageLang === "pt";
 
     const datetimeInput = root.querySelector('[data-role="datetime"]') || root.querySelector('#datetime');
     const nowBtn = root.querySelector('[data-role="now"]') || root.querySelector('#now');
@@ -254,6 +261,10 @@
       const diffHours = Math.abs((offsetMinutes(date, targetZone) - offsetMinutes(date, sourceZone)) / 60);
       const z1 = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       const z2 = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
+      if (isPt) {
+        const hoursText = diffHours === 1 ? "1 hora" : diffHours + " horas";
+        return z2 + " está " + hoursText + " atrás de " + z1 + " nesta data. As transições do horário de verão podem alterar essa diferença, tornando essencial uma conversão baseada na data.";
+      }
       if (isIt) {
         const hoursText = diffHours === 1 ? "1 ora" : diffHours + " ore";
         return z2 + " è " + hoursText + " indietro rispetto a " + z1 + " in questa data. I cambi d'ora per l'ora legale possono alterare questa differenza, rendendo fondamentale una conversione legata alla data specifica.";
@@ -276,7 +287,7 @@
     function convert() {
       const date = parseInput();
       if (!date || Number.isNaN(date.getTime())) {
-        if (resultOutput) resultOutput.textContent = isIt ? "Inserisci una data e un'ora valide." : isFr ? "Veuillez saisir une date et une heure valides." : isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora válidas." : "Enter a valid date and time.";
+        if (resultOutput) resultOutput.textContent = isPt ? "Insira uma data e hora válidas." : isIt ? "Inserisci una data e un'ora valide." : isFr ? "Veuillez saisir une date et une heure valides." : isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora válidas." : "Enter a valid date and time.";
         return;
       }
       const target = state.mode === "gmt-est" ? targetZone : sourceZone;
@@ -288,19 +299,19 @@
 
       const modeLabels = intentLabels[intent] || intentLabels.converter || {};
       const specificModeLabels = modeLabels[state.mode] || modeLabels["gmt-est"] || {};
-      const label = specificModeLabels.target || (state.mode === "gmt-est" ? (isIt ? "Destinazione" : isFr ? "Cible" : isDe ? "Ziel" : isEs ? "Destino" : "Target") : (isIt ? "Origine" : isFr ? "Source" : isDe ? "Quelle" : isEs ? "Origen" : "Source"));
+      const label = specificModeLabels.target || (state.mode === "gmt-est" ? (isPt ? "Destino" : isIt ? "Destinazione" : isFr ? "Cible" : isDe ? "Ziel" : isEs ? "Destino" : "Target") : (isPt ? "Origem" : isIt ? "Origine" : isFr ? "Source" : isDe ? "Quelle" : isEs ? "Origen" : "Source"));
 
       if (intent === "difference") {
         state.lastText = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone) + ": " + gmtLabel + " | " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone) + ": " + easternLabel + " | " + explain(date);
       } else if (intent === "guide") {
-        state.lastText = (labels.meetingPlanner || (isIt ? "Pianificatore di riunioni" : isFr ? "Planificateur de réunion" : isDe ? "Meeting-Planer" : isEs ? "Planificador de reuniones" : "Meeting planner")) + " : " + gmtLabel + " " + (labels.is || (isIt ? "è" : isFr ? "est" : isDe ? "ist" : isEs ? "es" : "is")) + " " + easternLabel;
+        state.lastText = (labels.meetingPlanner || (isPt ? "Planejador de reuniões" : isIt ? "Pianificatore di riunioni" : isFr ? "Planificateur de réunion" : isDe ? "Meeting-Planer" : isEs ? "Planificador de reuniones" : "Meeting planner")) + " : " + gmtLabel + " " + (labels.is || (isPt ? "é" : isIt ? "è" : isFr ? "est" : isDe ? "ist" : isEs ? "es" : "is")) + " " + easternLabel;
       } else {
         state.lastText = label + ": " + format(date, target, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       }
 
       if (resultOutput) {
         resultOutput.textContent = intent === "difference"
-          ? (isIt ? (diffHours === 1 ? "1 ora di differenza" : diffHours + " ore di differenza") : isFr ? (diffHours === 1 ? "1 heure de décalage" : diffHours + " heures de décalage") : isDe ? (diffHours === 1 ? "1 Stunde Unterschied" : diffHours + " Stunden Unterschied") : isEs ? (diffHours === 1 ? "1 hora de diferencia" : diffHours + " horas de diferencia") : (diffHours + " " + (labels.hoursBehindGmt || "hours difference")))
+          ? (isPt ? (diffHours === 1 ? "1 hora de diferença" : diffHours + " horas de diferença") : isIt ? (diffHours === 1 ? "1 ora di differenza" : diffHours + " ore di differenza") : isFr ? (diffHours === 1 ? "1 heure de décalage" : diffHours + " heures de décalage") : isDe ? (diffHours === 1 ? "1 Stunde Unterschied" : diffHours + " Stunden Unterschied") : isEs ? (diffHours === 1 ? "1 hora de diferencia" : diffHours + " horas de diferencia") : (diffHours + " " + (labels.hoursBehindGmt || "hours difference")))
           : shortFormat(date, target, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         
         // CSS pulse animation without layout thrashing
@@ -313,12 +324,14 @@
       if (sourcePreview) sourcePreview.textContent = shortFormat(date, source, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       if (differenceEl) {
         differenceEl.textContent = intent === "guide"
-          ? (labels.bestForScheduling || (isIt ? "Ideale per pianificare" : isFr ? "Idéal pour planifier" : isDe ? "Optimal für Termine" : isEs ? "Ideal para programar" : "Best for scheduling")) + " : " + gmtLabel + " " + (labels.convertsTo || (isIt ? "corrisponde a" : isFr ? "correspond à" : isDe ? "entspricht" : isEs ? "se convierte en" : "converts to")) + " " + easternLabel + ". " + explain(date)
+          ? (labels.bestForScheduling || (isPt ? "Ideal para agendamentos" : isIt ? "Ideale per pianificare" : isFr ? "Idéal pour planifier" : isDe ? "Optimal für Termine" : isEs ? "Ideal para programar" : "Best for scheduling")) + " : " + gmtLabel + " " + (labels.convertsTo || (isPt ? "corresponde a" : isIt ? "corrisponde a" : isFr ? "correspond à" : isDe ? "entspricht" : isEs ? "se convierte en" : "converts to")) + " " + easternLabel + ". " + explain(date)
           : explain(date);
       }
       if (offsetBadge) {
         const targetAbbr = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
-        const diffBadgeText = isIt
+        const diffBadgeText = isPt
+          ? (diffHours === 1 ? "Diferença de 1 hora" : "Diferença de " + diffHours + " horas")
+          : isIt
           ? (diffHours === 1 ? "Differenza di 1 ora" : "Differenza di " + diffHours + " ore")
           : isFr
           ? (diffHours === 1 ? "Décalage de 1 heure" : "Décalage de " + diffHours + " heures")
@@ -354,18 +367,18 @@
         const sourceAbbr = zoneName(new Date(), sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         const targetAbbr = zoneName(new Date(), targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         if (state.mode === "gmt-est") {
-          if (inputZoneName) inputZoneName.textContent = isIt ? `Ora ${sourceAbbr}` : isFr ? `Heure ${sourceAbbr}` : isDe ? `${sourceAbbr}-Zeit` : isEs ? `Hora ${sourceAbbr}` : sourceAbbr + " time";
+          if (inputZoneName) inputZoneName.textContent = isPt ? `Horário ${sourceAbbr}` : isIt ? `Ora ${sourceAbbr}` : isFr ? `Heure ${sourceAbbr}` : isDe ? `${sourceAbbr}-Zeit` : isEs ? `Hora ${sourceAbbr}` : sourceAbbr + " time";
           if (sourceZoneEl) sourceZoneEl.textContent = sourceAbbr;
           if (outputZoneNameEl) outputZoneNameEl.textContent = targetAbbr;
         } else {
-          if (inputZoneName) inputZoneName.textContent = isIt ? `Ora ${targetAbbr}` : isFr ? `Heure ${targetAbbr}` : isDe ? `${targetAbbr}-Zeit` : isEs ? `Hora ${targetAbbr}` : targetAbbr + " time";
+          if (inputZoneName) inputZoneName.textContent = isPt ? `Horário ${targetAbbr}` : isIt ? `Ora ${targetAbbr}` : isFr ? `Heure ${targetAbbr}` : isDe ? `${targetAbbr}-Zeit` : isEs ? `Hora ${targetAbbr}` : targetAbbr + " time";
           if (sourceZoneEl) sourceZoneEl.textContent = targetAbbr;
           if (outputZoneNameEl) outputZoneNameEl.textContent = sourceAbbr;
         }
         root.querySelectorAll('.mode[data-mode="gmt-est"] b').forEach((b) => { b.textContent = sourceAbbr; });
-        root.querySelectorAll('.mode[data-mode="gmt-est"] small').forEach((s) => { s.textContent = (isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + targetAbbr; });
+        root.querySelectorAll('.mode[data-mode="gmt-est"] small').forEach((s) => { s.textContent = (isPt ? "para " : isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + targetAbbr; });
         root.querySelectorAll('.mode[data-mode="est-gmt"] b').forEach((b) => { b.textContent = targetAbbr; });
-        root.querySelectorAll('.mode[data-mode="est-gmt"] small').forEach((s) => { s.textContent = (isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + sourceAbbr; });
+        root.querySelectorAll('.mode[data-mode="est-gmt"] small').forEach((s) => { s.textContent = (isPt ? "para " : isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + sourceAbbr; });
       }
 
       setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);
@@ -406,14 +419,14 @@
         const original = copyBtn.textContent;
         try {
           await navigator.clipboard.writeText(state.lastText);
-          copyBtn.textContent = copyBtn.dataset.copied || (isIt ? "Copiato!" : isFr ? "Copié !" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
-          copyBtn.setAttribute("aria-label", isIt ? "Copiato negli appunti" : isFr ? "Copié dans le presse-papiers" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
+          copyBtn.textContent = copyBtn.dataset.copied || (isPt ? "Copiado!" : isIt ? "Copiato!" : isFr ? "Copié !" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
+          copyBtn.setAttribute("aria-label", isPt ? "Copiado para a área de transferência" : isIt ? "Copiato negli appunti" : isFr ? "Copié dans le presse-papiers" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : "Copied to clipboard");
           setTimeout(() => {
             copyBtn.textContent = original;
-            copyBtn.setAttribute("aria-label", isIt ? "Copia il risultato della conversione negli appunti" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : "Copy conversion result to clipboard");
+            copyBtn.setAttribute("aria-label", isPt ? "Copiar resultado da conversão para a área de transferência" : isIt ? "Copia il risultato della conversione negli appunti" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : "Copy conversion result to clipboard");
           }, 2000);
         } catch (err) {
-          copyBtn.textContent = copyBtn.dataset.copyFailed || (isIt ? "Copia non riuscita" : isFr ? "Échec de la copie" : isDe ? "Kopieren fehlgeschlagen" : isEs ? "No se pudo copiar el resultado" : "Copy failed");
+          copyBtn.textContent = copyBtn.dataset.copyFailed || (isPt ? "Falha ao copiar" : isIt ? "Copia non riuscita" : isFr ? "Échec de la copie" : isDe ? "Kopieren fehlgeschlagen" : isEs ? "No se pudo copiar el resultado" : "Copy failed");
           setTimeout(() => { copyBtn.textContent = original; }, 2000);
         }
       });
@@ -466,6 +479,7 @@
     const isDe = pageLang === "de";
     const isFr = pageLang === "fr";
     const isIt = pageLang === "it";
+    const isPt = pageLang === "pt";
     const baseDate = currentDate || new Date();
     const firstConverter = document.querySelector('[data-component="converter"]') || document.querySelector('.converter');
     const sZone = firstConverter?.dataset.sourceZone || "UTC";
@@ -483,7 +497,9 @@
         rowDate = localToUtc(p.year + "-" + p.month + "-" + p.day + "T" + String(h).padStart(2, '0') + ":00", sZone);
       }
       const diffHours = Math.abs((offsetMinutes(rowDate, tZone) - offsetMinutes(rowDate, sZone)) / 60);
-      const diffText = isIt
+      const diffText = isPt
+        ? (diffHours === 1 ? "Diferença de 1 hora" : "Diferença de " + diffHours + " horas")
+        : isIt
         ? (diffHours === 1 ? "Differenza di 1 ora" : "Differenza di " + diffHours + " ore")
         : isFr
         ? (diffHours === 1 ? "Décalage de 1 heure" : "Décalage de " + diffHours + " heures")
