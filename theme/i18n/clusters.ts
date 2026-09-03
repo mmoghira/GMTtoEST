@@ -163,6 +163,10 @@ const regionMap: Record<string, { countries: ClusterLink[]; cities: ClusterLink[
 export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterLink[] {
   const isDe = lang === "de";
   const isEs = lang === "es";
+  const isFr = lang === "fr";
+  const isIt = lang === "it";
+  const isPt = lang === "pt";
+  const isPl = lang === "pl";
 
   const converterPages = pages.filter(
     (page: any) =>
@@ -179,8 +183,8 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     const reverseSlug = `${zone}-to-est`;
     const reversePage = converterPages.find((p) => p.slug === reverseSlug);
     if (reversePage) {
-      const label = getConverterDisplayName(reversePage, lang) || (isDe ? `${zone.toUpperCase()} zu EST Umrechner` : isEs ? `Convertidor ${zone.toUpperCase()} a EST` : `${zone.toUpperCase()} to EST Converter`);
-      const description = isDe ? `Rechne ${zone.toUpperCase()} direkt in Eastern Standard Time um.` : isEs ? `Convierte ${zone.toUpperCase()} directamente a EST.` : `Convert ${zone.toUpperCase()} directly to Eastern Standard Time.`;
+      const label = getConverterDisplayName(reversePage, lang) || (isDe ? `${zone.toUpperCase()} zu EST Umrechner` : isEs ? `Convertidor ${zone.toUpperCase()} a EST` : isFr ? `Convertisseur ${zone.toUpperCase()} vers EST` : isIt ? `Convertitore da ${zone.toUpperCase()} a EST` : isPt ? `Conversor de ${zone.toUpperCase()} para EST` : isPl ? `Konwerter ${zone.toUpperCase()} na EST` : `${zone.toUpperCase()} to EST Converter`);
+      const description = isDe ? `Rechne ${zone.toUpperCase()} direkt in Eastern Standard Time um.` : isEs ? `Convierte ${zone.toUpperCase()} directamente a EST.` : isFr ? `Convertissez ${zone.toUpperCase()} directement en heure de l'Est.` : isIt ? `Converti ${zone.toUpperCase()} direttamente in Eastern Time.` : isPt ? `Converta ${zone.toUpperCase()} diretamente para o Horário do Leste.` : isPl ? `Przeliczaj ${zone.toUpperCase()} bezpośrednio na czas wschodni (EST/EDT).` : `Convert ${zone.toUpperCase()} directly to Eastern Standard Time.`;
       matches.push({
         href: pageUrl(lang, reversePage.slug),
         label,
@@ -192,8 +196,8 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     const gmtSlug = `gmt-to-${zone}`;
     const gmtPage = converterPages.find((p) => p.slug === gmtSlug);
     if (gmtPage) {
-      const label = getConverterDisplayName(gmtPage, lang) || (isDe ? `GMT zu ${zone.toUpperCase()} Umrechner` : isEs ? `Convertidor GMT a ${zone.toUpperCase()}` : `GMT to ${zone.toUpperCase()} Converter`);
-      const description = isDe ? `Rechne Greenwich Mean Time direkt in ${zone.toUpperCase()} um.` : isEs ? `Convierte GMT directamente a ${zone.toUpperCase()}.` : `Convert Greenwich Mean Time to ${zone.toUpperCase()}.`;
+      const label = getConverterDisplayName(gmtPage, lang) || (isDe ? `GMT zu ${zone.toUpperCase()} Umrechner` : isEs ? `Convertidor GMT a ${zone.toUpperCase()}` : isFr ? `Convertisseur GMT vers ${zone.toUpperCase()}` : isIt ? `Convertitore da GMT a ${zone.toUpperCase()}` : isPt ? `Conversor de GMT para ${zone.toUpperCase()}` : isPl ? `Konwerter GMT na ${zone.toUpperCase()}` : `GMT to ${zone.toUpperCase()} Converter`);
+      const description = isDe ? `Rechne Greenwich Mean Time direkt in ${zone.toUpperCase()} um.` : isEs ? `Convierte GMT directamente a ${zone.toUpperCase()}.` : isFr ? `Convertissez le GMT directement en ${zone.toUpperCase()}.` : isIt ? `Converti l'ora GMT direttamente in ${zone.toUpperCase()}.` : isPt ? `Converta o horário GMT diretamente para ${zone.toUpperCase()}.` : isPl ? `Przeliczaj Greenwich Mean Time bezpośrednio na ${zone.toUpperCase()}.` : `Convert Greenwich Mean Time to ${zone.toUpperCase()}.`;
       matches.push({
         href: pageUrl(lang, gmtPage.slug),
         label,
@@ -207,11 +211,11 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     if (staple !== currentSlug && matches.length < 12) {
       const p = pages.find((item) => item.slug === staple);
       if (p && !matches.some((m) => m.href === pageUrl(lang, p.slug))) {
-        const label = getConverterDisplayName(p, lang) || (p.slug === "gmt-to-est" ? (isDe ? "GMT zu EST Umrechner" : "GMT to EST Converter")
-          : p.slug === "est-to-gmt" ? (isDe ? "EST in GMT umrechnen" : "EST to GMT Converter")
-          : p.slug === "gmt-vs-est" ? (isDe ? "GMT vs. EST Unterschied" : "GMT vs EST Difference")
+        const label = getConverterDisplayName(p, lang) || (p.slug === "gmt-to-est" ? (isDe ? "GMT zu EST Umrechner" : isPl ? "Konwerter GMT na EST" : "GMT to EST Converter")
+          : p.slug === "est-to-gmt" ? (isDe ? "EST in GMT umrechnen" : isPl ? "Konwerter EST na GMT" : "EST to GMT Converter")
+          : p.slug === "gmt-vs-est" ? (isDe ? "GMT vs. EST Unterschied" : isPl ? "Różnica GMT vs EST" : "GMT vs EST Difference")
           : `${p.context?.from || "GMT"} to ${p.context?.to || "EST"} Converter`);
-        const description = isDe ? `Präzise Zeitberechnung für ${label}.` : isEs ? `Cálculo instantáneo para ${label}.` : `Instant calculation for ${label}.`;
+        const description = isDe ? `Präzise Zeitberechnung für ${label}.` : isEs ? `Cálculo instantáneo para ${label}.` : isFr ? `Calcul précis pour ${label}.` : isIt ? `Calcolo preciso per ${label}.` : isPt ? `Cálculo preciso para ${label}.` : isPl ? `Dokładne przeliczanie czasu dla: ${label}.` : `Instant calculation for ${label}.`;
         matches.push({
           href: pageUrl(lang, p.slug),
           label,
@@ -226,7 +230,7 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
     const href = pageUrl(lang, page.slug);
     if (!matches.some((m) => m.href === href)) {
       const label = getConverterDisplayName(page, lang) || page.slug;
-      const description = isDe ? `Zeitzonen-Leitfaden für ${label}.` : isEs ? `Guía de conversión para ${label}.` : `Time conversion guide for ${label}.`;
+      const description = isDe ? `Zeitzonen-Leitfaden für ${label}.` : isEs ? `Guía de conversión para ${label}.` : isFr ? `Guide de conversion pour ${label}.` : isIt ? `Guida alla conversione per ${label}.` : isPt ? `Guia de conversão para ${label}.` : isPl ? `Przewodnik i kalkulator konwersji czasu dla: ${label}.` : `Time conversion guide for ${label}.`;
       matches.push({ href, label, description });
     }
   }
@@ -240,6 +244,10 @@ export function getRelatedConverters(currentSlug: string, lang = "en"): ClusterL
 export function getUsersAlsoVisit(currentSlug: string, lang = "en"): ClusterLink[] {
   const isDe = lang === "de";
   const isEs = lang === "es";
+  const isFr = lang === "fr";
+  const isIt = lang === "it";
+  const isPt = lang === "pt";
+  const isPl = lang === "pl";
   const currentLower = currentSlug.toLowerCase();
   const suggestions: ClusterLink[] = [];
 
@@ -259,7 +267,7 @@ export function getUsersAlsoVisit(currentSlug: string, lang = "en"): ClusterLink
     if (itemSlug !== currentLower) {
       const p = pages.find((item) => item.slug === itemSlug);
       const label = p ? (getConverterDisplayName(p, lang) || itemSlug) : itemSlug;
-      const description = isDe ? "Beliebter Zeitzonen-Vergleich für internationale Terminplanung." : isEs ? "Comparación popular para gestionar relojes globales." : "Popular comparison for users managing global clocks.";
+      const description = isDe ? "Beliebter Zeitzonen-Vergleich für internationale Terminplanung." : isEs ? "Comparación popular para gestionar relojes globales." : isFr ? "Comparatif populaire pour gérer des fuseaux horaires mondiaux." : isIt ? "Confronto popolare per pianificare orari internazionali." : isPt ? "Comparação popular para coordenar horários internacionais." : isPl ? "Popularne porównanie stref czasowych dla użytkowników planujących spotkania międzynarodowe." : "Popular comparison for users managing global clocks.";
       suggestions.push({
         href: pageUrl(lang, itemSlug),
         label,

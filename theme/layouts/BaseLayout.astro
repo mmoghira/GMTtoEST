@@ -58,6 +58,7 @@ const isDe = lang === "de";
 const isFr = lang === "fr";
 const isIt = lang === "it";
 const isPt = lang === "pt";
+const isPl = lang === "pl";
 const ogLocaleMap: Record<string, string> = {
   de: "de_DE",
   es: "es_ES",
@@ -75,7 +76,7 @@ const ogLocaleMap: Record<string, string> = {
   en: "en_US"
 };
 const ogLocale = ogLocaleMap[lang] || "en_US";
-const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : isPt ? "Início" : "Home");
+const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : isPt ? "Início" : isPl ? "Strona główna" : "Home");
 const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
 const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
 let computedHreflangCodes = hreflangCodes;
@@ -121,7 +122,7 @@ const hreflangAlternates = isNoindexPage
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = (lang === "en" ? meta?.seoTitle : undefined) || title;
 const titleNeedsLongBrand = seoTitle.length < 30;
-const titleCanUseShortBrand = !["de", "es", "fr", "it", "pt"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
+const titleCanUseShortBrand = !["de", "es", "fr", "it", "pt", "pl"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
 const brandedTitle = isDe
   ? (titleNeedsLongBrand && !seoTitle.includes("GMT zu EST") ? `${seoTitle} | GMT zu EST Umrechner` : seoTitle)
   : isEs
@@ -132,11 +133,13 @@ const brandedTitle = isDe
         ? (titleNeedsLongBrand && !seoTitle.includes("da GMT a EST") && !seoTitle.includes("GMT a EST") ? `${seoTitle} | Convertitore da GMT a EST` : seoTitle)
         : isPt
           ? (titleNeedsLongBrand && !seoTitle.includes("de GMT para EST") && !seoTitle.includes("GMT para EST") ? `${seoTitle} | Conversor de GMT para EST` : seoTitle)
-          : titleNeedsLongBrand
-            ? `${seoTitle} | GMT to EST Time Converter`
-            : titleCanUseShortBrand
-              ? `${seoTitle} | GMT to EST`
-              : seoTitle;
+          : isPl
+            ? (titleNeedsLongBrand && !seoTitle.includes("GMT na EST") ? `${seoTitle} | Konwerter GMT na EST` : seoTitle)
+            : titleNeedsLongBrand
+              ? `${seoTitle} | GMT to EST Time Converter`
+              : titleCanUseShortBrand
+                ? `${seoTitle} | GMT to EST`
+                : seoTitle;
 const documentTitle = truncateSeoText(brandedTitle, 60);
 const descriptionWithContext = description.length < 70 ? `${title}. ${description}` : description;
 const descriptionExtensions: Record<string, string> = {
@@ -205,6 +208,15 @@ const companyFooterLinks = isFr ? [
   { href: "/pt/terms-of-service/", label: t.footer?.terms || "Termos de serviço" },
   { href: "/pt/disclaimer/", label: t.footer?.disclaimer || "Isenção de responsabilidade" },
   { href: "/pt/sitemap/", label: t.footer?.sitemap || "Mapa do site" }
+] : isPl ? [
+  { href: "/pl/about-us/", label: t.footer?.about || "O nas" },
+  { href: "/pl/contact-us/", label: t.footer?.contact || "Kontakt" },
+  { href: "/pl/author/", label: t.footer?.author || "Zespół redakcyjny" },
+  { href: "/pl/privacy-policy/", label: t.footer?.privacy || "Polityka prywatności" },
+  { href: "/pl/privacy-policy/#privacy-rights", label: "Opcje prywatności" },
+  { href: "/pl/terms-of-service/", label: t.footer?.terms || "Regulamin serwisu" },
+  { href: "/pl/disclaimer/", label: t.footer?.disclaimer || "Zrzeczenie się odpowiedzialności" },
+  { href: "/pl/sitemap/", label: t.footer?.sitemap || "Mapa witryny" }
 ] : [
   { href: isDe ? "/de/about-us/" : (lang === "ar" ? "/ar/about-us/" : (isEs ? "/es/about-us/" : "/about-us/")), label: t.footer.about || (isDe ? "Über uns" : isEs ? "Sobre nosotros" : "About Us") },
   { href: "/editorial-policy/", label: isDe ? "Redaktionsrichtlinien" : isEs ? "Política editorial" : "Editorial Policy" },
@@ -241,6 +253,10 @@ const guideFooterLinks = isDe ? [
   { href: "/pt/time-zone-guide/", label: "Guia de fusos horários" },
   { href: "/pt/gmt-vs-est/", label: "Diferença GMT vs EST" },
   { href: "/pt/est-to-gmt/", label: "Conversor de EST para GMT" }
+] : isPl ? [
+  { href: "/pl/time-zone-guide/", label: "Przewodnik po strefach czasowych" },
+  { href: "/pl/gmt-vs-est/", label: "Różnica GMT vs EST" },
+  { href: "/pl/est-to-gmt/", label: "Konwerter EST na GMT" }
 ] : [
   { href: "/blog/what-is-gmt/", label: isEs ? "¿Qué es GMT?" : "What is GMT?" },
   { href: "/what-is-est/", label: isEs ? "¿Qué es EST?" : "What is EST?" },
@@ -251,7 +267,7 @@ const guideFooterLinks = isDe ? [
   { href: "/world-time-zones-guide/", label: isEs ? "Guía mundial de zonas horarias" : "World Time Zones Guide" },
 ];
 
-const geoFooterLinks = isFr || isIt || isPt ? [] : [
+const geoFooterLinks = isFr || isIt || isPt || isPl ? [] : [
   { href: "/usa-time-zones/", label: isDe ? "Zeitzonen der USA" : isEs ? "Zonas horarias de EE. UU." : "USA Time Zones" },
   { href: "/canada-time-zones/", label: isDe ? "Zeitzonen Kanadas" : isEs ? "Zonas horarias de Canadá" : "Canada Time Zones" },
   { href: "/australia-time-zones/", label: isDe ? "Zeitzonen Australiens" : isEs ? "Zonas horarias de Australia" : "Australia Time Zones" },
@@ -303,6 +319,16 @@ const toolFooterLinks = isDe ? [
   { href: pageUrl(lang, "holiday-calendar"), label: "Calendário de feriados" },
   { href: pageUrl(lang, "travel-planner"), label: "Planejador de viagem" },
   { href: pageUrl(lang, "developer-tools"), label: "Ferramentas para desenvolvedores" }
+] : isPl ? [
+  { href: pageUrl(lang, "tools"), label: "Wszystkie narzędzia i kalkulatory" },
+  { href: pageUrl(lang, "world-clock"), label: "Zegar światowy" },
+  { href: pageUrl(lang, "meeting-planner"), label: "Planer spotkań" },
+  { href: pageUrl(lang, "time-difference-calculator"), label: "Kalkulator różnicy czasu" },
+  { href: pageUrl(lang, "business-hours-overlap"), label: "Wspólne godziny pracy" },
+  { href: pageUrl(lang, "event-time-converter"), label: "Konwerter czasu wydarzeń" },
+  { href: pageUrl(lang, "holiday-calendar"), label: "Kalendarz dni wolnych" },
+  { href: pageUrl(lang, "travel-planner"), label: "Planer podróży" },
+  { href: pageUrl(lang, "developer-tools"), label: "Narzędzia dla programistów" }
 ] : [
   { href: pageUrl(lang, "tools"), label: isEs ? "Herramientas y funciones" : "All Tools Hub" },
   { href: pageUrl(lang, "world-clock"), label: isEs ? "Reloj mundial" : "World Clock" },
@@ -335,6 +361,15 @@ const currentConverterLinks = isFr ? [
   { href: pageUrl(lang, "gmt-vs-est"), label: "Diferença GMT vs EST" },
   { href: pageUrl(lang, "event-time-converter"), label: "Conversor de horário de eventos" },
   { href: pageUrl(lang, "time-difference-calculator"), label: "Calculadora de diferença de horário" }
+] : isPl ? [
+  { href: pageUrl(lang, ""), label: "Konwerter GMT na EST" },
+  { href: pageUrl(lang, "gmt-to-est"), label: "GMT na EST (Tabela 24h)" },
+  { href: pageUrl(lang, "est-to-gmt"), label: "Konwerter EST na GMT" },
+  { href: pageUrl(lang, "gmt-vs-est"), label: "Różnica GMT vs EST" },
+  { href: pageUrl(lang, "cst-to-est"), label: "Konwerter CST na EST" },
+  { href: pageUrl(lang, "pdt-to-est"), label: "Konwerter PDT na EST" },
+  { href: pageUrl(lang, "kst-to-est"), label: "Konwerter KST na EST" },
+  { href: pageUrl(lang, "time-difference-calculator"), label: "Kalkulator różnicy czasu" }
 ] : [
   { href: pageUrl(lang, ""), label: isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : "GMT to EST Converter" },
   { href: pageUrl(lang, "est-to-gmt"), label: isDe ? "EST zu GMT Umrechner" : isEs ? "Convertidor EST a GMT" : "EST to GMT Converter" },
@@ -354,7 +389,7 @@ const currentConverterLinks = isFr ? [
   { href: pageUrl(lang, "wit-to-est"), label: isDe ? "WIT zu EST Umrechner" : isEs ? "Convertidor WIT a EST" : "WIT to EST Converter" }
 ];
 
-const generatedConverterLinks = isFr || isIt || isPt ? [] : pages
+const generatedConverterLinks = isFr || isIt || isPt || isPl ? [] : pages
   .filter((page: any) => {
     if (!["converter", "reverse", "difference", "dynamic"].includes(page.kind)) return false;
     return !page.slug || page.slug === "est-to-gmt" || page.slug === "gmt-vs-est" || page.slug.endsWith("-to-est") || page.slug.startsWith("gmt-to-");
@@ -364,7 +399,7 @@ const generatedConverterLinks = isFr || isIt || isPt ? [] : pages
     label: getConverterDisplayName(page, lang) || page.slug
   }));
 
-const converterFooterLinks = isFr || isIt || isPt ? currentConverterLinks : [...currentConverterLinks, ...generatedConverterLinks].filter((item, index, items) =>
+const converterFooterLinks = isFr || isIt || isPt || isPl ? currentConverterLinks : [...currentConverterLinks, ...generatedConverterLinks].filter((item, index, items) =>
   items.findIndex((candidate) => candidate.href === item.href) === index
 );
 
@@ -444,8 +479,10 @@ const authorPersonSchema = {
           ? "Specialista in conversioni di fusi orari e ingegneria dei sistemi"
           : isPt
             ? "Especialista sênior em fusos horários e engenharia de sistemas"
-            : "Senior Time Zone Specialist & Systems Engineer",
-  url: `${siteUrl}/author/`,
+            : isPl
+              ? "Specjalistka ds. treści o strefach czasowych"
+              : "Senior Time Zone Specialist & Systems Engineer",
+  url: isPl ? `${siteUrl}/pl/author/` : `${siteUrl}/author/`,
   worksFor: { "@id": `${siteUrl}/#organization` }
 };
 
@@ -497,7 +534,9 @@ const comparisonSchema = isComparison ? [
           ? "Confronto dettagliato dei fusi orari tra Greenwich Mean Time (GMT) ed Eastern Standard Time (EST/EDT). Analisi di ora solare, ora legale e pianificazione pratica."
           : isPt
             ? "Comparação detalhada de fusos horários entre Greenwich Mean Time (GMT) e Eastern Standard Time (EST/EDT). Análise de horário padrão, variações sazonais e agendamento internacional."
-            : "Detailed timezone comparison between Greenwich Mean Time and Eastern Standard Time. Analyzing standard hours, seasonal shifts, and common scheduling pitfalls."
+            : isPl
+              ? "Szczegółowe porównanie stref czasowych między Greenwich Mean Time (GMT) a Eastern Standard Time (EST/EDT). Analiza czasu standardowego, przesunięć czasu letniego oraz planowania spotkań."
+              : "Detailed timezone comparison between Greenwich Mean Time and Eastern Standard Time. Analyzing standard hours, seasonal shifts, and common scheduling pitfalls."
   }
 ] : [];
 
@@ -531,7 +570,9 @@ const guideSchema = isGuide ? [
           ? "Guida didattica completa sul Tempo Coordinato Universale (UTC), Greenwich Mean Time (GMT) ed Eastern Time (EST/EDT) con evoluzione storica e regole dell'ora legale."
           : isPt
             ? "Guia educativo completo sobre Tempo Universal Coordenado (UTC), Horário de Greenwich (GMT) e Horário do Leste (EST/EDT) com evolução histórica e regras do horário de verão."
-            : "An educational hub regarding Coordinated Universal Time (UTC), Greenwich Mean Time (GMT), and Eastern Standard Time (EST). Explores DST history and offsets."
+            : isPl
+              ? "Kompleksowy przewodnik po uniwersalnym czasie koordynowanym (UTC), Greenwich Mean Time (GMT) i czasie wschodnim (EST/EDT) wraz z regułami czasu letniego."
+              : "An educational hub regarding Coordinated Universal Time (UTC), Greenwich Mean Time (GMT), and Eastern Standard Time (EST). Explores DST history and offsets."
   }
 ] : [];
 
@@ -598,6 +639,25 @@ const reverseSchema = isReverse ? [
         position: 3,
         name: "Confirmar o resultado",
         text: "Verifique se o resultado GMT calculado corresponde à linha do tempo de 24 horas em UTC."
+      }
+    ] : isPl ? [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "Sprawdź status czasu wschodniego",
+        text: "Ustal, czy na wschodnim wybrzeżu USA obowiązuje aktualnie czas standardowy (EST, UTC-5), czy czas letni (EDT, UTC-4)."
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "Zastosuj przesunięcie godzinowe",
+        text: "Dodaj 5 godzin do godziny EST (zimą) lub 4 godziny do godziny EDT (latem), aby uzyskać czas GMT."
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "Zweryfikuj zmianę daty",
+        text: "Upewnij się, czy dodanie godzin nie przesunęło wyniku na kolejny dzień kalendarzowy w strefie GMT."
       }
     ] : [
       {
@@ -729,7 +789,9 @@ const schema = {
               ? "Convertitore di fuso orario e guida gratuita per GMT e l'Eastern Time (EST/EDT)."
               : isPt
                 ? "Conversor de fusos horários e guia gratuito para GMT e Horário do Leste (EST/EDT)."
-                : "Free timezone converter and guide for GMT and Eastern Standard Time (EST/EDT).",
+                : isPl
+                  ? "Bezpłatny konwerter stref czasowych i poradnik dla GMT oraz czasu wschodniego (EST/EDT)."
+                  : "Free timezone converter and guide for GMT and Eastern Standard Time (EST/EDT).",
       foundingDate: "2024",
       contactPoint: {
         "@type": "ContactPoint",
@@ -882,10 +944,10 @@ const schema = {
         <!-- Brand Section -->
         <div class="footer-section brand-section">
           <a href={homePathResolved} class="footer-logo">
-            <img src="/logo.svg" alt={isDe ? "GMT zu EST Logo" : isEs ? "Logo de Convertidor GMT a EST" : isFr ? "Logo Convertisseur GMT vers EST" : isIt ? "Logo Convertitore da GMT a EST" : isPt ? "Logotipo do Conversor de GMT para EST" : "GMT to EST logo"} class="footer-logo-icon" width="56" height="56" loading="lazy" decoding="async" />
-            <span class="site-name">{isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : "GMT to EST Converter"}</span>
+            <img src="/logo.svg" alt={isDe ? "GMT zu EST Logo" : isEs ? "Logo de Convertidor GMT a EST" : isFr ? "Logo Convertisseur GMT vers EST" : isIt ? "Logo Convertitore da GMT a EST" : isPt ? "Logotipo do Conversor de GMT para EST" : isPl ? "Logo Konwertera GMT na EST" : "GMT to EST logo"} class="footer-logo-icon" width="56" height="56" loading="lazy" decoding="async" />
+            <span class="site-name">{isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : "GMT to EST Converter"}</span>
           </a>
-          <p class="brand-desc">{t.brand} – {isDe ? "Kostenloser Zeitzonenumrechner für GMT und Eastern Time" : isEs ? "Convertidor de zonas horarias gratuito para GMT y hora del Este" : isFr ? "Convertisseur de fuseaux horaires gratuit pour GMT et l'heure de l'Est" : isIt ? "Convertitore gratuito per i fusi orari GMT ed EST" : isPt ? "Conversor gratuito de fusos horários para GMT e Horário do Leste (EST/EDT)" : "Free timezone converter for GMT and EST time zones"}</p>
+          <p class="brand-desc">{t.brand} – {isDe ? "Kostenloser Zeitzonenumrechner für GMT und Eastern Time" : isEs ? "Convertidor de zonas horarias gratuito para GMT y hora del Este" : isFr ? "Convertisseur de fuseaux horaires gratuit pour GMT et l'heure de l'Est" : isIt ? "Convertitore gratuito per i fusi orari GMT ed EST" : isPt ? "Conversor gratuito de fusos horários para GMT e Horário do Leste (EST/EDT)" : isPl ? "Bezpłatny kalkulator stref czasowych dla GMT i czasu wschodniego (EST/EDT)" : "Free timezone converter for GMT and EST time zones"}</p>
           <div class="social-links">
             <a href="https://www.facebook.com/GMTtoESTConverter" aria-label="Facebook" title="Facebook" class="social-fb" target="_blank" rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="currentColor" height="20" width="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -898,7 +960,7 @@ const schema = {
 
         <!-- Converters Section -->
         <nav class="footer-section links-section" aria-labelledby="footer-converters-heading">
-          <h3 id="footer-converters-heading" class="footer-heading">{t.footer?.headings?.converters || (isDe ? "UMRECHNER" : isEs ? "CONVERTIDORES" : isFr ? "CONVERTISSEURS" : isIt ? "CONVERTITORI" : isPt ? "CONVERSORES" : "CONVERTERS")}</h3>
+          <h3 id="footer-converters-heading" class="footer-heading">{t.footer?.headings?.converters || (isDe ? "UMRECHNER" : isEs ? "CONVERTIDORES" : isFr ? "CONVERTISSEURS" : isIt ? "CONVERTITORI" : isPt ? "CONVERSORES" : isPl ? "KONWERTERY" : "CONVERTERS")}</h3>
           <ul class="footer-links">
             {converterFooterLinks.slice(0, 12).map((item) => (
               <li><a href={item.href}>{item.label}</a></li>
@@ -908,7 +970,7 @@ const schema = {
 
         <!-- Guides Section -->
         <nav class="footer-section links-section" aria-labelledby="footer-guides-heading">
-          <h3 id="footer-guides-heading" class="footer-heading">{t.footer?.headings?.guides || (isDe ? "RATGEBER" : isEs ? "GUÍAS" : isFr ? "GUIDES" : isIt ? "GUIDE" : isPt ? "GUIAS" : "GUIDES")}</h3>
+          <h3 id="footer-guides-heading" class="footer-heading">{t.footer?.headings?.guides || (isDe ? "RATGEBER" : isEs ? "GUÍAS" : isFr ? "GUIDES" : isIt ? "GUIDE" : isPt ? "GUIAS" : isPl ? "PRZEWODNIKI" : "GUIDES")}</h3>
           <ul class="footer-links">
             {guideFooterLinks.map((item) => (
               <li><a href={item.href}>{item.label}</a></li>
@@ -918,7 +980,7 @@ const schema = {
 
         <!-- Tools Section -->
         <nav class="footer-section links-section" aria-labelledby="footer-tools-heading">
-          <h3 id="footer-tools-heading" class="footer-heading">{t.footer?.headings?.tools || (isDe ? "WERKZEUGE" : isEs ? "HERRAMIENTAS" : isFr ? "OUTILS" : isIt ? "STRUMENTI" : isPt ? "FERRAMENTAS" : "TOOLS")}</h3>
+          <h3 id="footer-tools-heading" class="footer-heading">{t.footer?.headings?.tools || (isDe ? "WERKZEUGE" : isEs ? "HERRAMIENTAS" : isFr ? "OUTILS" : isIt ? "STRUMENTI" : isPt ? "FERRAMENTAS" : isPl ? "NARZĘDZIA" : "TOOLS")}</h3>
           <ul class="footer-links">
             {toolFooterLinks.map((item) => (
               <li><a href={item.href}>{item.label}</a></li>
@@ -940,7 +1002,7 @@ const schema = {
 
         <!-- Company Section -->
         <nav class="footer-section links-section" aria-labelledby="footer-company-heading">
-          <h3 id="footer-company-heading" class="footer-heading">{t.footer?.headings?.company || (isDe ? "UNTERNEHMEN" : isEs ? "EMPRESA" : isFr ? "ENTREPRISE" : isIt ? "AZIENDA" : isPt ? "EMPRESA" : "COMPANY")}</h3>
+          <h3 id="footer-company-heading" class="footer-heading">{t.footer?.headings?.company || (isDe ? "UNTERNEHMEN" : isEs ? "EMPRESA" : isFr ? "ENTREPRISE" : isIt ? "AZIENDA" : isPt ? "EMPRESA" : isPl ? "FIRMA" : "COMPANY")}</h3>
           <ul class="footer-links">
             {companyFooterLinks.map((item) => (
               <li><a href={item.href}>{item.label}</a></li>
@@ -950,20 +1012,20 @@ const schema = {
 
         <!-- Contact Section -->
         <div class="footer-section contact-section">
-          <h3 class="footer-heading">{t.footer?.headings?.contact || (isDe ? "KONTAKT" : isEs ? "CONTACTO" : isFr ? "CONTACT" : isIt ? "CONTATTI" : isPt ? "CONTATO" : "CONTACT")}</h3>
+          <h3 class="footer-heading">{t.footer?.headings?.contact || (isDe ? "KONTAKT" : isEs ? "CONTACTO" : isFr ? "CONTACT" : isIt ? "CONTATTI" : isPt ? "CONTATO" : isPl ? "KONTAKT" : "CONTACT")}</h3>
           <div class="contact-item">
             <span class="contact-icon" aria-hidden="true">&#9993;</span>
             <a href="mailto:contact@gmttoestconverter.com">contact@gmttoestconverter.com</a>
           </div>
           <div class="contact-item">
             <span class="contact-icon" aria-hidden="true">&#9742;</span>
-            <a href={isDe ? "/de/contact-us/" : (isFr ? "/fr/contact-us/" : (isEs ? "/es/contact-us/" : (isIt ? "/it/contact-us/" : (isPt ? "/pt/contact-us/" : "/contact-us/"))))}>{isDe ? "Kontaktformular" : isEs ? "Formulario de contacto" : isFr ? "Formulaire de contact" : isIt ? "Modulo di contatto" : isPt ? "Formulário de contato" : "Contact form"}</a>
+            <a href={isDe ? "/de/contact-us/" : (isFr ? "/fr/contact-us/" : (isEs ? "/es/contact-us/" : (isIt ? "/it/contact-us/" : (isPt ? "/pt/contact-us/" : (isPl ? "/pl/contact-us/" : "/contact-us/")))))}>{isDe ? "Kontaktformular" : isEs ? "Formulario de contacto" : isFr ? "Formulaire de contact" : isIt ? "Modulo di contatto" : isPt ? "Formulário de contato" : isPl ? "Formularz kontaktowy" : "Contact form"}</a>
           </div>
         </div>
 
         <!-- Language Switch Section -->
         <div class="footer-section language-section">
-          <h3 class="footer-heading">{t.footer?.headings?.language || (isDe ? "SPRACHE" : isEs ? "IDIOMA" : isFr ? "LANGUE" : isIt ? "LINGUA" : isPt ? "IDIOMA" : "LANGUAGE")}</h3>
+          <h3 class="footer-heading">{t.footer?.headings?.language || (isDe ? "SPRACHE" : isEs ? "IDIOMA" : isFr ? "LANGUE" : isIt ? "LINGUA" : isPt ? "IDIOMA" : isPl ? "JĘZYK" : "LANGUAGE")}</h3>
           <div class="footer-lang-grid">
             {alternateLanguages.map((item) => (
               <a
@@ -985,7 +1047,7 @@ const schema = {
       <!-- Copyright -->
       <div class="footer-bottom">
         <div class="footer-bottom-inner">
-          <p>&copy; {new Date().getFullYear()} {t.brand}. {isDe ? "Alle Rechte vorbehalten." : isEs ? "Todos los derechos reservados." : isFr ? "Tous droits réservés." : isIt ? "Tutti i diritti riservati." : isPt ? "Todos os direitos reservados." : "All rights reserved."}</p>
+          <p>&copy; {new Date().getFullYear()} {t.brand}. {isDe ? "Alle Rechte vorbehalten." : isEs ? "Todos los derechos reservados." : isFr ? "Tous droits réservés." : isIt ? "Tutti i diritti riservati." : isPt ? "Todos os direitos reservados." : isPl ? "Wszelkie prawa zastrzeżone." : "All rights reserved."}</p>
           <a href="https://www.dmca.com/Protection/Status.aspx?ID=01cb090d-0a05-4b4c-b0d2-949abb6ea9c5"
              title="DMCA.com Protection Status"
              class="dmca-badge"
@@ -1003,7 +1065,7 @@ const schema = {
         </div>
       </div>
     </footer>
-    <button id="back-to-top" class="back-to-top" aria-label={isDe ? "Nach oben" : isEs ? "Volver arriba" : isFr ? "Haut de page" : isIt ? "Torna all'inizio" : isPt ? "Voltar ao topo" : "Back to top"} title={isDe ? "Nach oben" : isEs ? "Volver arriba" : isFr ? "Haut de page" : isIt ? "Torna all'inizio" : isPt ? "Voltar ao topo" : "Back to top"}>
+    <button id="back-to-top" class="back-to-top" aria-label={isDe ? "Nach oben" : isEs ? "Volver arriba" : isFr ? "Haut de page" : isIt ? "Torna all'inizio" : isPt ? "Voltar ao topo" : isPl ? "Wróć na górę" : "Back to top"} title={isDe ? "Nach oben" : isEs ? "Volver arriba" : isFr ? "Haut de page" : isIt ? "Torna all'inizio" : isPt ? "Voltar ao topo" : isPl ? "Wróć na górę" : "Back to top"}>
       ↑
     </button>
     <script is:inline>
