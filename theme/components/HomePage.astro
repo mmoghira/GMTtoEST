@@ -50,7 +50,8 @@ const explanationHeadingMap = {
   difference: isDe ? "Analyse des Zeitunterschieds zwischen GMT und EST" : isEs ? "Análisis de la diferencia horaria" : isFr ? "Analyse du décalage horaire entre GMT et EST" : isIt ? "Analisi della differenza di fuso orario tra GMT ed EST" : isPt ? "Análise da diferença de fuso horário entre GMT e EST" : "Analyzing the Time Gap",
   reverse: isDe ? "So funktioniert die Umrechnung von EST in GMT" : isEs ? "Cómo funciona la conversión inversa" : isFr ? "Comment fonctionne la conversion inverse EST vers GMT" : isIt ? "Come funziona la conversione da EST a GMT" : isPt ? "Como funciona a conversão inversa de EST para GMT" : "How the Reverse Calculation Works",
   guide: isDe ? "Historische Entwicklung und Zeitzonen-Standards" : isEs ? "Evolución histórica y estándares" : isFr ? "Évolution historique et normes de fuseaux horaires" : isIt ? "Evoluzione storica e standard dei fusi orari" : isPt ? "Evolução histórica e padrões de fusos horários" : "Evolution of Global Time Standards",
-  dynamic: isDe ? "Uhrzeit zwischen {from} und {to} berechnen" : isEs ? "Cómo calcular la hora entre {from} y {to}" : isFr ? "Calculer l'heure entre {from} et {to}" : isIt ? "Calcolare l'orario tra {from} e {to}" : isPt ? "Calcular o horário entre {from} e {to}" : "Calculating Time Between {from} and {to}"
+  dynamic: isDe ? "Uhrzeit zwischen {from} und {to} berechnen" : isEs ? "Cómo calcular la hora entre {from} y {to}" : isFr ? "Calculer l'heure entre {from} et {to}" : isIt ? "Calcolare l'orario tra {from} e {to}" : isPt ? "Calcular o horário entre {from} e {to}" : "Calculating Time Between {from} and {to}",
+  tool: isDe ? "Über dieses Werkzeug" : isEs ? "Acerca de esta herramienta" : isFr ? "À propos de cet outil" : isIt ? "Informazioni su questo strumento" : isPt ? "Sobre esta ferramenta" : "About this Tool"
 };
 const pageExplanationHeading = isDe
   ? replaceTemplates(explanationHeadingMap[kind] || "Verständnis des Zeitunterschieds", replacements)
@@ -69,7 +70,8 @@ const conclusionHeadingMap = {
   difference: isDe ? "Wichtigste Erkenntnisse zum Zeitunterschied" : isEs ? "Resumen de la Diferencia" : isFr ? "Points clés sur le décalage horaire" : isIt ? "Punti chiave sulla differenza di orario" : isPt ? "Principais conclusões sobre a diferença de horário" : "Key Takeaways on Time Differences",
   reverse: isDe ? "Zusammenfassung der Rückrechnung" : isEs ? "Resumen de Conversión Inversa" : isFr ? "Bilan sur la conversion inverse" : isIt ? "Riepilogo sulla conversione inversa" : isPt ? "Resumo da conversão inversa" : "Final Thoughts on Reverse Scheduling",
   guide: isDe ? "Zusammenfassung der Zeitzonen-Grundlagen" : isEs ? "Resumen del Aprendizaje" : isFr ? "Synthèse des normes horaires" : isIt ? "Sintesi degli standard orari" : isPt ? "Síntese dos padrões de fusos horários" : "Time Standards Wrap-Up",
-  dynamic: isDe ? "Zusammenfassung der Umrechnung von {from} in {to}" : isEs ? "Resumen de {from} a {to}" : isFr ? "Résumé de la conversion de {from} vers {to}" : isIt ? "Riepilogo della conversione da {from} a {to}" : isPt ? "Resumo da conversão de {from} para {to}" : "Summary of {from} to {to} Conversion"
+  dynamic: isDe ? "Zusammenfassung der Umrechnung von {from} in {to}" : isEs ? "Resumen de {from} a {to}" : isFr ? "Résumé de la conversion de {from} vers {to}" : isIt ? "Riepilogo della conversione da {from} a {to}" : isPt ? "Resumo da conversão de {from} para {to}" : "Summary of {from} to {to} Conversion",
+  tool: isDe ? "Zusammenfassung & Nächste Schritte" : isEs ? "Resumen del recurso" : isFr ? "En résumé" : isIt ? "Riepilogo e prossimi passi" : isPt ? "Resumo e próximos passos" : "Summary & Next Steps"
 };
 const pageConclusionHeading = replaceTemplates(conclusionHeadingMap[kind] || conclusionHeadingMap.converter, replacements);
 
@@ -289,10 +291,22 @@ function easternChartValue(gmtHour: number, offset: number, label: string, curre
   return `${formatChartHour(easternHour, currentLang)} ${label}${easternHour < 0 ? prevDayText : ""}`;
 }
 
+function gmtFromEasternChartValue(easternHour: number, offset: number, label: string, currentLang = "en") {
+  const gmtHour = easternHour + offset;
+  const nextDayText = currentLang === "de" ? " (Folgetag)" : currentLang === "es" ? " (día siguiente)" : currentLang === "fr" ? " (jour suivant)" : currentLang === "it" ? " (giorno successivo)" : currentLang === "pt" ? " (dia seguinte)" : " (next day)";
+  return `${formatChartHour(gmtHour, currentLang)} ${label}${gmtHour >= 24 ? nextDayText : ""}`;
+}
+
 const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
   gmt: `${String(hour).padStart(2, "0")}:00 GMT`,
   eastern: `${easternChartValue(hour, -5, "EST", lang)} / ${easternChartValue(hour, -4, "EDT", lang)}`,
   offset: "UTC−5 / UTC−4",
+}));
+
+const estGmtChartRows = Array.from({ length: 24 }, (_, hour) => ({
+  eastern: `${formatChartHour(hour, lang)} EST/EDT`,
+  gmt: `${gmtFromEasternChartValue(hour, 5, "GMT", lang)} / ${gmtFromEasternChartValue(hour, 4, "GMT", lang)}`,
+  offset: "UTC+5 (EST) / UTC+4 (EDT)",
 }));
 ---
 
@@ -796,7 +810,7 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
               <tr><td>{isDe ? "Nov. bis März (erster So. Nov. bis zweiter So. März)" : isEs ? "Noviembre a marzo (invierno)" : isIt ? "Da novembre a marzo (inverno)" : isPt ? "Novembro a março (inverno)" : "Early Nov – Mid Mar (Winter)"}</td><td>EST</td><td>UTC−5</td><td>{isDe ? "5 Stunden hinter GMT" : isEs ? "5 horas detrás" : isIt ? "5 ore indietro rispetto a GMT" : isPt ? "5 horas atrás de GMT" : "5 hours"}</td></tr>
               <tr><td>{isDe ? "März bis Nov. (zweiter So. März bis erster So. Nov.)" : isEs ? "Marzo a noviembre (verano)" : isIt ? "Da marzo a novembre (estate)" : isPt ? "Março a novembro (verão)" : "Mid Mar – Early Nov (Summer)"}</td><td>EDT</td><td>UTC−4</td><td>{isDe ? "4 Stunden hinter GMT" : isEs ? "4 horas detrás" : isIt ? "4 ore indietro rispetto a GMT" : isPt ? "4 horas atrás de GMT" : "4 hours"}</td></tr>
               <tr><td>{isDe ? "Frühjahrsumstellung" : isEs ? "Cambio de primavera" : isIt ? "Passaggio all'ora legale (Primavera)" : isPt ? "Início do horário de verão (Primavera)" : "DST Transition (Spring)"}</td><td>EST → EDT</td><td>{isDe ? "Uhren werden um 1 Stunde vorgestellt" : isEs ? "Los relojes se adelantan 1 hora" : isIt ? "Gli orologi avanzano di 1 ora" : isPt ? "Relógios adiantam 1 hora" : "Clocks spring forward 1 hour"}</td><td>{isDe ? "Wechselt von 5 auf 4 Stunden" : isEs ? "Cambia de 5 a 4 horas" : isIt ? "Passa da 5 a 4 ore di differenza" : isPt ? "Passa de 5 para 4 horas" : "Changes from 5 to 4"}</td></tr>
-              <tr><td>{isDe ? "Herbstumstellung" : isEs ? "Cambio de otoño" : isIt ? "Ritorno all'ora solare (Autunno)" : isPt ? "Fim do horário de verão (Outono)" : "DST Transition (Fall)"}</td><td>EDT → EST</td><td>{isDe ? "Uhren werden um 1 Stunde zurückgestellt" : isEs ? "Los relojes se atrasan 1 hora" : isIt ? "Gli orologi tornano indietro di 1 ora" : isPt ? "Relógios atrasam 1 hora" : "Clocks fall back 1 hour"}</td><td>{isDe ? "Wechselt von 4 auf 5 Stunden" : isEs ? "Cambia de 4 a 5 horas" : isIt ? "Passa da 4 a 5 ore di diferença" : isPt ? "Passa de 4 para 5 horas" : "Changes from 4 to 5"}</td></tr>
+              <tr><td>{isDe ? "Herbstumstellung" : isEs ? "Cambio de otoño" : isIt ? "Ritorno all'ora solare (Autunno)" : isPt ? "Fim do horário de verão (Outono)" : "DST Transition (Fall)"}</td><td>EDT → EST</td><td>{isDe ? "Uhren werden um 1 Stunde zurückgestellt" : isEs ? "Los relojes se atrasan 1 hora" : isIt ? "Gli orologi tornano indietro di 1 ora" : isPt ? "Relógios atrasam 1 hora" : "Clocks fall back 1 hour"}</td><td>{isDe ? "Wechselt von 4 auf 5 Stunden" : isEs ? "Cambia de 4 a 5 horas" : isIt ? "Passa da 4 a 5 ore di differenza" : isPt ? "Passa de 4 para 5 horas" : "Changes from 4 to 5"}</td></tr>
             </tbody>
           </table>
         </div>
@@ -807,8 +821,8 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
       <h2 id="dst-schedule-rules-title">{isDe ? "Sommerzeit-Regeln und Termine in den USA (DST)" : isEs ? "Reglas y calendario de horario de verano en EE. UU. (DST)" : isIt ? "Regole e calendario dell'ora legale negli USA (DST)" : isPt ? "Regras e calendário do horário de verão nos EUA (DST)" : "US Daylight Saving Time Schedule & Rules"}</h2>
       <p>{isDe ? "In den USA und Kanada beginnt die Sommerzeit stets am zweiten Sonntag im März und endet am ersten Sonntag im November:" : isEs ? "En Estados Unidos y Canadá, el horario de verano comienza el segundo domingo de marzo y finaliza el primer domingo de noviembre:" : isIt ? "Negli Stati Uniti e nelle province canadesi del fuso Eastern, l'ora legale entra in vigore la seconda domenica di marzo e si conclude la prima domenica di novembre:" : isPt ? "Nos Estados Unidos e no leste do Canadá, o horário de verão começa no segundo domingo de março e termina no primeiro domingo de novembro:" : "In the United States and Canadian Eastern Time locations, daylight saving time begins on the second Sunday in March and ends on the first Sunday in November:"}</p>
       <ul>
-        <li><strong>{isDe ? "Passaggio primaverile (seconda domenica di marzo alle ore 02:00 locali):" : isEs ? "Transición de primavera (segundo domingo de marzo a las 2:00 AM):" : isIt ? "Passaggio primaverile (seconda domenica di marzo alle ore 02:00 locali):" : isPt ? "Transição na primavera (segundo domingo de março às 02:00 locais):" : "Spring forward (second Sunday in March at 2:00 AM local time):"}</strong> {isDe ? "Die Uhren werden auf 03:00 Uhr vorgestellt. Eastern Time wechselt von EST (UTC−5) auf EDT (UTC−4), die Differenz zu GMT verringert sich von 5 auf 4 Stunden." : isEs ? "los relojes se adelantan a las 3:00 AM y Eastern Time cambia de EST (UTC−5) a EDT (UTC−4), reduciendo la diferencia con GMT a 4 horas." : isIt ? "Gli orologi avanzano alle 03:00 e l'Eastern Time passa da EST (UTC−5) a EDT (UTC−4), riducendo la differenza oraria con GMT da 5 a 4 ore." : isPt ? "Os relógios adiantam para 03:00 e o Horário do Leste passa de EST (UTC−5) para EDT (UTC−4), reduzindo a diferença para GMT de 5 para 4 horas." : "clocks move forward to 3:00 AM and Eastern Time changes from EST (UTC−5) to EDT (UTC−4), reducing the gap to 4 hours."}</li>
-        <li><strong>{isDe ? "Ritorno autunnale (prima domenica di novembre alle ore 02:00 locali):" : isEs ? "Transición de otoño (primer domingo de noviembre a las 2:00 AM):" : isIt ? "Ritorno autunnale (prima domenica di novembre alle ore 02:00 locali):" : isPt ? "Retorno no outono (primeiro domingo de novembro às 02:00 locais):" : "Fall back (first Sunday in November at 2:00 AM local time):"}</strong> {isDe ? "Die Uhren werden auf 01:00 Uhr zurückgestellt. Eastern Time wechselt von EDT (UTC−4) auf EST (UTC−5), die Differenz zu GMT erhöht sich wieder auf 5 Stunden." : isEs ? "los relojes se atrasan a la 1:00 AM y Eastern Time cambia de EDT (UTC−4) a EST (UTC−5), restableciendo la diferencia de 5 horas con GMT." : isIt ? "Gli orologi tornano indietro alle 01:00 e l'Eastern Time passa da EDT (UTC−4) a EST (UTC−5), ripristinando la diferença de 5 horas rispetto a GMT." : isPt ? "Os relógios atrasam para 01:00 e o Horário do Leste passa de EDT (UTC−4) para EST (UTC−5), restabelecendo a diferença de 5 horas para GMT." : "clocks move back to 1:00 AM and Eastern Time changes from EDT (UTC−4) to EST (UTC−5), restoring the 5-hour gap."}</li>
+        <li><strong>{isDe ? "Frühjahrsumstellung (zweiter Sonntag im März um 02:00 Uhr Ortszeit):" : isEs ? "Transición de primavera (segundo domingo de marzo a las 2:00 AM):" : isIt ? "Passaggio all'ora legale (seconda domenica di marzo alle ore 02:00 locali):" : isPt ? "Transição na primavera (segundo domingo de março às 02:00 locais):" : "Spring forward (second Sunday in March at 2:00 AM local time):"}</strong> {isDe ? "Die Uhren werden auf 03:00 Uhr vorgestellt. Eastern Time wechselt von EST (UTC−5) auf EDT (UTC−4), die Differenz zu GMT verringert sich von 5 auf 4 Stunden." : isEs ? "los relojes se adelantan a las 3:00 AM y Eastern Time cambia de EST (UTC−5) a EDT (UTC−4), reduciendo la diferencia con GMT a 4 horas." : isIt ? "Gli orologi avanzano alle 03:00 e l'Eastern Time passa da EST (UTC−5) a EDT (UTC−4), riducendo la differenza oraria con GMT da 5 a 4 ore." : isPt ? "Os relógios adiantam para 03:00 e o Horário do Leste passa de EST (UTC−5) para EDT (UTC−4), reduzindo a diferença para GMT de 5 para 4 horas." : "clocks move forward to 3:00 AM and Eastern Time changes from EST (UTC−5) to EDT (UTC−4), reducing the gap to 4 hours."}</li>
+        <li><strong>{isDe ? "Herbstumstellung (erster Sonntag im November um 02:00 Uhr Ortszeit):" : isEs ? "Transición de otoño (primer domingo de noviembre a las 2:00 AM):" : isIt ? "Ritorno all'ora solare (prima domenica di novembre alle ore 02:00 locali):" : isPt ? "Retorno no outono (primeiro domingo de novembro às 02:00 locais):" : "Fall back (first Sunday in November at 2:00 AM local time):"}</strong> {isDe ? "Die Uhren werden auf 01:00 Uhr zurückgestellt. Eastern Time wechselt von EDT (UTC−4) auf EST (UTC−5), die Differenz zu GMT erhöht sich wieder auf 5 Stunden." : isEs ? "los relojes se atrasan a la 1:00 AM y Eastern Time cambia de EDT (UTC−4) a EST (UTC−5), restableciendo la diferencia de 5 horas con GMT." : isIt ? "Gli orologi tornano indietro alle 01:00 e l'Eastern Time passa da EDT (UTC−4) a EST (UTC−5), ripristinando la differenza di 5 ore rispetto a GMT." : isPt ? "Os relógios atrasam para 01:00 e o Horário do Leste passa de EDT (UTC−4) para EST (UTC−5), restabelecendo a diferença de 5 horas para GMT." : "clocks move back to 1:00 AM and Eastern Time changes from EDT (UTC−4) to EST (UTC−5), restoring the 5-hour gap."}</li>
       </ul>
       <p>{isDe ? "Diese Regeln gelten für alle Bundesstaaten und Provinzen in der Eastern Time Zone, die Sommerzeit anwenden." : isEs ? "Estas reglas aplican en todas las ubicaciones de la zona Eastern que observan el horario de verano." : isIt ? "Queste regole sono stabilite a livello federale e si applicano a tutte le località della zona Eastern che osservano l'ora legale." : isPt ? "Essas regras aplicam-se a todas as localidades na zona Eastern que adotam o horário de verão." : "These rules apply across Eastern Time locations that observe daylight saving time."}</p>
     </section>
@@ -873,6 +887,84 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
         </div>
       </div>
     </section>
+
+    <section class="examples-section" id="reverse-24h-table" aria-labelledby="reverse-24h-table-title" style="padding-top: 10px; padding-bottom: 25px;">
+      <div>
+        <h2 id="reverse-24h-table-title">{isDe ? "24-Stunden-Umrechnungstabelle: Eastern Time in GMT" : isEs ? "Tabla de conversión 24 horas: Eastern Time a GMT" : isFr ? "Tableau de conversion 24 heures : heure de l'Est vers GMT" : isIt ? "Tabella di conversione 24 ore: da Eastern Time a GMT" : isPt ? "Tabela de conversão 24 horas: Horário do Leste para GMT" : "24-Hour Conversion Table: Eastern Time to GMT"}</h2>
+        <p>{isDe ? "Vollständige Übersicht aller 24 Stunden des Tages mit Berücksichtigung von Standardzeit (EST) und Sommerzeit (EDT)." : isEs ? "Desglose hora a hora de las 24 horas del día considerando el horario estándar (EST) y el de verano (EDT)." : isFr ? "Vue d'ensemble complète des 24 heures de la journée pour l'heure normale (EST) et l'heure d'été (EDT)." : isIt ? "Prospetto completo ora per ora delle 24 ore giornaliere, con calcolo separato per ora solare (EST) e ora legale (EDT)." : isPt ? "Visão completa hora a hora das 24 horas do dia para o horário padrão (EST) e de verão (EDT)." : "Comprehensive hourly breakdown across all 24 hours of the day showing both EST and EDT offsets."}</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">{isDe ? "24-Stunden-Tabelle Eastern Time zu GMT" : isEs ? "Tabla de 24 horas de Eastern Time a GMT" : isIt ? "Tabella di conversione oraria a 24 ore da Eastern Time a GMT" : "24-hour Eastern Time to GMT conversion table"}</caption>
+            <thead>
+              <tr><th>{isDe ? "Eastern Time (EST/EDT)" : isEs ? "Eastern Time" : isIt ? "Eastern Time (EST / EDT)" : "Eastern Time"}</th><th>{isDe ? "GMT (Winter / EST)" : isEs ? "GMT (Invierno / EST)" : isIt ? "GMT (Inverno / EST)" : "GMT (Winter / EST)"}</th><th>{isDe ? "GMT (Sommer / EDT)" : isEs ? "GMT (Verano / EDT)" : isIt ? "GMT (Estate / EDT)" : "GMT (Summer / EDT)"}</th><th>{isDe ? "Hinweis zum Datum" : isEs ? "Nota de fecha" : isIt ? "Giorno di calendario" : "Date Status"}</th></tr>
+            </thead>
+            <tbody>
+              {estGmtChartRows.map((row, idx) => (
+                <tr>
+                  <td><strong>{row.eastern}</strong></td>
+                  <td>{gmtFromEasternChartValue(idx, 5, "GMT", lang)}</td>
+                  <td>{gmtFromEasternChartValue(idx, 4, "GMT", lang)}</td>
+                  <td>{idx >= 20 ? (isIt ? "Giorno successivo (+1)" : isDe ? "Folgetag (+1)" : isEs ? "Día siguiente (+1)" : isFr ? "Jour suivant (+1)" : isPt ? "Dia seguinte (+1)" : "Next day (+1)") : idx === 19 ? (isIt ? "Giorno successivo in EST (+1)" : isDe ? "Folgetag in EST (+1)" : isEs ? "Día siguiente en EST (+1)" : "Next day in EST") : (isIt ? "Stesso giorno" : isDe ? "Gleicher Tag" : isEs ? "Mismo día" : isFr ? "Même jour" : isPt ? "Mesmo dia" : "Same day")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {isIt && (
+      <section class="content" id="est-gmt-deep-dive" aria-labelledby="deep-dive-heading">
+        <h2 id="deep-dive-heading">Guida completa alla conversione dall'Eastern Time a GMT</h2>
+        <p>La conversione dell'orario dalla costa orientale degli Stati Uniti verso il meridiano di Greenwich (GMT) è una delle operazioni più frequenti per professionisti, viaggiatori, investitori e sviluppatori. A differenza della conversione diretta da GMT a EST (in cui le ore vengono sottratte), nel passaggio inverso <strong>le ore devono essere sempre sommate</strong>.</p>
+        
+        <h3>1. Come funziona la conversione: le due regole stagionali</h3>
+        <p>Il fattore determinante per convertire con esattezza l'ora locale nordamericana in GMT è lo stato dell'ora legale negli Stati Uniti e in Canada:</p>
+        <ul>
+          <li><strong>Regime di ora solare invernale (EST, UTC−5):</strong> dalla prima domenica di novembre alla seconda domenica di marzo, l'Eastern Time ha uno scarto di 5 ore indietro rispetto a GMT. La formula di conversione è:<br /><code>Ora GMT = Ora EST + 5 ore</code><br /><em>Esempio:</em> le 10:00 EST a New York corrispondono alle 15:00 GMT a Londra.</li>
+          <li><strong>Regime di ora legale estiva (EDT, UTC−4):</strong> dalla seconda domenica di marzo alla prima domenica di novembre, la costa orientale adotta il Daylight Saving Time. Lo scarto si riduce a 4 ore:<br /><code>Ora GMT = Ora EDT + 4 ore</code><br /><em>Esempio:</em> le 10:00 EDT a Miami corrispondono alle 14:00 GMT a Londra.</li>
+        </ul>
+
+        <h3>2. Cosa significano EST ed EDT: differenze essenziali</h3>
+        <p>Spesso nel linguaggio comune si usa l'acronimo generico <strong>ET (Eastern Time)</strong>, ma dal punto di vista tecnico e normativo esistono due definizioni ben distinte:</p>
+        <ul>
+          <li><strong>EST (Eastern Standard Time):</strong> corrisponde a UTC−5. È l'ora ufficiale adottata nei mesi invernali lungo la fascia costiera orientale del Nord America, comprendendo città come New York, Boston, Philadelphia, Washington D.C., Atlanta, Miami, Toronto e Montreal.</li>
+          <li><strong>EDT (Eastern Daylight Time):</strong> corrisponde a UTC−4. Entra in vigore nei mesi caldi per massimizzare le ore di luce pomeridiana, anticipando gli orologi di un'ora. Rimane attivo per circa 8 mesi all'anno (circa il 68% dei giorni).</li>
+        </ul>
+
+        <h3>3. Il passaggio della mezzanotte e lo slittamento di data (Date Rollover)</h3>
+        <p>Uno degli errori più gravi nella pianificazione di appuntamenti o voli consiste nell'ignorare il cambio di data. Poiché a Greenwich il nuovo giorno inizia prima rispetto alla costa est americana, gli eventi serali statunitensi si svolgono sempre nel <strong>giorno successivo</strong> in orario GMT:</p>
+        <ul>
+          <li><strong>In inverno (EST):</strong> qualsiasi orario pari o successivo alle <strong>19:00 EST</strong> scivola nel giorno dopo a Greenwich (19:00 EST + 5h = 24:00 / 00:00 GMT del giorno successivo; 21:00 EST = 02:00 GMT del giorno successivo).</li>
+          <li><strong>In estate (EDT):</strong> qualsiasi orario pari o successivo alle <strong>20:00 EDT</strong> scivola nel giorno dopo a Greenwich (20:00 EDT + 4h = 24:00 / 00:00 GMT del giorno successivo; 22:30 EDT = 02:30 GMT del giorno successivo).</li>
+        </ul>
+
+        <h3>4. Coordinamento orario tra Italia ed Eastern Time (Roma e Milano vs New York)</h3>
+        <p>L'Italia adotta l'ora dell'Europa centrale (CET, UTC+1 in inverno; CEST, UTC+2 in estate). Di conseguenza, per la quasi totalità dell'anno, <strong>l'Italia è esattamente 6 ore avanti rispetto all'Eastern Time</strong>:</p>
+        <ul>
+          <li>Quando a New York sono le 09:00 del mattino, a Roma e Milano sono le 15:00 del pomeriggio.</li>
+          <li>Quando a New York sono le 12:00 (pranzo), in Italia sono le 18:00 (fine giornata lavorativa).</li>
+          <li><strong>La finestra di sovrapposizione lavorativa ottimale:</strong> per organizzare riunioni transatlantiche senza costringere nessuna delle parti a orari disagevoli, l'intervallo ideale è tra le <strong>15:00 e le 18:00 ora italiana</strong> (corrispondenti alle <strong>09:00 - 12:00 ora di New York</strong>).</li>
+          <li><strong>Le settimane di disallineamento primaverile e autunnale:</strong> gli Stati Uniti passano all'ora legale la seconda domenica di marzo, mentre l'Italia l'ultima domenica di marzo. Per quelle 2-3 settimane, il divario si riduce a <strong>5 ore</strong>. Un disallineamento analogo di circa una settimana si ripresenta a fine ottobre/inizio novembre.</li>
+        </ul>
+
+        <h3>5. Scenari pratici e casi d'uso della conversione inversa</h3>
+        <ul>
+          <li><strong>Borsa e mercati finanziari:</strong> la borsa di Wall Street (NYSE / Nasdaq) apre alle 09:30 Eastern Time e chiude alle 16:00 Eastern Time. In orario GMT, la chiusura corrisponde alle 21:00 GMT in inverno e alle 20:00 GMT in estate (in orario italiano: 22:00 nei giorni standard, 21:00 durante le settimane di disallineamento).</li>
+          <li><strong>Voli aerei transatlantici:</strong> un volo in partenza da New York (JFK) alle 18:30 EST atterra tipicamente a Londra o Roma la mattina seguente; comprendere il fuso GMT è indispensabile per calcolare la reale durata del volo e programmare i tempi di riposo.</li>
+          <li><strong>Eventi sportivi e intrattenimento:</strong> le partite serali NBA o NFL che iniziano alle 20:30 Eastern Time vanno in onda alle 01:30 GMT (02:30 ora italiana) della notte successiva.</li>
+        </ul>
+
+        <h3>6. I 5 errori più comuni da evitare</h3>
+        <ol>
+          <li><strong>Sottrarre le ore invece di sommarle:</strong> ricordare sempre che Greenwich è a est rispetto all'America, quindi l'orologio GMT segna sempre un'ora più avanzata.</li>
+          <li><strong>Applicare sempre 5 ore:</strong> nei mesi da marzo a novembre lo scarto è di sole 4 ore per via dell'EDT.</li>
+          <li><strong>Dimenticare l'avanzamento della data:</strong> verificare sempre se l'evento GMT cade il giorno successivo.</li>
+          <li><strong>Confondere la sigla generica ET con EST:</strong> se un interlocutore americano scrive "meeting at 3 PM EST" in pieno luglio, intende quasi sicuramente l'ora legale EDT (UTC−4) e non l'ora solare.</li>
+          <li><strong>Non considerare le settimane di cambio orario:</strong> verificare il calendario di marzo e ottobre/novembre per evitare riunioni mancate di un'ora.</li>
+        </ol>
+      </section>
+    )}
 
     {pageExplanation && (
       <section class="method-section" id="explanation" aria-labelledby="explanation-title">
@@ -984,12 +1076,63 @@ const gmtEstChartRows = Array.from({ length: 24 }, (_, hour) => ({
           </thead>
           <tbody>
             <tr><td>1884</td><td>{isDe ? "International Meridian Conference" : isEs ? "Conferencia Internacional del Meridiano" : isIt ? "Conferenza internazionale del meridiano" : isPt ? "Conferência Internacional do Meridiano" : "International Meridian Conference"}</td><td>{isDe ? "Greenwich wird als Nullmeridian (0° Länge) und weltweiter Standardbezugspunkt gewählt." : isEs ? "Se establece Greenwich como meridiano cero (longitud 0°) de referencia global." : isIt ? "Greenwich viene stabilito come meridiano zero (longitudine 0°) di riferimento globale." : isPt ? "Greenwich é estabelecido como meridiano zero (0° de longitude) e referência global." : "Greenwich established as the prime meridian (0° longitude)."}</td></tr>
-            <tr><td>1972</td><td>{isDe ? "Koordinierte Weltzeit (UTC)" : isEs ? "Tiempo Universal Coordinado (UTC)" : isIt ? "Tempo Coordinato Universale (UTC)" : "Coordinated Universal Time (UTC)"}</td><td>{isDe ? "UTC wird als atomgenauer Weltzeitstandard etabliert und löst rein solare Zeitdefinitionen ab." : isEs ? "UTC se adopta globalmente sustituyendo las referencias astronómicas solares." : isIt ? "L'UTC viene adottato su scala globale come standard atomico in sostituzione dei riferimenti solari." : isPt ? "Tempo Universal Coordenado (UTC)" : "Coordinated Universal Time (UTC)"}</td><td>{isDe ? "UTC wird als atomgenauer Weltzeitstandard etabliert und löst rein solare Zeitdefinitionen ab." : isEs ? "UTC se adopta globalmente sustituyendo las referencias astronómicas solares." : isIt ? "L'UTC viene adottato su scala globale come standard atomico in sostituzione dei riferimenti solari." : isPt ? "O UTC é adotado globalmente como padrão atômico em substituição às referências puramente solares." : "UTC adopted globally to replace astronomical solar time references."}</td></tr>
+            <tr><td>1972</td><td>{isDe ? "Koordinierte Weltzeit (UTC)" : isEs ? "Tiempo Universal Coordinado (UTC)" : isIt ? "Tempo Coordinato Universale (UTC)" : isPt ? "Tempo Universal Coordenado (UTC)" : "Coordinated Universal Time (UTC)"}</td><td>{isDe ? "UTC wird als atomgenauer Weltzeitstandard etabliert und löst rein solare Zeitdefinitionen ab." : isEs ? "UTC se adopta globalmente sustituyendo las referencias astronómicas solares." : isIt ? "L'UTC viene adottato su scala globale come standard atomico in sostituzione dei riferimenti solari." : isPt ? "O UTC é adotado globalmente como padrão atômico em substituição às referências puramente solares." : "UTC adopted globally to replace astronomical solar time references."}</td></tr>
             <tr><td>2007</td><td>{isDe ? "Energy Policy Act (USA)" : isEs ? "Ley de Política Energética (EE. UU.)" : isIt ? "Energy Policy Act (USA)" : isPt ? "Lei de Política Energética (EUA)" : "Energy Policy Act of 2005"}</td><td>{isDe ? "US-Sommerzeit wird verlängert (zweiter Sonntag im März bis erster Sonntag im November)." : isEs ? "Se extiende el horario de verano en EE. UU. (segundo domingo de marzo a primero de noviembre)." : isIt ? "Viene estesa l'ora legale negli USA (dalla seconda domenica di marzo alla prima domenica di novembre)." : isPt ? "O horário de verão nos EUA é estendido (do segundo domingo de março ao primeiro domingo de novembro)." : "U.S. daylight saving time extended to start second Sunday in March and end first Sunday in November."}</td></tr>
           </tbody>
         </table>
       </div>
     </section>
+
+    {isIt && (
+      <section class="content" id="time-zone-guide-deep-dive" aria-labelledby="guide-deep-heading">
+        <h2 id="guide-deep-heading">Fondamenti e standard scientifici dei fusi orari mondiali</h2>
+        <p>I fusi orari moderni rappresentano l'infrastruttura invisibile che consente la navigazione globale, le telecomunicazioni intercontinentali, il commercio elettronico e il funzionamento dei mercati finanziari. Questa guida illustra i concetti cardine per orientarsi con precisione tra standard internazionali, scarti UTC e convenzioni stagionali.</p>
+
+        <h3>1. GMT vs UTC: la differenza tra tempo solare e tempo atomico</h3>
+        <p>Benché nel linguaggio quotidiano e nell'uso civile <strong>GMT</strong> e <strong>UTC</strong> vengano spesso usati come sinonimi (entrambi indicano lo scarto orario zero rispetto al meridiano di riferimento), dal punto di vista scientifico sussiste una distinzione essenziale:</p>
+        <ul>
+          <li><strong>Greenwich Mean Time (GMT):</strong> è uno standard astronomico basato sulla rotazione della Terra e sul tempo solare medio osservato presso il Royal Observatory di Greenwich a Londra. Poiché la velocità di rotazione terrestre è soggetta a microscopiche oscillazioni dovute alle maree e alla ridistribuzione delle masse interne, il secondo GMT non è perfettamente costante.</li>
+          <li><strong>Coordinated Universal Time (UTC):</strong> introdotto nel 1972, è lo standard scientifico internazionale regolato da oltre 400 orologi atomici al cesio ad altissima precisione coordinati dall'Ufficio Internazionale dei Pesi e delle Misure (BIPM). Quando la discrepanza tra il tempo atomico (TAI) e la rotazione terrestre supera 0,9 secondi, viene inserito un "secondo intercalare" (leap second). Ai fini pratici e civili, GMT e UTC segnano esattamente la stessa ora.</li>
+        </ul>
+
+        <h3>2. Come funzionano i fusi orari: longitudine e scarti UTC</h3>
+        <p>La superficie terrestre è convenzionalmente suddivisa in 24 fusi orari principali di 15 gradi di longitudine ciascuno (360° / 24 ore = 15° all'ora). Il meridiano zero passa per Greenwich (0° di longitudine). Man mano che ci si sposta verso est rispetto a Greenwich si sommano ore (+1, +2, +3...), mentre spostandosi verso ovest si sottraggono ore (-1, -2, -3...).</p>
+        <p>Tuttavia, i confini reali dei fusi orari seguono confini politici, amministrativi ed economici, determinando talvolta scarti orari frazionari, come in India (UTC+5:30), Iran (UTC+3:30) o Nepal (UTC+5:45).</p>
+
+        <h3>3. L'Eastern Time in Nord America: EST vs EDT</h3>
+        <p>La costa orientale degli Stati Uniti e del Canada rientra nella Eastern Time Zone:</p>
+        <ul>
+          <li><strong>EST (Eastern Standard Time, UTC−5):</strong> in vigore per circa 4 mesi all'anno, da inizio novembre a metà marzo. La differenza con GMT è di 5 ore indietro.</li>
+          <li><strong>EDT (Eastern Daylight Time, UTC−4):</strong> in vigore per circa 8 mesi all'anno, da metà marzo a inizio novembre. La differenza con GMT è di sole 4 ore indietro.</li>
+          <li>Territori coperti: include centri finanziari e istituzionali di primaria importanza come New York, Washington D.C., Boston, Filadelfia, Miami, Atlanta, nonché le province canadesi dell'Ontario e del Quebec.</li>
+        </ul>
+
+        <h3>4. Le regole dell'ora legale e la desincronizzazione tra USA ed Europa</h3>
+        <p>Uno degli aspetti più complessi nella coordinazione internazionale risiede nelle diverse date di transizione dell'ora legale (Daylight Saving Time):</p>
+        <ul>
+          <li><strong>Stati Uniti e Canada:</strong> l'ora legale inizia la <strong>seconda domenica di marzo</strong> alle 02:00 e termina la <strong>prima domenica di novembre</strong> alle 02:00, secondo le disposizioni dell'Energy Policy Act del 2005.</li>
+          <li><strong>Italia e Unione Europea:</strong> l'ora legale (CEST, UTC+2) inizia l'<strong>ultima domenica di marzo</strong> alle 02:00 e termina l'<strong>ultima domenica di ottobre</strong> alle 03:00.</li>
+          <li><strong>Conseguenza operativa:</strong> due volte all'anno si crea un periodo di sfasamento (2-3 settimane a marzo e circa 1 settimana a fine ottobre) in cui la differenza di orario tra l'Italia e New York è di <strong>5 ore</strong> anziché le consuete <strong>6 ore</strong>. Tenere conto di queste settimane evita riunioni anticipate o posticipate di un'ora.</li>
+        </ul>
+
+        <h3>5. I database IANA e la gestione dei fusi nel software</h3>
+        <p>Nello sviluppo software e nell'ingegneria dei sistemi, le semplici abbreviazioni come EST, CST o BST sono sconsigliate perché generano ambiguità (ad esempio, CST può indicare sia il Central Standard Time americano sia il China Standard Time). Lo standard industriale è la <strong>IANA Time Zone Database</strong> (nota anche come database Olson o tzdata):</p>
+        <ul>
+          <li>Identificatori canonici: <code>America/New_York</code> per l'Eastern Time, <code>Europe/Rome</code> per l'Italia, <code>Europe/London</code> per il Regno Unito, <code>Etc/UTC</code> per il tempo universale.</li>
+          <li>Formato ISO 8601: per lo scambio dati tra API e database si raccomanda il formato standard <code>YYYY-MM-DDTHH:mm:ssZ</code> per orari UTC o <code>YYYY-MM-DDTHH:mm:ss±HH:mm</code> per orari locali con offset esplicito.</li>
+          <li>Timestamp Unix: numero di secondi trascorsi dalla mezzanotte UTC del 1° gennaio 1970 (Unix Epoch), ideale per archiviare record cronologici immutabili nei database.</li>
+        </ul>
+
+        <h3>6. I 5 errori più frequenti nella gestione dei fusi orari</h3>
+        <ol>
+          <li><strong>Assumere che il divario orario rimanga identico tutto l'anno:</strong> le date sfasate dell'ora legale provocano variazioni temporanee di 1 ora.</li>
+          <li><strong>Omettere l'indicazione dell'ora legale:</strong> specificare sempre se l'orario comunicato è solare (EST) o legale (EDT), oppure indicare la città di riferimento (es. "ore 15:00 ora di New York").</li>
+          <li><strong>Trascurare il cambio di data (Date Rollover):</strong> un meeting o un volo notturno può cadere nel giorno successivo rispetto al fuso dell'organizzatore.</li>
+          <li><strong>Calcolare manualmente i fusi sommando secondi fissi:</strong> non sommare mai <code>3600 * 5</code> nei codici di programmazione; affidarsi sempre a librerie certificate che gestiscono le transizioni storiche della tzdb.</li>
+          <li><strong>Dimenticare le festività nazionali dei partner esteri:</strong> prima di confermare scadenze o meeting internazionali, verificare sempre se il paese estero osserva una festività locale o federale.</li>
+        </ol>
+      </section>
+    )}
 
     <section class="clock-grid" aria-labelledby="live-clocks">
       <h2 id="live-clocks">{t.clocks?.title || (isDe ? "Live-Uhren" : isEs ? "Relojes en vivo" : clocksTitle)}</h2>

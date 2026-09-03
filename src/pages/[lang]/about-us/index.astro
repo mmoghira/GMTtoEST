@@ -9,11 +9,12 @@ export function getStaticPaths() {
 const lang = getLang(Astro.params.lang);
 const isDe = lang.code === "de";
 const isFr = lang.code === "fr";
+const isIt = lang.code === "it";
 const metaBase = getPageMeta(lang.code, "about");
 const meta = {
   ...metaBase,
-  title: isDe ? "Über uns – GMT zu EST Umrechner" : isFr ? "À propos | Convertisseur GMT vers EST" : metaBase.title,
-  description: isDe ? "Erfahren Sie mehr über unsere Mission: Präzise, datumsgenaue Zeitzonenumrechnungen zwischen GMT, EST, EDT und weltweiten Zeitzonen." : isFr ? "Découvrez notre mission : proposer des conversions d'heure précises, synchronisées et tenant compte de l'heure d'été entre GMT, EST, EDT et le monde entier." : metaBase.description,
+  title: isDe ? "Über uns – GMT zu EST Umrechner" : isFr ? "À propos | Convertisseur GMT vers EST" : isIt ? "Chi siamo | Convertitore da GMT a EST" : metaBase.title,
+  description: isDe ? "Erfahren Sie mehr über unsere Mission: Präzise, datumsgenaue Zeitzonenumrechnungen zwischen GMT, EST, EDT und weltweiten Zeitzonen." : isFr ? "Découvrez notre mission : proposer des conversions d'heure précises, synchronisées et tenant compte de l'heure d'été entre GMT, EST, EDT et le monde entier." : isIt ? "Scopri la missione del Convertitore da GMT a EST: conversioni orarie accurate, sincronizzate e conformi agli standard IANA e UTC." : metaBase.description,
   keywords: "about gmt to est, about GMTtoEST, about us GMT to EST, timezone converter about",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -33,27 +34,29 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : "GMT to EST Converter"
     },
     about: {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter",
-      url: `${siteUrl}/${isDe ? "de/" : isFr ? "fr/" : ""}`,
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : "GMT to EST Converter",
+      url: `${siteUrl}/${isDe ? "de/" : isFr ? "fr/" : isIt ? "it/" : ""}`,
       logo: `${siteUrl}/assets/logo.png`,
       email: "contact@gmttoestconverter.com",
       description: isDe
         ? "Kostenloser, präziser Zeitzonenumrechner und Ratgeber für GMT- und Eastern Time (EST/EDT) Umrechnungen."
         : isFr
           ? "Outil en ligne gratuit et précis pour convertir l'heure entre le méridien de Greenwich (GMT/UTC) et l'heure de l'Est (EST/EDT)."
-          : "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
+          : isIt
+            ? "Strumento online gratuito e accurato per convertire l'ora tra il meridiano di Greenwich (GMT/UTC) e l'Eastern Time nordamericano (EST/EDT)."
+            : "Free, accurate timezone converter and guide for GMT and Eastern Time (EST/EDT) conversions.",
       foundingDate: "2024"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: isDe ? "Über uns" : isFr ? "À propos" : "About Us", item: pageUrl }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Über uns" : isFr ? "À propos" : isIt ? "Chi siamo" : "About Us", item: pageUrl }
       ]
     }
   }
@@ -81,6 +84,16 @@ const schema = [
         <p>Tous les guides, tableaux de conversion et contenus explicatifs sont rédigés et vérifiés selon des critères stricts de rigueur scientifique et de clarté pédagogique. Nous croisons nos données avec les publications de référence du Bureau International des Poids et Mesures (BIPM) et du NIST.</p>
         <h2>Nous contacter et contribuer</h2>
         <p>Vous souhaitez signaler une anomalie, poser une question technique ou suggérer une amélioration ? Rendez-vous sur notre page <a href={`/${lang.code}/contact-us/`}>Contactez-nous</a>.</p>
+      </>
+    ) : isIt ? (
+      <>
+        <p>Il <strong>Convertitore da GMT a EST</strong> è nato per offrire conversioni orarie istantanee, precise e conformi alle normative tra il Greenwich Mean Time (GMT / UTC) e l'Eastern Time nordamericano (EST / EDT). La nostra missione è rendere la pianificazione e la comunicazione internazionale semplici, affidabili e prive di errori per tutti gli utenti di lingua italiana.</p>
+        <h2>La nostra metodologia</h2>
+        <p>Per prevenire errori legati all'ora legale e ai cambi di stagione, i nostri strumenti si collegano direttamente alle definizioni ufficiali della banca dati IANA (TZDB) e all'identificatore <code>America/New_York</code>. Il nostro algoritmo considera sempre la data selezionata per stabilire se applicare l'ora solare (EST, UTC−5) o l'ora legale estiva (EDT, UTC−4).</p>
+        <h2>Criteri editoriali e revisione scientifica</h2>
+        <p>Tutti i calcolatori, le tabelle orarie e le guide di approfondimento vengono redatti e verificati secondo rigorosi criteri di precisione scientifica e chiarezza divulgativa, confrontando costantemente i dati con gli standard dell'Ufficio Internazionale dei Pesi e delle Misure (BIPM) e del NIST.</p>
+        <h2>Contatti e segnalazioni</h2>
+        <p>Desideri segnalare un'inesattezza, suggerire una nuova funzionalità o richiedere assistenza? Visita la nostra <a href={`/${lang.code}/contact-us/`}>pagina di contatto</a>.</p>
       </>
     ) : (
       <>

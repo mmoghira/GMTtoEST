@@ -49,7 +49,13 @@ const targetTimeLabel = context?.to === "EST"
                 : `${context.to} time`)
     : (t.converter?.toEastern || defaultEastern);
 
-const toPrefix = isDe ? "in " : isEs ? "a " : isFr ? "vers " : isIt ? "in " : isPt ? "para " : "to ";
+const toPrefix = isDe ? "in " : isEs ? "a " : isFr ? "vers " : isIt ? "a " : isPt ? "para " : "to ";
+const targetTimeButtonLabel = isIt
+  ? (context?.to === "EST" || !context?.to ? "all'Eastern Time" : (/^[AEIOU]/i.test(context.to) ? `all'${context.to}` : `a ${context.to}`))
+  : `${toPrefix}${targetTimeLabel}`;
+const sourceTimeButtonLabel = isIt
+  ? (/^[AEIOU]/i.test(sourceLabel) ? `all'${sourceLabel}` : `a ${sourceLabel}`)
+  : `${toPrefix}${sourceLabel}`;
 const inputLabel = context
   ? (isDe ? `${sourceLabel}-Zeit` : isEs ? `Hora ${sourceLabel}` : isFr ? `Heure ${sourceLabel}` : isIt ? `Ora ${sourceLabel}` : isPt ? `Hora ${sourceLabel}` : `${sourceLabel} time`)
   : input;
@@ -80,8 +86,8 @@ const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replac
     {variant.swap && <button type="button" data-role="swap" class="swap-button" aria-label={swapAria}>⇄</button>}
   </div>
   <div class:list={["mode-tabs", !variant.swap && "single-mode"]} role="tablist" aria-label={directionAria}>
-    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : isPt ? "De" : "From")}</span><b>{sourceLabel}</b><small>{toPrefix}{targetTimeLabel}</small></button>
-    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : isPt ? "De" : "From")}</span><b>{targetLabel}</b><small>{toPrefix}{sourceLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "gmt-est" && "active"]} role="tab" aria-selected={variant.startMode === "gmt-est" ? "true" : "false"} data-role="mode" data-mode="gmt-est"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : isPt ? "De" : "From")}</span><b>{sourceLabel}</b><small>{targetTimeButtonLabel}</small></button>
+    <button type="button" class:list={["mode", variant.startMode === "est-gmt" && "active"]} role="tab" aria-selected={variant.startMode === "est-gmt" ? "true" : "false"} data-role="mode" data-mode="est-gmt"><span>{t.converter.from || (isDe ? "Von" : isEs ? "De" : isFr ? "De" : isIt ? "Da" : isPt ? "De" : "From")}</span><b>{targetLabel}</b><small>{sourceTimeButtonLabel}</small></button>
   </div>
   <label class="datetime-label">
     <span data-role="inputZoneName">{inputLabel}</span>

@@ -376,9 +376,21 @@
           if (outputZoneNameEl) outputZoneNameEl.textContent = sourceAbbr;
         }
         root.querySelectorAll('.mode[data-mode="gmt-est"] b').forEach((b) => { b.textContent = sourceAbbr; });
-        root.querySelectorAll('.mode[data-mode="gmt-est"] small').forEach((s) => { s.textContent = (isPt ? "para " : isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + targetAbbr; });
+        root.querySelectorAll('.mode[data-mode="gmt-est"] small').forEach((s) => {
+          if (isIt) {
+            s.textContent = (targetAbbr === "EST / EDT" || targetAbbr === "EST" || targetAbbr === "Eastern Time") ? "all'Eastern Time" : (/^[AEIOU]/i.test(targetAbbr) ? "all'" + targetAbbr : "a " + targetAbbr);
+          } else {
+            s.textContent = (isPt ? "para " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + targetAbbr;
+          }
+        });
         root.querySelectorAll('.mode[data-mode="est-gmt"] b').forEach((b) => { b.textContent = targetAbbr; });
-        root.querySelectorAll('.mode[data-mode="est-gmt"] small').forEach((s) => { s.textContent = (isPt ? "para " : isIt ? "in " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + sourceAbbr; });
+        root.querySelectorAll('.mode[data-mode="est-gmt"] small').forEach((s) => {
+          if (isIt) {
+            s.textContent = /^[AEIOU]/i.test(sourceAbbr) ? "all'" + sourceAbbr : "a " + sourceAbbr;
+          } else {
+            s.textContent = (isPt ? "para " : isFr ? "vers " : isDe ? "in " : isEs ? "a " : "to ") + sourceAbbr;
+          }
+        });
       }
 
       setInputFromDate(new Date(), state.mode === "gmt-est" ? sourceZone : targetZone);

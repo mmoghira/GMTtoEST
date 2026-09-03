@@ -9,12 +9,13 @@ export function getStaticPaths() {
 const lang = getLang(Astro.params.lang);
 const isDe = lang.code === "de";
 const isFr = lang.code === "fr";
+const isIt = lang.code === "it";
 const email    = "contact@gmttoestconverter.com";
 const metaBase = getPageMeta(lang.code, "contact");
 const meta = {
   ...metaBase,
-  title: isDe ? "Kontakt | GMT zu EST Umrechner" : isFr ? "Contactez-nous | Convertisseur GMT vers EST" : (lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title),
-  description: isDe ? "Kontaktieren Sie das Team von GMT zu EST Umrechner für Fragen, Feedback, Funktionswünsche oder Partnerschaften." : isFr ? "Contactez l'équipe du Convertisseur GMT vers EST pour vos questions, remarques, suggestions d'amélioration ou partenariats." : (lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description),
+  title: isDe ? "Kontakt | GMT zu EST Umrechner" : isFr ? "Contactez-nous | Convertisseur GMT vers EST" : isIt ? "Contattaci | Convertitore da GMT a EST" : (lang.code === "th" ? "ติดต่อเรา | GMT to EST Converter" : metaBase.title),
+  description: isDe ? "Kontaktieren Sie das Team von GMT zu EST Umrechner für Fragen, Feedback, Funktionswünsche oder Partnerschaften." : isFr ? "Contactez l'équipe du Convertisseur GMT vers EST pour vos questions, remarques, suggestions d'amélioration ou partenariats." : isIt ? "Contatta il team del Convertitore da GMT a EST per chiarimenti, segnalazioni di errori o richieste di supporto." : (lang.code === "th" ? "ติดต่อทีมงาน GMT to EST Converter เพื่อแจ้งปัญหา สอบถามข้อมูลทั่วไป หรือแนะนำข้อเสนอแนะต่างๆ" : metaBase.description),
   keywords: "contact GMT to EST, GMT to EST support, GMT to EST feedback, timezone converter contact",
   robots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 };
@@ -36,13 +37,13 @@ const schema = [
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : "GMT to EST Converter"
+      name: isDe ? "GMT zu EST Umrechner" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : "GMT to EST Converter"
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : "Home", item: `${siteUrl}/${lang.code}/` },
-        { "@type": "ListItem", position: 2, name: isDe ? "Kontakt" : isFr ? "Contactez-nous" : (lang.code === "th" ? "ติดต่อเรา" : "Contact Us"), item: pageCanonical }
+        { "@type": "ListItem", position: 1, name: isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : "Home", item: `${siteUrl}/${lang.code}/` },
+        { "@type": "ListItem", position: 2, name: isDe ? "Kontakt" : isFr ? "Contactez-nous" : isIt ? "Contattaci" : (lang.code === "th" ? "ติดต่อเรา" : "Contact Us"), item: pageCanonical }
       ]
     }
   }
@@ -262,6 +263,76 @@ const schema = [
 
         <p class="form-note">
           การส่งแบบฟอร์มนี้แสดงว่าคุณยอมรับ <a href="/privacy-policy/">นโยบายความเป็นส่วนตัว</a> ของเรา
+        </p>
+      </form>
+    ) : isIt ? (
+      <div class="contact-header">
+        <h1 id="contact-heading">Contattaci</h1>
+        <p>Hai una domanda, un commento o un suggerimento? Compila il modulo sottostante e il nostro team ti risponderà entro 1–2 giorni lavorativi.</p>
+        <p class="contact-email-line">
+          Oppure scrivici direttamente via e-mail:
+          <a href={`mailto:${email}`}>{email}</a>
+        </p>
+      </div>
+
+      <!-- Success message -->
+      <div class="contact-success" id="contact-success" hidden>
+        <span class="success-icon">✓</span>
+        <div>
+          <strong>Messaggio inviato con successo!</strong>
+          <p>Grazie per averci contattato. Ti risponderemo entro 1–2 giorni lavorativi.</p>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <form
+        id="contact-form"
+        class="contact-form"
+        action={`https://formsubmit.co/${email}`}
+        method="POST"
+      >
+        <input type="hidden" name="_subject"  value="Nuovo messaggio da gmttoestconverter.com (IT)" />
+        <input type="hidden" name="_captcha"  value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next"     value={`${siteUrl}/${lang.code}/contact-us/?sent=1`} />
+        <input type="text"   name="_honey"    style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="cf-name">Nome e cognome <span class="req">*</span></label>
+            <input id="cf-name" type="text" name="name" placeholder="Mario Rossi" required autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="cf-email">Indirizzo e-mail <span class="req">*</span></label>
+            <input id="cf-email" type="email" name="email" placeholder="nome@esempio.it" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-subject">Oggetto <span class="req">*</span></label>
+          <select id="cf-subject" name="subject" required>
+            <option value="" disabled selected>Seleziona un oggetto…</option>
+            <option value="General Question">Domanda generale</option>
+            <option value="Bug Report">Segnalazione bug / errore</option>
+            <option value="Feature Request">Richiesta di funzionalità</option>
+            <option value="Translation Help">Aiuto per le traduzioni</option>
+            <option value="Partnership / Advertising">Partnership / Collaborazione</option>
+            <option value="Privacy / Data Request">Richiesta dati / Privacy</option>
+            <option value="Other">Altro</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="cf-message">Messaggio <span class="req">*</span></label>
+          <textarea id="cf-message" name="message" rows="6" placeholder="Come possiamo aiutarti?…" required></textarea>
+        </div>
+
+        <button type="submit" class="form-submit">
+          Invia messaggio <span class="arrow">→</span>
+        </button>
+
+        <p class="form-note">
+          Inviando questo modulo accetti la nostra <a href={`/${lang.code}/privacy-policy/`}>Informativa sulla privacy</a>.
         </p>
       </form>
     ) : (

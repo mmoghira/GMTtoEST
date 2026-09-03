@@ -106,7 +106,7 @@ Se stai seguendo l'intera post-season e desideri una guida rapida per convertire
 | 8:30 p.m. EDT | 00:30 GMT del giorno successivo | Orario standard delle finali 2026 |
 | 9:00 p.m. EDT | 01:00 GMT del giorno successivo | Partite serali della costa occidentale |
 
-Per le conversioni basate su date specifiche, puoi utilizzare il nostro [GMT to EST Converter](/) o l'[EST to GMT Converter](/est-to-gmt/) che applicano automaticamente i corretti scostamenti.
+Per le conversioni basate su date specifiche, puoi utilizzare il nostro [Convertitore da GMT a EST](/it/) o il [Convertitore da EST a GMT](/it/est-to-gmt/) che applicano automaticamente i corretti scarti orari.
 
 ## Come guardare le finali dall'Italia (CEST) e fusi orari vicini
 
