@@ -8,7 +8,6 @@ const siteUrl = rawSiteUrl.replace(/\/+$/, "").replace("://www.", "://");
 const enableMultilingualPages = true;
 const sitemapExcludedPaths = new Set([
   "/gmt-to-est-converter/",
-  "/sitemap/",
 ]);
 const sitemapLocales = enableMultilingualPages
   ? {
