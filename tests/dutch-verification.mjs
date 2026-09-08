@@ -153,25 +153,28 @@ assert.strictEqual(
   `Strict Parity Failed: Dutch pages (${allDutchHtmlFiles.length}) != Dutch sitemap URLs (${dutchSitemapMatches.length})`
 );
 
-// 9. Distinct content verification (/nl/ vs /nl/gmt-to-est/)
+// 9. Distinct content & sentence-style capitalization verification (/nl/ vs /nl/gmt-to-est/)
 const homeHtml = fs.readFileSync(path.join(nlRoot, "index.html"), "utf8");
 const gmtToEstHtml = fs.readFileSync(path.join(nlRoot, "gmt-to-est/index.html"), "utf8");
 
 const homeTitle = text(homeHtml.match(/<title>([\s\S]*?)<\/title>/i)[1]);
 const gmtToEstTitle = text(gmtToEstHtml.match(/<title>([\s\S]*?)<\/title>/i)[1]);
 assert.notStrictEqual(homeTitle, gmtToEstTitle, "Homepage and gmt-to-est page must have distinct titles to prevent cannibalization");
+assert(homeTitle.includes("actuele tijd en 24-uurstabel"), `Expected Dutch sentence-case title on /nl/, found: "${homeTitle}"`);
+assert(gmtToEstTitle.includes("actuele tijd en tijdsverschil"), `Expected Dutch sentence-case title on /nl/gmt-to-est/, found: "${gmtToEstTitle}"`);
 
 const homeH1 = text(homeHtml.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)[0]);
 const gmtToEstH1 = text(gmtToEstHtml.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)[0]);
 assert.notStrictEqual(homeH1, gmtToEstH1, "Homepage and gmt-to-est page must have distinct H1 tags");
 
-// 10. Verify dedicated Amsterdam/Brussels & 2026 DST section
+// 10. Verify dedicated Amsterdam/Brussels & 2026 DST section with London BST distinction
 assert(homeHtml.includes('id="nederland-gmt-new-york"'), "Dedicated section #nederland-gmt-new-york missing on /nl/");
 assert(homeHtml.includes("Nederland &amp; België") || homeHtml.includes("Nederland & België"), "Section title missing 'Nederland & België'");
 assert(homeHtml.includes("8 maart 2026"), "Missing 2026 US EDT transition date (8 maart 2026)");
 assert(homeHtml.includes("29 maart 2026"), "Missing 2026 EU CEST transition date (29 maart 2026)");
 assert(homeHtml.includes("25 oktober 2026"), "Missing 2026 EU CET transition date (25 oktober 2026)");
 assert(homeHtml.includes("1 november 2026"), "Missing 2026 US EST transition date (1 november 2026)");
+assert(homeHtml.includes("British Summer Time (BST"), "Missing London/BST seasonal distinction note in #nederland-gmt-new-york");
 
 // 11. Verify interactive converter UX on Dutch homepage
 assert(homeHtml.includes('data-component="converter"'), "Missing interactive converter component on /nl/");
@@ -179,7 +182,14 @@ assert(homeHtml.includes('data-copied="Gekopieerd'), "Missing Dutch 'Gekopieerd'
 assert(homeHtml.includes('data-role="copy-result"'), "Missing copy-result button");
 assert(homeHtml.includes('Format 24 h') || homeHtml.includes('24-uurs') || homeHtml.includes('Format'), "Missing 24h toggle label");
 
+// 12. Verify visible FAQ on Dutch blog post
+const blogPostHtml = fs.readFileSync(path.join(nlRoot, "blog/understanding-gmt-est/index.html"), "utf8");
+assert(blogPostHtml.includes('class="faq"'), "Missing visible FAQ section on Dutch blog post /nl/blog/understanding-gmt-est/");
+
+// 13. Exact Hreflang reconciliation assertion
+assert.strictEqual(totalHreflangReciprocalChecks, 2264, `Expected exactly 2264 reciprocal locale hreflang connections, found ${totalHreflangReciprocalChecks}`);
+
 console.log(`\n================================================================`);
 console.log(`>>> VERIFIED ALL ${testedCount} DUTCH PAGES WITH EXACT PARITY (109/109): 100% PASSING! <<<`);
-console.log(`>>> RECIPROCAL HREFLANG CHECKS: ${totalHreflangReciprocalChecks} VERIFIED! <<<`);
+console.log(`>>> RECIPROCAL HREFLANG CHECKS: ${totalHreflangReciprocalChecks} VERIFIED (100% RECONCILED)! <<<`);
 console.log(`================================================================\n`);
