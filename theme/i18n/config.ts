@@ -329,7 +329,11 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
   let useCases = [];
   let topics = [];
 
-  if (labelKey === "home" || labelKey === "gmtToEst") {
+  if (labelKey === "gmtToEst") {
+    faqs = t.faqs_gmtToEst?.items || t.faqs_home?.items || t.faqs?.items || [];
+    useCases = t.useCases_gmtToEst?.items || t.useCases_home?.items || t.useCases?.items || [];
+    topics = t.topics_gmtToEst?.items || t.topics_home?.items || t.topics?.items || [];
+  } else if (labelKey === "home") {
     faqs = t.faqs_home?.items || t.faqs?.items || [];
     useCases = t.useCases_home?.items || t.useCases?.items || [];
     topics = t.topics_home?.items || t.topics?.items || [];
