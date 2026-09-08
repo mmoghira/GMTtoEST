@@ -32,6 +32,7 @@ const sitemapLocales = enableMultilingualPages
       id: "id",
       fa: "fa",
       pl: "pl",
+      nl: "nl",
     }
   : { en: "en" };
 
