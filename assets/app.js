@@ -144,6 +144,11 @@
       sameDay: "dezelfde dag",
       nextDay: "volgende dag"
     },
+    tr: {
+      previousDay: "önceki gün",
+      sameDay: "aynı gün",
+      nextDay: "sonraki gün"
+    },
     pt: {
       previousDay: "dia anterior",
       sameDay: "mesmo dia",
@@ -268,6 +273,10 @@
       const diffHours = Math.abs((offsetMinutes(date, targetZone) - offsetMinutes(date, sourceZone)) / 60);
       const z1 = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       const z2 = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
+      if (isTr) {
+        const hoursText = diffHours === 1 ? "1 saat" : diffHours + " saat";
+        return z2 + " bu tarihte " + z1 + " saatine göre " + hoursText + " geridedir. Yaz saati geçişleri bu farkı değiştirebileceğinden, tarihe duyarlı dönüşüm esastır.";
+      }
       if (isPt) {
         const hoursText = diffHours === 1 ? "1 hora" : diffHours + " horas";
         return z2 + " está " + hoursText + " atrás de " + z1 + " nesta data. As transições do horário de verão podem alterar essa diferença, tornando essencial uma conversão baseada na data.";
@@ -298,7 +307,7 @@
     function convert() {
       const date = parseInput();
       if (!date || Number.isNaN(date.getTime())) {
-        if (resultOutput) resultOutput.textContent = isPt ? "Insira uma data e hora válidas." : isIt ? "Inserisci una data e un'ora valide." : isFr ? "Veuillez saisir une date et une heure valides." : isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora válidas." : isNl ? "Voer een geldige datum en tijd in." : "Enter a valid date and time.";
+        if (resultOutput) resultOutput.textContent = isTr ? "Lütfen geçerli bir tarih ve saat girin." : isPt ? "Insira uma data e hora válidas." : isIt ? "Inserisci una data e un'ora valide." : isFr ? "Veuillez saisir une date et une heure valides." : isDe ? "Bitte ein gültiges Datum und eine Uhrzeit eingeben." : isEs ? "Introduce una fecha y hora válidas." : isNl ? "Voer een geldige datum en tijd in." : "Enter a valid date and time.";
         return;
       }
       const target = state.mode === "gmt-est" ? targetZone : sourceZone;
@@ -310,19 +319,19 @@
 
       const modeLabels = intentLabels[intent] || intentLabels.converter || {};
       const specificModeLabels = modeLabels[state.mode] || modeLabels["gmt-est"] || {};
-      const label = specificModeLabels.target || (state.mode === "gmt-est" ? (isPt ? "Destino" : isIt ? "Destinazione" : isFr ? "Cible" : isDe ? "Ziel" : isEs ? "Destino" : isNl ? "Bestemming" : "Target") : (isPt ? "Origem" : isIt ? "Origine" : isFr ? "Source" : isDe ? "Quelle" : isEs ? "Origen" : isNl ? "Bron" : "Source"));
+      const label = specificModeLabels.target || (state.mode === "gmt-est" ? (isTr ? "Hedef" : isPt ? "Destino" : isIt ? "Destinazione" : isFr ? "Cible" : isDe ? "Ziel" : isEs ? "Destino" : isNl ? "Bestemming" : "Target") : (isTr ? "Kaynak" : isPt ? "Origem" : isIt ? "Origine" : isFr ? "Source" : isDe ? "Quelle" : isEs ? "Origen" : isNl ? "Bron" : "Source"));
 
       if (intent === "difference") {
         state.lastText = zoneName(date, sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone) + ": " + gmtLabel + " | " + zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone) + ": " + easternLabel + " | " + explain(date);
       } else if (intent === "guide") {
-        state.lastText = (labels.meetingPlanner || (isPt ? "Planejador de reuniões" : isIt ? "Pianificatore di riunioni" : isFr ? "Planificateur de réunion" : isDe ? "Meeting-Planer" : isEs ? "Planificador de reuniones" : isNl ? "Vergaderplanner" : "Meeting planner")) + " : " + gmtLabel + " " + (labels.is || (isPt ? "é" : isIt ? "è" : isFr ? "est" : isDe ? "ist" : isEs ? "es" : isNl ? "is" : "is")) + " " + easternLabel;
+        state.lastText = (labels.meetingPlanner || (isTr ? "Toplantı Planlayıcı" : isPt ? "Planejador de reuniões" : isIt ? "Pianificatore di riunioni" : isFr ? "Planificateur de réunion" : isDe ? "Meeting-Planer" : isEs ? "Planificador de reuniones" : isNl ? "Vergaderplanner" : "Meeting planner")) + " : " + gmtLabel + " " + (labels.is || (isTr ? "=" : isPt ? "é" : isIt ? "è" : isFr ? "est" : isDe ? "ist" : isEs ? "es" : isNl ? "is" : "is")) + " " + easternLabel;
       } else {
         state.lastText = label + ": " + format(date, target, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       }
 
       if (resultOutput) {
         resultOutput.textContent = intent === "difference"
-          ? (isPt ? (diffHours === 1 ? "1 hora de diferença" : diffHours + " horas de diferença") : isIt ? (diffHours === 1 ? "1 ora di differenza" : diffHours + " ore di differenza") : isFr ? (diffHours === 1 ? "1 heure de décalage" : diffHours + " heures de décalage") : isDe ? (diffHours === 1 ? "1 Stunde Unterschied" : diffHours + " Stunden Unterschied") : isEs ? (diffHours === 1 ? "1 hora de diferencia" : diffHours + " horas de diferencia") : isNl ? (diffHours === 1 ? "1 uur tijdsverschil" : diffHours + " uur tijdsverschil") : (diffHours + " " + (labels.hoursBehindGmt || "hours difference")))
+          ? (isTr ? (diffHours === 1 ? "1 saat fark" : diffHours + " saat fark") : isPt ? (diffHours === 1 ? "1 hora de diferença" : diffHours + " horas de diferença") : isIt ? (diffHours === 1 ? "1 ora di differenza" : diffHours + " ore di differenza") : isFr ? (diffHours === 1 ? "1 heure de décalage" : diffHours + " heures de décalage") : isDe ? (diffHours === 1 ? "1 Stunde Unterschied" : diffHours + " Stunden Unterschied") : isEs ? (diffHours === 1 ? "1 hora de diferencia" : diffHours + " horas de diferencia") : isNl ? (diffHours === 1 ? "1 uur tijdsverschil" : diffHours + " uur tijdsverschil") : (diffHours + " " + (labels.hoursBehindGmt || "hours difference")))
           : shortFormat(date, target, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         
         // CSS pulse animation without layout thrashing
@@ -335,12 +344,14 @@
       if (sourcePreview) sourcePreview.textContent = shortFormat(date, source, state.use24, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
       if (differenceEl) {
         differenceEl.textContent = intent === "guide"
-          ? (labels.bestForScheduling || (isPt ? "Ideal para agendamentos" : isIt ? "Ideale per pianificare" : isFr ? "Idéal pour planifier" : isDe ? "Optimal für Termine" : isEs ? "Ideal para programar" : isNl ? "Ideaal voor planning" : "Best for scheduling")) + " : " + gmtLabel + " " + (labels.convertsTo || (isPt ? "corresponde a" : isIt ? "corrisponde a" : isFr ? "correspond à" : isDe ? "entspricht" : isEs ? "se convierte en" : isNl ? "komt overeen met" : "converts to")) + " " + easternLabel + ". " + explain(date)
+          ? (labels.bestForScheduling || (isTr ? "Toplantı planlaması için en uygun" : isPt ? "Ideal para agendamentos" : isIt ? "Ideale per pianificare" : isFr ? "Idéal pour planifier" : isDe ? "Optimal für Termine" : isEs ? "Ideal para programar" : isNl ? "Ideaal voor planning" : "Best for scheduling")) + " : " + gmtLabel + " " + (labels.convertsTo || (isTr ? "karşılığı" : isPt ? "corresponde a" : isIt ? "corrisponde a" : isFr ? "correspond à" : isDe ? "entspricht" : isEs ? "se convierte en" : isNl ? "komt overeen met" : "converts to")) + " " + easternLabel + ". " + explain(date)
           : explain(date);
       }
       if (offsetBadge) {
         const targetAbbr = zoneName(date, targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
-        const diffBadgeText = isPt
+        const diffBadgeText = isTr
+          ? (diffHours === 1 ? "1 saat fark" : diffHours + " saat fark")
+          : isPt
           ? (diffHours === 1 ? "Diferença de 1 hora" : "Diferença de " + diffHours + " horas")
           : isIt
           ? (diffHours === 1 ? "Differenza di 1 ora" : "Differenza di " + diffHours + " ore")
@@ -380,11 +391,11 @@
         const sourceAbbr = zoneName(new Date(), sourceZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         const targetAbbr = zoneName(new Date(), targetZone, configuredSourceLabel, configuredTargetLabel, sourceZone, targetZone);
         if (state.mode === "gmt-est") {
-          if (inputZoneName) inputZoneName.textContent = isPt ? `Horário ${sourceAbbr}` : isIt ? `Ora ${sourceAbbr}` : isFr ? `Heure ${sourceAbbr}` : isDe ? `${sourceAbbr}-Zeit` : isEs ? `Hora ${sourceAbbr}` : isNl ? `${sourceAbbr}-tijd` : sourceAbbr + " time";
+          if (inputZoneName) inputZoneName.textContent = isTr ? `${sourceAbbr} Saati` : isPt ? `Horário ${sourceAbbr}` : isIt ? `Ora ${sourceAbbr}` : isFr ? `Heure ${sourceAbbr}` : isDe ? `${sourceAbbr}-Zeit` : isEs ? `Hora ${sourceAbbr}` : isNl ? `${sourceAbbr}-tijd` : sourceAbbr + " time";
           if (sourceZoneEl) sourceZoneEl.textContent = sourceAbbr;
           if (outputZoneNameEl) outputZoneNameEl.textContent = targetAbbr;
         } else {
-          if (inputZoneName) inputZoneName.textContent = isPt ? `Horário ${targetAbbr}` : isIt ? `Ora ${targetAbbr}` : isFr ? `Heure ${targetAbbr}` : isDe ? `${targetAbbr}-Zeit` : isEs ? `Hora ${targetAbbr}` : isNl ? `${targetAbbr}-tijd` : targetAbbr + " time";
+          if (inputZoneName) inputZoneName.textContent = isTr ? `${targetAbbr} Saati` : isPt ? `Horário ${targetAbbr}` : isIt ? `Ora ${targetAbbr}` : isFr ? `Heure ${targetAbbr}` : isDe ? `${targetAbbr}-Zeit` : isEs ? `Hora ${targetAbbr}` : isNl ? `${targetAbbr}-tijd` : targetAbbr + " time";
           if (sourceZoneEl) sourceZoneEl.textContent = targetAbbr;
           if (outputZoneNameEl) outputZoneNameEl.textContent = sourceAbbr;
         }
@@ -444,14 +455,14 @@
         const original = copyBtn.textContent;
         try {
           await navigator.clipboard.writeText(state.lastText);
-          copyBtn.textContent = copyBtn.dataset.copied || (isPt ? "Copiado!" : isIt ? "Copiato!" : isFr ? "Copié !" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : isNl ? "Gekopieerd naar klembord!" : "Copied to clipboard");
-          copyBtn.setAttribute("aria-label", isPt ? "Copiado para a área de transferência" : isIt ? "Copiato negli appunti" : isFr ? "Copié dans le presse-papiers" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : isNl ? "Gekopieerd naar klembord!" : "Copied to clipboard");
+          copyBtn.textContent = copyBtn.dataset.copied || (isTr ? "Kopyalandı!" : isPt ? "Copiado!" : isIt ? "Copiato!" : isFr ? "Copié !" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : isNl ? "Gekopieerd naar klembord!" : "Copied to clipboard");
+          copyBtn.setAttribute("aria-label", isTr ? "Panoya kopyalandı" : isPt ? "Copiado para a área de transferência" : isIt ? "Copiato negli appunti" : isFr ? "Copié dans le presse-papiers" : isDe ? "In Zwischenablage kopiert" : isEs ? "Resultado copiado al portapapeles" : isNl ? "Gekopieerd naar klembord!" : "Copied to clipboard");
           setTimeout(() => {
             copyBtn.textContent = original;
-            copyBtn.setAttribute("aria-label", isPt ? "Copiar resultado da conversão para a área de transferência" : isIt ? "Copia il risultato della conversione negli appunti" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : isNl ? "Conversieresultaat naar klembord kopiëren" : "Copy conversion result to clipboard");
+            copyBtn.setAttribute("aria-label", isTr ? "Dönüşüm sonucunu panoya kopyala" : isPt ? "Copiar resultado da conversão para a área de transferência" : isIt ? "Copia il risultato della conversione negli appunti" : isFr ? "Copier le résultat de la conversion dans le presse-papiers" : isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copiar resultado de la conversión al portapapeles" : isNl ? "Conversieresultaat naar klembord kopiëren" : "Copy conversion result to clipboard");
           }, 2000);
         } catch (err) {
-          copyBtn.textContent = copyBtn.dataset.copyFailed || (isPt ? "Falha ao copiar" : isIt ? "Copia non riuscita" : isFr ? "Échec de la copie" : isDe ? "Kopieren fehlgeschlagen" : isEs ? "No se pudo copiar el resultado" : isNl ? "Kopiëren mislukt" : "Copy failed");
+          copyBtn.textContent = copyBtn.dataset.copyFailed || (isTr ? "Kopyalama başarısız" : isPt ? "Falha ao copiar" : isIt ? "Copia non riuscita" : isFr ? "Échec de la copie" : isDe ? "Kopieren fehlgeschlagen" : isEs ? "No se pudo copiar el resultado" : isNl ? "Kopiëren mislukt" : "Copy failed");
           setTimeout(() => { copyBtn.textContent = original; }, 2000);
         }
       });
@@ -523,7 +534,9 @@
         rowDate = localToUtc(p.year + "-" + p.month + "-" + p.day + "T" + String(h).padStart(2, '0') + ":00", sZone);
       }
       const diffHours = Math.abs((offsetMinutes(rowDate, tZone) - offsetMinutes(rowDate, sZone)) / 60);
-      const diffText = isPt
+      const diffText = isTr
+        ? (diffHours === 1 ? "1 saat fark" : diffHours + " saat fark")
+        : isPt
         ? (diffHours === 1 ? "Diferença de 1 hora" : "Diferença de " + diffHours + " horas")
         : isIt
         ? (diffHours === 1 ? "Differenza di 1 ora" : "Differenza di " + diffHours + " ore")

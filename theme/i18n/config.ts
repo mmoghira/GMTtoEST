@@ -277,15 +277,18 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
     const title = replaceTemplates(rawTitle, replacements);
     const description = replaceTemplates(rawDescription, replacements);
 
-    const faqsSource = (selectedSpecificMeta && selected[`faqs_${labelKey}`]?.items)
+    const rawFaqs = (selectedSpecificMeta && selected[`faqs_${labelKey}`]?.items)
       ? selected[`faqs_${labelKey}`].items
       : (t[`faqs_${labelKey}`]?.items || selected.faqs_dynamic || t.faqs_dynamic || []);
-    const useCasesSource = (selectedSpecificMeta && selected[`useCases_${labelKey}`]?.items)
+    const faqsSource = Array.isArray(rawFaqs) ? rawFaqs : (rawFaqs?.items || []);
+    const rawUseCases = (selectedSpecificMeta && selected[`useCases_${labelKey}`]?.items)
       ? selected[`useCases_${labelKey}`].items
       : (t[`useCases_${labelKey}`]?.items || selected.useCases_dynamic || t.useCases_dynamic || []);
-    const topicsSource = (selectedSpecificMeta && selected[`topics_${labelKey}`]?.items)
+    const useCasesSource = Array.isArray(rawUseCases) ? rawUseCases : (rawUseCases?.items || []);
+    const rawTopics = (selectedSpecificMeta && selected[`topics_${labelKey}`]?.items)
       ? selected[`topics_${labelKey}`].items
       : (t[`topics_${labelKey}`]?.items || selected.topics_dynamic || t.topics_dynamic || []);
+    const topicsSource = Array.isArray(rawTopics) ? rawTopics : (rawTopics?.items || []);
 
     const faqs = faqsSource.map((faq: any) => ({
       q: replaceTemplates(faq.q, replacements),
@@ -384,17 +387,18 @@ export function getConverterDisplayName(page: any, lang = "en") {
   const isPt = lang === "pt";
   const isPl = lang === "pl";
   const isNl = lang === "nl";
-  if (!page.slug) return isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : isNl ? "GMT naar EST Omrekenaar" : "GMT to EST Converter";
-  if (page.slug === "gmt-to-est") return isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : isNl ? "GMT naar EST Omrekenaar" : "GMT to EST Converter";
-  if (page.slug === "est-to-gmt") return isDe ? "EST in GMT umrechnen" : isEs ? "Convertidor EST a GMT" : isFr ? "Convertisseur EST vers GMT" : isIt ? "Convertitore da EST a GMT" : isPt ? "Conversor de EST para GMT" : isPl ? "Konwerter EST na GMT" : isNl ? "EST naar GMT Omrekenaar" : "EST to GMT Converter";
-  if (page.slug === "gmt-vs-est") return isDe ? "GMT vs. EST Unterschied" : isEs ? "Diferencia entre GMT y EST" : isFr ? "Différence GMT vs EST" : isIt ? "Differenza tra GMT ed EST" : isPt ? "Diferença entre GMT e EST" : isPl ? "Różnica GMT vs EST" : isNl ? "Verschil tussen GMT en EST" : "GMT vs EST Difference";
-  if (page.context?.from && page.context?.to) return isDe ? `${page.context.from} zu ${page.context.to} Umrechner` : isEs ? `Convertidor ${page.context.from} a ${page.context.to}` : isFr ? `Convertisseur ${page.context.from} vers ${page.context.to}` : isIt ? `Convertitore da ${page.context.from} a ${page.context.to}` : isPt ? `Conversor de ${page.context.from} para ${page.context.to}` : isPl ? `Konwerter ${page.context.from} na ${page.context.to}` : isNl ? `${page.context.from} naar ${page.context.to} Omrekenaar` : `${page.context.from} to ${page.context.to} Converter`;
+  const isTr = lang === "tr";
+  if (!page.slug) return isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : isNl ? "GMT naar EST Omrekenaar" : isTr ? "GMT EST Dönüştürücü" : "GMT to EST Converter";
+  if (page.slug === "gmt-to-est") return isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : isNl ? "GMT naar EST Omrekenaar" : isTr ? "GMT'den EST'ye Saat Çevirici" : "GMT to EST Converter";
+  if (page.slug === "est-to-gmt") return isDe ? "EST in GMT umrechnen" : isEs ? "Convertidor EST a GMT" : isFr ? "Convertisseur EST vers GMT" : isIt ? "Convertitore da EST a GMT" : isPt ? "Conversor de EST para GMT" : isPl ? "Konwerter EST na GMT" : isNl ? "EST naar GMT Omrekenaar" : isTr ? "EST'den GMT'ye Saat Çevirici" : "EST to GMT Converter";
+  if (page.slug === "gmt-vs-est") return isDe ? "GMT vs. EST Unterschied" : isEs ? "Diferencia entre GMT y EST" : isFr ? "Différence GMT vs EST" : isIt ? "Differenza tra GMT ed EST" : isPt ? "Diferença entre GMT e EST" : isPl ? "Różnica GMT vs EST" : isNl ? "Verschil tussen GMT en EST" : isTr ? "GMT ile EST Arasındaki Saat Farkı" : "GMT vs EST Difference";
+  if (page.context?.from && page.context?.to) return isDe ? `${page.context.from} zu ${page.context.to} Umrechner` : isEs ? `Convertidor ${page.context.from} a ${page.context.to}` : isFr ? `Convertisseur ${page.context.from} vers ${page.context.to}` : isIt ? `Convertitore da ${page.context.from} a ${page.context.to}` : isPt ? `Conversor de ${page.context.from} para ${page.context.to}` : isPl ? `Konwerter ${page.context.from} na ${page.context.to}` : isNl ? `${page.context.from} naar ${page.context.to} Omrekenaar` : isTr ? `${page.context.from} - ${page.context.to} Dönüştürücü` : `${page.context.from} to ${page.context.to} Converter`;
 
   const toEstMatch = page.slug.match(/^([a-z0-9]+)-to-est$/i);
-  if (toEstMatch) return isDe ? `${uppercaseZone(toEstMatch[1])} zu EST Umrechner` : isEs ? `Convertidor ${uppercaseZone(toEstMatch[1])} a EST` : isFr ? `Convertisseur ${uppercaseZone(toEstMatch[1])} vers EST` : isIt ? `Convertitore da ${uppercaseZone(toEstMatch[1])} a EST` : isPt ? `Conversor de ${uppercaseZone(toEstMatch[1])} para EST` : isPl ? `Konwerter ${uppercaseZone(toEstMatch[1])} na EST` : isNl ? `${uppercaseZone(toEstMatch[1])} naar EST Omrekenaar` : `${uppercaseZone(toEstMatch[1])} to EST Converter`;
+  if (toEstMatch) return isDe ? `${uppercaseZone(toEstMatch[1])} zu EST Umrechner` : isEs ? `Convertidor ${uppercaseZone(toEstMatch[1])} a EST` : isFr ? `Convertisseur ${uppercaseZone(toEstMatch[1])} vers EST` : isIt ? `Convertitore da ${uppercaseZone(toEstMatch[1])} a EST` : isPt ? `Conversor de ${uppercaseZone(toEstMatch[1])} para EST` : isPl ? `Konwerter ${uppercaseZone(toEstMatch[1])} na EST` : isNl ? `${uppercaseZone(toEstMatch[1])} naar EST Omrekenaar` : isTr ? `${uppercaseZone(toEstMatch[1])} - EST Dönüştürücü` : `${uppercaseZone(toEstMatch[1])} to EST Converter`;
 
   const gmtToMatch = page.slug.match(/^gmt-to-([a-z0-9]+)$/i);
-  if (gmtToMatch) return isDe ? `GMT zu ${uppercaseZone(gmtToMatch[1])} Umrechner` : isEs ? `Convertidor GMT a ${uppercaseZone(gmtToMatch[1])}` : isFr ? `Convertisseur GMT vers ${uppercaseZone(gmtToMatch[1])}` : isIt ? `Convertitore da GMT a ${uppercaseZone(gmtToMatch[1])}` : isPt ? `Conversor de GMT para ${uppercaseZone(gmtToMatch[1])}` : isPl ? `Konwerter GMT na ${uppercaseZone(gmtToMatch[1])}` : isNl ? `GMT naar ${uppercaseZone(gmtToMatch[1])} Omrekenaar` : `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;
+  if (gmtToMatch) return isDe ? `GMT zu ${uppercaseZone(gmtToMatch[1])} Umrechner` : isEs ? `Convertidor GMT a ${uppercaseZone(gmtToMatch[1])}` : isFr ? `Convertisseur GMT vers ${uppercaseZone(gmtToMatch[1])}` : isIt ? `Convertitore da GMT a ${uppercaseZone(gmtToMatch[1])}` : isPt ? `Conversor de GMT para ${uppercaseZone(gmtToMatch[1])}` : isPl ? `Konwerter GMT na ${uppercaseZone(gmtToMatch[1])}` : isNl ? `GMT naar ${uppercaseZone(gmtToMatch[1])} Omrekenaar` : isTr ? `GMT - ${uppercaseZone(gmtToMatch[1])} Dönüştürücü` : `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;
 
   return undefined;
 }
