@@ -12,24 +12,30 @@ async function generateLogos() {
         const svgBuffer = fs.readFileSync(svgPath);
 
         // Generate logo.png (512x512)
-        await sharp(svgBuffer)
+        const logoPngBuffer = await sharp(svgBuffer)
             .png()
             .resize(512, 512, {
                 fit: 'contain',
                 background: { r: 255, g: 255, b: 255, alpha: 0 }
             })
-            .toFile(path.join(assetsPath, 'logo.png'));
+            .toBuffer();
+        fs.writeFileSync(path.join(assetsPath, 'logo.png'), logoPngBuffer);
+        fs.writeFileSync(path.join(publicAssetsPath, 'logo.png'), logoPngBuffer);
+        fs.writeFileSync(path.join(__dirname, '..', 'public', 'logo.png'), logoPngBuffer);
 
         console.log('Generated logo.png (512x512)');
 
         // Generate logo.webp (512x512)
-        await sharp(svgBuffer)
+        const logoWebpBuffer = await sharp(svgBuffer)
             .webp({ quality: 90 })
             .resize(512, 512, {
                 fit: 'contain',
                 background: { r: 255, g: 255, b: 255, alpha: 0 }
             })
-            .toFile(path.join(assetsPath, 'logo.webp'));
+            .toBuffer();
+        fs.writeFileSync(path.join(assetsPath, 'logo.webp'), logoWebpBuffer);
+        fs.writeFileSync(path.join(publicAssetsPath, 'logo.webp'), logoWebpBuffer);
+        fs.writeFileSync(path.join(__dirname, '..', 'public', 'logo.webp'), logoWebpBuffer);
 
         console.log('Generated logo.webp (512x512)');
 
@@ -45,13 +51,16 @@ async function generateLogos() {
         console.log('Generated favicon.png (32x32)');
 
         // Also generate a larger favicon for better quality
-        await sharp(svgBuffer)
+        const favicon192Buffer = await sharp(svgBuffer)
             .png()
             .resize(192, 192, {
                 fit: 'contain',
                 background: { r: 255, g: 255, b: 255, alpha: 0 }
             })
-            .toFile(path.join(assetsPath, 'favicon-192.png'));
+            .toBuffer();
+        fs.writeFileSync(path.join(assetsPath, 'favicon-192.png'), favicon192Buffer);
+        fs.writeFileSync(path.join(publicAssetsPath, 'favicon-192.png'), favicon192Buffer);
+        fs.writeFileSync(path.join(__dirname, '..', 'public', 'favicon-192.png'), favicon192Buffer);
 
         console.log('Generated favicon-192.png (192x192)');
 
