@@ -8,7 +8,7 @@ interface LinkRule {
 
 const linkRules: LinkRule[] = [
   { keyword: "Greenwich Mean Time", slug: "blog/what-is-gmt", label: "Greenwich Mean Time" },
-  { keyword: "Eastern Standard Time", slug: "what-is-est", label: "Eastern Standard Time" },
+  { keyword: "Eastern Standard Time", slug: "blog/what-is-est", label: "Eastern Standard Time" },
   { keyword: "Eastern Daylight Time", slug: "est-vs-edt", label: "Eastern Daylight Time" },
   { keyword: "Coordinated Universal Time", slug: "gmt-vs-utc", label: "Coordinated Universal Time" },
   { keyword: "Daylight Saving Time", slug: "daylight-saving-time-explained", label: "Daylight Saving Time" },

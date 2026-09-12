@@ -110,7 +110,7 @@ The following table provides the foundational baseline for all six major US time
 - **Geographic Reach:** Covers 23 states (17 fully and 6 partially), spanning from Maine down to Florida and west to parts of Michigan, Indiana, Kentucky, and Tennessee.
 - **Conversion Anchor:** Eastern Time is **1 hour ahead of Central Time**, **2 hours ahead of Mountain Time**, and **3 hours ahead of Pacific Time**.
 
-To explore Eastern Standard Time in depth, read our comprehensive guide on [What Is EST? Eastern Standard Time Explained](/what-is-est/).
+To explore Eastern Standard Time in depth, read our comprehensive guide on [What Is EST? Eastern Standard Time Explained](/blog/what-is-est/).
 
 ### 2. Central Time (CT)
 **Central Time** is the second-largest US time zone by population, covering roughly 29% of Americans. It stretches across the agricultural heartland, the Great Lakes manufacturing corridor, and the Texas energy sector.

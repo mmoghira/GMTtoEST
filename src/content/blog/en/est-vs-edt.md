@@ -101,7 +101,7 @@ In North America, EST applies during the standard winter window across:
 
 Because EST represents winter standard time, local clocks are synchronized with standard astronomical time zones established by the [U.S. Department of Transportation](https://www.transportation.gov/regulations/time-services) under the Standard Time Act.
 
-For a comprehensive breakdown of standard time boundaries and historical origin, see our in-depth guide on [what is EST](/what-is-est/).
+For a comprehensive breakdown of standard time boundaries and historical origin, see our in-depth guide on [what is EST](/blog/what-is-est/).
 
 ---
 

@@ -196,7 +196,7 @@ Eastern Time (ET) in Summer (Mar – Nov): EDT = UTC−4
 
 Calling summer time in New York "EST" introduces an unannounced one-hour mathematical error into international scheduling. When setting up cross-border meetings or writing software documentation, refer to the overarching regional label **Eastern Time (ET)** or verify whether the date falls during [EST or EDT](/blog/est-vs-edt/).
 
-For a complete breakdown of North American winter time, see our dedicated guide: [What Is EST? Eastern Standard Time Explained](/what-is-est/).
+For a complete breakdown of North American winter time, see our dedicated guide: [What Is EST? Eastern Standard Time Explained](/blog/what-is-est/).
 
 ---
 

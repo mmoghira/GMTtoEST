@@ -112,7 +112,7 @@ When dealing with international time zones, you will frequently encounter severa
 
 - **UTC (Coordinated Universal Time)**: The modern scientific standard by which all world clocks are regulated. 
 - **BST (British Summer Time, UTC+1)**: The daylight saving time observed in the UK during the summer months when clocks move one hour ahead of GMT.
-- **EST/EDT ([Eastern Standard Time](/what-is-est/))**: Eastern Standard Time is UTC-5, primarily used in North America. During the summer, this region observes Eastern Daylight Time (UTC-4).
+- **EST/EDT ([Eastern Standard Time](/blog/what-is-est/))**: Eastern Standard Time is UTC-5, primarily used in North America. During the summer, this region observes Eastern Daylight Time (UTC-4).
 - **Zulu Time**: The military and aviation phonetic term for UTC or GMT. The letter "Z" in the NATO phonetic alphabet represents the zero meridian time zone.
 - **UT1**: An astronomical time standard based entirely on the Earth's rotation angle in space, used mainly by astronomers.
 
@@ -243,7 +243,7 @@ If you are eager to expand your understanding of time zones, explore our resourc
 
 ## Related Time Zone Guides
 
-- [What Is EST? Eastern Standard Time Explained](/what-is-est/)
+- [What Is EST? Eastern Standard Time Explained](/blog/what-is-est/)
 - [GMT vs EST: Understanding the Difference](/gmt-vs-est/)
 - [GMT vs UTC: Standard vs Time Zone](/gmt-vs-utc/)
 - [EST vs EDT: Standard and Daylight Time](/est-vs-edt/)
