@@ -18,24 +18,46 @@ const quickAnswers = [
   { q: "What is 9:00 AM EST in PST?", a: "6:00 AM PST." },
   { q: "What is 10:00 AM EST in CST?", a: "9:00 AM CST." },
   { q: "What is 10:00 AM MST in EST?", a: "12:00 PM (Noon) EST." },
-  { q: "What time do US stock markets open in GMT?", a: "9:30 AM EDT = 13:30 GMT (1:30 PM GMT)." }
+  { q: "What time do US stock markets open in GMT?", a: "9:30 AM EDT = 13:30 GMT (1:30 PM GMT in summer), or 14:30 GMT in winter." },
+  { q: "What is 9:00 AM EST in London (GMT)?", a: "2:00 PM GMT (14:00 GMT)." },
+  { q: "What is 9:00 AM EST in Tokyo (JST)?", a: "11:00 PM JST (23:00 JST same day in winter)." }
+];
+
+const masterOffsets = [
+  { zone: "UTC / GMT", stdAbbr: "GMT (UTC+0)", dstAbbr: "BST (UTC+1)", estDiff: "EST is 5h behind GMT (4h in summer)" },
+  { zone: "Eastern Time (US/CA)", stdAbbr: "EST (UTC-5)", dstAbbr: "EDT (UTC-4)", estDiff: "Baseline reference" },
+  { zone: "Central Time (US/CA)", stdAbbr: "CST (UTC-6)", dstAbbr: "CDT (UTC-5)", estDiff: "1 hour behind Eastern Time" },
+  { zone: "Mountain Time (US/CA)", stdAbbr: "MST (UTC-7)", dstAbbr: "MDT (UTC-6)", estDiff: "2 hours behind Eastern Time" },
+  { zone: "Pacific Time (US/CA)", stdAbbr: "PST (UTC-8)", dstAbbr: "PDT (UTC-7)", estDiff: "3 hours behind Eastern Time" },
+  { zone: "Central Europe", stdAbbr: "CET (UTC+1)", dstAbbr: "CEST (UTC+2)", estDiff: "CET is 6 hours ahead of EST" },
+  { zone: "India Standard Time", stdAbbr: "IST (UTC+5:30)", dstAbbr: "No DST", estDiff: "IST is 10h 30m ahead of EST" },
+  { zone: "Japan & Korea", stdAbbr: "JST/KST (UTC+9)", dstAbbr: "No DST", estDiff: "JST is 14 hours ahead of EST" },
+  { zone: "Australian Eastern", stdAbbr: "AEST (UTC+10)", dstAbbr: "AEDT (UTC+11)", estDiff: "AEST is 15 hours ahead of EST" }
 ];
 
 const faqs = [
   {
-    q: "How to instantly calculate GMT to EST?",
-    a: "Subtract 5 hours from GMT in winter (EST) or subtract 4 hours in summer (EDT)."
+    q: "How do I instantly calculate GMT to EST in my head?",
+    a: "During winter (standard time), subtract 5 hours from GMT: e.g., 17:00 GMT − 5 = 12:00 PM EST. During summer (daylight saving time), subtract 4 hours: e.g., 17:00 BST − 4 = 1:00 PM EDT."
   },
   {
-    q: "How to instantly calculate EST to PST?",
-    a: "Subtract 3 hours from EST time."
+    q: "How do I calculate US coastal time differences?",
+    a: "The United States spans four contiguous time zones with 1-hour steps: Eastern (0) &rarr; Central (−1h) &rarr; Mountain (−2h) &rarr; Pacific (−3h). When it is 12:00 PM in New York (EST), it is 11:00 AM in Chicago (CST), 10:00 AM in Denver (MST), and 9:00 AM in Los Angeles (PST)."
+  },
+  {
+    q: "Why does the time difference between the US and Europe change for 2 weeks every year?",
+    a: "The United States begins Daylight Saving Time on the second Sunday of March, whereas the European Union transitions on the last Sunday of March. This causes transatlantic time differences to temporarily shrink by 1 hour for approximately 2 to 3 weeks in the spring and autumn."
+  },
+  {
+    q: "Which major regions never observe Daylight Saving Time?",
+    a: "Large global economies that observe standard time year-round include Arizona, Hawaii, Japan, China, India, Singapore, the UAE, and most of South America and Africa."
   }
 ];
 
 const meta = {
   seoTitle,
   description: pageDescription,
-  keywords: "Time zone cheatsheet, GMT to EST quick answer, EST to PST quick answer, time conversion table, fast timezone reference",
+  keywords: "Time zone cheatsheet, GMT to EST quick answer, EST to PST quick answer, time conversion table, fast timezone reference, time zone formula, mental math timezone",
   image: "/assets/gmt-to-est-timeflow-hero.png",
   imageAlt: "Time Zone Cheatsheet Quick Reference",
   faqs
@@ -61,47 +83,102 @@ const meta = {
       <span class="eyebrow">Quick AI &amp; Human Reference</span>
       <h1 class="hero-banner-title">Time Zone <span class="gradient-text">Cheatsheet</span></h1>
       <p class="hero-subtitle">
-        Instant direct answers and lookup tables for global time zone conversions across North America, Europe, and Asia.
+        Instant direct answers, mental conversion shortcuts, and offset lookup tables across North America, Europe, and Asia.
       </p>
     </div>
   </header>
 
-  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 16px;">
+  <div style="max-width: 960px; margin: 0 auto; padding: 2rem 16px;">
+    
     <!-- AI OVERVIEW FAST REFERENCE -->
-    <aside style="background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 1.25rem; margin-bottom: 2rem;">
-      <div style="font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Direct Conversion Answers
+    <section style="background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 1.5rem; margin-bottom: 2.5rem;">
+      <div style="font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Instant Direct Conversion Answers
       </div>
-      <div style="display: grid; gap: 10px; margin-top: 0.75rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-top: 1rem;">
         {quickAnswers.map((item) => (
-          <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.95rem;">
-            <strong>{item.q}</strong>
+          <div style="display: flex; flex-direction: column; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem;">
+            <strong style="color: var(--text); margin-bottom: 4px;">{item.q}</strong>
             <span style="color: var(--accent); font-weight: 700;">{item.a}</span>
           </div>
         ))}
       </div>
-    </aside>
+    </section>
+
+    <!-- MASTER GLOBAL OFFSET MATRIX -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Global Timezone Offset Matrix</h2>
+      <p>
+        Use this quick-reference matrix to compare standard and daylight saving coordinates against US Eastern Time:
+      </p>
+
+      <div class="table-wrap" style="overflow-x: auto; margin-top: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel); border-bottom: 2px solid var(--line); text-align: left;">
+              <th style="padding: 12px;">Time Zone Region</th>
+              <th style="padding: 12px;">Standard Offset</th>
+              <th style="padding: 12px;">Daylight Saving</th>
+              <th style="padding: 12px;">Relation to Eastern Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {masterOffsets.map((row, i) => (
+              <tr style={`border-bottom: 1px solid var(--line); ${i % 2 === 1 ? 'background: rgba(255,255,255,0.02);' : ''}`}>
+                <td style="padding: 12px; font-weight: 700;">{row.zone}</td>
+                <td style="padding: 12px;">{row.stdAbbr}</td>
+                <td style="padding: 12px;">{row.dstAbbr}</td>
+                <td style="padding: 12px; color: var(--accent); font-weight: 600;">{row.estDiff}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MENTAL ARITHMETIC SHORTCUTS -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Mental Math Shortcuts for Fast Conversions</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent);">GMT &rarr; EST (Winter)</h3>
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">Subtract 5 hours from 24h GMT time. E.g., 15:00 GMT − 5 = 10:00 AM EST.</p>
+        </div>
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent);">EST &rarr; GMT (Winter)</h3>
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">Add 5 hours to EST time. E.g., 2:00 PM EST (14:00) + 5 = 19:00 (7:00 PM GMT).</p>
+        </div>
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent);">EST &rarr; PST</h3>
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">Always subtract 3 hours. Both coastal zones shift DST in unison on the same date.</p>
+        </div>
+      </div>
+    </section>
 
     <!-- CONTEXTUAL INTERNAL LINKS -->
-    <section class="content-section" style="margin-top: 3rem;">
-      <h2>Explore Time Zone Converters</h2>
+    <section class="content-section" style="margin-top: 3rem; margin-bottom: 3rem;">
+      <h2>Explore Interactive Time Zone Converters</h2>
       <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; list-style: none; padding: 0;">
-        <li><a href="/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Homepage (GMT to EST)</a></li>
-        <li><a href="/est-to-gmt/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">EST to GMT Converter</a></li>
-        <li><a href="/cst-to-est/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">CST to EST Converter</a></li>
-        <li><a href="/pdt-to-est/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">PDT to EST Converter</a></li>
+        <li><a href="/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">GMT to EST Converter</a></li>
+        <li><a href="/est-to-gmt/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">EST to GMT Converter</a></li>
+        <li><a href="/cst-to-est/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">CST to EST Converter</a></li>
+        <li><a href="/pdt-to-est/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">PDT to EST Converter</a></li>
       </ul>
     </section>
 
     <!-- FAQ SECTION -->
     <section class="faq-section content-section" id="faq" aria-labelledby="faq-heading">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
-      <div class="faq-grid">
+      <div class="faq-grid" style="display: grid; gap: 1rem; margin-top: 1.25rem;">
         {faqs.map((item) => (
-          <details class="faq-item">
-            <summary class="faq-question"><strong>{item.q}</strong></summary>
-            <div class="faq-answer"><p>{item.a}</p></div>
+          <details class="faq-item" style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+            <summary class="faq-question" style="font-weight: 700; cursor: pointer; color: var(--text);">
+              {item.q}
+            </summary>
+            <div class="faq-answer" style="margin-top: 0.75rem; color: var(--muted); line-height: 1.6;">
+              <p>{item.a}</p>
+            </div>
           </details>
         ))}
       </div>

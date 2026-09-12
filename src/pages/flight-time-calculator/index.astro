@@ -12,23 +12,74 @@ const pageDescription = "Calculate local arrival times for international flights
 
 const canonical = `${siteUrl}/flight-time-calculator/`;
 
+const sampleRoutes = [
+  {
+    origin: "New York (JFK - EST/EDT)",
+    destination: "London (LHR - GMT/BST)",
+    departure: "08:00 PM EST",
+    duration: "7h 15m",
+    netOffset: "+5 hours",
+    arrival: "08:15 AM GMT (+1 day)",
+    impact: "Eastbound redeye: advance sleep schedule 2 days before departure"
+  },
+  {
+    origin: "London (LHR - GMT/BST)",
+    destination: "New York (JFK - EST/EDT)",
+    departure: "11:00 AM GMT",
+    duration: "8h 00m",
+    netOffset: "-5 hours",
+    arrival: "02:00 PM EST (Same day)",
+    impact: "Westbound daytime flight: stay awake during flight, sleep at local EST bedtime"
+  },
+  {
+    origin: "Los Angeles (LAX - PST/PDT)",
+    destination: "Tokyo (HND - JST)",
+    departure: "12:30 PM PST",
+    duration: "11h 45m",
+    netOffset: "+17 hours (Crosses Date Line)",
+    arrival: "05:15 PM JST (+1 day)",
+    impact: "Crosses International Date Line: calendar date advances by one full day"
+  },
+  {
+    origin: "Tokyo (HND - JST)",
+    destination: "San Francisco (SFO - PST/PDT)",
+    departure: "05:30 PM JST",
+    duration: "9h 30m",
+    netOffset: "-17 hours (Crosses Date Line)",
+    arrival: "10:00 AM PST (Same calendar day)",
+    impact: "Apparent 'time machine' flight: lands earlier on the clock than departure time"
+  }
+];
+
 const faqs = [
   {
     q: "How do time zone changes affect flight arrival times?",
-    a: "Flight arrival times are always displayed in the local time zone of the destination airport. Subtracting origin time from destination arrival time requires factoring in both flight duration and net time zone offset."
+    a: "Flight arrival times on airline tickets and boarding passes are always displayed in the local civil time of the destination airport. Calculating elapsed travel time requires adjusting for the net time zone offset between the departure and arrival cities."
   },
   {
     q: "What is the formula for calculating international flight arrival time?",
-    a: "Local Arrival Time = Departure Local Time + Flight Duration + Net Time Zone Offset (Destination Zone Offset minus Origin Zone Offset)."
+    a: "Local Destination Arrival Time = Departure Local Time + Total Flight Duration + (Destination UTC Offset − Origin UTC Offset). If the result exceeds 24:00, advance the calendar day by +1. If negative, subtract 1 day."
+  },
+  {
+    q: "Why do flights from Asia to North America seem to arrive before they depart?",
+    a: "When crossing the International Date Line eastbound (such as Tokyo to San Francisco), travelers move from UTC+9 to UTC-8, effectively setting clocks back 17 hours. If the flight duration (e.g., 9.5 hours) is shorter than the offset, you land on the same calendar morning earlier than your departure hour."
+  },
+  {
+    q: "How does Daylight Saving Time affect flight itineraries?",
+    a: "Airlines publish flight schedules based on local standard or daylight saving time in effect on the date of travel. Because North America and Europe change clocks on different weekends in March and October/November, flight arrival times may shift by ±1 hour during the 2–3 week transition window."
+  },
+  {
+    q: "What is the best strategy to minimize jet lag across multiple time zones?",
+    a: "Adjust your sleep schedule toward the destination time zone 48 hours prior to departure, drink plenty of water during the flight, immediately set watches to destination time upon boarding, and expose yourself to natural morning sunlight after arrival."
   }
 ];
 
 const meta = {
   seoTitle,
   description: pageDescription,
-  keywords: "Flight time calculator, international travel time zone, jet lag calculator, departure arrival timezone, GMT EST flight time",
-  image: "/assets/gmt-to-est-timeflow-hero.png",
-  imageAlt: "Flight Time Calculator Travel Guide",
+  keywords: "Flight time calculator, international travel time zone, jet lag calculator, departure arrival timezone, GMT EST flight time, flight arrival formula, cross date line flight",
+  image: "/assets/flight-planning-guide.svg",
+  imageAlt: "Flight Time Calculator and Aviation Time Zone Guide",
   faqs
 };
 ---
@@ -52,38 +103,100 @@ const meta = {
       <span class="eyebrow">International Travel &amp; Aviation</span>
       <h1 class="hero-banner-title">Flight Time <span class="gradient-text">Calculator</span></h1>
       <p class="hero-subtitle">
-        Understand transcontinental flight durations, local airport arrival shifts, and circadian rhythm adaptation for flights crossing global meridians.
+        Master transcontinental flight duration math, airport local arrival times, and circadian jet lag recovery across global meridians.
       </p>
     </div>
   </header>
 
-  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 16px;">
-    <section class="content-section">
-      <h2>Flight Time Conversion Mathematics</h2>
+  <div style="max-width: 960px; margin: 0 auto; padding: 2rem 16px;">
+    
+    <!-- CORE MATHEMATICAL FORMULA -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>How International Flight Arrival Times Are Calculated</h2>
       <p>
-        When flying west-to-east (e.g., New York JFK to London LHR), your destination is 5 hours ahead. A 7-hour flight departing New York at 8:00 PM EST lands at 3:00 AM EST, which corresponds to <strong>8:00 AM GMT (local London time)</strong> the next morning.
+        Airline schedules always print departure and arrival times in <strong>local airport time</strong>. To compute when a flight arrives in local destination coordinates, use the universal aviation formula:
+      </p>
+
+      <div style="background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-family: monospace; font-size: 1.05rem;">
+        <strong>Local Arrival Time</strong> = Local Departure Time + Flight In-Air Duration + (Destination UTC Offset &minus; Origin UTC Offset)
+      </div>
+
+      <p>
+        <strong>West-to-East Flights (e.g., JFK &rarr; LHR):</strong> The destination is ahead (+5 hours). Flying into the future compresses night hours, causing flights to land on the following morning.
+      </p>
+      <p>
+        <strong>East-to-West Flights (e.g., LHR &rarr; JFK):</strong> The destination is behind (&minus;5 hours). The sun appears to follow your flight, stretching daylight and landing on the same afternoon.
       </p>
     </section>
 
+    <!-- POPULAR ROUTE ARRIVAL MATRIX -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Major Transcontinental Routes &amp; Arrival Offsets</h2>
+      <p>
+        The table below breaks down real flight durations, net timezone differentials, and day shifts across major international routes:
+      </p>
+
+      <div class="table-wrap" style="overflow-x: auto; margin-top: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <thead>
+            <tr style="background: var(--panel); border-bottom: 2px solid var(--line); text-align: left;">
+              <th style="padding: 12px;">Route (Origin &rarr; Destination)</th>
+              <th style="padding: 12px;">Dep Time</th>
+              <th style="padding: 12px;">Flight Time</th>
+              <th style="padding: 12px;">Net Shift</th>
+              <th style="padding: 12px;">Local Arrival Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sampleRoutes.map((route, i) => (
+              <tr style={`border-bottom: 1px solid var(--line); ${i % 2 === 1 ? 'background: rgba(255,255,255,0.02);' : ''}`}>
+                <td style="padding: 12px; font-weight: 600;">{route.origin} &rarr;<br /><span style="font-weight: 400; color: var(--muted);">{route.destination}</span></td>
+                <td style="padding: 12px;">{route.departure}</td>
+                <td style="padding: 12px;">{route.duration}</td>
+                <td style="padding: 12px; color: var(--accent); font-weight: 600;">{route.netOffset}</td>
+                <td style="padding: 12px; font-weight: 700;">{route.arrival}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INTERNATIONAL DATE LINE PRINCIPLES -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Crossing the International Date Line (180&deg; Meridian)</h2>
+      <p>
+        The International Date Line roughly follows the 180&deg; meridian in the Pacific Ocean. Crossing this imaginary line introduces a full 24-hour calendar shift:
+      </p>
+      <ul style="line-height: 1.8; margin-left: 1.5rem; margin-top: 0.75rem;">
+        <li><strong>Westbound (Americas to Asia/Australasia):</strong> You advance the calendar clock by 24 hours. A flight departing California on Friday evening lands in Sydney or Tokyo on Sunday morning, "skipping" Saturday entirely.</li>
+        <li><strong>Eastbound (Asia/Australasia to Americas):</strong> You turn the calendar clock back 24 hours. A flight departing Tokyo on Monday evening lands in San Francisco on Monday morning, "repeating" the calendar day.</li>
+      </ul>
+    </section>
+
     <!-- CONTEXTUAL INTERNAL LINKS -->
-    <section class="content-section" style="margin-top: 3rem;">
-      <h2>Travel &amp; Time Resources</h2>
+    <section class="content-section" style="margin-top: 3rem; margin-bottom: 3rem;">
+      <h2>Travel &amp; Aviation Time Resources</h2>
       <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; list-style: none; padding: 0;">
-        <li><a href="/travel-planner/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Travel Time Planner</a></li>
-        <li><a href="/time-zone-map/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Interactive Time Zone Map</a></li>
-        <li><a href="/world-clock/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Global World Clock</a></li>
-        <li><a href="/gmt-to-est/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">GMT to EST Converter</a></li>
+        <li><a href="/travel-planner/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Travel Time Planner</a></li>
+        <li><a href="/time-zone-map/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Time Zone Map</a></li>
+        <li><a href="/world-clock/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Global World Clock</a></li>
+        <li><a href="/gmt-to-est/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">GMT to EST Converter</a></li>
       </ul>
     </section>
 
     <!-- FAQ SECTION -->
     <section class="faq-section content-section" id="faq" aria-labelledby="faq-heading">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
-      <div class="faq-grid">
+      <div class="faq-grid" style="display: grid; gap: 1rem; margin-top: 1.25rem;">
         {faqs.map((item) => (
-          <details class="faq-item">
-            <summary class="faq-question"><strong>{item.q}</strong></summary>
-            <div class="faq-answer"><p>{item.a}</p></div>
+          <details class="faq-item" style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+            <summary class="faq-question" style="font-weight: 700; cursor: pointer; color: var(--text);">
+              {item.q}
+            </summary>
+            <div class="faq-answer" style="margin-top: 0.75rem; color: var(--muted); line-height: 1.6;">
+              <p>{item.a}</p>
+            </div>
           </details>
         ))}
       </div>

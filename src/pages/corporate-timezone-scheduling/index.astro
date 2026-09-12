@@ -12,6 +12,33 @@ const pageDescription = "Enterprise guide for scheduling remote teams across GMT
 
 const canonical = `${siteUrl}/corporate-timezone-scheduling/`;
 
+const crossoverWindows = [
+  {
+    pair: "London (GMT/BST) & New York (EST/EDT)",
+    window: "9:00 AM – 11:30 AM EST (14:00 – 16:30 GMT)",
+    useCase: "Sprint planning, executive syncs, client demos",
+    tip: "Preserves morning focus time in US and avoids evening overtime in UK"
+  },
+  {
+    pair: "New York (EST/EDT) & San Francisco (PST/PDT)",
+    window: "11:00 AM – 3:00 PM EST (8:00 AM – 12:00 PM PST)",
+    useCase: "Cross-coastal standups, architecture reviews, sales handoffs",
+    tip: "4-hour overlapping golden window during standard business hours"
+  },
+  {
+    pair: "Chicago (CST/CDT) & London (GMT/BST)",
+    window: "8:30 AM – 11:00 AM CST (14:30 – 17:00 GMT)",
+    useCase: "Financial markets, commodity trading, logistics handoffs",
+    tip: "Critical for London afternoon market close and Chicago morning open"
+  },
+  {
+    pair: "New York (EST/EDT) & Tokyo/Sydney (JST/AEST)",
+    window: "7:00 PM – 9:00 PM EST (9:00 AM – 11:00 AM JST +1)",
+    useCase: "Global engineering escalations, follow-the-sun handoffs",
+    tip: "Rely primarily on asynchronous updates; limit synchronous calls to alternate weeks"
+  }
+];
+
 const faqs = [
   {
     q: "What is the best time slot for US East Coast and European meetings?",
@@ -20,15 +47,23 @@ const faqs = [
   {
     q: "How can remote teams reduce timezone fatigue?",
     a: "Embrace asynchronous updates via documentation platforms (Jira, Notion, Loom) and record all sync calls so team members in distant time zones do not need to attend live meetings outside 8:00 AM – 6:00 PM local hours."
+  },
+  {
+    q: "What is a 'follow-the-sun' workflow model?",
+    a: "A follow-the-sun model routes customer support tickets, code reviews, and incident resolution sequentially through teams in the Americas, Europe, and Asia-Pacific. Each team hands off active work at the end of their workday, providing continuous 24-hour progress without nighttime on-call shifts."
+  },
+  {
+    q: "How do Daylight Saving Time changes impact international recurring meetings?",
+    a: "Because the US, UK, and European Union switch to summer daylight time on different calendar weeks, recurring calendar invites can unexpectedly shift by 1 hour. Schedule recurring international meetings against UTC rather than a local civil zone to maintain consistent duration and timing."
   }
 ];
 
 const meta = {
   seoTitle,
   description: pageDescription,
-  keywords: "Corporate timezone scheduling, remote team scheduling, transatlantic meeting window, GMT EST overlap, asynchronous workflow timezone",
-  image: "/assets/gmt-to-est-timeflow-hero.png",
-  imageAlt: "Corporate Remote Team Scheduling",
+  keywords: "Corporate timezone scheduling, remote team scheduling, transatlantic meeting window, GMT EST overlap, asynchronous workflow timezone, follow the sun support",
+  image: "/assets/business-dst-impact.svg",
+  imageAlt: "Corporate Remote Team Scheduling and Overlap Guide",
   faqs
 };
 ---
@@ -52,55 +87,90 @@ const meta = {
       <span class="eyebrow">Enterprise Remote Operations</span>
       <h1 class="hero-banner-title">Corporate Time Zone <span class="gradient-text">Scheduling</span></h1>
       <p class="hero-subtitle">
-        Best practices for managing distributed global engineering, customer support, and trading operations across North American and European time zones.
+        Best practices for managing distributed global engineering, customer support, and trading operations across North American, European, and Asian time zones.
       </p>
     </div>
   </header>
 
-  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 16px;">
-    <section class="content-section">
+  <div style="max-width: 960px; margin: 0 auto; padding: 2rem 16px;">
+    
+    <!-- CROSSOVER MATRIX -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
       <h2>Transatlantic &amp; Transcontinental Crossover Windows</h2>
       <p>
         Coordinating international business across London (GMT/BST), New York (EST/EDT), Chicago (CST/CDT), and San Francisco (PST/PDT) requires balancing local working hours to maintain productivity and prevent employee burnout.
       </p>
 
-      <div class="table-wrap">
-        <table>
+      <div class="table-wrap" style="overflow-x: auto; margin-top: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
           <thead>
-            <tr>
-              <th>Region Pair</th>
-              <th>Optimal Live Crossover Window</th>
-              <th>Primary Use Case</th>
+            <tr style="background: var(--panel); border-bottom: 2px solid var(--line); text-align: left;">
+              <th style="padding: 12px;">Region Pair</th>
+              <th style="padding: 12px;">Live Crossover Window</th>
+              <th style="padding: 12px;">Primary Use Case</th>
+              <th style="padding: 12px;">Operational Guideline</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td>London (GMT) &amp; New York (EST)</td><td>9:00 AM – 11:30 AM EST (14:00 – 16:30 GMT)</td><td>Executive reviews, sprint planning, client demos</td></tr>
-            <tr><td>New York (EST) &amp; San Francisco (PST)</td><td>11:00 AM – 3:00 PM EST (8:00 AM – 12:00 PM PST)</td><td>Cross-coastal engineering standups &amp; sales calls</td></tr>
-            <tr><td>Chicago (CST) &amp; London (GMT)</td><td>8:30 AM – 11:00 AM CST (14:30 – 17:00 GMT)</td><td>Commodity trading &amp; financial dispatch</td></tr>
+            {crossoverWindows.map((row, i) => (
+              <tr style={`border-bottom: 1px solid var(--line); ${i % 2 === 1 ? 'background: rgba(255,255,255,0.02);' : ''}`}>
+                <td style="padding: 12px; font-weight: 700;">{row.pair}</td>
+                <td style="padding: 12px; color: var(--accent); font-weight: 600;">{row.window}</td>
+                <td style="padding: 12px;">{row.useCase}</td>
+                <td style="padding: 12px; font-size: 0.85rem; color: var(--muted);">{row.tip}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </section>
 
+    <!-- ASYNC PRINCIPLES -->
+    <section class="content-section" style="margin-bottom: 2.5rem;">
+      <h2>Four Principles for Asynchronous Distributed Operations</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.05rem; color: var(--accent);">1. Protect Deep Work Hours</h3>
+          <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">Reserve overlapping crossover hours strictly for interactive reviews. Protect local morning hours for deep focus and independent development.</p>
+        </div>
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.05rem; color: var(--accent);">2. Document-First Handoffs</h3>
+          <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">Replace status meetings with concise written daily standup briefs (in Slack or Notion) and recorded 2-minute video walkthroughs.</p>
+        </div>
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.05rem; color: var(--accent);">3. Rotate Burdensome Meeting Times</h3>
+          <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">When team members span 8+ hours of difference, alternate meeting times each month so one region does not consistently shoulder late evening calls.</p>
+        </div>
+        <div style="padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 1.05rem; color: var(--accent);">4. Anchor to UTC Calendars</h3>
+          <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">Publish corporate release schedules, maintenance downtime, and quarterly deadlines in UTC with automatic conversion to avoid daylight saving surprises.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- CONTEXTUAL INTERNAL LINKS -->
-    <section class="content-section" style="margin-top: 3rem;">
+    <section class="content-section" style="margin-top: 3rem; margin-bottom: 3rem;">
       <h2>Related Interactive Tools &amp; Guides</h2>
       <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; list-style: none; padding: 0;">
-        <li><a href="/meeting-planner/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Global Meeting Planner</a></li>
-        <li><a href="/business-hours-overlap/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Business Hours Overlap</a></li>
-        <li><a href="/world-clock/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">Global World Clock</a></li>
-        <li><a href="/gmt-to-est/" style="display: block; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center;">GMT to EST Converter</a></li>
+        <li><a href="/meeting-planner/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Global Meeting Planner</a></li>
+        <li><a href="/business-hours-overlap/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Business Hours Overlap</a></li>
+        <li><a href="/world-clock/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">Global World Clock</a></li>
+        <li><a href="/gmt-to-est/" style="display: block; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600;">GMT to EST Converter</a></li>
       </ul>
     </section>
 
     <!-- FAQ SECTION -->
     <section class="faq-section content-section" id="faq" aria-labelledby="faq-heading">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
-      <div class="faq-grid">
+      <div class="faq-grid" style="display: grid; gap: 1rem; margin-top: 1.25rem;">
         {faqs.map((item) => (
-          <details class="faq-item">
-            <summary class="faq-question"><strong>{item.q}</strong></summary>
-            <div class="faq-answer"><p>{item.a}</p></div>
+          <details class="faq-item" style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+            <summary class="faq-question" style="font-weight: 700; cursor: pointer; color: var(--text);">
+              {item.q}
+            </summary>
+            <div class="faq-answer" style="margin-top: 0.75rem; color: var(--muted); line-height: 1.6;">
+              <p>{item.a}</p>
+            </div>
           </details>
         ))}
       </div>
