@@ -119,6 +119,7 @@ export const abbreviationPages: ClusterLink[] = [
   { href: "/bst/", label: "BST - British Summer Time", description: "UTC+1 daylight saving time in the United Kingdom." },
   { href: "/ist/", label: "IST - India Standard Time", description: "UTC+5:30 official time zone for India." },
   { href: "/cet/", label: "CET - Central European Time", description: "UTC+1 standard time across central Europe." },
+  { href: "/jst/", label: "JST - Japan Standard Time", description: "UTC+9 official time zone for Japan." },
 ];
 
 // Region mappings for converters

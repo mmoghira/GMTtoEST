@@ -2,7 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert";
 
-const deRoot = path.resolve("dist/client/de");
+const deRoot = fs.existsSync(path.resolve("dist/client/de"))
+  ? path.resolve("dist/client/de")
+  : path.resolve("dist/de");
 
 console.log("=== RUNNING GERMAN LOCALIZATION & SEO VERIFICATION TESTS ===");
 

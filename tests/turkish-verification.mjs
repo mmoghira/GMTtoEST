@@ -2,8 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert";
 
-const trRoot = path.resolve("dist/client/tr");
-const distClient = path.resolve("dist/client");
+const distClient = fs.existsSync(path.resolve("dist/client"))
+  ? path.resolve("dist/client")
+  : path.resolve("dist");
+const trRoot = path.join(distClient, "tr");
 
 console.log("=== RUNNING HARDENED TURKISH LOCALIZATION & SEO VERIFICATION TESTS ===");
 
@@ -134,8 +136,8 @@ for (const filePath of allTurkishHtmlFiles) {
 console.log(`Audited ${totalHreflangReciprocalChecks} hreflang connections with 100% reciprocity verified.`);
 
 // 8. Verify sitemap inclusion and exact parity
-const sitemapPath = path.resolve("dist/client/sitemap-0.xml");
-assert(fs.existsSync(sitemapPath), "dist/client/sitemap-0.xml does not exist");
+const sitemapPath = path.join(distClient, "sitemap-0.xml");
+assert(fs.existsSync(sitemapPath), `${sitemapPath} does not exist`);
 const sitemapContent = fs.readFileSync(sitemapPath, "utf8");
 
 // Check crucial Turkish URLs in sitemap

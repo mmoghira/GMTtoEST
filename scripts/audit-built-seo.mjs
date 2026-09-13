@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const root = path.resolve("dist/client");
+const root = fs.existsSync(path.resolve("dist/client"))
+  ? path.resolve("dist/client")
+  : path.resolve("dist");
 const htmlFiles = [];
 
 function walk(directory) {
@@ -90,6 +92,9 @@ const pages = htmlFiles.map((file) => {
         const url = new URL(anchor[1], match(html, /<link rel="canonical" href="([^"]*)"/i));
         url.hash = "";
         url.search = "";
+        if (!path.extname(url.pathname) && !url.pathname.endsWith("/")) {
+          url.pathname = `${url.pathname}/`;
+        }
         return url.toString();
       } catch {
         return "";

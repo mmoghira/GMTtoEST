@@ -4,8 +4,10 @@ import assert from 'node:assert';
 
 console.log('=== RUNNING FRENCH HOMEPAGE LOCALIZATION & SEO VERIFICATION ===');
 
-const frHtmlPath = path.resolve('dist/client/fr/index.html');
-assert(fs.existsSync(frHtmlPath), 'dist/client/fr/index.html does not exist!');
+const frHtmlPath = fs.existsSync(path.resolve('dist/client/fr/index.html'))
+  ? path.resolve('dist/client/fr/index.html')
+  : path.resolve('dist/fr/index.html');
+assert(fs.existsSync(frHtmlPath), `${frHtmlPath} does not exist!`);
 
 const rawHtml = fs.readFileSync(frHtmlPath, 'utf8');
 const html = rawHtml
