@@ -1,0 +1,394 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "edt-to-est";
+const t = getTranslation(lang);
+
+const pageTitle = "12:00 EDT to EST: Time Conversion & Difference";
+const seoTitle = "12:00 EDT to EST: Time Conversion & Difference";
+const pageDescription = "Convert EDT to EST and see the 1-hour time difference. 12:00 PM EDT is 1:00 PM EST. Includes a 24-hour conversion table, noon vs midnight, and DST rules.";
+
+const context = {
+  from: "EDT",
+  to: "EST",
+  fromZone: "Etc/GMT+4",
+  toZone: "Etc/GMT+5"
+};
+
+const canonical = `${siteUrl}/edt-to-est/`;
+
+// 24-hour conversion table data (EDT to EST: 12:00 AM EDT -> 1:00 AM EST, 12:00 PM EDT -> 1:00 PM EST)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const estHour = (hour + 1) % 24;
+  const isNextDay = hour === 23;
+  return {
+    edt: formatHour12(hour),
+    est: formatHour12(estHour),
+    isExactTarget: hour === 12,
+    isMidnightTarget: hour === 0,
+    note: hour === 12
+      ? "Exact Search Match (Noon EDT = 1:00 PM EST)"
+      : hour === 0
+      ? "Midnight EDT = 1:00 AM EST"
+      : isNextDay
+      ? "Next calendar day (+1 hr)"
+      : "Same calendar day (+1 hr)"
+  };
+});
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is 12:00 PM EDT in EST?",
+    a: "12:00 PM EDT equals 1:00 PM EST. Eastern Daylight Time (EDT) operates at UTC−4, while Eastern Standard Time (EST) operates at UTC−5. Because EST is one hour behind EDT, converting 12:00 PM EDT results in 1:00 PM EST."
+  },
+  {
+    q: "What is 12:00 AM EDT in EST?",
+    a: "12:00 AM EDT (Midnight) equals 1:00 AM EST. In standard 12-hour notation, 12:00 AM signifies midnight, which translates to 1:00 AM in Eastern Standard Time."
+  },
+  {
+    q: "Is 12:00 PM noon or midnight?",
+    a: "12:00 PM is noon (midday). Conversely, 12:00 AM is midnight (the beginning of the calendar day). When converting 12:00 EDT to EST, 12:00 PM EDT converts to 1:00 PM EST, and 12:00 AM EDT converts to 1:00 AM EST."
+  },
+  {
+    q: "Is 12:00 EDT the same as 12:00 EST?",
+    a: "No. 12:00 EDT is not the same as 12:00 EST. EDT (UTC−4) and EST (UTC−5) represent two distinct civil time offsets separated by exactly one hour. Clocks set to EDT run one hour ahead of clocks set to EST."
+  },
+  {
+    q: "How many hours is EDT ahead of EST?",
+    a: "EDT is exactly 1 hour ahead of EST. EDT operates on a UTC−4 baseline, while EST operates on a UTC−5 baseline."
+  },
+  {
+    q: "What is the difference between EDT and EST?",
+    a: "EDT stands for Eastern Daylight Time (UTC−4), which is observed during the spring, summer, and early autumn months. EST stands for Eastern Standard Time (UTC−5), which is observed during the winter months. North American East Coast cities switch between EDT and EST each year."
+  },
+  {
+    q: "Does daylight saving time affect EDT to EST conversion?",
+    a: "Yes. In the United States and Canada, local clocks 'spring forward' by 1 hour from EST to EDT on the second Sunday of March, and 'fall back' by 1 hour from EDT to EST on the first Sunday of November."
+  },
+  {
+    q: "How do I manually convert EDT to EST?",
+    a: "To convert EDT to EST, apply the 1-hour difference: 12:00 PM EDT corresponds to 1:00 PM EST. Always verify whether the time refers to 12:00 PM (noon) or 12:00 AM (midnight)."
+  }
+];
+
+const meta = {
+  seoTitle,
+  description: pageDescription,
+  keywords: "12:00 EDT to EST, 12 EDT to EST, 12 PM EDT to EST, 12:00 PM EDT to EST, EDT to EST, convert EDT to EST, EDT vs EST, 12 AM EDT to EST, EDT to EST time difference",
+  image: "/assets/edt-to-est-og.svg",
+  imageAlt: "12:00 EDT to EST Time Conversion and 24-Hour Comparison Chart",
+  faqs,
+  appDescription: "Free online 12:00 EDT to EST converter and 24-hour conversion chart with instant exact answers, noon vs midnight clarification, and daylight saving time details.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert 12:00 EDT to EST",
+  howToDescription: "Step-by-step guide to converting 12:00 Eastern Daylight Time (EDT) to Eastern Standard Time (EST).",
+  howToSteps: [
+    { name: "Clarify Noon vs Midnight", text: "Identify whether your 12:00 time is 12:00 PM (noon) or 12:00 AM (midnight)." },
+    { name: "Apply the 1-Hour Difference", text: "EDT (UTC-4) and EST (UTC-5) differ by 1 hour. 12:00 PM EDT corresponds to 1:00 PM EST, while 12:00 AM EDT corresponds to 1:00 AM EST." },
+    { name: "Verify Seasonal Context", text: "Check whether your target region is actively observing Eastern Daylight Time (summer) or Eastern Standard Time (winter)." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="EDT to EST"
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & TITLE SECTION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    EDT to EST Converter: <span class="gradient-text">12:00 Time Conversion &amp; Difference</span>
+  </h1>
+</section>
+
+<!-- PRIMARY CONVERTER, LIVE CLOCKS & DIRECT ANSWER BLOCK (Above the Fold) -->
+<div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+  <Converter intent="dynamic" t={t} context={context} />
+  
+  <!-- LIVE CLOCKS -->
+  <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+    <h2>Live Clocks</h2>
+    <div class="clock-card">
+      <span class="eyebrow">Source Time Zone</span>
+      <strong id="gmtClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Eastern Daylight Time (EDT, UTC−4)</p>
+    </div>
+    <div class="clock-card">
+      <span class="eyebrow">Target Time Zone</span>
+      <strong id="estClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Active Zone: <em id="estZone">EST (UTC−5)</em></p>
+    </div>
+  </section>
+
+  <!-- EXACT ANSWER BLOCK (High-Visibility Featured Snippet Target) -->
+  <div class="info-callout" style="margin-top: 24px;">
+    <h2 style="margin: 0 0 10px; font-size: 1.35rem; font-family: 'Space Grotesk', sans-serif; color: var(--text);">
+      12:00 EDT to EST
+    </h2>
+    <p style="font-size: 1.35rem; font-weight: 800; color: var(--accent); margin: 0 0 10px;">
+      12:00 PM EDT = 1:00 PM EST
+    </p>
+    <p style="margin: 0 0 8px; font-size: 1.1rem; line-height: 1.6;">
+      <strong>12:00 PM EDT is 1:00 PM EST.</strong>
+    </p>
+    <p style="margin: 0 0 12px; color: var(--muted); font-size: 1rem; line-height: 1.6;">
+      EDT is <strong>UTC−4</strong>, while EST is <strong>UTC−5</strong>, so EST is one hour behind EDT. Therefore <strong>12:00 PM EDT corresponds to 1:00 PM EST</strong>.
+    </p>
+
+    <!-- Important 12:00 Clarification -->
+    <div style="margin-top: 14px; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid var(--line);">
+      <strong style="color: var(--accent-2); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em;">Important 12:00 Clarification:</strong>
+      <p style="margin: 6px 0 0; font-size: 0.98rem; color: var(--text); line-height: 1.55;">
+        In 12-hour time, <strong>12:00 PM means noon</strong>. <strong>12:00 AM means midnight</strong>.
+      </p>
+      <ul style="margin: 8px 0 0 20px; padding: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.6;">
+        <li><strong>12:00 PM EDT (Noon)</strong> = <strong>1:00 PM EST</strong></li>
+        <li><strong>12:00 AM EDT (Midnight)</strong> = <strong>1:00 AM EST</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <!-- Icon: Clock -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Exact 12:00 Answer</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Calendar -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>24-Hour Table</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Check -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Noon vs Midnight</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: World -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="2" y1="12" x2="22" y2="12"></line>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span>DST-Aware Logic</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDT TO EST TIME DIFFERENCE EXPLAINED
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section" id="difference-explained" aria-labelledby="diff-heading">
+  <div class="method-intro">
+    <p class="eyebrow">Time Difference Mechanics</p>
+    <h2 id="diff-heading">EDT to EST Time Difference</h2>
+    <p>
+      The difference between Eastern Daylight Time (EDT) and Eastern Standard Time (EST) is exactly <strong>one hour</strong>. EDT operates on <strong>UTC−4</strong>, while EST operates on <strong>UTC−5</strong>.
+    </p>
+    <p>
+      These two time standards represent the seasonal clock offsets of the North American Eastern Time Zone (including New York City, Toronto, Miami, Boston, Washington D.C., and Atlanta).
+    </p>
+  </div>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>EDT (UTC−4)</h3>
+      <p><strong>Eastern Daylight Time</strong> is observed from the second Sunday in March to the first Sunday in November when daylight saving time is in effect.</p>
+    </article>
+    <article class="method-card">
+      <h3>EST (UTC−5)</h3>
+      <p><strong>Eastern Standard Time</strong> is the winter civil baseline observed from the first Sunday in November to the second Sunday in March.</p>
+    </article>
+    <article class="method-card">
+      <h3>1-Hour Difference</h3>
+      <p>Clocks set to EDT run 1 hour ahead of EST. Consequently, 12:00 PM EDT corresponds directly to 1:00 PM EST.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="examples-section" id="conversion-chart" aria-labelledby="chart-heading">
+  <div>
+    <h2 id="chart-heading">EDT to EST Conversion Chart</h2>
+    <p>Use the conversion table below to convert any hour of the day from Eastern Daylight Time (EDT, UTC−4) to Eastern Standard Time (EST, UTC−5):</p>
+
+    <div class="table-wrap">
+      <table aria-label="EDT to EST 24-hour conversion table">
+        <caption class="sr-only">Full 24-hour conversion grid from Eastern Daylight Time to Eastern Standard Time</caption>
+        <thead>
+          <tr>
+            <th>EDT Time (UTC−4)</th>
+            <th>EST Equivalent (UTC−5)</th>
+            <th>Conversion Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversionRows.map((row) => (
+            <tr style={row.isExactTarget ? "background: rgba(54, 199, 181, 0.15); font-weight: bold;" : ""}>
+              <td>
+                {row.isExactTarget ? <strong style="color: var(--accent);">{row.edt}</strong> : row.edt}
+              </td>
+              <td>
+                {row.isExactTarget ? <strong style="color: var(--accent);">{row.est}</strong> : row.est}
+              </td>
+              <td>
+                {row.isExactTarget ? <span style="color: var(--accent); font-weight: bold;">⭐ {row.note}</span> : row.note}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Notice: 12:00 PM EDT represents midday noon, converting to 1:00 PM EST. 12:00 AM EDT represents midnight, converting to 1:00 AM EST.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDT AND EST EXPLAINED (DST CLARIFICATION)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="content" id="dst-explained" aria-labelledby="dst-heading">
+  <h2 id="dst-heading">EDT and EST Explained: Daylight Saving Time</h2>
+  
+  <article>
+    <h3>Seasonal Separation</h3>
+    <p>
+      EDT and EST are never observed simultaneously in the same city. Instead, they represent the summer and winter modes of the exact same geographical territory:
+    </p>
+    <ul>
+      <li><strong>Spring Forward:</strong> On the second Sunday in March at 2:00 AM, clocks advance 1 hour to 3:00 AM, switching from EST (UTC−5) to EDT (UTC−4).</li>
+      <li><strong>Fall Back:</strong> On the first Sunday in November at 2:00 AM, clocks move backward 1 hour to 1:00 AM, returning from EDT (UTC−4) to EST (UTC−5).</li>
+    </ul>
+  </article>
+
+  <article>
+    <h3>Cross-Region Coordination</h3>
+    <p>
+      While East Coast cities alternate between these two offsets, certain Caribbean nations and Central American regions (such as Jamaica, Panama, and Colombia) remain on UTC−5 all year without observing daylight saving time. When New York is on EDT (UTC−4), it operates one hour ahead of these year-round UTC−5 regions.
+    </p>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FAQ SECTION (100% SCHEMA PARITY)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions: 12:00 EDT to EST</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS & INTERNAL LINKS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Related Time Zone Converters &amp; Guides</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/est-vs-edt/">EST vs EDT Guide</a></div>
+      <div class="related-card-text">Comprehensive guide comparing Eastern Standard Time and Eastern Daylight Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-edt/">GMT to EDT Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Eastern Daylight Time (UTC-4).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-est/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (UTC-5).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/time-zone-guide/">Time Zone Guide</a></div>
+      <div class="related-card-text">Explore global time zone standards, UTC offsets, and daylight saving rules.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/daylight-saving-time-explained/">Daylight Saving Time Explained</a></div>
+      <div class="related-card-text">Understand why and when clocks change across North America and Europe.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/edt/">Eastern Daylight Time (EDT)</a></div>
+      <div class="related-card-text">Deep-dive reference into EDT history, affected states, and UTC-4 offsets.</div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SUMMARY / CONCLUSION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary: 12:00 EDT to EST</h2>
+  <p>
+    To convert <strong>12:00 EDT to EST</strong>, remember that <strong>12:00 PM EDT equals 1:00 PM EST</strong> (noon), and <strong>12:00 AM EDT equals 1:00 AM EST</strong> (midnight). Because Eastern Standard Time (UTC−5) is one hour behind Eastern Daylight Time (UTC−4), local clocks differ by exactly 1 hour.
+  </p>
+  <p>
+    Use our interactive date-aware converter above to calculate specific calendar dates, or explore our <a href="/est-vs-edt/">EST vs EDT guide</a> to learn more about annual clock transition schedules.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+</style>
