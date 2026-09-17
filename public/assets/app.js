@@ -471,26 +471,34 @@
     }, 60000);
   }
 
-  function tickClocks() {
-    try {
+  let cachedClockEls = null;
+  function getClockElements() {
+    if (!cachedClockEls) {
       const gmtClock = document.querySelector("#gmtClock");
       const estClock = document.querySelector("#estClock");
       const estZone = document.querySelector("#estZone");
-      if (!gmtClock && !estClock) return;
+      const firstConverter = document.querySelector('[data-component="converter"]') || document.querySelector('.converter');
+      const formatToggle = document.querySelector('[data-role="formatToggle"]') || document.querySelector('#formatToggle');
+      const sZone = firstConverter?.dataset?.sourceZone || "UTC";
+      const tZone = firstConverter?.dataset?.targetZone || "America/New_York";
+      const sLabel = firstConverter?.dataset?.sourceLabel || "GMT";
+      const tLabel = firstConverter?.dataset?.targetLabel || "EST";
+      cachedClockEls = { gmtClock, estClock, estZone, formatToggle, sZone, tZone, sLabel, tLabel };
+    }
+    return cachedClockEls;
+  }
+
+  function tickClocks() {
+    try {
+      const els = getClockElements();
+      if (!els.gmtClock && !els.estClock) return;
 
       const now = new Date();
-      const firstConverter = document.querySelector('[data-component="converter"]') || document.querySelector('.converter');
-      const sZone = firstConverter?.dataset.sourceZone || "UTC";
-      const tZone = firstConverter?.dataset.targetZone || "America/New_York";
-      const sLabel = firstConverter?.dataset.sourceLabel || "GMT";
-      const tLabel = firstConverter?.dataset.targetLabel || "EST";
+      const use24 = els.formatToggle ? els.formatToggle.checked : true;
 
-      const formatToggle = document.querySelector('[data-role="formatToggle"]') || document.querySelector('#formatToggle');
-      const use24 = formatToggle ? formatToggle.checked : true;
-
-      if (gmtClock) gmtClock.textContent = compact(now, sZone, use24);
-      if (estClock) estClock.textContent = compact(now, tZone, use24);
-      if (estZone) estZone.textContent = zoneName(now, tZone, sLabel, tLabel, sZone, tZone);
+      if (els.gmtClock) els.gmtClock.textContent = compact(now, els.sZone, use24);
+      if (els.estClock) els.estClock.textContent = compact(now, els.tZone, use24);
+      if (els.estZone) els.estZone.textContent = zoneName(now, els.tZone, els.sLabel, els.tLabel, els.sZone, els.tZone);
     } catch (e) {
       console.error("Clock tick error:", e);
     }

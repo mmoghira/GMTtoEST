@@ -174,8 +174,8 @@ const articleImage = articleImageSource.startsWith("http") ? articleImageSource 
 const ogType = meta?.ogType || (slug.startsWith("blog/") ? "article" : "website");
 const showArticleMetaTags = ogType === "article" && !!articleDatePublished;
 const twitterCard = meta?.twitterCard || "summary_large_image";
-const preloadImage = meta?.preloadImage || "/assets/gmt-to-est-converter-featured-image-960.avif";
-const preloadImageSrcset = meta?.preloadImageSrcset || "/assets/gmt-to-est-converter-featured-image-480.avif 480w, /assets/gmt-to-est-converter-featured-image-960.avif 960w";
+const preloadImage = meta?.preloadImage;
+const preloadImageSrcset = meta?.preloadImageSrcset;
 const preloadImageSizes = meta?.preloadImageSizes || "(max-width: 720px) 92vw, 960px";
 const preloadImageType = meta?.preloadImageType || "image/avif";
 
@@ -996,6 +996,16 @@ const schema = {
       gtag('js', new Date());
       gtag('config', 'G-ZY6RBZFSY3');
     </script>
+    <script is:inline>
+      // Anti-CLS: Prevent AdSense dynamic anchor ad padding injection from shifting document flow
+      if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(function() {
+          if (document.body && document.body.style.paddingTop && document.body.style.paddingTop !== '0px') {
+            document.body.style.paddingTop = '0px';
+          }
+        }).observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['style'] });
+      }
+    </script>
     <meta name="google-adsense-account" content="ca-pub-3364858473460532" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1028,15 +1038,17 @@ const schema = {
     <meta name="yandex-verification" content="04e699461da51bbb" />
     <meta name="apple-domain-verification" content="g0KrOt0z2BSpOIO5" />
     <link rel="canonical" href={canonical} />
-    <link
-      rel="preload"
-      href={preloadImage}
-      imagesrcset={preloadImageSrcset}
-      imagesizes={preloadImageSizes}
-      as="image"
-      type={preloadImageType}
-      fetchpriority="high"
-    />
+    {preloadImage && (
+      <link
+        rel="preload"
+        href={preloadImage}
+        imagesrcset={preloadImageSrcset}
+        imagesizes={preloadImageSizes}
+        as="image"
+        type={preloadImageType}
+        fetchpriority="high"
+      />
+    )}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
