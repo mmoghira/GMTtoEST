@@ -123,9 +123,11 @@ const hreflangAlternates = isNoindexPage
     ];
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = (lang === "en" ? meta?.seoTitle : undefined) || title;
-const titleNeedsLongBrand = seoTitle.length < 30;
-const titleCanUseShortBrand = !["de", "es", "fr", "it", "pt", "pl", "nl"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
-const brandedTitle = isDe
+const titleNeedsLongBrand = !meta?.exactTitle && seoTitle.length < 30;
+const titleCanUseShortBrand = !meta?.exactTitle && !["de", "es", "fr", "it", "pt", "pl", "nl"].includes(lang) && !seoTitle.toLowerCase().includes("gmt to est") && seoTitle.length + 13 <= 60;
+const brandedTitle = meta?.exactTitle
+  ? seoTitle
+  : isDe
   ? (titleNeedsLongBrand && !seoTitle.includes("GMT zu EST") ? `${seoTitle} | GMT zu EST Umrechner` : seoTitle)
   : isEs
     ? (titleNeedsLongBrand && !seoTitle.includes("GMT a EST") ? `${seoTitle} | Convertidor GMT a EST` : seoTitle)
@@ -461,7 +463,7 @@ const currentConverterLinks = isTr ? [
 const generatedConverterLinks = isFr || isIt || isPt || isPl || isNl || isTr ? [] : pages
   .filter((page: any) => {
     if (!["converter", "reverse", "difference", "dynamic"].includes(page.kind)) return false;
-    return !page.slug || page.slug === "est-to-gmt" || page.slug === "gmt-vs-est" || page.slug.endsWith("-to-est") || page.slug.startsWith("gmt-to-");
+    return !page.slug || page.slug === "est-to-gmt" || page.slug === "gmt-vs-est" || page.slug.endsWith("-to-est") || page.slug.startsWith("gmt-to-") || page.slug === "eest-to-gmt" || page.slug === "eet-to-gmt";
   })
   .map((page: any) => ({
     href: pageUrl(lang, page.slug),
@@ -477,7 +479,8 @@ const isEnglishHome = lang === "en" && isHome;
 const isComparison = slug === "gmt-vs-est";
 const isReverse = slug === "est-to-gmt";
 const isGuide = slug === "time-zone-guide";
-const isDynamic = slug.endsWith("-to-est") || slug.startsWith("gmt-to-");
+const registeredPage = pages.find((p: any) => p.slug === slug);
+const isDynamic = registeredPage ? registeredPage.kind === "dynamic" : (slug.endsWith("-to-est") || slug.startsWith("gmt-to-"));
 const isConverterPage = isHome || isComparison || isReverse || isDynamic;
 const breadcrumbCurrentLabel = breadcrumbLabel || title;
 

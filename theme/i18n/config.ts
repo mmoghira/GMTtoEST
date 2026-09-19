@@ -162,6 +162,8 @@ export const pages: any[] = [
   { slug: "hkt-to-est", kind: "dynamic", labelKey: "hktToEst", context: { from: "HKT", to: "EST", fromZone: "Asia/Hong_Kong", toZone: "Etc/GMT+5" } },
   { slug: "ndt-to-est", kind: "dynamic", labelKey: "ndtToEst", context: { from: "NDT", to: "EST", fromZone: "America/St_Johns", toZone: "Etc/GMT+5" } },
   { slug: "gmt-to-cet", kind: "dynamic", labelKey: "gmtToCet", context: { from: "GMT", to: "CET", fromZone: "UTC", toZone: "Europe/Paris" } },
+  { slug: "eest-to-gmt", kind: "dynamic", labelKey: "dynamic", context: { from: "EEST", to: "GMT", fromZone: "Etc/GMT-3", toZone: "UTC" } },
+  { slug: "eet-to-gmt", kind: "dynamic", labelKey: "dynamic", context: { from: "EET", to: "GMT", fromZone: "Etc/GMT-2", toZone: "UTC" } },
   { slug: "est-to-gmt", kind: "reverse", labelKey: "estToGmt" },
   { slug: "gmt-vs-est", kind: "difference", labelKey: "gmtVsEst" },
   { slug: "time-zone-guide", kind: "guide", labelKey: "guide" },
@@ -396,6 +398,9 @@ export function getConverterDisplayName(page: any, lang = "en") {
 
   const toEstMatch = page.slug.match(/^([a-z0-9]+)-to-est$/i);
   if (toEstMatch) return isDe ? `${uppercaseZone(toEstMatch[1])} zu EST Umrechner` : isEs ? `Convertidor ${uppercaseZone(toEstMatch[1])} a EST` : isFr ? `Convertisseur ${uppercaseZone(toEstMatch[1])} vers EST` : isIt ? `Convertitore da ${uppercaseZone(toEstMatch[1])} a EST` : isPt ? `Conversor de ${uppercaseZone(toEstMatch[1])} para EST` : isPl ? `Konwerter ${uppercaseZone(toEstMatch[1])} na EST` : isNl ? `${uppercaseZone(toEstMatch[1])} naar EST Omrekenaar` : isTr ? `${uppercaseZone(toEstMatch[1])} - EST Dönüştürücü` : `${uppercaseZone(toEstMatch[1])} to EST Converter`;
+
+  const toGmtMatch = page.slug.match(/^([a-z0-9]+)-to-gmt$/i);
+  if (toGmtMatch) return isDe ? `${uppercaseZone(toGmtMatch[1])} in GMT umrechnen` : isEs ? `Convertidor ${uppercaseZone(toGmtMatch[1])} a GMT` : isFr ? `Convertisseur ${uppercaseZone(toGmtMatch[1])} vers GMT` : isIt ? `Convertitore da ${uppercaseZone(toGmtMatch[1])} a GMT` : isPt ? `Conversor de ${uppercaseZone(toGmtMatch[1])} para GMT` : isPl ? `Konwerter ${uppercaseZone(toGmtMatch[1])} na GMT` : isNl ? `${uppercaseZone(toGmtMatch[1])} naar GMT Omrekenaar` : isTr ? `${uppercaseZone(toGmtMatch[1])}'den GMT'ye Saat Çevirici` : `${uppercaseZone(toGmtMatch[1])} to GMT Converter`;
 
   const gmtToMatch = page.slug.match(/^gmt-to-([a-z0-9]+)$/i);
   if (gmtToMatch) return isDe ? `GMT zu ${uppercaseZone(gmtToMatch[1])} Umrechner` : isEs ? `Convertidor GMT a ${uppercaseZone(gmtToMatch[1])}` : isFr ? `Convertisseur GMT vers ${uppercaseZone(gmtToMatch[1])}` : isIt ? `Convertitore da GMT a ${uppercaseZone(gmtToMatch[1])}` : isPt ? `Conversor de GMT para ${uppercaseZone(gmtToMatch[1])}` : isPl ? `Konwerter GMT na ${uppercaseZone(gmtToMatch[1])}` : isNl ? `GMT naar ${uppercaseZone(gmtToMatch[1])} Omrekenaar` : isTr ? `GMT - ${uppercaseZone(gmtToMatch[1])} Dönüştürücü` : `GMT to ${uppercaseZone(gmtToMatch[1])} Converter`;

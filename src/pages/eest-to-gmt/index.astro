@@ -1,0 +1,453 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "eest-to-gmt";
+const t = getTranslation(lang);
+
+const pageTitle = "EEST to GMT Converter";
+const seoTitle = "EEST to GMT Converter – Eastern European Summer Time";
+const pageDescription = "Convert EEST to GMT with our live time converter. See the 3-hour time difference, conversion chart, examples, and daylight saving information.";
+
+const context = {
+  from: "EEST",
+  to: "GMT",
+  fromZone: "Etc/GMT-3",
+  toZone: "UTC"
+};
+
+const canonical = `${siteUrl}/eest-to-gmt/`;
+
+// 24-hour conversion table data (EEST -> GMT = EEST - 3)
+function formatHour12(hour: number) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:00 ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const gmtHour = hour - 3;
+  const gmtNormalized = ((gmtHour % 24) + 24) % 24;
+  const prevDay = gmtHour < 0;
+  const period = gmtNormalized < 12 ? "AM" : "PM";
+  const displayHour = gmtNormalized % 12 || 12;
+  return {
+    eest: formatHour12(hour),
+    gmt: `${displayHour}:00 ${period}${prevDay ? " (previous day)" : ""}`,
+    dayNote: prevDay ? "Previous day (-1 day)" : "Same calendar day"
+  };
+});
+
+// Key Conversion Milestones
+const keyMilestones = [
+  { eest: "12:00 AM (Midnight)", gmt: "9:00 PM (Previous Day)", note: "Early morning in EEST corresponds to late evening of the prior day in Greenwich." },
+  { eest: "3:00 AM EEST", gmt: "12:00 AM (Midnight) GMT", note: "Greenwich calendar day begins when EEST clocks read 3:00 AM." },
+  { eest: "6:00 AM EEST", gmt: "3:00 AM GMT", note: "Dawn hours across Eastern European regions while Greenwich is in deep night." },
+  { eest: "9:00 AM EEST", gmt: "6:00 AM GMT", note: "Standard commercial offices opening in EEST while London prepares to start." },
+  { eest: "12:00 PM (Noon) EEST", gmt: "9:00 AM GMT", note: "Midday in EEST aligns with the start of the core business day in Greenwich." },
+  { eest: "3:00 PM EEST", gmt: "12:00 PM (Noon) GMT", note: "Prime afternoon collaboration overlap window across European operations." },
+  { eest: "6:00 PM EEST", gmt: "3:00 PM GMT", note: "EEST standard workday concludes while Greenwich afternoon remains active." },
+  { eest: "9:00 PM EEST", gmt: "6:00 PM GMT", note: "Evening leisure in EEST aligns with post-work hours in GMT." }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is the difference between EEST and GMT?",
+    a: "EEST operates at UTC+3 while GMT operates at UTC+0, so GMT is 3 hours behind EEST when the EEST label applies."
+  },
+  {
+    q: "How do I convert EEST to GMT?",
+    a: "Subtract 3 hours from the EEST time. For example, 12:00 PM EEST minus 3 hours equals 9:00 AM GMT."
+  },
+  {
+    q: "What is 12 PM EEST in GMT?",
+    a: "12:00 PM (Noon) EEST is 9:00 AM GMT on the same calendar day."
+  },
+  {
+    q: "Is EEST the same as EET?",
+    a: "No. EEST is Eastern European Summer Time (UTC+3), whereas EET is Eastern European Time (UTC+2)."
+  },
+  {
+    q: "Does EEST observe daylight saving time?",
+    a: "EEST is itself the summer-time designation used by locations that alternate between EET and EEST."
+  },
+  {
+    q: "What happens when EEST times cross midnight into GMT?",
+    a: "Because GMT is 3 hours behind EEST, the early morning hours between 12:00 AM and 2:59 AM EEST fall into the late evening of the previous calendar day in GMT (9:00 PM to 11:59 PM)."
+  },
+  {
+    q: "What is the exact UTC offset for EEST?",
+    a: "EEST has a coordinated universal offset of UTC+3 (3 hours ahead of Coordinated Universal Time)."
+  }
+];
+
+const meta = {
+  exactTitle: true,
+  seoTitle,
+  description: pageDescription,
+  keywords: "EEST to GMT, EEST to GMT converter, Eastern European Summer Time to GMT, convert EEST to GMT, EEST time difference, EEST UTC offset",
+  image: "/assets/eest-to-gmt-og.svg",
+  imageAlt: "EEST to GMT Time Converter – Eastern European Summer Time to Greenwich Mean Time",
+  faqs,
+  appDescription: "Convert EEST to GMT instantly with our live time converter, 3-hour difference calculation, 24-hour conversion chart, and daylight saving guide.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert EEST to GMT",
+  howToDescription: "Step-by-step method to convert Eastern European Summer Time to Greenwich Mean Time.",
+  howToSteps: [
+    { name: "Input EEST Time", text: "Select your starting EEST date and time using our interactive converter." },
+    { name: "Apply the 3-Hour Subtraction", text: "Subtract exactly 3 hours from the EEST value to obtain the GMT timestamp." },
+    { name: "Verify Date Boundary", text: "If the EEST time is between 12:00 AM and 2:59 AM, roll back the calendar date to the previous day." },
+    { name: "Copy or Share Result", text: "Use the copy button to save the converted GMT time for your calendar or meeting invite." }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="EEST to GMT"
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    EEST to GMT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
+<div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+  <Converter intent="dynamic" t={t} context={context} />
+  
+  <!-- LIVE CLOCKS -->
+  <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+    <h2>Live Clocks</h2>
+    <div class="clock-card">
+      <span class="eyebrow">Source Time Zone</span>
+      <strong id="gmtClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Eastern European Summer Time (EEST, UTC+3)</p>
+    </div>
+    <div class="clock-card">
+      <span class="eyebrow">Target Time Zone</span>
+      <strong id="estClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Greenwich Mean Time (GMT, UTC+0)</p>
+    </div>
+  </section>
+
+  <!-- DIRECT ANSWER BLOCK -->
+  <div class="info-callout" style="margin-top: 24px;">
+    <h2 style="margin: 0 0 10px; font-size: 1.35rem; font-family: 'Space Grotesk', sans-serif; color: var(--text);">
+      Quick Answer: EEST to GMT Time Difference
+    </h2>
+    <p style="font-size: 1.35rem; font-weight: 800; color: var(--accent); margin: 0 0 10px;">
+      GMT is 3 hours behind EEST (GMT = EEST − 3 hours)
+    </p>
+    <p style="margin: 0 0 8px; font-size: 1.1rem; line-height: 1.6;">
+      <strong>EEST is 3 hours ahead of GMT. To convert EEST to GMT, subtract 3 hours.</strong>
+    </p>
+    <p style="margin: 0 0 12px; color: var(--muted); font-size: 1rem; line-height: 1.6;">
+      When a time is expressed as EEST (UTC+3), Greenwich Mean Time (UTC+0) is exactly three hours earlier. For times between 12:00 AM and 2:59 AM EEST, subtracting three hours crosses midnight into the previous calendar day.
+    </p>
+    <ul style="margin: 8px 0 0 20px; padding: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.6;">
+      <li><strong>9:00 AM EEST</strong> = 6:00 AM GMT</li>
+      <li><strong>12:00 PM EEST (Noon)</strong> = 9:00 AM GMT</li>
+      <li><strong>3:00 PM EEST</strong> = 12:00 PM (Noon) GMT</li>
+      <li><strong>6:00 PM EEST</strong> = 3:00 PM GMT</li>
+      <li><strong>9:00 PM EEST</strong> = 6:00 PM GMT</li>
+      <li><strong>12:00 AM EEST (Midnight)</strong> = 9:00 PM GMT (previous day)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>3-Hour Difference</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
+    <span>UTC+3 → UTC+0</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>Summer-Time Offset</span>
+  </div>
+</section>
+
+<!-- INTRODUCTION -->
+<section class="acdt-intro content-section" aria-labelledby="intro-heading">
+  <h2 id="intro-heading">Understanding the EEST to GMT Time Conversion</h2>
+  <p>
+    Welcome to our dedicated <strong>EEST to GMT Converter</strong>. This utility calculates exact timestamps between Eastern European Summer Time (UTC+3) and Greenwich Mean Time (UTC+0). When a time is expressed as EEST, GMT is exactly three hours behind.
+  </p>
+  <p>
+    Greenwich Mean Time (GMT) operates without seasonal shifts at UTC+0 all year round, serving as the international astronomical baseline. Eastern European Summer Time (EEST) is a label representing UTC+3, three hours ahead of Coordinated Universal Time.
+  </p>
+  <p>
+    Because GMT is three hours behind EEST, scheduling meetings or coordinating international events requires noting both the clock offset and potential calendar day rollovers during early morning hours.
+  </p>
+</section>
+
+<!-- HOW TO CONVERT -->
+<section class="method-section content-section" id="how-to-convert" aria-labelledby="methods-heading">
+  <h2 id="methods-heading">How to Convert EEST to GMT</h2>
+  <p class="method-intro">
+    Converting any time from EEST to GMT involves subtracting 3 hours from the EEST timestamp:
+  </p>
+
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>1. The Subtraction Formula</h3>
+      <p>Subtract 3 hours from your source EEST time. For example, 14:00 EEST minus 3 hours gives 11:00 GMT.</p>
+    </article>
+    <article class="method-card">
+      <h3>2. Midnight Rollover Rule</h3>
+      <p>If the EEST time is between 12:00 AM and 2:59 AM, subtracting 3 hours yields a timestamp on the previous calendar day in GMT.</p>
+    </article>
+    <article class="method-card">
+      <h3>3. 12-Hour Notation Adjustments</h3>
+      <p>Pay close attention to AM and PM transitions: 12:00 PM (Noon) EEST converts to 9:00 AM GMT, while 12:00 AM (Midnight) EEST converts to 9:00 PM GMT on the previous day.</p>
+    </article>
+    <article class="method-card">
+      <h3>4. Fixed UTC Offset Baseline</h3>
+      <p>EEST represents UTC+3 and GMT represents UTC+0. Unlike variable local clocks, this mathematical relation between the two offset labels remains consistently 3 hours.</p>
+    </article>
+  </div>
+</section>
+
+<!-- 24-HOUR CONVERSION TABLE -->
+<section class="table-wrap content-section" id="conversion-table" aria-labelledby="table-heading">
+  <h2 id="table-heading">24-Hour EEST to GMT Conversion Table</h2>
+  <p>Comprehensive reference showing all 24 hours of Eastern European Summer Time mapped to the corresponding Greenwich Mean Time alongside calendar day status.</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>EEST Time (UTC+3)</th>
+        <th>GMT Time (UTC+0)</th>
+        <th>Calendar Day Relation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {conversionRows.map((row) => (
+        <tr>
+          <td><strong>{row.eest}</strong></td>
+          <td><span class="highlight">{row.gmt}</span></td>
+          <td>{row.dayNote}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<!-- POPULAR MILESTONES -->
+<section class="examples-section content-section" id="key-milestones" aria-labelledby="milestones-heading">
+  <h2 id="milestones-heading">Key EEST to GMT Time Milestones</h2>
+  <p class="method-intro">Reference points showing how common daily milestones align between EEST and GMT.</p>
+  <div class="method-grid">
+    {keyMilestones.map((item) => (
+      <article class="method-card">
+        <h3>{item.eest} = {item.gmt}</h3>
+        <p>{item.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- EEST vs EET DISTINCTION -->
+<section class="content-section" id="eest-vs-eet" aria-labelledby="distinction-heading">
+  <h2 id="distinction-heading">EEST vs EET: Critical Timezone Difference</h2>
+  <p>
+    It is essential not to confuse <strong>EEST</strong> with <strong>EET</strong>. They represent two distinct UTC offsets:
+  </p>
+  <ul style="margin: 1rem 0 1.5rem 1.5rem; line-height: 1.8; color: var(--text);">
+    <li><strong>EET (Eastern European Time)</strong> operates at <strong>UTC+2</strong>, which is 2 hours ahead of GMT.</li>
+    <li><strong>EEST (Eastern European Summer Time)</strong> operates at <strong>UTC+3</strong>, which is 3 hours ahead of GMT.</li>
+  </ul>
+  <p>
+    EEST is the summer-time designation used in locations that observe daylight saving time. When clocks return to standard time in autumn, local civil time shifts back from EEST (UTC+3) to EET (UTC+2).
+  </p>
+  <p>
+    If you need to calculate conversions for standard time, explore our dedicated <a href="/eet-to-gmt/">EET to GMT Converter</a>.
+  </p>
+</section>
+
+<!-- DAYLIGHT SAVING EXPLANATION -->
+<section class="content-section" id="dst-explanation" aria-labelledby="dst-heading">
+  <h2 id="dst-heading">Daylight Saving Time and the EEST Designation</h2>
+  <p>
+    EEST is the summer-time designation used by locations that observe a seasonal switch from EET (UTC+2) to EEST (UTC+3). The exact transition dates depend on the location's applicable rules and governance.
+  </p>
+  <p>
+    Greenwich Mean Time (GMT), by international standard definition, remains permanently fixed at UTC+0 and does not observe daylight saving shifts. While the United Kingdom switches locally to British Summer Time (BST, UTC+1) during the summer period, standard GMT remains UTC+0 throughout the entire year.
+  </p>
+</section>
+
+<!-- PRACTICAL USE CASES -->
+<section class="content-section" id="use-cases" aria-labelledby="usecases-heading">
+  <h2 id="usecases-heading">Common Practical Applications for EEST to GMT Conversion</h2>
+  <div class="method-grid">
+    <article class="method-card">
+      <h3>International Business Meetings</h3>
+      <p>Coordinating conference calls and sprint reviews between teams observing EEST and partners operating on GMT.</p>
+    </article>
+    <article class="method-card">
+      <h3>Remote Team Collaboration</h3>
+      <p>Synchronizing daily standups, code repository commits, and project handovers across the 3-hour time boundary.</p>
+    </article>
+    <article class="method-card">
+      <h3>Travel & Flight Schedules</h3>
+      <p>Verifying flight departure, arrival, and connection times that reference both UTC/GMT baseline logs and local EEST departure schedules.</p>
+    </article>
+    <article class="method-card">
+      <h3>Global Live Events & Broadcasts</h3>
+      <p>Ensuring accurate attendance times for webinars, esports tournaments, and financial market releases scheduled in GMT.</p>
+    </article>
+  </div>
+</section>
+
+<!-- RELATED CONVERTERS -->
+<section class="other-tools" id="related-converters" aria-labelledby="related-heading">
+  <h2 id="related-heading">Related Timezone Converters</h2>
+  <div class="related-grid">
+    <article class="related-card">
+      <div class="related-card-title"><a href="/eet-to-gmt/">EET to GMT Converter</a></div>
+      <div class="related-card-text">Convert Eastern European Time (UTC+2) to Greenwich Mean Time (UTC+0).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-eest/">GMT to EEST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time (UTC+0) to Eastern European Summer Time (UTC+3).</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-to-est/">GMT to EST Converter</a></div>
+      <div class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/est-to-gmt/">EST to GMT Converter</a></div>
+      <div class="related-card-text">Convert US Eastern Standard Time back to Greenwich Mean Time.</div>
+    </article>
+    <article class="related-card">
+      <div class="related-card-title"><a href="/gmt-vs-est/">GMT vs EST Difference</a></div>
+      <div class="related-card-text">Compare time differences and schedules between GMT and Eastern Time.</div>
+    </article>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently Asked Questions: EEST to GMT</h2>
+  {faqs.map((item) => (
+    <details>
+      <summary>{item.q}</summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</section>
+
+<!-- CONCLUSION -->
+<section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
+  <h2>Summary of EEST to GMT Conversion</h2>
+  <p>
+    Converting Eastern European Summer Time (EEST) to Greenwich Mean Time (GMT) requires subtracting 3 hours (GMT = EEST − 3 hours). EEST represents UTC+3, while GMT represents the universal zero-offset baseline UTC+0.
+  </p>
+  <p>
+    Use our interactive converter above or consult the 24-hour reference table to calculate accurate timestamps and avoid scheduling misunderstandings across international time zones.
+  </p>
+</section>
+
+</BaseLayout>
+
+<style>
+  .feature-strip {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .feature-icon {
+    color: var(--accent);
+  }
+  .acdt-intro {
+    max-width: 860px;
+    margin: 0 auto 2rem;
+    padding: 0 1.5rem;
+  }
+  .acdt-intro p {
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .acdt-intro p:first-of-type {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .table-wrap th, .table-wrap td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-wrap th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .info-callout {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .info-callout h2 {
+    color: var(--text);
+  }
+</style>
