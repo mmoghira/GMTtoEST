@@ -1,7 +1,7 @@
 const DEFAULT_KEYWORD = "GMT to EST";
 const DISPLAY_TITLE_OVERRIDES: Record<string, string> = {
   "2026-monaco-grand-prix-schedule-gmt-est-timezone": "2026 Monaco Grand Prix Schedule in GMT and EST",
-  "black-friday-cyber-monday-2026-times-gmt-est-timezone": "Black Friday and Cyber Monday 2026 Sale Times by Time Zone",
+  "black-friday-cyber-monday-2026-times-gmt-est-timezone": "Black Friday 2026: Date, Time & Worldwide Time Zone Guide",
   "clocks-change-2026-uk-us-daylight-saving-dates": "2026 UK and US Daylight Saving Clock Change Dates",
   "fifa-world-cup-2026-kickoff-times-gmt-est-timezone": "FIFA World Cup 2026 Kickoff Times in GMT and EST",
   "icc-womens-t20-world-cup-2026-schedule-gmt-est-bst-timezone": "Women's T20 World Cup 2026 Schedule in GMT and EST",
