@@ -659,11 +659,35 @@ const footerClose = isDe ? "Schließen: ESC" : isEs ? "Cerrar: ESC" : isFr ? "Fe
         }
       }
     });
+
+    openSearchModalFn = openSearch;
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSearchModal);
-  } else {
-    initSearchModal();
+  let searchInitialized = false;
+  let openSearchModalFn: ((trigger?: HTMLElement | null) => void) | null = null;
+
+  function ensureSearchModal(trigger?: HTMLElement | null) {
+    if (!searchInitialized) {
+      searchInitialized = true;
+      initSearchModal();
+    }
+    if (openSearchModalFn) {
+      openSearchModalFn(trigger);
+    }
   }
+
+  document.addEventListener('click', (e) => {
+    const trigger = (e.target as HTMLElement)?.closest('.trigger-global-search');
+    if (trigger) {
+      e.preventDefault();
+      ensureSearchModal(trigger as HTMLElement);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      ensureSearchModal();
+    }
+  });
 </script>

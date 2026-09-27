@@ -56,19 +56,13 @@ const cacheRoutes = [
 const routes = Array.isArray(config.routes) ? config.routes : [];
 const filteredRoutes = routes.filter((route) => !managedSources.has(route.src));
 const filesystemIndex = filteredRoutes.findIndex((route) => route.handle === "filesystem");
-const securityInsertIndex = filesystemIndex === -1 ? filteredRoutes.length : filesystemIndex;
-const withSecurityHeaders = [
-  ...filteredRoutes.slice(0, securityInsertIndex),
-  ...securityRoutes,
-  ...filteredRoutes.slice(securityInsertIndex),
-];
-const fallbackIndex = withSecurityHeaders.findIndex((route) => route.status === 404);
-const insertIndex = fallbackIndex === -1 ? withSecurityHeaders.length : fallbackIndex;
+const headerInsertIndex = filesystemIndex === -1 ? filteredRoutes.length : filesystemIndex;
 
 config.routes = [
-  ...withSecurityHeaders.slice(0, insertIndex),
+  ...filteredRoutes.slice(0, headerInsertIndex),
+  ...securityRoutes,
   ...cacheRoutes,
-  ...withSecurityHeaders.slice(insertIndex),
+  ...filteredRoutes.slice(headerInsertIndex),
 ];
 
 fs.writeFileSync(configPath, `${JSON.stringify(config, null, "\t")}\n`);

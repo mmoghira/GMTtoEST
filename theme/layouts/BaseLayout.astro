@@ -1000,14 +1000,86 @@ const schema = {
       gtag('config', 'G-ZY6RBZFSY3');
     </script>
     <script is:inline>
-      // Anti-CLS: Prevent AdSense dynamic anchor ad padding injection from shifting document flow
-      if (typeof MutationObserver !== 'undefined') {
-        new MutationObserver(function() {
-          if (document.body && document.body.style.paddingTop && document.body.style.paddingTop !== '0px') {
-            document.body.style.paddingTop = '0px';
+      // Anti-CLS Guardian: Prevent AdSense dynamic anchor ads, shopping annotations & late-injected DOM from shifting document flow
+      (function() {
+        if (typeof MutationObserver === 'undefined') return;
+
+        function guardLayoutStyles() {
+          if (document.body) {
+            if (document.body.style.paddingTop && document.body.style.paddingTop !== '0px') {
+              document.body.style.paddingTop = '0px';
+            }
+            if (document.body.style.paddingBottom && document.body.style.paddingBottom !== '0px') {
+              document.body.style.paddingBottom = '0px';
+            }
+            if (document.body.style.marginTop && document.body.style.marginTop !== '0px') {
+              document.body.style.marginTop = '0px';
+            }
           }
-        }).observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['style'] });
-      }
+          if (document.documentElement) {
+            if (document.documentElement.style.paddingTop && document.documentElement.style.paddingTop !== '0px') {
+              document.documentElement.style.paddingTop = '0px';
+            }
+            if (document.documentElement.style.paddingBottom && document.documentElement.style.paddingBottom !== '0px') {
+              document.documentElement.style.paddingBottom = '0px';
+            }
+          }
+        }
+
+        function guardInjectedNode(node) {
+          if (!node || node.nodeType !== 1) return;
+
+          // 1. Anchor ads (top or bottom banner)
+          var isAnchor = (node.hasAttribute && node.hasAttribute('data-anchor-status')) ||
+            (node.className && typeof node.className === 'string' && (node.className.indexOf('google-anno-container') !== -1 || node.className.indexOf('anchor') !== -1)) ||
+            (node.id && typeof node.id === 'string' && node.id.indexOf('anchor') !== -1);
+          if (isAnchor) {
+            node.style.setProperty('position', 'fixed', 'important');
+            guardLayoutStyles();
+          }
+
+          // 2. Shopping annotations & related topics mid-article
+          var text = (node.textContent || '').toLowerCase();
+          var isShoppingAnnotation = text.indexOf('topics related to the article') !== -1 ||
+            text.indexOf('might interest you') !== -1 ||
+            text.indexOf('related topics') !== -1 ||
+            (node.className && typeof node.className === 'string' && (node.className.indexOf('google-anno') !== -1 || node.className.indexOf('autorelaxed') !== -1));
+
+          if (isShoppingAnnotation && !node.hasAttribute('data-cls-reserved')) {
+            node.setAttribute('data-cls-reserved', 'true');
+            node.style.setProperty('min-height', '120px');
+            node.style.setProperty('contain', 'layout');
+            node.style.setProperty('display', 'block');
+          }
+
+          if (node.children && node.children.length > 0) {
+            for (var i = 0; i < node.children.length; i++) {
+              guardInjectedNode(node.children[i]);
+            }
+          }
+        }
+
+        var observer = new MutationObserver(function(mutations) {
+          guardLayoutStyles();
+          for (var i = 0; i < mutations.length; i++) {
+            var m = mutations[i];
+            if (m.type === 'childList') {
+              for (var j = 0; j < m.addedNodes.length; j++) {
+                guardInjectedNode(m.addedNodes[j]);
+              }
+            }
+          }
+        });
+
+        if (document.documentElement) {
+          observer.observe(document.documentElement, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            attributeFilter: ['style', 'class']
+          });
+        }
+      })();
     </script>
     <meta name="google-adsense-account" content="ca-pub-3364858473460532" />
     <meta charset="utf-8" />
@@ -1068,7 +1140,6 @@ const schema = {
       if (savedTheme) document.documentElement.dataset.theme = savedTheme;
     </script>
     <slot name="head" />
-    <script is:inline async referrerpolicy="origin" src="https://seosignalx.com/api/patches?format=js&amp;deployment=6cbd9a003fdd6d96c6e469c57920fa2b&amp;key=ssxjs_c14e202a85fd94ee90c1679ebe22c8825d29c8a28c7d55e0"></script>
   </head>
   <body data-lang={lang} data-mode={mode}>
     <Header lang={lang} t={t} slug={slug} />
@@ -1097,7 +1168,7 @@ const schema = {
         <!-- Brand Section -->
         <div class="footer-section brand-section">
           <a href={homePathResolved} class="footer-logo">
-            <img src="/logo.svg" alt={isTr ? "GMT - EST Logosu" : isDe ? "GMT zu EST Logo" : isEs ? "Logo de Convertidor GMT a EST" : isFr ? "Logo Convertisseur GMT vers EST" : isIt ? "Logo Convertitore da GMT a EST" : isPt ? "Logotipo do Conversor de GMT para EST" : isPl ? "Logo Konwertera GMT na EST" : isNl ? "GMT naar EST logo" : "GMT to EST logo"} class="footer-logo-icon" width="56" height="56" loading="lazy" decoding="async" />
+            <img src="/assets/logo.webp" alt={isTr ? "GMT - EST Logosu" : isDe ? "GMT zu EST Logo" : isEs ? "Logo de Convertidor GMT a EST" : isFr ? "Logo Convertisseur GMT vers EST" : isIt ? "Logo Convertitore da GMT a EST" : isPt ? "Logotipo do Conversor de GMT para EST" : isPl ? "Logo Konwertera GMT na EST" : isNl ? "GMT naar EST logo" : "GMT to EST logo"} class="footer-logo-icon" width="56" height="56" loading="lazy" decoding="async" />
             <span class="site-name">{isTr ? "GMT - EST Dönüştürücü" : isDe ? "GMT zu EST Umrechner" : isEs ? "Convertidor GMT a EST" : isFr ? "Convertisseur GMT vers EST" : isIt ? "Convertitore da GMT a EST" : isPt ? "Conversor de GMT para EST" : isPl ? "Konwerter GMT na EST" : isNl ? "GMT naar EST Omrekenaar" : "GMT to EST Converter"}</span>
           </a>
           <p class="brand-desc">{t.brand} – {isTr ? "GMT ve Doğu Saati (EST/EDT) için ücretsiz saat dilimi dönüştürücüsü" : isDe ? "Kostenloser Zeitzonenumrechner für GMT und Eastern Time" : isEs ? "Convertidor de zonas horarias gratuito para GMT y hora del Este" : isFr ? "Convertisseur de fuseaux horaires gratuit pour GMT et l'heure de l'Est" : isIt ? "Convertitore gratuito per i fusi orari GMT ed EST" : isPt ? "Conversor gratuito de fusos horários para GMT e Horário do Leste (EST/EDT)" : isPl ? "Bezpłatny kalkulator stref czasowych dla GMT i czasu wschodniego (EST/EDT)" : isNl ? "Gratis tijdzone-omrekenaar voor GMT en Eastern Time" : "Free timezone converter for GMT and EST time zones"}</p>
@@ -1271,30 +1342,85 @@ const schema = {
 
     <script is:inline define:vars={{ shouldLoadAds }}>
       (function() {
-        function loadThirdParty() {
-          if (shouldLoadAds && !window.__adsLoaded) {
-            window.__adsLoaded = true;
-            var s = document.createElement('script');
-            s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532";
-            s.async = true;
-            s.crossOrigin = "anonymous";
-            document.head.appendChild(s);
-          }
-          if (!window.__gtagLoaded) {
-            window.__gtagLoaded = true;
-            var g = document.createElement('script');
-            g.src = "https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3";
-            g.async = true;
-            document.head.appendChild(g);
+        var adsLoaded = false;
+        var ssxLoaded = false;
+        var gtagLoaded = false;
+
+        function loadAdSense() {
+          if (!shouldLoadAds || adsLoaded) return;
+          adsLoaded = true;
+          window.__adsLoaded = true;
+          var s = document.createElement('script');
+          s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364858473460532";
+          s.async = true;
+          s.crossOrigin = "anonymous";
+          document.head.appendChild(s);
+        }
+
+        function loadSeoSignalX() {
+          if (ssxLoaded) return;
+          ssxLoaded = true;
+          window.__ssxLoaded = true;
+          var s = document.createElement('script');
+          s.src = "https://seosignalx.com/api/patches?format=js&deployment=6cbd9a003fdd6d96c6e469c57920fa2b&key=ssxjs_c14e202a85fd94ee90c1679ebe22c8825d29c8a28c7d55e0";
+          s.async = true;
+          s.referrerPolicy = "origin";
+          document.head.appendChild(s);
+        }
+
+        function loadGtag() {
+          if (gtagLoaded) return;
+          gtagLoaded = true;
+          window.__gtagLoaded = true;
+          var g = document.createElement('script');
+          g.src = "https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3";
+          g.async = true;
+          document.head.appendChild(g);
+        }
+
+        // Lazy-load AdSense when an ad slot is near the viewport
+        if (shouldLoadAds && 'IntersectionObserver' in window) {
+          var adSlots = document.querySelectorAll('.ad-slot-container, ins.adsbygoogle, .ad-annotation-reserve, [data-ad-slot], [data-ad-client]');
+          if (adSlots.length > 0) {
+            var adObserver = new IntersectionObserver(function(entries) {
+              for (var i = 0; i < entries.length; i++) {
+                if (entries[i].isIntersecting) {
+                  loadAdSense();
+                  adObserver.disconnect();
+                  break;
+                }
+              }
+            }, { rootMargin: '300px 0px' });
+            adSlots.forEach(function(slot) { adObserver.observe(slot); });
           }
         }
+
+        // Fast user-interaction trigger (scroll / touch)
+        var interactEvents = ['scroll', 'touchstart', 'pointerdown'];
+        function onInteract() {
+          interactEvents.forEach(function(evt) {
+            window.removeEventListener(evt, onInteract, { passive: true });
+          });
+          loadAdSense();
+        }
+        interactEvents.forEach(function(evt) {
+          window.addEventListener(evt, onInteract, { passive: true, once: true });
+        });
+
+        // Deferred third-party loaders after window 'load'
+        function scheduleDeferred() {
+          loadGtag();
+          loadAdSense();
+          loadSeoSignalX();
+        }
+
         if ('requestIdleCallback' in window) {
           window.addEventListener('load', function() {
-            requestIdleCallback(loadThirdParty, { timeout: 3500 });
+            requestIdleCallback(scheduleDeferred, { timeout: 3500 });
           });
         } else {
           window.addEventListener('load', function() {
-            setTimeout(loadThirdParty, 2500);
+            setTimeout(scheduleDeferred, 2500);
           });
         }
       })();

@@ -27,7 +27,7 @@ async function generateLogos() {
 
         // Generate logo.webp (512x512)
         const logoWebpBuffer = await sharp(svgBuffer)
-            .webp({ quality: 90 })
+            .webp({ quality: 85 })
             .resize(512, 512, {
                 fit: 'contain',
                 background: { r: 255, g: 255, b: 255, alpha: 0 }
@@ -38,6 +38,20 @@ async function generateLogos() {
         fs.writeFileSync(path.join(__dirname, '..', 'public', 'logo.webp'), logoWebpBuffer);
 
         console.log('Generated logo.webp (512x512)');
+
+        // Generate logo.avif (512x512)
+        const logoAvifBuffer = await sharp(svgBuffer)
+            .avif({ quality: 75 })
+            .resize(512, 512, {
+                fit: 'contain',
+                background: { r: 255, g: 255, b: 255, alpha: 0 }
+            })
+            .toBuffer();
+        fs.writeFileSync(path.join(assetsPath, 'logo.avif'), logoAvifBuffer);
+        fs.writeFileSync(path.join(publicAssetsPath, 'logo.avif'), logoAvifBuffer);
+        fs.writeFileSync(path.join(__dirname, '..', 'public', 'logo.avif'), logoAvifBuffer);
+
+        console.log('Generated logo.avif (512x512)');
 
         // Generate favicon for public folder (32x32)
         await sharp(svgBuffer)
