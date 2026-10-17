@@ -62,7 +62,7 @@ for (const filePath of allGermanHtmlFiles) {
   assert.strictEqual(h1Matches.length, 1, `Expected exactly 1 H1 on ${fullUrl}, found ${h1Matches.length}: ${h1Matches.join(", ")}`);
 
   // 4. Meta robots
-  const isBoilerplate = /de\/(about-us|author|contact-us|disclaimer|privacy-policy|terms-of-service|sitemap)\//.test(fullUrl);
+  const isBoilerplate = /de\/(about-us|author|contact-us|disclaimer|privacy-policy|terms-of-service|sitemap|tools|world-clock|meeting-planner|event-time-converter|time-difference-calculator|business-hours-overlap|holiday-calendar|travel-planner|developer-tools)\//.test(fullUrl);
   const robotsMatch = html.match(/<meta name="robots" content="([^"]*)"/i);
   assert(robotsMatch, `Missing robots meta tag on ${fullUrl}`);
   if (isBoilerplate) {

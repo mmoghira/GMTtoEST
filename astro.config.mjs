@@ -13,31 +13,15 @@ const sitemapExcludedPaths = new Set([
   "/gmt-to-mest/",
   "/mest-to-est/",
 ]);
-const sitemapLocales = enableMultilingualPages
-  ? {
-      en: "en",
-      es: "es",
-      zh: "zh",
-      hi: "hi",
-      ar: "ar",
-      pt: "pt",
-      ru: "ru",
-      ja: "ja",
-      de: "de",
-      fr: "fr",
-      ko: "ko",
-      it: "it",
-      tr: "tr",
-      ur: "ur",
-      bn: "bn",
-      vi: "vi",
-      th: "th",
-      id: "id",
-      fa: "fa",
-      pl: "pl",
-      nl: "nl",
-    }
-  : { en: "en" };
+const keptLanguages = new Set(["en", "es", "de", "fr", "pt", "it"]);
+const sitemapLocales = {
+  en: "en",
+  es: "es",
+  de: "de",
+  fr: "fr",
+  pt: "pt",
+  it: "it",
+};
 
 export default defineConfig({
   site: siteUrl,
@@ -67,12 +51,17 @@ export default defineConfig({
         const lang = langMatch ? langMatch[1] : "en";
         const cleanPath = pathname.replace(/^\/[a-z]{2}\//, "/");
         
+        // Exclude demoted languages entirely from sitemap
+        if (!keptLanguages.has(lang)) {
+          return false;
+        }
+
         // Exclude paths explicitly configured in exclusions list
         if (sitemapExcludedPaths.has(cleanPath)) {
           return false;
         }
 
-        // Exclude non-English boilerplate/author pages (marked noindex)
+        // Exclude non-English boilerplate/author/legal and utility pages (marked noindex)
         const nonEnglishExcludedPages = new Set([
           "/about-us/",
           "/author/",
@@ -82,6 +71,15 @@ export default defineConfig({
           "/privacy-policy/",
           "/terms-of-service/",
           "/sitemap/",
+          "/tools/",
+          "/world-clock/",
+          "/meeting-planner/",
+          "/event-time-converter/",
+          "/time-difference-calculator/",
+          "/business-hours-overlap/",
+          "/holiday-calendar/",
+          "/travel-planner/",
+          "/developer-tools/",
         ]);
         if (lang !== "en" && nonEnglishExcludedPages.has(cleanPath)) {
           return false;

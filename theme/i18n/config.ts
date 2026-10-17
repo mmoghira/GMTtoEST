@@ -35,6 +35,11 @@ export const allLanguages: Lang[] = [
 
 export const languages: Lang[] = multilingualPagesEnabled ? allLanguages : allLanguages.slice(0, 1);
 
+export const keptLanguageCodes = ["en", "es", "de", "fr", "pt", "it"] as const;
+export type KeptLanguageCode = typeof keptLanguageCodes[number];
+export const isKeptLanguage = (code: string): boolean => keptLanguageCodes.includes(code as any);
+export const keptLanguages: Lang[] = allLanguages.filter((l) => keptLanguageCodes.includes(l.code as any));
+
 export const tzMap: Record<string, string> = {
   PST: 'America/Los_Angeles', PDT: 'America/Los_Angeles',
   CST: 'America/Chicago', CDT: 'America/Chicago',

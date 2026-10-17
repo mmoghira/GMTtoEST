@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { getConverterDisplayName, getPageMeta, languages, pageUrl, pages } from "theme/i18n/config";
+import { getConverterDisplayName, getPageMeta, languages, keptLanguages, pageUrl, pages } from "theme/i18n/config";
 
 type SitemapItem = {
   slug: string;
@@ -311,10 +311,10 @@ const isAvailableForLanguage = (item: SitemapItem, languageCode: string) => {
 };
 
 const isTrLocale = lang === "tr";
-const displayedLanguages = isTrLocale ? languages.filter((l) => l.code === "tr") : languages;
+const displayedLanguages = isTrLocale ? languages.filter((l) => l.code === "tr") : keptLanguages;
 const turkishUrlCount = groups.reduce((sum, group) => sum + group.items.filter((item) => isAvailableForLanguage(item, "tr")).length, 0);
 
-const totalUrls = languages.reduce(
+const totalUrls = displayedLanguages.reduce(
   (total, language) =>
     total + groups.reduce(
       (sum, group) => sum + group.items.filter((item) => isAvailableForLanguage(item, language.code)).length,
@@ -343,7 +343,7 @@ const totalUrls = languages.reduce(
 
   {!isTrLocale && (
   <nav class="language-jump" aria-label="Sitemap language sections">
-    {languages.map((language) => (
+    {displayedLanguages.map((language) => (
       <a href={`#sitemap-${language.code}`} class={language.code === lang ? "active" : ""}>
         {language.code.toUpperCase()}
       </a>

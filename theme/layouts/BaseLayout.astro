@@ -3,7 +3,7 @@ import "src/styles/global.css";
 import Header from "theme/components/Header.astro";
 import NavigationSchema from "theme/components/NavigationSchema.astro";
 import GlobalSearchModal from "theme/components/GlobalSearchModal.astro";
-import { getConverterDisplayName, getTranslation, languages, pageUrl, pages, siteUrl } from "theme/i18n/config";
+import { getConverterDisplayName, getTranslation, languages, keptLanguageCodes, isKeptLanguage, keptLanguages, pageUrl, pages, siteUrl } from "theme/i18n/config";
 
 type Props = {
   lang: string;
@@ -63,8 +63,20 @@ const globalStaticSlugs = [
   "sitemap"
 ];
 
-const isNonEnglishBoilerplate = lang !== "en" && (globalStaticSlugs.includes(slug) || slug.startsWith("author"));
-const defaultRobots = isNonEnglishBoilerplate ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+const utilitySlugs = [
+  "tools",
+  "world-clock",
+  "meeting-planner",
+  "event-time-converter",
+  "time-difference-calculator",
+  "business-hours-overlap",
+  "holiday-calendar",
+  "travel-planner",
+  "developer-tools"
+];
+
+const isNonEnglishBoilerplateOrUtility = lang !== "en" && (globalStaticSlugs.includes(slug) || slug.startsWith("author") || utilitySlugs.includes(slug));
+const defaultRobots = isNonEnglishBoilerplateOrUtility ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 const robotsContent = robots || meta?.robots || defaultRobots;
 const isEs = lang === "es";
 const isDe = lang === "de";
@@ -93,36 +105,30 @@ const ogLocaleMap: Record<string, string> = {
 const ogLocale = ogLocaleMap[lang] || "en_US";
 const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startseite" : isFr ? "Accueil" : isIt ? "Home" : isPt ? "Início" : isPl ? "Strona główna" : isNl ? "Startpagina" : isTr ? "Ana Sayfa" : "Home");
 const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
+const isKept = isKeptLanguage(lang);
 const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
-let computedHreflangCodes = hreflangCodes;
 
-if (!hreflangCodes) {
-  if (mainTranslatedSlugs.includes(slug) || globalStaticSlugs.includes(slug)) {
-    computedHreflangCodes = languages.map((item) => item.code);
-  } else if (slug === "blog") {
-    computedHreflangCodes = ["en", "zh", "ar", "ko", "de", "it", "fa", "bn", "ru", "nl"];
-  } else if (pages.some((p: any) => p.slug === slug)) {
-    computedHreflangCodes = languages.map((item) => item.code);
-  } else {
-    computedHreflangCodes = ["en"];
-  }
+// Hreflang alternates: ONLY generated on indexable kept language pages, and ONLY among kept language versions
+let computedHreflangCodes: string[] = [];
+
+if (isNoindexPage || !isKept) {
+  // Suppress hreflang on noindexed pages and demoted languages to ensure 100% reciprocal hygiene
+  computedHreflangCodes = [];
+} else if (hreflangCodes) {
+  computedHreflangCodes = hreflangCodes.filter((code) => isKeptLanguage(code));
+} else if (mainTranslatedSlugs.includes(slug) || pages.some((p: any) => p.slug === slug)) {
+  computedHreflangCodes = [...keptLanguageCodes];
+} else {
+  // English-only pages (e.g. guides)
+  computedHreflangCodes = ["en"];
 }
 
-const availableHreflangCodes = computedHreflangCodes;
-const alternateLanguages = isNoindexPage
-  ? []
-  : languages.filter((item) => availableHreflangCodes.includes(item.code));
-const hreflangAlternates = isNoindexPage
-  ? []
-  : [
-      { code: lang, href: canonical },
-      ...alternateLanguages
-        .filter((item) => item.code !== lang)
-        .map((item) => ({
-          code: item.code,
-          href: toAbsoluteUrl(pageUrl(item.code, slug))
-        }))
-    ];
+const hreflangAlternates = computedHreflangCodes.map((code) => ({
+  code,
+  href: toAbsoluteUrl(pageUrl(code, slug))
+}));
+
+const showXDefault = !isNoindexPage && isKept && computedHreflangCodes.length > 0;
 const xDefaultHref = toAbsoluteUrl(pageUrl("en", slug));
 const seoTitle = (lang === "en" ? meta?.seoTitle : undefined) || title;
 const titleNeedsLongBrand = !meta?.exactTitle && seoTitle.length < 30;
@@ -1134,7 +1140,7 @@ const schema = {
     {hreflangAlternates.map((item) => (
       <link rel="alternate" hreflang={item.code} href={item.href} />
     ))}
-    {!isNoindexPage && <link rel="alternate" hreflang="x-default" href={xDefaultHref} />}
+    {showXDefault && <link rel="alternate" hreflang="x-default" href={xDefaultHref} />}
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     <NavigationSchema lang={lang} t={t} homePath={homePathResolved} />
     <script is:inline>
@@ -1268,7 +1274,7 @@ const schema = {
         <div class="footer-section language-section">
           <h3 class="footer-heading">{t.footer?.headings?.language || (isTr ? "DİL" : isDe ? "SPRACHE" : isEs ? "IDIOMA" : isFr ? "LANGUE" : isIt ? "LINGUA" : isPt ? "IDIOMA" : isPl ? "JĘZYK" : isNl ? "TAAL" : "LANGUAGE")}</h3>
           <div class="footer-lang-grid">
-            {alternateLanguages.map((item) => (
+            {keptLanguages.map((item) => (
               <a
                 href={pageUrl(item.code, slug)}
                 hreflang={item.code}
