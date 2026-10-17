@@ -10,6 +10,8 @@ const sitemapExcludedPaths = new Set([
   "/gmt-to-est-converter/",
   "/what-is-gmt/",
   "/what-is-est/",
+  "/gmt-to-mest/",
+  "/mest-to-est/",
 ]);
 const sitemapLocales = enableMultilingualPages
   ? {
@@ -69,6 +71,21 @@ export default defineConfig({
         if (sitemapExcludedPaths.has(cleanPath)) {
           return false;
         }
+
+        // Exclude non-English boilerplate/author pages (marked noindex)
+        const nonEnglishExcludedPages = new Set([
+          "/about-us/",
+          "/author/",
+          "/author/jackie-bruce/",
+          "/contact-us/",
+          "/disclaimer/",
+          "/privacy-policy/",
+          "/terms-of-service/",
+          "/sitemap/",
+        ]);
+        if (lang !== "en" && nonEnglishExcludedPages.has(cleanPath)) {
+          return false;
+        }
         
         const mainPaths = new Set(["/", "/gmt-to-est/", "/est-to-gmt/", "/gmt-vs-est/", "/time-zone-guide/"]);
         if (mainPaths.has(cleanPath)) {
@@ -81,10 +98,10 @@ export default defineConfig({
           "/adt-to-est/", "/ast-to-est/", "/cdt-to-est/", "/cst-to-est/", "/kst-to-est/", "/mst-to-est/", "/pdt-to-est/", "/pst-to-est/",
           "/gmt-to-acdt/", "/gmt-to-aedt/", "/gmt-to-bst/", "/gmt-to-aest/", "/gmt-to-idt/", "/eest-to-est/", "/gmt-to-nzst/",
           "/aest-to-est/", "/aedt-to-est/", "/gmt-to-eet/", "/edt-to-est/", "/gmt-to-cdt/", "/gmt-to-edt/", "/gmt-to-eat/", "/eat-to-est/", "/gmt-to-ist/",
-          "/gmt-to-akdt/", "/gmt-to-akst/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-mest/", "/gmt-to-pdt/", "/wita-to-est/", "/gmt-to-wita/",
+          "/gmt-to-akdt/", "/gmt-to-akst/", "/gmt-to-awst/", "/gmt-to-met/", "/gmt-to-pdt/", "/wita-to-est/", "/gmt-to-wita/",
           "/eet-to-est/", "/gmt-to-pst/", "/hst-to-est/", "/hdt-to-est/", "/idt-to-est/", "/pkt-to-est/", "/nst-to-est/", "/jst-to-est/",
           "/gmt-to-adt/", "/gmt-to-ast/", "/gmt-to-cat/", "/gmt-to-cst/", "/gmt-to-utc/", "/cat-to-est/", "/ist-to-est/",
-          "/mest-to-est/", "/gmt-to-sst/", "/acst-to-est/", "/gmt-to-acst/", "/west-to-est/",
+          "/gmt-to-sst/", "/acst-to-est/", "/gmt-to-acst/", "/west-to-est/",
           "/gmt-to-kst/", "/bst-to-est/", "/cet-to-est/", "/gmt-to-ndt/", "/awst-to-est/",
           "/wit-to-est/", "/gmt-to-sast/", "/gmt-to-mdt/", "/gmt-to-eest/", "/wet-to-est/",
           "/msk-to-est/", "/nzst-to-est/", "/nzdt-to-est/", "/akdt-to-est/", "/wat-to-est/", "/acdt-to-est/",

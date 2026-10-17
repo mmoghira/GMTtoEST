@@ -75,7 +75,7 @@ const distClientDir = path.join(process.cwd(), "dist", "client");
 [vercelStaticDir, distClientDir].forEach((dir) => {
   const indexXml = path.join(dir, "sitemap-index.xml");
   const sitemapXml = path.join(dir, "sitemap.xml");
-  if (fs.existsSync(indexXml) && !fs.existsSync(sitemapXml)) {
+  if (fs.existsSync(indexXml)) {
     fs.copyFileSync(indexXml, sitemapXml);
     console.log(`Copied sitemap-index.xml to sitemap.xml in ${dir}`);
   }
