@@ -4,7 +4,9 @@ import path from "node:path";
 import fs from "node:fs";
 
 const chromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const distDir = fs.existsSync(path.resolve("dist/client"))
+const distDir = fs.existsSync(path.resolve(".vercel/output/static"))
+  ? path.resolve(".vercel/output/static")
+  : fs.existsSync(path.resolve("dist/client"))
   ? path.resolve("dist/client")
   : path.resolve("dist");
 const screenshotsDir = path.resolve("screenshots");

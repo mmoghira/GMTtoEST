@@ -52,7 +52,20 @@ const canonicalPathResolved = canonicalPath || pageUrl(lang, slug);
 const canonical = toAbsoluteUrl(canonicalPathResolved);
 const homePathResolved = homePath || pageUrl(lang, "");
 const homeUrl = toAbsoluteUrl(homePathResolved);
-const robotsContent = robots || meta?.robots || "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+const globalStaticSlugs = [
+  "terms-of-service",
+  "contact-us",
+  "about-us",
+  "author",
+  "author/jackie-bruce",
+  "privacy-policy",
+  "disclaimer",
+  "sitemap"
+];
+
+const isNonEnglishBoilerplate = lang !== "en" && (globalStaticSlugs.includes(slug) || slug.startsWith("author"));
+const defaultRobots = isNonEnglishBoilerplate ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+const robotsContent = robots || meta?.robots || defaultRobots;
 const isEs = lang === "es";
 const isDe = lang === "de";
 const isFr = lang === "fr";
@@ -82,17 +95,6 @@ const breadcrumbHome = breadcrumbHomeLabel || (isEs ? "Inicio" : isDe ? "Startse
 const isNoindexPage = robotsContent.toLowerCase().includes("noindex");
 const mainTranslatedSlugs = ["", "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide"];
 let computedHreflangCodes = hreflangCodes;
-
-const globalStaticSlugs = [
-  "terms-of-service",
-  "contact-us",
-  "about-us",
-  "author",
-  "author/jackie-bruce",
-  "privacy-policy",
-  "disclaimer",
-  "sitemap"
-];
 
 if (!hreflangCodes) {
   if (mainTranslatedSlugs.includes(slug) || globalStaticSlugs.includes(slug)) {

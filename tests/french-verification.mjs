@@ -4,7 +4,9 @@ import assert from 'node:assert';
 
 console.log('=== RUNNING FRENCH HOMEPAGE LOCALIZATION & SEO VERIFICATION ===');
 
-const frHtmlPath = fs.existsSync(path.resolve('dist/client/fr/index.html'))
+const frHtmlPath = fs.existsSync(path.resolve('.vercel/output/static/fr/index.html'))
+  ? path.resolve('.vercel/output/static/fr/index.html')
+  : fs.existsSync(path.resolve('dist/client/fr/index.html'))
   ? path.resolve('dist/client/fr/index.html')
   : path.resolve('dist/fr/index.html');
 assert(fs.existsSync(frHtmlPath), `${frHtmlPath} does not exist!`);

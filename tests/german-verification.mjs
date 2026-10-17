@@ -2,7 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert";
 
-const deRoot = fs.existsSync(path.resolve("dist/client/de"))
+const deRoot = fs.existsSync(path.resolve(".vercel/output/static/de"))
+  ? path.resolve(".vercel/output/static/de")
+  : fs.existsSync(path.resolve("dist/client/de"))
   ? path.resolve("dist/client/de")
   : path.resolve("dist/de");
 
@@ -43,6 +45,9 @@ for (const filePath of allGermanHtmlFiles) {
   const fullUrl = `https://gmttoestconverter.com${expectedRoute}`;
 
   const html = fs.readFileSync(filePath, "utf8");
+  if (html.includes('http-equiv="refresh"')) {
+    continue;
+  }
 
   // 1. Language attribute
   assert(html.includes('lang="de"'), `HTML lang attribute is not "de" on ${fullUrl}`);
@@ -56,16 +61,23 @@ for (const filePath of allGermanHtmlFiles) {
   const h1Matches = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map(m => text(m[1]));
   assert.strictEqual(h1Matches.length, 1, `Expected exactly 1 H1 on ${fullUrl}, found ${h1Matches.length}: ${h1Matches.join(", ")}`);
 
-  // 4. Meta robots index,follow
+  // 4. Meta robots
+  const isBoilerplate = /de\/(about-us|author|contact-us|disclaimer|privacy-policy|terms-of-service|sitemap)\//.test(fullUrl);
   const robotsMatch = html.match(/<meta name="robots" content="([^"]*)"/i);
   assert(robotsMatch, `Missing robots meta tag on ${fullUrl}`);
-  assert(robotsMatch[1].includes("index"), `Robots meta tag does not allow indexing on ${fullUrl}`);
-  assert(!robotsMatch[1].includes("noindex"), `Robots meta tag specifies noindex on ${fullUrl}`);
+  if (isBoilerplate) {
+    assert(robotsMatch[1].includes("noindex"), `Robots meta tag should specify noindex on boilerplate page ${fullUrl}`);
+  } else {
+    assert(robotsMatch[1].includes("index"), `Robots meta tag does not allow indexing on ${fullUrl}`);
+    assert(!robotsMatch[1].includes("noindex"), `Robots meta tag specifies noindex on ${fullUrl}`);
+  }
 
-  // 5. Hreflang alternates (en, de, x-default)
-  assert(html.includes('hreflang="de"'), `Missing hreflang="de" on ${fullUrl}`);
-  assert(html.includes('hreflang="en"'), `Missing hreflang="en" on ${fullUrl}`);
-  assert(html.includes('hreflang="x-default"'), `Missing hreflang="x-default" on ${fullUrl}`);
+  // 5. Hreflang alternates (en, de, x-default) on indexable pages
+  if (!isBoilerplate) {
+    assert(html.includes('hreflang="de"'), `Missing hreflang="de" on ${fullUrl}`);
+    assert(html.includes('hreflang="en"'), `Missing hreflang="en" on ${fullUrl}`);
+    assert(html.includes('hreflang="x-default"'), `Missing hreflang="x-default" on ${fullUrl}`);
+  }
 
   // 6. Title and description
   const titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
