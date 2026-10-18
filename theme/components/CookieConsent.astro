@@ -1,0 +1,329 @@
+---
+import { pageUrl } from "theme/i18n/config";
+
+interface Props {
+  lang?: string;
+}
+
+const { lang = "en" } = Astro.props;
+
+const translations: Record<string, { title: string; desc: string; accept: string; reject: string; privacy: string }> = {
+  en: {
+    title: "Cookie & Privacy Choices",
+    desc: "We use cookies to analyze site traffic, optimize converter performance, and personalize features with Google Consent Mode.",
+    accept: "Accept all",
+    reject: "Reject",
+    privacy: "Privacy Policy"
+  },
+  es: {
+    title: "Preferencias de cookies y privacidad",
+    desc: "Utilizamos cookies para analizar el tráfico del sitio y personalizar funciones con Google Consent Mode.",
+    accept: "Aceptar todo",
+    reject: "Rechazar",
+    privacy: "Política de privacidad"
+  },
+  de: {
+    title: "Cookie- und Datenschutzeinstellungen",
+    desc: "Wir verwenden Cookies zur Website-Analyse und Leistungsoptimierung mit dem Google Consent Mode.",
+    accept: "Alle akzeptieren",
+    reject: "Ablehnen",
+    privacy: "Datenschutzerklärung"
+  },
+  fr: {
+    title: "Préférences de cookies et confidentialité",
+    desc: "Nous utilisons des cookies pour analyser le trafic et optimiser les performances avec Google Consent Mode.",
+    accept: "Tout accepter",
+    reject: "Refuser",
+    privacy: "Politique de confidentialité"
+  },
+  pt: {
+    title: "Preferências de cookies e privacidade",
+    desc: "Utilizamos cookies para analisar o tráfego do site e personalizar recursos com o Google Consent Mode.",
+    accept: "Aceitar tudo",
+    reject: "Rejeitar",
+    privacy: "Política de privacidade"
+  },
+  it: {
+    title: "Preferenze sui cookie e privacy",
+    desc: "Utilizziamo i cookie per analizzare il traffico del sito e personalizzare le funzionalità con Google Consent Mode.",
+    accept: "Accetta tutti",
+    reject: "Rifiuta",
+    privacy: "Informativa sulla privacy"
+  }
+};
+
+const copy = translations[lang] || translations.en;
+const privacyHref = pageUrl(lang, "privacy-policy");
+---
+
+<div
+  id="gmt-cookie-banner"
+  class="gmt-cookie-banner"
+  role="dialog"
+  aria-live="polite"
+  aria-label={copy.title}
+  style="display: none;"
+>
+  <div class="gmt-cookie-container">
+    <div class="gmt-cookie-content">
+      <div class="gmt-cookie-icon" aria-hidden="true">🍪</div>
+      <div class="gmt-cookie-text">
+        <p class="gmt-cookie-title">{copy.title}</p>
+        <p class="gmt-cookie-desc">
+          {copy.desc}
+          <a href={privacyHref} class="gmt-cookie-link">{copy.privacy}</a>
+        </p>
+      </div>
+    </div>
+    <div class="gmt-cookie-actions">
+      <button
+        type="button"
+        id="gmt-cookie-reject"
+        class="gmt-cookie-btn gmt-cookie-btn-reject"
+        aria-label="Reject optional cookies"
+      >
+        {copy.reject}
+      </button>
+      <button
+        type="button"
+        id="gmt-cookie-accept"
+        class="gmt-cookie-btn gmt-cookie-btn-accept"
+        aria-label="Accept all cookies and analytics"
+      >
+        {copy.accept}
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gmt-cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: rgba(12, 34, 51, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(54, 199, 181, 0.4);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    padding: 1rem 1.5rem;
+    font-family: inherit;
+    color: #f4fbff;
+    box-sizing: border-box;
+    animation: gmtSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes gmtSlideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .gmt-cookie-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .gmt-cookie-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 540px;
+  }
+
+  .gmt-cookie-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .gmt-cookie-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .gmt-cookie-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+
+  .gmt-cookie-desc {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #bdd2dc;
+    line-height: 1.45;
+  }
+
+  .gmt-cookie-link {
+    color: #8fd7ff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    margin-left: 0.35rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .gmt-cookie-link:hover {
+    color: #36c7b5;
+  }
+
+  .gmt-cookie-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .gmt-cookie-btn {
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+
+  .gmt-cookie-btn-reject {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #eff6ff;
+  }
+
+  .gmt-cookie-btn-reject:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+  }
+
+  .gmt-cookie-btn-accept {
+    background: #36c7b5;
+    border-color: #36c7b5;
+    color: #041018;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(54, 199, 181, 0.3);
+  }
+
+  .gmt-cookie-btn-accept:hover {
+    background: #2cb5a3;
+    border-color: #2cb5a3;
+    box-shadow: 0 4px 14px rgba(54, 199, 181, 0.45);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    .gmt-cookie-banner {
+      padding: 0.85rem 1rem;
+    }
+    .gmt-cookie-container {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.85rem;
+    }
+    .gmt-cookie-content {
+      flex: 1 1 auto;
+      gap: 0.75rem;
+    }
+    .gmt-cookie-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+    .gmt-cookie-btn {
+      flex: 1;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function initGmtCookieBanner() {
+    var banner = document.getElementById("gmt-cookie-banner");
+    if (!banner) return;
+
+    var choice = null;
+    try {
+      choice = localStorage.getItem("gmt_consent");
+    } catch (e) {}
+
+    // Rule 4: If a choice exists, do NOT show the banner again
+    if (choice === "granted" || choice === "denied") {
+      banner.remove();
+      return;
+    }
+
+    // If no choice exists, show banner
+    banner.style.display = "block";
+
+    var acceptBtn = document.getElementById("gmt-cookie-accept");
+    var rejectBtn = document.getElementById("gmt-cookie-reject");
+
+    function dismissBanner() {
+      banner.style.display = "none";
+      banner.remove();
+    }
+
+    if (acceptBtn) {
+      acceptBtn.addEventListener("click", function() {
+        try {
+          localStorage.setItem("gmt_consent", "granted");
+        } catch (e) {}
+
+        if (typeof gtag === "function") {
+          gtag("consent", "update", {
+            ad_storage: "granted",
+            ad_user_data: "granted",
+            ad_personalization: "granted",
+            analytics_storage: "granted"
+          });
+        }
+
+        if (typeof window.loadGtag === "function") {
+          window.loadGtag();
+        }
+
+        dismissBanner();
+      });
+    }
+
+    if (rejectBtn) {
+      rejectBtn.addEventListener("click", function() {
+        try {
+          localStorage.setItem("gmt_consent", "denied");
+        } catch (e) {}
+
+        if (typeof gtag === "function") {
+          gtag("consent", "update", {
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied",
+            analytics_storage: "denied"
+          });
+        }
+
+        dismissBanner();
+      });
+    }
+  })();
+</script>

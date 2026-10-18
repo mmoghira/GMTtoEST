@@ -4,6 +4,7 @@ import Header from "theme/components/Header.astro";
 import NavigationSchema from "theme/components/NavigationSchema.astro";
 import GlobalSearchModal from "theme/components/GlobalSearchModal.astro";
 import Footer from "theme/components/Footer.astro";
+import CookieConsent from "theme/components/CookieConsent.astro";
 import { getConverterDisplayName, getTranslation, languages, keptLanguageCodes, isKeptLanguage, keptLanguages, pageUrl, pages, siteUrl } from "theme/i18n/config";
 
 type Props = {
@@ -720,8 +721,27 @@ const schema = {
         analytics_storage: 'denied',
         wait_for_update: 500
       });
+      try {
+        var gmtConsent = localStorage.getItem('gmt_consent');
+        if (gmtConsent === 'granted') {
+          gtag('consent', 'update', {
+            ad_storage: 'granted',
+            ad_user_data: 'granted',
+            ad_personalization: 'granted',
+            analytics_storage: 'granted'
+          });
+        } else if (gmtConsent === 'denied') {
+          gtag('consent', 'update', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+          });
+        }
+      } catch (e) {}
       gtag('js', new Date());
-      gtag('config', 'G-ZY6RBZFSY3');
+      var isGaDebug = /[\?&](debug|debug_mode|gtm_debug)=/.test(window.location.search) || (function(){ try { return localStorage.getItem('debug_ga') === 'true'; } catch(e){ return false; } })();
+      gtag('config', 'G-ZY6RBZFSY3', isGaDebug ? { debug_mode: true } : {});
     </script>
     <script is:inline>
       // Anti-CLS Guardian: Prevent AdSense dynamic anchor ads, shopping annotations & late-injected DOM from shifting document flow
@@ -1071,6 +1091,13 @@ const schema = {
           g.async = true;
           document.head.appendChild(g);
         }
+        window.loadGtag = loadGtag;
+
+        try {
+          if (localStorage.getItem('gmt_consent') === 'granted') {
+            loadGtag();
+          }
+        } catch (e) {}
 
         // Lazy-load AdSense when an ad slot is near the viewport
         if (shouldLoadAds && 'IntersectionObserver' in window) {
@@ -1120,6 +1147,7 @@ const schema = {
       })();
     </script>
     <GlobalSearchModal lang={lang} t={t} />
+    <CookieConsent lang={lang} />
   </body>
 </html>
 
