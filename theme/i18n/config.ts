@@ -279,7 +279,7 @@ export function getPageMeta(code: string, labelKey = "home", pageContext?: any) 
       : (localizedPairMeta.title || baseMeta.title || "{from} to {to} Converter");
     const rawDescription = selectedSpecificMeta?.description
       ? selectedSpecificMeta.description
-      : (baseMeta.description || "Use this {from} to {to} converter for instant, date-aware conversions with daylight saving time handling, live clocks, and meeting planner.");
+      : (baseMeta.description || "Convert {from} to {to} instantly with live clocks, interactive meeting planner, and 24-hour table. Accurate daylight saving support, free with no signup needed.");
 
     const title = replaceTemplates(rawTitle, replacements);
     const description = replaceTemplates(rawDescription, replacements);
