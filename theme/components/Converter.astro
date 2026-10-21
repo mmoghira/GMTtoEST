@@ -10,12 +10,17 @@ const isTr = lang === "tr";
 const variant = t.converter?.variants?.[intent] || t.converter?.variants?.converter || {};
 
 import { replaceTemplates } from "theme/i18n/config";
+import QuickAnswer from "./QuickAnswer.astro";
 
 const from = context?.from || "GMT";
 const to = context?.to || "EST";
 const sourceZone = context ? context.fromZone : "UTC";
 const targetZone = context ? context.toZone : "America/New_York";
 const replacements = { from, to, fromZone: sourceZone, toZone: targetZone, source: from, target: to };
+
+const isEnglish = !lang || lang === "en";
+const isTargetEst = !context?.to || context.to === "EST";
+const showQuickAnswer = isEnglish && isTargetEst;
 
 const heading = replaceTemplates(variant.heading, replacements);
 const input = replaceTemplates(variant.input, replacements);
@@ -80,6 +85,10 @@ const copyAria = isDe ? "Ergebnis in die Zwischenablage kopieren" : isEs ? "Copi
 const copyTitle = isDe ? "In Zwischenablage kopieren" : isEs ? "Copiar al portapapeles" : isFr ? "Copier dans le presse-papiers" : isIt ? "Copia negli appunti" : isPt ? "Copiar para a área de transferência" : isNl ? "Kopiëren naar klembord" : isTr ? "Panoya kopyala" : "Copy to clipboard";
 const converterLabelsJson = replaceTemplates(JSON.stringify(t.converter), replacements);
 ---
+
+{showQuickAnswer && (
+  <QuickAnswer context={context} sourceZone={sourceLabel} />
+)}
 
 <form
   class="converter"

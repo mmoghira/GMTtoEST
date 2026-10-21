@@ -1,0 +1,183 @@
+---
+import { getQuickAnswerPayload } from "../utils/quickAnswerData";
+
+interface Props {
+  context?: {
+    from?: string;
+    to?: string;
+    fromZone?: string;
+    toZone?: string;
+  };
+  sourceZone?: string;
+}
+
+const { context, sourceZone } = Astro.props;
+const zoneCode = context?.from || sourceZone || "GMT";
+const payload = getQuickAnswerPayload(zoneCode);
+---
+
+<aside class="quick-answer-card" aria-label={`Quick Answer: ${payload.zoneA} to EST Conversion`}>
+  <div class="quick-answer-badge">
+    <span class="quick-answer-badge-icon" aria-hidden="true">⚡</span>
+    <span>Quick Answer</span>
+  </div>
+
+  <p class="quick-answer-definition">
+    {payload.definitionSentence}
+  </p>
+
+  <p class="quick-answer-live">
+    <span class="live-pulse" aria-hidden="true"></span>
+    <span>Right now it is <strong>{payload.sourceLiveTime} {payload.zoneA}</strong> = <strong>{payload.estLiveTime} EST</strong>.</span>
+  </p>
+
+  <div class="quick-answer-table-wrapper">
+    <table class="quick-answer-table">
+      <caption class="quick-answer-caption">
+        {payload.tableCaption}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">{payload.zoneA} Time</th>
+          <th scope="col">EST (Eastern Standard Time)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {payload.tableConversions.map((row) => (
+          <tr>
+            <td><strong>{row.sourceTime}</strong></td>
+            <td><strong>{row.estTime}</strong></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</aside>
+
+<style>
+  .quick-answer-card {
+    background: var(--panel, #0f172a);
+    border: 1px solid rgba(54, 199, 181, 0.3);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    color: var(--text, #f8fafc);
+  }
+
+  .quick-answer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    background: rgba(54, 199, 181, 0.15);
+    border: 1px solid var(--accent, #36c7b5);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent, #36c7b5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .quick-answer-badge-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .quick-answer-definition {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0 0 0.6rem;
+    color: var(--text, #f8fafc);
+  }
+
+  .quick-answer-live {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--muted, #94a3b8);
+    margin: 0 0 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  }
+
+  .quick-answer-live strong {
+    color: var(--accent-2, #5eead4);
+  }
+
+  .live-pulse {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    flex-shrink: 0;
+  }
+
+  .quick-answer-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quick-answer-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .quick-answer-table th {
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted, #94a3b8);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  }
+
+  .quick-answer-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text, #f8fafc);
+  }
+
+  .quick-answer-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .quick-answer-table tbody tr:hover td {
+    background: rgba(54, 199, 181, 0.05);
+  }
+
+  .quick-answer-caption {
+    caption-side: bottom;
+    padding-top: 0.65rem;
+    font-size: 0.8rem;
+    color: var(--muted, #94a3b8);
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  @media (max-width: 640px) {
+    .quick-answer-card {
+      padding: 1rem;
+    }
+
+    .quick-answer-definition {
+      font-size: 1rem;
+    }
+
+    .quick-answer-table th,
+    .quick-answer-table td {
+      padding: 0.45rem 0.5rem;
+      font-size: 0.85rem;
+    }
+  }
+</style>

@@ -6,6 +6,7 @@ import GlobalSearchModal from "theme/components/GlobalSearchModal.astro";
 import Footer from "theme/components/Footer.astro";
 import CookieConsent from "theme/components/CookieConsent.astro";
 import { getConverterDisplayName, getTranslation, languages, keptLanguageCodes, isKeptLanguage, keptLanguages, pageUrl, pages, siteUrl } from "theme/i18n/config";
+import { getQuickAnswerPayload } from "../utils/quickAnswerData";
 
 type Props = {
   lang: string;
@@ -208,6 +209,12 @@ const registeredPage = pages.find((p: any) => p.slug === slug);
 const isDynamic = registeredPage ? registeredPage.kind === "dynamic" : (slug.endsWith("-to-est") || slug.startsWith("gmt-to-"));
 const isConverterPage = isHome || isComparison || isReverse || isDynamic;
 const breadcrumbCurrentLabel = breadcrumbLabel || title;
+
+const isEnglish = !lang || lang === "en";
+const isEnglishConverterPage = isEnglish && (isHome || slug.endsWith("-to-est"));
+const quickAnswerSourceCode = isEnglishConverterPage ? (isHome ? "GMT" : slug.replace(/-to-est$/, "")).toUpperCase() : null;
+const quickAnswerPayload = isEnglishConverterPage && quickAnswerSourceCode ? getQuickAnswerPayload(quickAnswerSourceCode) : null;
+const quickAnswerFaqs = quickAnswerPayload ? quickAnswerPayload.faqs : [];
 
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
 // AdSense is now approved. Load Auto Ads site-wide on all pages.
@@ -602,6 +609,20 @@ const articleSchemas = enableArticleSchema && articleDatePublished ? [
   }
 ] : [];
 
+const existingFaqs = (meta?.faqs || t.faqs?.items || []);
+const combinedFaqs = isEnglishConverterPage
+  ? [
+      ...quickAnswerFaqs,
+      ...existingFaqs.filter(
+        (ef: any) => ef?.q && !quickAnswerFaqs.some(
+          (qf) => qf.q.trim().toLowerCase() === ef.q.trim().toLowerCase()
+        )
+      )
+    ]
+  : existingFaqs;
+
+const hasFaqSchema = isEnglishConverterPage ? combinedFaqs.length > 0 : (enableFaqSchema && existingFaqs.length > 0);
+
 const schema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -689,10 +710,10 @@ const schema = {
     ...articleSchemas,
 
     // ── 5. FAQPage (pages with a visible FAQ section) ─────────────────────────
-    ...(enableFaqSchema && (meta?.faqs?.length || t.faqs?.items?.length) ? [{
+    ...(hasFaqSchema ? [{
       "@type": "FAQPage",
       "@id": `${canonical}#faq`,
-      mainEntity: (meta?.faqs || t.faqs?.items || []).map((item: any) => ({
+      mainEntity: combinedFaqs.map((item: any) => ({
         "@type": "Question",
         name: item.q,
         acceptedAnswer: { "@type": "Answer", text: item.a }
@@ -904,6 +925,20 @@ const schema = {
             <strong>{title}</strong> gives instant, date-aware GMT to EST conversion with live clocks, DST handling, meeting presets, and a 24-hour chart.
           </p>
         </div>
+      )}
+
+      {isEnglishConverterPage && quickAnswerPayload && (
+        <section class="quick-faq-section" id="quick-faq-section" aria-labelledby="quick-faq-heading" style="margin: 3.5rem auto 1.5rem; max-width: min(900px, calc(100% - 32px));">
+          <h2 id="quick-faq-heading" style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--text);">Frequently Asked Questions: {quickAnswerPayload.zoneA} to EST</h2>
+          <div class="faq">
+            {quickAnswerPayload.faqs.map((item) => (
+              <details>
+                <summary><strong>{item.q}</strong></summary>
+                <p style="margin-top: 0.75rem; color: var(--muted); line-height: 1.6;">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       )}
 
       <!-- Tasteful Physical Reference Placement (Max 1 tasteful placement per page) -->
