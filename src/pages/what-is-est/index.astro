@@ -1,0 +1,424 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import QuickAnswer from "theme/components/QuickAnswer.astro";
+import { getEntry, render } from "astro:content";
+import { siteUrl } from "theme/i18n/config";
+import { ensureKeywordInAlt, getConciseDisplayTitle, getPrimaryKeyword } from "theme/utils/seo";
+
+const post = await getEntry("blog", "en/what-is-est");
+if (!post) {
+  throw new Error("Post en/what-is-est not found");
+}
+
+const { Content } = await render(post);
+const displayTitle = getConciseDisplayTitle("what-is-est", post.data.title);
+const primaryKeyword = getPrimaryKeyword(post.data.keywords, post.data.title);
+const imageAlt = ensureKeywordInAlt(post.data.imageAlt, primaryKeyword, `${primaryKeyword} featured image`);
+const responsiveImageBase = post.data.image?.endsWith("-1200.webp") ? post.data.image.replace("-1200.webp", "") : "";
+const pageUrl = `${siteUrl}/what-is-est/`;
+
+const absoluteImage = post.data.image
+  ? post.data.image.startsWith("http")
+    ? post.data.image
+    : `${siteUrl}${post.data.image}`
+  : `${siteUrl}/favicon.png`;
+
+const meta = {
+  title: post.data.title,
+  description: post.data.description,
+  keywords: post.data.keywords,
+  image: post.data.image,
+  imageAlt,
+  ogType: "article",
+  twitterCard: "summary_large_image",
+  pubDate: post.data.pubDate.toISOString(),
+  updatedDate: (post.data.updatedDate || post.data.pubDate).toISOString(),
+  preloadImage: responsiveImageBase ? `${responsiveImageBase}-1200.avif` : undefined,
+  preloadImageSrcset: responsiveImageBase ? `${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w` : undefined,
+  preloadImageSizes: "(max-width: 760px) 100vw, 900px",
+  preloadImageType: responsiveImageBase ? "image/avif" : undefined,
+};
+const sources = post.data.sources || [];
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": `${pageUrl}#article`,
+  mainEntityOfPage: pageUrl,
+  headline: post.data.title,
+  description: post.data.description,
+  image: absoluteImage,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate || post.data.pubDate).toISOString(),
+  inLanguage: "en",
+  keywords: post.data.keywords,
+  author: {
+    "@type": "Person",
+    name: post.data.author || "Jackie Bruce",
+    url: `${siteUrl}/author/jackie-bruce/`
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "GMT to EST Converter",
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteUrl}/logo.svg`
+    }
+  },
+  citation: sources.map((source: any) => source.url)
+};
+---
+
+<BaseLayout lang="en" dir="ltr" title={meta.title} description={meta.description} slug="what-is-est" meta={meta}>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} slot="head" />
+  {post.data.faq && post.data.faq.length > 0 && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: post.data.faq.map((item: any) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a }
+      }))
+    })} slot="head" />
+  )}
+
+  <article class="content blog-post" aria-labelledby="post-title">
+    <header class="post-header">
+      <h1 id="post-title">{displayTitle}</h1>
+      <QuickAnswer sourceZone="WHAT-IS-EST" />
+      <div class="post-meta">
+        <time datetime={post.data.pubDate.toISOString()} itemprop="datePublished">
+          {post.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+        </time>
+        {post.data.updatedDate && (
+          <span>
+            &bull; Updated <time datetime={post.data.updatedDate.toISOString()} itemprop="dateModified">{post.data.updatedDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</time>
+          </span>
+        )}
+        {post.data.author && <span>&bull; By <a href="/author/jackie-bruce/" rel="author">{post.data.author}</a></span>}
+      </div>
+    </header>
+
+    {post.data.image && (
+      <figure class="post-hero">
+        <picture>
+          {responsiveImageBase && <source type="image/avif" srcset={`${responsiveImageBase}-600.avif 600w, ${responsiveImageBase}-1200.avif 1200w`} sizes="(max-width: 760px) 100vw, 900px" />}
+          {responsiveImageBase && <source type="image/webp" srcset={`${responsiveImageBase}-600.webp 600w, ${responsiveImageBase}-1200.webp 1200w`} sizes="(max-width: 760px) 100vw, 900px" />}
+          <img src={post.data.image} alt={imageAlt} width="1200" height="630" loading="eager" decoding="async" fetchpriority="high" />
+        </picture>
+      </figure>
+    )}
+    
+    <div class="prose">
+      <Content />
+    </div>
+
+    <div class="ad-annotation-reserve" aria-hidden="true"></div>
+
+    {post.data.faq && post.data.faq.length > 0 && (
+      <section class="faq" aria-labelledby="post-faq-title" style="margin: 2.5rem 0; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+        <h2 id="post-faq-title">Frequently Asked Questions (FAQ)</h2>
+        {post.data.faq.map((item: any) => (
+          <details style="margin-bottom: 1rem; padding: 0.75rem 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+            <summary style="font-weight: 600; cursor: pointer; color: var(--text);">{item.q}</summary>
+            <p style="margin-top: 0.5rem; margin-bottom: 0; color: var(--muted); line-height: 1.6;">{item.a}</p>
+          </details>
+        ))}
+      </section>
+    )}
+
+    {post.data.author && (
+      <section class="author-bio-card" aria-label="About the author">
+        <div class="author-avatar">
+          <span aria-hidden="true">{post.data.author.charAt(0)}</span>
+        </div>
+        <div class="author-info">
+          <h3>Written by <a href="/author/jackie-bruce/" rel="author">{post.data.author}</a></h3>
+          <p>Timezone Content Specialist covering GMT, EST, EDT, daylight saving time, and global scheduling.</p>
+        </div>
+      </section>
+    )}
+
+    {sources.length > 0 && (
+      <section class="article-sources" aria-label="Sources and References">
+        <h2 id="article-sources">Sources &amp; References</h2>
+        <ol>
+          {sources.map((source: any) => (
+            <li>
+              <a href={source.url} target="_blank" rel="noopener noreferrer nofollow">{source.title}</a>
+              {source.publisher && <span> — {source.publisher}</span>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+    
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+      <a href="/blog/">&larr; Back to Blog</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .content.blog-post {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    min-width: 0;
+  }
+
+  .post-header {
+    margin-bottom: 24px;
+  }
+
+  .post-header h1 {
+    max-width: 14ch;
+    margin: 0 0 14px;
+    font-size: clamp(2.1rem, 6vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .post-meta a {
+    color: var(--accent);
+    font-weight: 800;
+  }
+
+  .post-meta > * {
+    min-width: 0;
+  }
+
+  .post-hero,
+  .article-image {
+    margin: 28px 0;
+  }
+
+  .post-hero picture,
+  .article-image picture {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .post-hero img,
+  .article-image img {
+    width: 100%;
+    height: auto;
+  }
+
+  .post-hero figcaption,
+  .article-image figcaption {
+    margin-top: 8px;
+  }
+
+  .blog-post .prose {
+    width: 100%;
+    max-width: 800px;
+    min-width: 0;
+    overflow-x: visible;
+  }
+
+  .blog-post .prose p,
+  .blog-post .prose li {
+    color: var(--text);
+  }
+
+  .blog-post .prose p,
+  .blog-post .prose ul,
+  .blog-post .prose ol {
+    font-size: 1.04rem;
+  }
+
+  .blog-post .prose h2,
+  .blog-post .prose h3 {
+    scroll-margin-top: 96px;
+  }
+
+  .blog-post .prose h2 {
+    margin-top: 40px;
+    font-size: clamp(1.55rem, 3vw, 2.25rem);
+  }
+
+  .blog-post .prose h3 {
+    margin-top: 28px;
+    font-size: clamp(1.2rem, 2vw, 1.45rem);
+  }
+
+  .blog-post .prose a {
+    color: var(--accent);
+    font-weight: 750;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .blog-post .prose table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .article-takeaway {
+    max-width: 100%;
+    margin: 0 0 28px;
+    padding: 18px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+    overflow-wrap: break-word;
+  }
+
+  .article-takeaway strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--accent);
+    font-size: .9rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .article-takeaway p {
+    margin: 0;
+  }
+
+  /* ── Author Bio Card (End of Article) ───────────────────────────────── */
+  .author-bio-card {
+    max-width: 800px;
+    margin-top: 3.5rem;
+    padding: 1.75rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .author-avatar {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .author-info h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+
+  .author-info h3 a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .author-info h3 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .author-info p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .author-bio-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      gap: 1rem;
+    }
+  }
+
+  /* ── Article Sources / References section ─────────────────────────────── */
+  .article-sources {
+    max-width: 800px;
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 4%, var(--panel));
+  }
+
+  .article-sources h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+
+  .article-sources h2::before {
+    content: "Ref";
+    font-weight: 800;
+    letter-spacing: .04em;
+    font-size: 1rem;
+  }
+
+  .article-sources ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .article-sources li {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .article-sources a {
+    color: var(--accent);
+    font-weight: 700;
+    text-underline-offset: 3px;
+    text-decoration: underline;
+  }
+
+  .article-sources a:hover {
+    color: var(--accent-2);
+  }
+
+  .article-sources span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* In-prose References heading (## References in markdown) */
+  .blog-post .prose h2#references,
+  .blog-post .prose h2:has(+ ol a[href^="http"]) {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    color: var(--accent);
+  }
+
+  .blog-post .prose h2#references + ol,
+  .blog-post .prose h2:has(+ ol a[href^="http"]) + ol {
+    padding-left: 1.5rem;
+    display: grid;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+</style>

@@ -21,36 +21,12 @@ sources:
     publisher: "U.S. Naval Observatory (USNO)"
     url: "https://www.usno.navy.mil/USNO/time"
 faq:
-  - q: "What does EST stand for?"
-    a: "EST stands for Eastern Standard Time. It is the standard winter time observed across eastern North America, operating at UTC-5."
-  - q: "What is the UTC offset of EST?"
-    a: "Eastern Standard Time is UTC-5 (Coordinated Universal Time minus 5 hours). It is 5 hours behind Greenwich Mean Time (GMT)."
+  - q: "What is EST time?"
+    a: "EST stands for Eastern Standard Time (UTC-5). It is the standard time zone for the eastern US and Canada, used from the first Sunday in November to the second Sunday in March."
   - q: "What is the difference between EST and EDT?"
-    a: "EST (Eastern Standard Time) is standard winter time at UTC-5. EDT (Eastern Daylight Time) is summer daylight saving time at UTC-4. Clocks advance 1 hour from EST to EDT in March and shift back in November."
-  - q: "Is Eastern Time (ET) the same as EST?"
-    a: "Not entirely. Eastern Time (ET) is the umbrella term for the regional time zone. It refers to EST (UTC-5) during winter and EDT (UTC-4) during summer daylight saving months."
-  - q: "Which major cities operate on Eastern Time?"
-    a: "Major metropolitan areas on Eastern Time include New York City, Washington D.C., Boston, Atlanta, Miami, Philadelphia, Toronto, Montreal, and Ottawa."
-  - q: "Is New York City always on EST?"
-    a: "No. New York City operates on Eastern Standard Time (EST, UTC-5) from early November to mid-March, and on Eastern Daylight Time (EDT, UTC-4) from mid-March to early November."
-  - q: "Does Jamaica observe EST year-round?"
-    a: "Yes. Jamaica is located in the Eastern Time coordinates and observes UTC-5 year-round without daylight saving clock shifts."
-  - q: "When was Eastern Standard Time established?"
-    a: "Standard time zones in North America were established on November 18, 1883, by major railroad companies to replace confusing local solar times."
-  - q: "What is the difference between EST and GMT?"
-    a: "GMT is Greenwich Mean Time (UTC+0). EST is UTC-5. EST is 5 hours behind GMT in winter."
-  - q: "How many U.S. states use Eastern Time?"
-    a: "23 U.S. states (17 fully and 6 partially) operate within the Eastern Time Zone."
-  - q: "Why do financial markets use Eastern Time?"
-    a: "The New York Stock Exchange (NYSE) and NASDAQ are located in New York City. Wall Street trading hours (9:30 AM to 4:00 PM ET) serve as the benchmark for global financial markets."
-  - q: "What is the difference between EST and UTC?"
-    a: "UTC is the scientific atomic reference baseline (UTC+0). EST is a regional civil time offset fixed at 5 hours behind UTC (UTC-5)."
-  - q: "How do I convert EST to London time?"
-    a: "In winter, London (GMT, UTC+0) is 5 hours ahead of EST (UTC-5). Add 5 hours to EST to get London GMT time."
-  - q: "Does Eastern Time change on the same date as European daylight saving time?"
-    a: "No. North America transitions to EDT on the second Sunday of March, whereas Europe transitions to Summer Time (BST/CEST) on the last Sunday of March. This creates a 2-week offset shift twice a year."
-  - q: "What timezone identifier should developers use for Eastern Time?"
-    a: "Developers should use location-based IANA keys like America/New_York or America/Toronto rather than static EST strings to automatically account for daylight saving changes."
+    a: "EST (UTC-5) is Eastern Standard Time, used in winter. EDT (UTC-4) is Eastern Daylight Time, used in summer when clocks spring forward one hour. The US switches back to EST on the first Sunday of November."
+  - q: "Is EST the same as GMT-5?"
+    a: "Yes. EST is exactly 5 hours behind GMT (UTC+0) all year. GMT never changes — when Eastern switches to EDT in summer, the gap to GMT becomes 4 hours instead of 5."
 ---
 
 Whether you are scheduling an international conference call, booking a flight to New York, streaming a live broadcast from Wall Street, or calculating match times for major sports leagues, you have almost certainly encountered the abbreviation **EST**. Standing for **Eastern Standard Time**, EST anchors the daily rhythm of over 150 million people in North America and serves as the temporal baseline for world stock exchanges, national broadcasting networks, and federal governments.
@@ -310,50 +286,14 @@ For automated, error-free conversions that account for daylight saving shifts, l
 
 ## Frequently Asked Questions
 
-### What does EST stand for?
-EST stands for Eastern Standard Time. It is the standard winter civil time zone observed across eastern North America, operating at UTC-5.
-
-### What is the UTC offset of EST?
-Eastern Standard Time operates at an offset of **UTC-05:00** (5 hours behind Coordinated Universal Time).
+### What is EST time?
+EST stands for Eastern Standard Time (UTC-5). It is the standard time zone for the eastern US and Canada, used from the first Sunday in November to the second Sunday in March.
 
 ### What is the difference between EST and EDT?
-EST (Eastern Standard Time) is winter standard time (UTC-5). EDT (Eastern Daylight Time) is summer daylight saving time (UTC-4). Clocks advance 1 hour from EST to EDT on the second Sunday of March and shift back on the first Sunday of November.
+EST (UTC-5) is Eastern Standard Time, used in winter. EDT (UTC-4) is Eastern Daylight Time, used in summer when clocks spring forward one hour. The US switches back to EST on the first Sunday of November.
 
-### Is Eastern Time (ET) the same as EST?
-Eastern Time (ET) is the generic regional umbrella term encompassing both EST (winter, UTC-5) and EDT (summer, UTC-4).
-
-### Which major cities operate on Eastern Time?
-Major cities include New York City, Washington D.C., Boston, Atlanta, Miami, Philadelphia, Pittsburgh, Toronto, Montreal, and Ottawa.
-
-### Is New York City always on EST?
-No. New York City operates on EST (UTC-5) from early November to mid-March, and on EDT (UTC-4) from mid-March to early November.
-
-### Does Jamaica observe EST year-round?
-Yes. Jamaica operates on UTC-5 year-round without daylight saving clock shifts, matching EST in winter.
-
-### When was Eastern Standard Time established?
-North American railroads established Eastern Standard Time on November 18, 1883, to standardize train schedules.
-
-### What is the difference between EST and GMT?
-GMT is Greenwich Mean Time (UTC+0). EST is UTC-5. EST is 5 hours behind GMT in winter.
-
-### How many U.S. states use Eastern Time?
-23 U.S. states (17 fully and 6 partially) operate within the Eastern Time Zone.
-
-### Why do financial markets use Eastern Time?
-The NYSE and NASDAQ are located in New York. Wall Street trading hours (9:30 AM to 4:00 PM ET) serve as the benchmark for world financial markets.
-
-### What is the difference between EST and UTC?
-UTC is the atomic reference baseline (UTC+0). EST is a regional civil offset fixed at 5 hours behind UTC (UTC-5).
-
-### How do I convert EST to London time?
-In winter, London (GMT, UTC+0) is 5 hours ahead of EST (UTC-5). Add 5 hours to EST to calculate London GMT.
-
-### Does Eastern Time change on the same date as European daylight saving time?
-No. North America shifts to EDT on the second Sunday of March, while Europe shifts to BST/CEST on the last Sunday of March. This creates a 2-week offset shift twice a year.
-
-### What timezone identifier should developers use for Eastern Time?
-Software developers should use location-based IANA keys like `America/New_York` or `America/Toronto` to handle daylight saving shifts automatically.
+### Is EST the same as GMT-5?
+Yes. EST is exactly 5 hours behind GMT (UTC+0) all year. GMT never changes — when Eastern switches to EDT in summer, the gap to GMT becomes 4 hours instead of 5.
 
 ---
 

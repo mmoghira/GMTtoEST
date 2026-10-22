@@ -115,6 +115,7 @@ export interface QuickAnswerPayload {
   estLiveTime: string;
   targetLiveTime: string;
   liveTimeSentence: string;
+  liveLineHtml?: string;
   tableConversions: Array<{ sourceTime: string; targetTime: string; estTime?: string }>;
   tableCaption: string;
   faqs: Array<{ q: string; a: string }>;
@@ -128,6 +129,71 @@ export function getQuickAnswerPayload(
   const targetCode = typeof targetCodeOrDate === "string" ? targetCodeOrDate.toUpperCase() : "EST";
   const now = targetCodeOrDate instanceof Date ? targetCodeOrDate : dateNow;
   const sourceCode = (zoneCode || "GMT").trim().toUpperCase();
+
+  if (sourceCode === "WHAT-IS-EST" || sourceCode === "WHAT_IS_EST" || sourceCode === "WHATISEST") {
+    let estLiveTime = "";
+    let gmtLiveTime = "";
+    try {
+      estLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "America/New_York"
+      }).format(now);
+    } catch (e) {
+      estLiveTime = "--:--";
+    }
+
+    try {
+      gmtLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC"
+      }).format(now);
+    } catch (e) {
+      gmtLiveTime = "--:--";
+    }
+
+    return {
+      zoneA: "GMT",
+      zoneB: "EST",
+      zoneAName: "Greenwich Mean Time",
+      zoneBName: "Eastern Standard Time",
+      zoneBHeader: "EST Time",
+      offsetA: 0,
+      offsetAFormatted: "UTC+0",
+      definitionSentence: "EST (Eastern Standard Time, UTC-5) is the time zone used across the eastern United States and Canada in winter, 5 hours behind GMT (UTC+0).",
+      sourceLiveTime: gmtLiveTime,
+      estLiveTime,
+      targetLiveTime: estLiveTime,
+      liveTimeSentence: `Right now it is ${estLiveTime} EST (${gmtLiveTime} GMT)`,
+      liveLineHtml: `Right now it is <strong>${estLiveTime} EST</strong> (<strong>${gmtLiveTime} GMT</strong>)`,
+      tableConversions: [
+        { sourceTime: "12 AM GMT", targetTime: "7 PM EST (previous day)", estTime: "7 PM EST (previous day)" },
+        { sourceTime: "6 AM GMT", targetTime: "1 AM EST", estTime: "1 AM EST" },
+        { sourceTime: "9 AM GMT", targetTime: "4 AM EST", estTime: "4 AM EST" },
+        { sourceTime: "12 PM GMT", targetTime: "7 AM EST", estTime: "7 AM EST" },
+        { sourceTime: "5 PM GMT", targetTime: "12 PM EST", estTime: "12 PM EST" },
+        { sourceTime: "9 PM GMT", targetTime: "4 PM EST", estTime: "4 PM EST" }
+      ],
+      tableCaption: "Eastern Time is EST (UTC-5) in winter and EDT (UTC-4) in summer, so the gap to GMT shifts between 5 and 4 hours.",
+      faqs: [
+        {
+          q: "What is EST time?",
+          a: "EST stands for Eastern Standard Time (UTC-5). It is the standard time zone for the eastern US and Canada, used from the first Sunday in November to the second Sunday in March."
+        },
+        {
+          q: "What is the difference between EST and EDT?",
+          a: "EST (UTC-5) is Eastern Standard Time, used in winter. EDT (UTC-4) is Eastern Daylight Time, used in summer when clocks spring forward one hour. The US switches back to EST on the first Sunday of November."
+        },
+        {
+          q: "Is EST the same as GMT-5?",
+          a: "Yes. EST is exactly 5 hours behind GMT (UTC+0) all year. GMT never changes — when Eastern switches to EDT in summer, the gap to GMT becomes 4 hours instead of 5."
+        }
+      ]
+    };
+  }
 
   if ((sourceCode === "GMT" || sourceCode === "UTC") && targetCode === "IST") {
     let sourceLiveTime = "";

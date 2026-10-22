@@ -97,7 +97,6 @@ function generatePreFilesystemRedirects() {
   routes.push({ src: "^/gmt-to-est-converter/?$", headers: { Location: "/" }, status: 301 });
   routes.push({ src: "^/index\\.php/?$", headers: { Location: "/" }, status: 301 });
   routes.push({ src: "^/contact/?$", headers: { Location: "/contact-us/" }, status: 301 });
-  routes.push({ src: "^/what-is-est/?$", headers: { Location: "/blog/what-is-est/" }, status: 301 });
   routes.push({ src: "^/what-is-gmt/?$", headers: { Location: "/blog/what-is-gmt/" }, status: 301 });
 
   // 2. MEST redirects
