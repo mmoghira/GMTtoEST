@@ -12,11 +12,12 @@ interface Props {
 }
 
 const { context, sourceZone } = Astro.props;
-const zoneCode = context?.from || sourceZone || "GMT";
-const payload = getQuickAnswerPayload(zoneCode);
+const source = context?.from || sourceZone || "GMT";
+const target = context?.to || "EST";
+const payload = getQuickAnswerPayload(source, target);
 ---
 
-<aside class="quick-answer-card" aria-label={`Quick Answer: ${payload.zoneA} to EST Conversion`}>
+<aside class="quick-answer-card" aria-label={`Quick Answer: ${payload.zoneA} to ${payload.zoneB} Conversion`}>
   <div class="quick-answer-badge">
     <span class="quick-answer-badge-icon" aria-hidden="true">⚡</span>
     <span>Quick Answer</span>
@@ -28,7 +29,7 @@ const payload = getQuickAnswerPayload(zoneCode);
 
   <p class="quick-answer-live">
     <span class="live-pulse" aria-hidden="true"></span>
-    <span>Right now it is <strong>{payload.sourceLiveTime} {payload.zoneA}</strong> = <strong>{payload.estLiveTime} EST</strong>.</span>
+    <span>Right now it is <strong>{payload.sourceLiveTime} {payload.zoneA}</strong> = <strong>{payload.targetLiveTime} {payload.zoneB}</strong>.</span>
   </p>
 
   <div class="quick-answer-table-wrapper">
@@ -39,14 +40,14 @@ const payload = getQuickAnswerPayload(zoneCode);
       <thead>
         <tr>
           <th scope="col">{payload.zoneA} Time</th>
-          <th scope="col">EST (Eastern Standard Time)</th>
+          <th scope="col">{payload.zoneBHeader}</th>
         </tr>
       </thead>
       <tbody>
         {payload.tableConversions.map((row) => (
           <tr>
             <td><strong>{row.sourceTime}</strong></td>
-            <td><strong>{row.estTime}</strong></td>
+            <td><strong>{row.targetTime || row.estTime}</strong></td>
           </tr>
         ))}
       </tbody>

@@ -211,9 +211,15 @@ const isConverterPage = isHome || isComparison || isReverse || isDynamic;
 const breadcrumbCurrentLabel = breadcrumbLabel || title;
 
 const isEnglish = !lang || lang === "en";
-const isEnglishConverterPage = isEnglish && (isHome || slug.endsWith("-to-est"));
-const quickAnswerSourceCode = isEnglishConverterPage ? (isHome ? "GMT" : slug.replace(/-to-est$/, "")).toUpperCase() : null;
-const quickAnswerPayload = isEnglishConverterPage && quickAnswerSourceCode ? getQuickAnswerPayload(quickAnswerSourceCode) : null;
+const isGmtToIst = slug === "gmt-to-ist";
+const isEnglishConverterPage = isEnglish && (isHome || slug.endsWith("-to-est") || isGmtToIst);
+const quickAnswerSourceCode = isEnglishConverterPage
+  ? (isGmtToIst ? "GMT" : (isHome ? "GMT" : slug.replace(/-to-est$/, "")).toUpperCase())
+  : null;
+const quickAnswerTargetCode = isGmtToIst ? "IST" : "EST";
+const quickAnswerPayload = isEnglishConverterPage && quickAnswerSourceCode
+  ? getQuickAnswerPayload(quickAnswerSourceCode, quickAnswerTargetCode)
+  : null;
 const quickAnswerFaqs = quickAnswerPayload ? quickAnswerPayload.faqs : [];
 
 const isUtilityPage = ["", "est-to-gmt", "gmt-vs-est", "time-zone-guide"].includes(slug);
@@ -929,7 +935,7 @@ const schema = {
 
       {isEnglishConverterPage && quickAnswerPayload && (
         <section class="quick-faq-section" id="quick-faq-section" aria-labelledby="quick-faq-heading" style="margin: 3.5rem auto 1.5rem; max-width: min(900px, calc(100% - 32px));">
-          <h2 id="quick-faq-heading" style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--text);">Frequently Asked Questions: {quickAnswerPayload.zoneA} to EST</h2>
+          <h2 id="quick-faq-heading" style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--text);">Frequently Asked Questions: {quickAnswerPayload.zoneA} to {quickAnswerPayload.zoneB}</h2>
           <div class="faq">
             {quickAnswerPayload.faqs.map((item) => (
               <details>

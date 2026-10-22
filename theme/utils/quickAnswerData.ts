@@ -104,20 +104,96 @@ export function getZoneMeta(zoneCode: string): ZoneMeta {
 
 export interface QuickAnswerPayload {
   zoneA: string;
+  zoneB: string;
   zoneAName: string;
+  zoneBName: string;
+  zoneBHeader: string;
   offsetA: number;
   offsetAFormatted: string;
   definitionSentence: string;
   sourceLiveTime: string;
   estLiveTime: string;
+  targetLiveTime: string;
   liveTimeSentence: string;
-  tableConversions: Array<{ sourceTime: string; estTime: string }>;
+  tableConversions: Array<{ sourceTime: string; targetTime: string; estTime?: string }>;
   tableCaption: string;
   faqs: Array<{ q: string; a: string }>;
 }
 
-export function getQuickAnswerPayload(zoneCode: string, now: Date = new Date()): QuickAnswerPayload {
-  const meta = getZoneMeta(zoneCode);
+export function getQuickAnswerPayload(
+  zoneCode: string,
+  targetCodeOrDate: string | Date = "EST",
+  dateNow: Date = new Date()
+): QuickAnswerPayload {
+  const targetCode = typeof targetCodeOrDate === "string" ? targetCodeOrDate.toUpperCase() : "EST";
+  const now = targetCodeOrDate instanceof Date ? targetCodeOrDate : dateNow;
+  const sourceCode = (zoneCode || "GMT").trim().toUpperCase();
+
+  if ((sourceCode === "GMT" || sourceCode === "UTC") && targetCode === "IST") {
+    let sourceLiveTime = "";
+    let targetLiveTime = "";
+    try {
+      sourceLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC"
+      }).format(now);
+    } catch (e) {
+      sourceLiveTime = "--:--";
+    }
+
+    try {
+      targetLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata"
+      }).format(now);
+    } catch (e) {
+      targetLiveTime = "--:--";
+    }
+
+    return {
+      zoneA: "GMT",
+      zoneB: "IST",
+      zoneAName: "Greenwich Mean Time",
+      zoneBName: "India Standard Time",
+      zoneBHeader: "IST (India Standard Time)",
+      offsetA: 0,
+      offsetAFormatted: "UTC+0",
+      definitionSentence: "IST (India Standard Time, UTC+5:30) is 5 hours 30 minutes ahead of GMT (UTC+0).",
+      sourceLiveTime,
+      estLiveTime: targetLiveTime,
+      targetLiveTime,
+      liveTimeSentence: `Right now it is ${sourceLiveTime} GMT = ${targetLiveTime} IST.`,
+      tableConversions: [
+        { sourceTime: "12 AM GMT", targetTime: "5:30 AM IST", estTime: "5:30 AM IST" },
+        { sourceTime: "6 AM GMT", targetTime: "11:30 AM IST", estTime: "11:30 AM IST" },
+        { sourceTime: "9 AM GMT", targetTime: "2:30 PM IST", estTime: "2:30 PM IST" },
+        { sourceTime: "12 PM GMT", targetTime: "5:30 PM IST", estTime: "5:30 PM IST" },
+        { sourceTime: "5 PM GMT", targetTime: "10:30 PM IST", estTime: "10:30 PM IST" },
+        { sourceTime: "9 PM GMT", targetTime: "2:30 AM IST (next day)", estTime: "2:30 AM IST (next day)" }
+      ],
+      tableCaption: "IST never observes daylight saving, so the 5 hour 30 minute gap stays the same all year.",
+      faqs: [
+        {
+          q: "What is the time difference between GMT and IST?",
+          a: "IST (India Standard Time) is 5 hours and 30 minutes ahead of GMT. The difference never changes, because India does not observe daylight saving time."
+        },
+        {
+          q: "What is 12 PM GMT in IST?",
+          a: "12 PM GMT is 5:30 PM IST on the same day."
+        },
+        {
+          q: "Does the GMT to IST time difference change in summer?",
+          a: "No. Neither GMT nor IST observes daylight saving, so the gap stays 5 hours 30 minutes all year — unlike GMT to EST, which changes between 5 and 4 hours."
+        }
+      ]
+    };
+  }
+
+  const meta = getZoneMeta(sourceCode);
   const estOffset = -5; // EST standard offset
   const delta = meta.offset - estOffset; // diff: zoneA - EST
   const diffFormatted = formatHoursDifference(delta);
@@ -189,7 +265,7 @@ export function getQuickAnswerPayload(zoneCode: string, now: Date = new Date()):
     const estDisplayMinutes = String(estM).padStart(2, "0");
     const estTime = `${estDisplayHour}:${estDisplayMinutes} ${estPeriod} EST${dayNote}`;
 
-    return { sourceTime, estTime };
+    return { sourceTime, targetTime: estTime, estTime };
   });
 
   const tableCaption = "Standard time conversions. Note: The difference changes by one hour during daylight saving.";
@@ -246,12 +322,16 @@ export function getQuickAnswerPayload(zoneCode: string, now: Date = new Date()):
 
   return {
     zoneA: meta.abbr,
+    zoneB: "EST",
     zoneAName: meta.name,
+    zoneBName: "Eastern Standard Time",
+    zoneBHeader: "EST (Eastern Standard Time)",
     offsetA: meta.offset,
     offsetAFormatted,
     definitionSentence,
     sourceLiveTime,
     estLiveTime,
+    targetLiveTime: estLiveTime,
     liveTimeSentence,
     tableConversions,
     tableCaption,
