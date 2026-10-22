@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const root = fs.existsSync(path.resolve("dist/client"))
+const root = fs.existsSync(path.resolve(".vercel/output/static"))
+  ? path.resolve(".vercel/output/static")
+  : fs.existsSync(path.resolve("dist/client"))
   ? path.resolve("dist/client")
   : path.resolve("dist");
 const htmlFiles = [];
