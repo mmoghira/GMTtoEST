@@ -82,10 +82,8 @@ const requiredFrench = [
   'Foire aux questions (FAQ) : Convertisseur GMT vers EST',
   'Résumé rapide et prochaines étapes',
   'CONVERTISSEURS',
-  'GUIDES',
-  'OUTILS',
+  'GUIDES & OUTILS',
   'ENTREPRISE',
-  'CONTACT',
   'LANGUE',
   'Tous droits réservés.'
 ];

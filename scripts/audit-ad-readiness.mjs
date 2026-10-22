@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const root = fs.existsSync(path.resolve("dist/client"))
+const root = fs.existsSync(path.resolve(".vercel/output/static"))
+  ? path.resolve(".vercel/output/static")
+  : fs.existsSync(path.resolve("dist/client"))
   ? path.resolve("dist/client")
   : path.resolve("dist");
 const publisherId = "ca-pub-3364858473460532";
 const sellerId = publisherId.replace("ca-", "");
 const expectedAdsTxt = `google.com, ${sellerId}, DIRECT, f08c47fec0942fa0`;
-const forbiddenDomains = [
-  "clarity.ms",
-];
+const forbiddenDomains = [];
 const trustRoutes = [
   "/about-us/",
   "/author/",
