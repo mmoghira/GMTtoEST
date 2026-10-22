@@ -47,7 +47,8 @@ const englishOnlyBlogPosts = [
 
 const englishOnlyConverters = [
   "akst-to-est", "sast-to-est", "gmt-to-hdt", "gmt-to-hkt", "gmt-to-hst",
-  "gmt-to-jst", "gmt-to-mst", "gmt-to-nst", "gmt-to-nzdt", "gmt-to-pkt", "gmt-to-wat"
+  "gmt-to-jst", "gmt-to-mst", "gmt-to-nst", "gmt-to-nzdt", "gmt-to-pkt", "gmt-to-wat",
+  "ist-to-gmt", "est-to-ist"
 ];
 
 const englishOnlyGuides = [

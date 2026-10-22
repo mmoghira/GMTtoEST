@@ -259,6 +259,136 @@ export function getQuickAnswerPayload(
     };
   }
 
+  if ((sourceCode === "IST" && targetCode === "GMT") || sourceCode === "IST-TO-GMT" || sourceCode === "IST_TO_GMT") {
+    let istLiveTime = "";
+    let gmtLiveTime = "";
+    try {
+      istLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata"
+      }).format(now);
+    } catch (e) {
+      istLiveTime = "--:--";
+    }
+
+    try {
+      gmtLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC"
+      }).format(now);
+    } catch (e) {
+      gmtLiveTime = "--:--";
+    }
+
+    return {
+      zoneA: "IST",
+      zoneB: "GMT",
+      zoneAName: "India Standard Time",
+      zoneBName: "Greenwich Mean Time",
+      zoneBHeader: "GMT Time",
+      offsetA: 5.5,
+      offsetAFormatted: "UTC+5:30",
+      definitionSentence: "IST (India Standard Time, UTC+5:30) is 5 hours 30 minutes ahead of GMT (UTC+0). Neither zone observes daylight saving, so this difference stays the same all year.",
+      sourceLiveTime: istLiveTime,
+      estLiveTime: gmtLiveTime,
+      targetLiveTime: gmtLiveTime,
+      liveTimeSentence: `Right now it is ${istLiveTime} IST (${gmtLiveTime} GMT)`,
+      liveLineHtml: `Right now it is <strong>${istLiveTime} IST</strong> (<strong>${gmtLiveTime} GMT</strong>)`,
+      tableConversions: [
+        { sourceTime: "12 AM IST", targetTime: "6:30 PM GMT (previous day)", estTime: "6:30 PM GMT (previous day)" },
+        { sourceTime: "6 AM IST", targetTime: "12:30 AM GMT", estTime: "12:30 AM GMT" },
+        { sourceTime: "9 AM IST", targetTime: "3:30 AM GMT", estTime: "3:30 AM GMT" },
+        { sourceTime: "12 PM IST", targetTime: "6:30 AM GMT", estTime: "6:30 AM GMT" },
+        { sourceTime: "5 PM IST", targetTime: "11:30 AM GMT", estTime: "11:30 AM GMT" },
+        { sourceTime: "9 PM IST", targetTime: "3:30 PM GMT", estTime: "3:30 PM GMT" }
+      ],
+      tableCaption: "IST is always UTC+5:30 and GMT is always UTC+0 — neither observes daylight saving, so the 5.5-hour gap stays the same all year.",
+      faqs: [
+        {
+          q: "What is the time difference between IST and GMT?",
+          a: "IST is 5 hours 30 minutes ahead of GMT. When it is 12:00 PM in India, it is 6:30 AM GMT. The difference never changes, because neither IST nor GMT observes daylight saving time."
+        },
+        {
+          q: "Is IST ahead of or behind GMT?",
+          a: "IST is ahead of GMT by 5 hours 30 minutes. To convert IST to GMT, subtract 5 hours 30 minutes — early-morning IST times fall on the previous day in GMT."
+        },
+        {
+          q: "Does India change its clocks for daylight saving?",
+          a: "No. India stays on IST (UTC+5:30) all year, and GMT never changes either, so IST to GMT conversions are identical in every season."
+        }
+      ]
+    };
+  }
+
+  if ((sourceCode === "EST" && targetCode === "IST") || sourceCode === "EST-TO-IST" || sourceCode === "EST_TO_IST") {
+    let estLiveTime = "";
+    let istLiveTime = "";
+    try {
+      estLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "America/New_York"
+      }).format(now);
+    } catch (e) {
+      estLiveTime = "--:--";
+    }
+
+    try {
+      istLiveTime = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata"
+      }).format(now);
+    } catch (e) {
+      istLiveTime = "--:--";
+    }
+
+    return {
+      zoneA: "EST",
+      zoneB: "IST",
+      zoneAName: "Eastern Standard Time",
+      zoneBName: "India Standard Time",
+      zoneBHeader: "IST Time",
+      offsetA: -5,
+      offsetAFormatted: "UTC-5",
+      definitionSentence: "IST (India Standard Time, UTC+5:30) is 10 hours 30 minutes ahead of EST (Eastern Standard Time, UTC-5), so evening times in Eastern Time land on the next day in India.",
+      sourceLiveTime: estLiveTime,
+      estLiveTime,
+      targetLiveTime: istLiveTime,
+      liveTimeSentence: `Right now it is ${estLiveTime} EST (${istLiveTime} IST)`,
+      liveLineHtml: `Right now it is <strong>${estLiveTime} EST</strong> (<strong>${istLiveTime} IST</strong>)`,
+      tableConversions: [
+        { sourceTime: "12 AM EST", targetTime: "10:30 AM IST", estTime: "10:30 AM IST" },
+        { sourceTime: "6 AM EST", targetTime: "4:30 PM IST", estTime: "4:30 PM IST" },
+        { sourceTime: "9 AM EST", targetTime: "7:30 PM IST", estTime: "7:30 PM IST" },
+        { sourceTime: "12 PM EST", targetTime: "10:30 PM IST", estTime: "10:30 PM IST" },
+        { sourceTime: "5 PM EST", targetTime: "3:30 AM IST (next day)", estTime: "3:30 AM IST (next day)" },
+        { sourceTime: "9 PM EST", targetTime: "7:30 AM IST (next day)", estTime: "7:30 AM IST (next day)" }
+      ],
+      tableCaption: "Eastern Time is EST (UTC-5) in winter and EDT (UTC-4) in summer, so the gap to IST shifts between 10.5 and 9.5 hours. IST never changes.",
+      faqs: [
+        {
+          q: "What is the time difference between EST and IST?",
+          a: "IST is 10 hours 30 minutes ahead of EST (UTC-5). When Eastern Time is on daylight saving (EDT, UTC-4), the difference is 9 hours 30 minutes instead."
+        },
+        {
+          q: "Is IST ahead of or behind EST?",
+          a: "IST is ahead of EST — by 10.5 hours in winter and 9.5 hours during EDT. Morning and afternoon EST times land on the same day in India; evening EST times land in the early hours of the next day."
+        },
+        {
+          q: "What is 9 AM EST in IST?",
+          a: "9 AM EST is 7:30 PM IST on the same day. During daylight saving time, 9 AM EDT is 6:30 PM IST."
+        }
+      ]
+    };
+  }
+
   const meta = getZoneMeta(sourceCode);
   const estOffset = -5; // EST standard offset
   const delta = meta.offset - estOffset; // diff: zoneA - EST

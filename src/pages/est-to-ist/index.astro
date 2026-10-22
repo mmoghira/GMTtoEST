@@ -1,0 +1,378 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "est-to-ist";
+const t = getTranslation(lang);
+
+const pageTitle = "EST to IST Converter";
+const seoTitle = "EST to IST Converter (Live) + Current Time & 24-Hour Chart";
+const pageDescription = "Convert EST to IST instantly with live clocks and a full 24-hour conversion chart. See the exact 10.5-hour time difference and current times. Free, no signup needed.";
+
+const context = {
+  from: "EST",
+  to: "IST",
+  fromZone: "America/New_York",
+  toZone: "Asia/Kolkata"
+};
+
+const canonical = `${siteUrl}/est-to-ist/`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 24-HOUR CONVERSION TABLE DATA (EST → IST: IST is 10h 30m ahead of EST)
+// ═══════════════════════════════════════════════════════════════════════════
+function formatHour12(hour: number, minutes: number = 0) {
+  const normalizedHour = ((hour % 24) + 24) % 24;
+  const period = normalizedHour < 12 ? "AM" : "PM";
+  const displayHour = normalizedHour % 12 || 12;
+  const displayMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  return `${displayHour}:${displayMinutes} ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const totalEstMins = hour * 60;
+  const totalIstMins = totalEstMins + 630; // Add 10 hours 30 minutes
+  const nextDay = totalIstMins >= 1440;
+  const normalizedMins = totalIstMins % 1440;
+  const istHour = Math.floor(normalizedMins / 60);
+  const istMins = normalizedMins % 60;
+
+  return {
+    est: formatHour12(hour, 0),
+    ist: `${formatHour12(istHour, istMins)}${nextDay ? " (+1 day)" : ""}`,
+    dayNote: nextDay ? "Next day in India" : "Same calendar day"
+  };
+});
+
+// Popular conversions (EST → IST)
+const popularConversions = [
+  { est: "12:00 AM (Midnight) EST", ist: "10:30 AM IST", note: "Mid-morning focus across Bengaluru and Mumbai while US East Coast is at midnight" },
+  { est: "6:00 AM EST", ist: "4:30 PM IST", note: "India late afternoon while US East Coast begins the morning" },
+  { est: "8:00 AM EST", ist: "6:30 PM IST", note: "Prime collaboration window: US morning start with India evening sync" },
+  { est: "9:00 AM EST", ist: "7:30 PM IST", note: "Peak daily handoff hour for global tech and engineering teams" },
+  { est: "10:30 AM EST", ist: "9:00 PM IST", note: "US mid-morning focus connecting with India late evening shift" },
+  { est: "12:00 PM (Noon) EST", ist: "10:30 PM IST", note: "US lunchtime / late evening winding down in India" },
+  { est: "1:00 PM EST", ist: "11:30 PM IST", note: "US afternoon operations while India prepares for midnight" },
+  { est: "3:30 PM EST", ist: "2:00 AM IST (+1 day)", note: "US afternoon shift while India is overnight" },
+  { est: "5:00 PM EST", ist: "3:30 AM IST (+1 day)", note: "End of US business day; early pre-dawn hours in India" },
+  { est: "7:30 PM EST", ist: "6:00 AM IST (+1 day)", note: "US evening prime time while India begins early morning" },
+  { est: "9:00 PM EST", ist: "7:30 AM IST (+1 day)", note: "Late evening in US; morning routines starting in Delhi" },
+  { est: "11:30 PM EST", ist: "10:00 AM IST (+1 day)", note: "Late night on US East Coast; India office opening hours" }
+];
+
+// FAQ data (exact 3 matching Quick Answer & FAQPage JSON-LD)
+const faqs = [
+  {
+    q: "What is the time difference between EST and IST?",
+    a: "IST is 10 hours 30 minutes ahead of EST (UTC-5). When Eastern Time is on daylight saving (EDT, UTC-4), the difference is 9 hours 30 minutes instead."
+  },
+  {
+    q: "Is IST ahead of or behind EST?",
+    a: "IST is ahead of EST — by 10.5 hours in winter and 9.5 hours during EDT. Morning and afternoon EST times land on the same day in India; evening EST times land in the early hours of the next day."
+  },
+  {
+    q: "What is 9 AM EST in IST?",
+    a: "9 AM EST is 7:30 PM IST on the same day. During daylight saving time, 9 AM EDT is 6:30 PM IST."
+  }
+];
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  exactDescription: true,
+  description: pageDescription,
+  keywords: "EST to IST, EST to IST Converter, Eastern Standard Time to India Standard Time, Convert EST to IST, New York to India time, EST to Delhi, EST to Mumbai, 10.5 hour timezone converter",
+  image: "/assets/ist-to-est-og.svg",
+  imageAlt: "EST to IST Converter – Convert Eastern Standard Time to India Standard Time",
+  faqs,
+  appDescription: "Free online EST to IST converter featuring live clocks, half-hour offset calculations, 24-hour schedules, and US-to-India meeting planners.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert EST to IST",
+  howToDescription: "Simple steps to convert US Eastern Standard Time to India Standard Time.",
+  howToSteps: [
+    { name: "Input EST Time", text: "Select your desired Eastern Standard Time in the converter tool." },
+    { name: "Add 10 Hours 30 Minutes", text: "The calculator automatically adds 10.5 hours to determine India Standard Time (IST)." },
+    { name: "Check Date Shift", text: "For EST evening times (after 1:30 PM), the calculated IST time falls on the next calendar day." },
+    { name: "Account for US Summer Time", text: "From March to November, when North America observes Eastern Daylight Time (EDT, UTC-4), the offset shrinks to 9 hours 30 minutes." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  hreflangCodes={["en"]}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="EST to IST"
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    EST to IST <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
+<div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+  <Converter intent="dynamic" t={t} context={context} />
+  
+  <!-- LIVE CLOCKS -->
+  <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+    <h2>Live Clocks</h2>
+    <div class="clock-card">
+      <span class="eyebrow">Source Time Zone (EST)</span>
+      <strong id="gmtClock">--:--:--</strong>
+    </div>
+    <div class="clock-card">
+      <span class="eyebrow">Target Time Zone (IST)</span>
+      <strong id="estClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Active Zone: <em id="estZone">IST</em></p>
+    </div>
+  </section>
+</div>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>10.5-Hour Offset Gap</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>30-Minute Fractional Math</span>
+  </div>
+  <div class="feature-item">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>US-to-India Tech Handoff</span>
+  </div>
+</section>
+
+<div class="acdt-intro">
+  <p>
+    Welcome to the <strong>EST to IST Converter</strong> resource. This guide is built to help professionals, engineering teams, and travelers seamlessly convert times between North American Eastern Standard Time (EST, UTC-5) and Indian Standard Time (IST, UTC+5:30).
+  </p>
+  <p>
+    IST is 10 hours and 30 minutes ahead of EST in winter (and 9 hours and 30 minutes ahead during Eastern Daylight Time in summer). Because IST runs ahead, afternoon and evening hours in Eastern Time land on the next calendar day in India.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS (INTERNAL ANCHORS)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="table-of-contents reveal" aria-label="Table of Contents">
+  <span class="toc-kicker">Quick Navigation</span>
+  <h2>Guide Contents</h2>
+  <ol>
+    <li><a href="#converter">1. Interactive EST to IST Converter</a></li>
+    <li><a href="#how-it-works">2. EST to IST Offset Mechanics</a></li>
+    <li><a href="#chart">3. 24-Hour Conversion Grid</a></li>
+    <li><a href="#conversion-examples">4. Popular Conversion Examples</a></li>
+    <li><a href="#topics">5. US-to-India Meeting Collaboration</a></li>
+    <li><a href="#other-tools">6. Related Converters &amp; Guides</a></li>
+    <li><a href="#quick-faq-section">7. Frequently Asked Questions (FAQ)</a></li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CONVERTER INTRO
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero reveal" id="converter">
+  <div class="hero-copy">
+    <div class="eyebrow">Realtime Tool</div>
+    <h2>Convert EST to IST Instantly</h2>
+    <p>
+      Use our interactive date and time picker above to convert times from Eastern Standard Time (EST) to Indian Standard Time (IST). The converter calculates the exact 10.5-hour difference (or 9.5-hour during daylight saving time).
+    </p>
+    <p>
+      Toggle between 12-hour and 24-hour formats, choose future dates, and copy results directly to your clipboard.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Offset Mechanics</div>
+    <h2>Understanding EST to IST Time Conversion</h2>
+    <p>
+      To convert Eastern Standard Time to Indian Standard Time, add 10 hours and 30 minutes to EST:
+    </p>
+    <p>
+      <code>IST = EST + 10 Hours 30 Minutes</code>
+    </p>
+    <p>
+      When Eastern Time observes daylight saving (EDT, UTC-4) between the second Sunday of March and the first Sunday of November, clocks spring forward by 1 hour, reducing the time difference to 9 hours 30 minutes:
+    </p>
+    <p>
+      <code>IST = EDT + 9 Hours 30 Minutes</code>
+    </p>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Eastern Standard Time (EST)</h3>
+      <code>UTC-5 Baseline</code>
+      <p>Standard time for the US East Coast (New York, Boston, Atlanta) used from November to March.</p>
+    </div>
+    <div class="method-card">
+      <h3>Indian Standard Time (IST)</h3>
+      <code>UTC+5:30 Baseline</code>
+      <p>Operates at UTC+5:30 across all of India throughout the entire year without seasonal shifts.</p>
+    </div>
+    <div class="method-card">
+      <h3>Daylight Saving Shift</h3>
+      <code>10.5h vs 9.5h</code>
+      <p>The gap is 10.5 hours during EST (winter) and shifts to 9.5 hours during EDT (summer).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="chart" class="reveal">
+  <h2>24-Hour EST to IST Conversion Table</h2>
+  <p class="chart-note">
+    The following table outlines all 24 hours of the day converted from Eastern Standard Time (EST) to Indian Standard Time (IST). IST is 10 hours and 30 minutes ahead of EST.
+  </p>
+  
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Eastern Standard Time (EST)</th>
+          <th>Indian Standard Time (IST)</th>
+          <th>Calendar Day Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.est}</strong></td>
+            <td><strong>{row.ist}</strong></td>
+            <td><span class="eyebrow">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="conversion-examples" class="examples-section reveal">
+  <h2>Popular EST to IST Conversion Examples</h2>
+  <p>
+    Review these quick reference examples to understand how specific hours translate from Eastern Standard Time to Indian Standard Time:
+  </p>
+  <div class="clock-grid">
+    {popularConversions.map((item) => (
+      <div class="related-card">
+        <strong class="related-card-title">{item.est}</strong>
+        <p class="related-card-text">Equal to <strong>{item.ist}</strong></p>
+        <small style="color: var(--accent); margin-top: 4px; display: block;">{item.note}</small>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDUCATIONAL SECTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="topics" class="reveal">
+  <h2>Scheduling Meetings Across the US East Coast and India</h2>
+  <div class="content">
+    <article>
+      <h3>Optimal Overlap Window: 8:00 AM – 10:00 AM EST</h3>
+      <p>
+        The most effective collaboration window occurs between 8:00 AM and 10:00 AM EST. In India, this matches 6:30 PM to 8:30 PM IST.
+      </p>
+      <p>
+        US teams can begin their morning with status calls and daily handoffs just as Indian teams wrap up their business day.
+      </p>
+    </article>
+    <article>
+      <h3>Handling the Calendar Day Rollover</h3>
+      <p>
+        Because IST is 10.5 hours ahead, afternoon and evening meetings in the US fall on the next morning in India. An invite sent for 5:00 PM EST on Wednesday lands at 3:30 AM IST on Thursday morning.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS & INTERNAL NAVIGATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="other-tools content-section" aria-labelledby="related-heading">
+  <h2 id="related-heading">Explore Related Timezone Tools</h2>
+  <div class="related-grid">
+    <a href="/ist-to-est/" class="related-card">
+      <h3 class="related-card-title">IST to EST Converter</h3>
+      <p class="related-card-text">Convert India Standard Time to US Eastern Standard Time (10.5-hour offset).</p>
+    </a>
+    <a href="/gmt-to-ist/" class="related-card">
+      <h3 class="related-card-title">GMT to IST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to India Standard Time (5.5-hour offset).</p>
+    </a>
+    <a href="/ist-to-gmt/" class="related-card">
+      <h3 class="related-card-title">IST to GMT Converter</h3>
+      <p class="related-card-text">Convert India Standard Time to Greenwich Mean Time (5.5-hour offset).</p>
+    </a>
+    <a href="/" class="related-card">
+      <h3 class="related-card-title">GMT to EST Converter</h3>
+      <p class="related-card-text">Convert Greenwich Mean Time to US Eastern Standard Time (5-hour offset).</p>
+    </a>
+    <a href="/cst-to-est/" class="related-card">
+      <h3 class="related-card-title">CST to EST Converter</h3>
+      <p class="related-card-text">Convert Central Standard Time to US Eastern Standard Time (1-hour offset).</p>
+    </a>
+    <a href="/pst-to-est/" class="related-card">
+      <h3 class="related-card-title">PST to EST Converter</h3>
+      <p class="related-card-text">Convert Pacific Standard Time to US Eastern Standard Time (3-hour offset).</p>
+    </a>
+  </div>
+</section>
+
+<!-- Anchor for Table of Contents FAQ link -->
+<div id="faq"></div>
+
+</BaseLayout>
+
+<style>
+  .feature-strip { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0 2rem; flex-wrap: wrap; }
+  .feature-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; color: var(--muted); background: rgba(255, 255, 255, 0.04); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--line); }
+  .feature-icon { color: var(--accent); }
+  .acdt-intro { max-width: 860px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+  .acdt-intro p { font-size: 1.08rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.25rem; }
+  .acdt-intro p:first-of-type { font-size: 1.15rem; color: var(--text); }
+</style>

@@ -206,17 +206,37 @@ const isComparison = slug === "gmt-vs-est";
 const isReverse = slug === "est-to-gmt";
 const isGuide = slug === "time-zone-guide";
 const registeredPage = pages.find((p: any) => p.slug === slug);
-const isDynamic = registeredPage ? registeredPage.kind === "dynamic" : (slug.endsWith("-to-est") || slug.startsWith("gmt-to-"));
+const isDynamic = registeredPage ? registeredPage.kind === "dynamic" : (slug.endsWith("-to-est") || slug.startsWith("gmt-to-") || slug === "ist-to-gmt" || slug === "est-to-ist");
 const isConverterPage = isHome || isComparison || isReverse || isDynamic;
 const breadcrumbCurrentLabel = breadcrumbLabel || title;
 
 const isEnglish = !lang || lang === "en";
 const isGmtToIst = slug === "gmt-to-ist";
-const isEnglishConverterPage = isEnglish && (isHome || slug.endsWith("-to-est") || isGmtToIst);
-const quickAnswerSourceCode = isEnglishConverterPage
-  ? (isGmtToIst ? "GMT" : (isHome ? "GMT" : slug.replace(/-to-est$/, "")).toUpperCase())
-  : null;
-const quickAnswerTargetCode = isGmtToIst ? "IST" : "EST";
+const isIstToGmt = slug === "ist-to-gmt";
+const isEstToIst = slug === "est-to-ist";
+const isEnglishConverterPage = isEnglish && (isHome || slug.endsWith("-to-est") || isGmtToIst || isIstToGmt || isEstToIst);
+let quickAnswerSourceCode: string | null = null;
+let quickAnswerTargetCode: string = "EST";
+
+if (isEnglishConverterPage) {
+  if (isGmtToIst) {
+    quickAnswerSourceCode = "GMT";
+    quickAnswerTargetCode = "IST";
+  } else if (isIstToGmt) {
+    quickAnswerSourceCode = "IST";
+    quickAnswerTargetCode = "GMT";
+  } else if (isEstToIst) {
+    quickAnswerSourceCode = "EST";
+    quickAnswerTargetCode = "IST";
+  } else if (isHome) {
+    quickAnswerSourceCode = "GMT";
+    quickAnswerTargetCode = "EST";
+  } else {
+    quickAnswerSourceCode = slug.replace(/-to-est$/, "").toUpperCase();
+    quickAnswerTargetCode = "EST";
+  }
+}
+
 const quickAnswerPayload = isEnglishConverterPage && quickAnswerSourceCode
   ? getQuickAnswerPayload(quickAnswerSourceCode, quickAnswerTargetCode)
   : null;

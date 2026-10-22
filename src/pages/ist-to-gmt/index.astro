@@ -1,0 +1,378 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import Converter from "theme/components/Converter.astro";
+import { getTranslation, siteUrl } from "theme/i18n/config";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "ist-to-gmt";
+const t = getTranslation(lang);
+
+const pageTitle = "IST to GMT Converter";
+const seoTitle = "IST to GMT Converter (Live) + Current Time & 24-Hour Chart";
+const pageDescription = "Convert IST to GMT instantly with live clocks and a full 24-hour conversion chart. See the exact 5.5-hour difference and current times. Free, no signup needed.";
+
+const context = {
+  from: "IST",
+  to: "GMT",
+  fromZone: "Asia/Kolkata",
+  toZone: "UTC"
+};
+
+const canonical = `${siteUrl}/ist-to-gmt/`;
+
+// 24-hour conversion table data (IST → GMT = IST - 5.5 hours)
+function formatHour12(hour: number, minute: number = 0) {
+  const normalized = ((hour % 24) + 24) % 24;
+  const period = normalized < 12 ? "AM" : "PM";
+  const displayHour = normalized % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+const conversionRows = Array.from({ length: 24 }, (_, hour) => {
+  const totalMinutes = hour * 60 - 330; // Subtract 5 hours 30 minutes
+  const prevDay = totalMinutes < 0;
+  const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+  const gmtHour = Math.floor(normalizedMinutes / 60);
+  const gmtMinute = normalizedMinutes % 60;
+  const period = gmtHour < 12 ? "AM" : "PM";
+  const displayHour = gmtHour % 12 || 12;
+  return {
+    ist: formatHour12(hour),
+    gmt: `${displayHour}:${String(gmtMinute).padStart(2, "0")} ${period}${prevDay ? " (previous day)" : ""}`,
+    dayNote: prevDay ? "Previous day in GMT" : "Same calendar day"
+  };
+});
+
+// Popular conversions (IST → GMT)
+const popularConversions = [
+  { ist: "5:30 AM IST", gmt: "12:00 AM (Midnight) GMT", note: "Dawn in India, midnight in Greenwich" },
+  { ist: "7:30 AM IST", gmt: "2:00 AM GMT", note: "Morning routines in Mumbai, night in London" },
+  { ist: "9:30 AM IST", gmt: "4:00 AM GMT", note: "Workday beginning in New Delhi, early morning in London" },
+  { ist: "11:30 AM IST", gmt: "6:00 AM GMT", note: "Mid-morning focus in Bengaluru, morning in Greenwich" },
+  { ist: "1:30 PM IST", gmt: "8:00 AM GMT", note: "Lunch break in Hyderabad, workday starting in London" },
+  { ist: "3:30 PM IST", gmt: "10:00 AM GMT", note: "Mid-afternoon in Chennai, mid-morning in Greenwich" },
+  { ist: "5:30 PM IST", gmt: "12:00 PM (Noon) GMT", note: "Evening winding down in Kolkata, noon in Greenwich" },
+  { ist: "7:30 PM IST", gmt: "2:00 PM GMT", note: "Dinner hours in India, afternoon in London" },
+  { ist: "9:30 PM IST", gmt: "4:00 PM GMT", note: "Late evening in Pune, end of standard office hours in London" },
+  { ist: "11:30 PM IST", gmt: "6:00 PM GMT", note: "Night in Ahmedabad, evening in Greenwich" },
+  { ist: "1:30 AM IST", gmt: "8:00 PM GMT (Prev Day)", note: "After midnight in India, night of previous day in London" },
+  { ist: "3:30 AM IST", gmt: "10:00 PM GMT (Prev Day)", note: "Late night in Jaipur, late night of previous day in Greenwich" }
+];
+
+// FAQ data
+const faqs = [
+  {
+    q: "What is the time difference between IST and GMT?",
+    a: "IST is 5 hours 30 minutes ahead of GMT. When it is 12:00 PM in India, it is 6:30 AM GMT. The difference never changes, because neither IST nor GMT observes daylight saving time."
+  },
+  {
+    q: "Is IST ahead of or behind GMT?",
+    a: "IST is ahead of GMT by 5 hours 30 minutes. To convert IST to GMT, subtract 5 hours 30 minutes — early-morning IST times fall on the previous day in GMT."
+  },
+  {
+    q: "Does India change its clocks for daylight saving?",
+    a: "No. India stays on IST (UTC+5:30) all year, and GMT never changes either, so IST to GMT conversions are identical in every season."
+  }
+];
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  exactDescription: true,
+  description: pageDescription,
+  keywords: "IST to GMT, IST to GMT Converter, India Standard Time to Greenwich Mean Time, Convert IST to GMT, Current GMT Time, IST to GMT difference, India to London Time, New Delhi to GMT, Mumbai to GMT, Bengaluru to GMT",
+  image: "/assets/gmt-to-ist-og.svg",
+  imageAlt: "IST to GMT Converter – Convert India Standard Time to Greenwich Mean Time",
+  faqs,
+  appDescription: "Free online IST to GMT converter with real-time clocks, constant 5.5-hour offset calculations, 24-hour conversion chart, and scheduling tools between India Standard Time and Greenwich Mean Time.",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  howToName: "How to Convert IST to GMT",
+  howToDescription: "Step-by-step guide to converting India Standard Time to Greenwich Mean Time using our free online tool.",
+  howToSteps: [
+    { name: "Input your IST time", text: "Select your desired India Standard Time using our interactive date-time picker. The tool defaults to the current time." },
+    { name: "Subtract 5 hours 30 minutes", text: "The calculator subtracts 5 hours 30 minutes to find the Greenwich Mean Time (GMT) equivalent." },
+    { name: "Check for date rollbacks", text: "Times before 5:30 AM IST fall on the previous calendar day in GMT." },
+    { name: "Copy or swap the result", text: "Read the converted Greenwich Mean Time and click the copy button to save the result." }
+  ],
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  mode="gmt-est"
+  enableFaqSchema={true}
+  allowAds={true}
+  hreflangCodes={["en"]}
+  breadcrumbHomeLabel="Home"
+  breadcrumbLabel="IST to GMT"
+>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     H1 & HERO BANNER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-banner">
+  <h1 class="hero-banner-title">
+    IST to GMT <span class="gradient-text">Converter</span>
+  </h1>
+</section>
+
+<!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
+<div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
+  <Converter intent="dynamic" t={t} context={context} />
+  
+  <!-- LIVE CLOCKS -->
+  <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
+    <h2>Live Clocks</h2>
+    <div class="clock-card">
+      <span class="eyebrow">Source Time Zone (IST)</span>
+      <strong id="gmtClock">--:--:--</strong>
+    </div>
+    <div class="clock-card">
+      <span class="eyebrow">Target Time Zone (GMT)</span>
+      <strong id="estClock">--:--:--</strong>
+      <p style="margin-top: 4px; font-size: 0.85rem; color: var(--muted);">Active Zone: <em id="estZone">GMT</em></p>
+    </div>
+  </section>
+</div>
+
+<!-- FEATURE STRIP -->
+<section class="feature-strip" aria-label="Tool Features">
+  <div class="feature-item">
+    <!-- Icon: Clock -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <span>Live Clocks</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Calendar -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span>30-Min Offset</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Meeting -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <span>Tech Sync</span>
+  </div>
+  <div class="feature-item">
+    <!-- Icon: Map -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="18"></line>
+      <line x1="15" y1="6" x2="15" y2="21"></line>
+    </svg>
+    <span>London Handoff</span>
+  </div>
+</section>
+
+<div class="acdt-intro">
+  <p>
+    Welcome to the <strong>IST to GMT Converter</strong> resource. This guide is engineered to assist professionals, developers, and international travelers converting time between Indian Standard Time (IST, UTC+5:30) and Greenwich Mean Time (GMT, UTC+0). Because India does not observe Daylight Saving Time (DST) and GMT remains fixed at UTC+0, this 5.5-hour difference remains a constant baseline throughout the entire year.
+  </p>
+  <p>
+    To convert IST to GMT, subtract 5 hours and 30 minutes from Indian Standard Time. If the IST time is in the early morning (between midnight and 5:29 AM IST), the converted GMT timestamp rolls back to the previous calendar day.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS (INTERNAL ANCHORS)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="table-of-contents reveal" aria-label="Table of Contents">
+  <span class="toc-kicker">Quick Navigation</span>
+  <h2>Guide Contents</h2>
+  <ol>
+    <li><a href="#converter">1. Interactive IST to GMT Converter</a></li>
+    <li><a href="#how-it-works">2. IST to GMT Offset Mechanics</a></li>
+    <li><a href="#chart">3. 24-Hour Conversion Grid</a></li>
+    <li><a href="#conversion-examples">4. Popular Conversion Examples</a></li>
+    <li><a href="#topics">5. Remote Work &amp; London Handoff Windows</a></li>
+    <li><a href="#other-tools">6. Related Converters &amp; Guides</a></li>
+    <li><a href="#quick-faq-section">7. Frequently Asked Questions (FAQ)</a></li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LIVE CONVERTER INTRO
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="hero reveal" id="converter">
+  <div class="hero-copy">
+    <div class="eyebrow">Realtime Tool</div>
+    <h2>Convert IST to GMT Instantly</h2>
+    <p>
+      Use our interactive date and time picker above to convert times from Indian Standard Time (IST) to Greenwich Mean Time (GMT). The calculation operates on a permanent 5 hours and 30 minutes subtraction.
+    </p>
+    <p>
+      Toggle between 12-hour and 24-hour formats, choose future dates, and copy results directly to your clipboard.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TIME DIFFERENCE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="method-section reveal" id="how-it-works">
+  <div class="method-intro">
+    <div class="eyebrow">Fractional Offset Mechanics</div>
+    <h2>Understanding IST to GMT Time Conversion</h2>
+    <p>
+      To convert Indian Standard Time to Greenwich Mean Time, subtract 5 hours and 30 minutes from IST. The formula is written as follows:
+    </p>
+    <p>
+      <code>GMT = IST - 5 Hours 30 Minutes</code>
+    </p>
+    <p>
+      India standardizes its time on the 82.5° East meridian passing through Mirzapur, placing it 5.5 hours ahead of the Prime Meridian (0° longitude) at Greenwich. Neither IST nor GMT observes daylight saving time, meaning this gap is permanent all 365 days of the year.
+    </p>
+  </div>
+
+  <div class="method-grid">
+    <div class="method-card">
+      <h3>Indian Standard Time</h3>
+      <code>UTC+5:30 Baseline</code>
+      <p>IST is the unified time zone across India, operating at UTC+5:30 year-round with no seasonal daylight saving shifts.</p>
+    </div>
+    <div class="method-card">
+      <h3>Greenwich Mean Time</h3>
+      <code>UTC+0 Baseline</code>
+      <p>GMT is centered on the Prime Meridian in Greenwich, London. It represents the UTC baseline with zero offset.</p>
+    </div>
+    <div class="method-card">
+      <h3>5.5-Hour Constant Gap</h3>
+      <code>Fixed Difference</code>
+      <p>Because neither zone changes clocks, the 5 hour 30 minute difference stays identical through winter and summer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     24-HOUR CONVERSION TABLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="chart" class="reveal">
+  <h2>24-Hour IST to GMT Conversion Table</h2>
+  <p class="chart-note">
+    The following table outlines all 24 hours of the day converted from Indian Standard Time (IST) to Greenwich Mean Time (GMT). IST is 5 hours and 30 minutes ahead of GMT.
+  </p>
+  
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Indian Standard Time (IST)</th>
+          <th>Greenwich Mean Time (GMT)</th>
+          <th>Calendar Day Alignment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conversionRows.map((row) => (
+          <tr>
+            <td><strong>{row.ist}</strong></td>
+            <td><strong>{row.gmt}</strong></td>
+            <td><span class="eyebrow">{row.dayNote}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     POPULAR CONVERSIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="conversion-examples" class="examples-section reveal">
+  <h2>Popular IST to GMT Conversion Examples</h2>
+  <p>
+    Review these quick reference examples to understand how specific hours translate from Indian Standard Time to Greenwich Mean Time:
+  </p>
+  <div class="clock-grid">
+    {popularConversions.map((item) => (
+      <div class="related-card">
+        <strong class="related-card-title">{item.ist}</strong>
+        <p class="related-card-text">Equal to <strong>{item.gmt}</strong></p>
+        <small style="color: var(--accent); margin-top: 4px; display: block;">{item.note}</small>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDUCATIONAL SECTIONS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="topics" class="reveal">
+  <h2>Remote Work Collaboration Between India and the UK / Europe</h2>
+  <div class="content">
+    <article>
+      <h3>The Indian Workday to London Alignment</h3>
+      <p>
+        Engineering and technology teams in Bengaluru, Hyderabad, and Pune coordinate extensively with European headquarters. When Indian teams start their afternoon at 2:00 PM IST, it is 8:30 AM GMT in London.
+      </p>
+      <p>
+        This creates a convenient 4-hour live overlap window between 2:00 PM and 6:00 PM IST (8:30 AM to 12:30 PM GMT), ideal for standups, technical design syncs, and pull request reviews.
+      </p>
+    </article>
+    <article>
+      <h3>Managing Early Morning Date Boundaries</h3>
+      <p>
+        When scheduling late-night releases or overnight batch jobs in India, remember that times before 5:30 AM IST land on the previous calendar day in GMT. For example, 2:00 AM IST on Tuesday is 8:30 PM GMT on Monday evening.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RELATED CONVERTERS & INTERNAL NAVIGATION
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section id="other-tools" class="reveal">
+  <h2>Related Time Zone Converters</h2>
+  <p>
+    Need to convert other time zone pairs? Explore our dedicated calculators:
+  </p>
+  <div class="tools-grid">
+    <div class="tools-list">
+      <h3>Indian Standard Time Converters</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/gmt-to-ist/">GMT to IST Converter</a></li>
+          <li><a href="/est-to-ist/">EST to IST Converter</a></li>
+          <li><a href="/ist-to-est/">IST to EST Converter</a></li>
+          <li><a href="/pkt-to-est/">PKT to EST Converter</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="tools-list">
+      <h3>GMT Timezone Conversions</h3>
+      <div class="tools-link-groups">
+        <ul>
+          <li><a href="/">GMT to EST Homepage</a></li>
+          <li><a href="/est-to-gmt/">EST to GMT Converter</a></li>
+          <li><a href="/gmt-to-pst/">GMT to PST Converter</a></li>
+          <li><a href="/gmt-to-cst/">GMT to CST Converter</a></li>
+          <li><a href="/time-zone-guide/">Time Zone Guide</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Anchor for Table of Contents FAQ link -->
+<div id="faq"></div>
+
+</BaseLayout>

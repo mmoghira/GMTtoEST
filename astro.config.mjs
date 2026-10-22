@@ -105,7 +105,7 @@ export default defineConfig({
           "/msk-to-est/", "/nzst-to-est/", "/nzdt-to-est/", "/akdt-to-est/", "/wat-to-est/", "/acdt-to-est/",
           "/cest-to-est/", "/gmt-to-chst/", "/chst-to-est/", "/gmt-to-west/", "/gmt-to-wet/", "/gmt-to-wit/",
           "/gmt-to-cest/", "/mdt-to-est/", "/met-to-est/", "/gmt-to-msk/", "/gmt-to-wib/", "/utc-to-est/", "/sst-to-est/", "/wib-to-est/", "/hkt-to-est/", "/ndt-to-est/", "/gmt-to-cet/", "/gmt-to-hkt/", "/sast-to-est/", "/gmt-to-pkt/", "/gmt-to-nst/", "/gmt-to-jst/", "/gmt-to-mst/", "/gmt-to-hdt/", "/akst-to-est/", "/gmt-to-hst/", "/gmt-to-nzdt/", "/gmt-to-wat/",
-          "/eest-to-gmt/", "/eet-to-gmt/"
+          "/eest-to-gmt/", "/eet-to-gmt/", "/ist-to-gmt/", "/est-to-ist/"
         ]);
         if (!activatedConverterPaths.has(cleanPath)) {
           const gmtToTzRegex = /^\/gmt-to-[a-z0-9]+(\/)?$/i;
