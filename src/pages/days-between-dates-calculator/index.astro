@@ -1,0 +1,401 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "days-between-dates-calculator";
+const seoTitle = "Days Between Dates Calculator | Count Days Between Dates";
+const pageDescription = "Calculate days between two dates instantly, including or excluding the end date. See weeks, weekdays and weekends too.";
+
+const pubDate = "2026-10-25T13:00:00+05:00";
+const updatedDate = "2026-10-25T13:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "days between dates, date difference calculator, count days between dates, days calculator, weekdays between dates, date duration calculator",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "How many days are between two dates?",
+      a: "Subtract the start date from the end date. That counts the days in between, excluding the end date. Add 1 to include both the start and end dates."
+    },
+    {
+      q: "Do you count the start date?",
+      a: "No, by default this calculator excludes the end date and counts from the day after the start date. Turn on \"Include end date\" to count both end days."
+    },
+    {
+      q: "How do leap years affect the count?",
+      a: "Leap years add 29 February, so a range that includes that date is one day longer than the same range in a non-leap year."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- WebApplication + BreadcrumbList JSON-LD (FAQPage handled by BaseLayout) -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Days Between Dates Calculator",
+    "url": "https://gmttoestconverter.com/days-between-dates-calculator/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  })} />
+
+  <!-- Hero -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Days Between Dates Calculator</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 640px; margin: 12px auto 0;">
+      Find out exactly how many days, weeks, weekdays and weekend days fall between any two dates.
+    </p>
+  </div>
+
+  <!-- Hero Image -->
+  <div class="infographic-wrapper" style="margin-top: 32px;">
+    <img
+      src="/assets/days-between-dates-calculator-hero.webp"
+      alt="Days between dates calculator showing a calendar with a start date and an end date"
+      class="infographic-image"
+      width="960"
+      height="540"
+      loading="eager"
+    />
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       INTERACTIVE TOOL
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <section id="days-calculator" style="max-width: 720px; margin: 0 auto; padding-top: 32px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: var(--shadow);">
+
+      <!-- Date Inputs -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <label for="dbd-start" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Start date</label>
+          <input type="date" id="dbd-start" value="2026-09-22" aria-label="Start date" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+        </div>
+        <div>
+          <label for="dbd-end" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">End date</label>
+          <input type="date" id="dbd-end" value="2026-11-27" aria-label="End date" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+        </div>
+      </div>
+
+      <!-- Include End Date Toggle -->
+      <div style="display: flex; align-items: center; gap: 10px; margin: 16px 0;">
+        <button
+          type="button"
+          id="dbd-toggle"
+          role="switch"
+          aria-checked="false"
+          aria-label="Include end date"
+          style="position: relative; width: 48px; height: 26px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; padding: 0; transition: background 0.2s;"
+        >
+          <span id="dbd-toggle-thumb" style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--muted); transition: transform 0.2s, background 0.2s;"></span>
+        </button>
+        <span id="dbd-toggle-label" style="font-weight: 700; color: var(--muted); font-size: 0.95rem;">Include end date</span>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        type="button"
+        id="dbd-calculate"
+        style="width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: background 0.2s; margin-bottom: 16px;"
+      >
+        Calculate
+      </button>
+
+      <!-- Validation Error -->
+      <p id="dbd-error" role="alert" style="display: none; color: #f87171; font-weight: 700; text-align: center; margin: 0 0 12px;"></p>
+
+      <!-- Result Block -->
+      <div id="dbd-results" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Total Days</span>
+            <strong id="dbd-total-days" style="font-size: 2rem; color: var(--accent); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Weeks + Days</span>
+            <strong id="dbd-weeks" style="font-size: 2rem; color: var(--text); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Weekdays</span>
+            <strong id="dbd-weekdays" style="font-size: 2rem; color: var(--accent-2); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Weekend Days</span>
+            <strong id="dbd-weekends" style="font-size: 2rem; color: var(--warn); font-weight: 900;">0</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       CONTENT BELOW THE TOOL
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div style="max-width: 780px; margin: 0 auto; padding: 48px 0 0;">
+
+    <!-- H2: How to calculate days between dates -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">How to calculate days between dates</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Subtract the start date from the end date. The result is the number of days between the two dates, <strong style="color: var(--text);">excluding the end date</strong>. If you want to count both the start and end days, add 1 to the result.
+      </p>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch; margin-top: 12px;">
+        For example, from <strong style="color: var(--text);">22 September 2026</strong> to <strong style="color: var(--text);">27 November 2026</strong> the difference is <strong style="color: var(--accent);">66 days</strong> excluding the end date. Include the end date and the count becomes <strong style="color: var(--accent);">67 days</strong>.
+      </p>
+    </section>
+
+    <!-- Diagram -->
+    <div class="infographic-wrapper">
+      <figure style="margin: 0; text-align: center;">
+        <img
+          src="/assets/days-between-dates-calculation-example.webp"
+          alt="Diagram showing how days are counted between 22 September 2026 and 27 November 2026"
+          class="infographic-image"
+          width="800"
+          height="450"
+          loading="lazy"
+        />
+        <figcaption class="infographic-caption">66 days excluding the end date, 67 days including it.</figcaption>
+      </figure>
+    </div>
+
+    <!-- H2: Days between dates examples -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Days between dates examples</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Start date</th>
+              <th>End date</th>
+              <th>Days (excl. end)</th>
+              <th>Days (incl. end)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1 January 2026</td>
+              <td>31 December 2026</td>
+              <td>364</td>
+              <td>365</td>
+            </tr>
+            <tr>
+              <td>25 October 2026</td>
+              <td>27 November 2026</td>
+              <td>33</td>
+              <td>34</td>
+            </tr>
+            <tr>
+              <td>22 September 2026</td>
+              <td>27 November 2026</td>
+              <td>66</td>
+              <td>67</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- H2: What counts as a weekday? -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">What counts as a weekday?</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Monday to Friday are weekdays. Saturday and Sunday are weekend days in this calculator. Public holidays are not subtracted from the weekday count. A future version may add a holiday option, but the current tool does not exclude holidays.
+      </p>
+    </section>
+
+    <!-- Internal Links -->
+    <section>
+      <div class="info-callout">
+        <p>
+          Need to measure hours and minutes too? Try the <a href="/time-duration-calculator/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Time Duration Calculator</a> once it is live, or head back to the <a href="/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">GMT to EST Converter</a> homepage.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- FAQ Section -->
+  <section style="max-width: 780px; margin: 0 auto; padding: 48px 0 24px;">
+    <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); text-align: center; margin-bottom: 20px;">Frequently Asked Questions</h2>
+    <div class="faq">
+      {meta.faqs.map(faq => (
+        <details style="padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <summary style="font-weight: 800; cursor: pointer;">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.65;">{faq.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       CLIENT-SIDE CALCULATOR SCRIPT
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script is:inline>
+    (function () {
+      var startInput = document.getElementById('dbd-start');
+      var endInput = document.getElementById('dbd-end');
+      var toggleBtn = document.getElementById('dbd-toggle');
+      var toggleThumb = document.getElementById('dbd-toggle-thumb');
+      var calcBtn = document.getElementById('dbd-calculate');
+      var errorEl = document.getElementById('dbd-error');
+      var resultsEl = document.getElementById('dbd-results');
+      var totalDaysEl = document.getElementById('dbd-total-days');
+      var weeksEl = document.getElementById('dbd-weeks');
+      var weekdaysEl = document.getElementById('dbd-weekdays');
+      var weekendsEl = document.getElementById('dbd-weekends');
+
+      var includeEnd = false;
+
+      // Toggle switch behaviour
+      toggleBtn.addEventListener('click', function () {
+        includeEnd = !includeEnd;
+        toggleBtn.setAttribute('aria-checked', String(includeEnd));
+        if (includeEnd) {
+          toggleBtn.style.background = 'var(--accent)';
+          toggleBtn.style.borderColor = 'var(--accent)';
+          toggleThumb.style.transform = 'translateX(22px)';
+          toggleThumb.style.background = '#fff';
+        } else {
+          toggleBtn.style.background = 'var(--bg)';
+          toggleBtn.style.borderColor = 'var(--line)';
+          toggleThumb.style.transform = 'translateX(0)';
+          toggleThumb.style.background = 'var(--muted)';
+        }
+        calculate();
+      });
+
+      // Keyboard support for toggle
+      toggleBtn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleBtn.click();
+        }
+      });
+
+      function calculate() {
+        var sVal = startInput.value;
+        var eVal = endInput.value;
+
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+
+        if (!sVal || !eVal) {
+          resultsEl.style.display = 'none';
+          return;
+        }
+
+        // Parse dates using parts to avoid timezone offset issues
+        var sParts = sVal.split('-');
+        var eParts = eVal.split('-');
+        var startDate = new Date(+sParts[0], +sParts[1] - 1, +sParts[2]);
+        var endDate = new Date(+eParts[0], +eParts[1] - 1, +eParts[2]);
+
+        if (endDate < startDate) {
+          errorEl.textContent = 'End date must be on or after the start date.';
+          errorEl.style.display = 'block';
+          resultsEl.style.display = 'none';
+          return;
+        }
+
+        // Calculate total days (difference in milliseconds → days)
+        var diffMs = endDate.getTime() - startDate.getTime();
+        var totalDays = Math.round(diffMs / 86400000); // excludes end date
+        if (includeEnd) totalDays += 1;
+
+        // Weekday / weekend breakdown
+        // excludeEnd: iterate start+1 … end (totalDays dates)
+        // includeEnd: iterate start … end   (totalDays dates)
+        var weekdays = 0;
+        var weekendDays = 0;
+        var cursor;
+
+        if (includeEnd) {
+          cursor = new Date(startDate);
+        } else {
+          cursor = new Date(startDate);
+          cursor.setDate(cursor.getDate() + 1);
+        }
+
+        var iterations = 0;
+        while (iterations < totalDays) {
+          var dow = cursor.getDay(); // 0=Sun, 6=Sat
+          if (dow === 0 || dow === 6) {
+            weekendDays++;
+          } else {
+            weekdays++;
+          }
+          cursor.setDate(cursor.getDate() + 1);
+          iterations++;
+        }
+
+        // Weeks + remainder
+        var fullWeeks = Math.floor(totalDays / 7);
+        var remainderDays = totalDays % 7;
+        var weeksStr = fullWeeks + (fullWeeks === 1 ? ' week' : ' weeks');
+        if (remainderDays > 0) {
+          weeksStr += ' + ' + remainderDays + (remainderDays === 1 ? ' day' : ' days');
+        }
+
+        // Show results
+        resultsEl.style.display = 'block';
+        totalDaysEl.textContent = totalDays;
+        weeksEl.textContent = weeksStr;
+        weekdaysEl.textContent = weekdays;
+        weekendsEl.textContent = weekendDays;
+      }
+
+      // Live recalculation
+      startInput.addEventListener('input', calculate);
+      startInput.addEventListener('change', calculate);
+      endInput.addEventListener('input', calculate);
+      endInput.addEventListener('change', calculate);
+      calcBtn.addEventListener('click', calculate);
+
+      // Initial calculation on page load
+      calculate();
+    })();
+  </script>
+
+  <style>
+    /* Mobile-friendly date inputs grid */
+    @media (max-width: 500px) {
+      #days-calculator div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* Toggle focus ring */
+    #dbd-toggle:focus-visible {
+      outline: 3px solid var(--accent-2);
+      outline-offset: 2px;
+    }
+
+    /* Calculate button hover */
+    #dbd-calculate:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Input date styling for dark themes */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+    }
+  </style>
+</BaseLayout>

@@ -1,0 +1,399 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "time-duration-calculator";
+const seoTitle = "Time Duration Calculator | Hours Between Two Times & Dates";
+const pageDescription = "Calculate the time duration between two dates and times in days, hours, minutes and seconds, with a clear breakdown.";
+
+const pubDate = "2026-10-25T13:00:00+05:00";
+const updatedDate = "2026-10-25T13:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "time duration calculator, hours between two times, duration calculator, calculate hours between dates, time difference calculator",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "How do I calculate hours between two times?",
+      a: "Subtract the start time from the end time on the same day, or use the start and end dates as well if the range crosses midnight."
+    },
+    {
+      q: "What if the end time is past midnight?",
+      a: "Set the end date to the next day. A range from 22:00 to 06:00 is 8 hours only when the end date is the following day."
+    },
+    {
+      q: "Does daylight saving time change the result?",
+      a: "This calculator uses wall-clock time, so a range crossing a clock change shows the clock-time difference. Real elapsed time can differ by one hour on that night."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Time Duration Calculator",
+    "url": "https://gmttoestconverter.com/time-duration-calculator/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  })} />
+
+  <!-- Hero Header -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Time Duration Calculator</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 640px; margin: 12px auto 0;">
+      Calculate the exact duration between two dates and times in days, hours, minutes, and seconds.
+    </p>
+  </div>
+
+  <!-- Hero Image -->
+  <div class="infographic-wrapper" style="margin-top: 32px;">
+    <img
+      src="/assets/time-duration-calculator-hero.webp"
+      alt="Time duration calculator showing days, hours, minutes and seconds between two times"
+      class="infographic-image"
+      width="960"
+      height="540"
+      loading="eager"
+    />
+  </div>
+
+  <!-- Interactive Tool -->
+  <section id="duration-calculator" style="max-width: 760px; margin: 0 auto; padding-top: 32px;">
+    <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: var(--shadow);">
+      
+      <!-- Input Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;" class="input-grid">
+        <!-- Start Date & Time -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label for="tdc-start-date" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Start date</label>
+            <input type="date" id="tdc-start-date" value="2026-10-25" aria-label="Start date" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+          </div>
+          <div>
+            <label for="tdc-start-time" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Start time</label>
+            <input type="time" id="tdc-start-time" value="09:00" aria-label="Start time" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+          </div>
+        </div>
+
+        <!-- End Date & Time -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label for="tdc-end-date" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">End date</label>
+            <input type="date" id="tdc-end-date" value="2026-10-25" aria-label="End date" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+          </div>
+          <div>
+            <label for="tdc-end-time" style="display: block; font-weight: 700; color: var(--muted); margin-bottom: 6px;">End time</label>
+            <input type="time" id="tdc-end-time" value="17:30" aria-label="End time" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculate Button -->
+      <button
+        type="button"
+        id="tdc-calculate"
+        style="width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: background 0.2s; margin-bottom: 16px;"
+      >
+        Calculate
+      </button>
+
+      <!-- Error Message -->
+      <p id="tdc-error" role="alert" style="display: none; color: #f87171; font-weight: 700; text-align: center; margin: 0 0 12px;"></p>
+
+      <!-- Result Block -->
+      <div id="tdc-results" style="display: none;">
+        <!-- Breakdown Grid -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;" class="result-grid">
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 8px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Days</span>
+            <strong id="tdc-days" style="font-size: 1.8rem; color: var(--accent); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 8px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Hours</span>
+            <strong id="tdc-hours" style="font-size: 1.8rem; color: var(--text); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 8px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Minutes</span>
+            <strong id="tdc-minutes" style="font-size: 1.8rem; color: var(--accent-2); font-weight: 900;">0</strong>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 8px; text-align: center;">
+            <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 4px;">Seconds</span>
+            <strong id="tdc-seconds" style="font-size: 1.8rem; color: var(--warn); font-weight: 900;">0</strong>
+          </div>
+        </div>
+
+        <!-- Breakdown Line and Total Hours -->
+        <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; text-align: center; margin-bottom: 12px;">
+          <p id="tdc-breakdown-text" style="font-size: 1.2rem; font-weight: 800; color: var(--accent-2); margin: 0 0 6px;">0 hours, 0 minutes</p>
+          <p style="margin: 0; font-size: 0.95rem; color: var(--muted);">
+            Total hours: <strong id="tdc-decimal-hours" style="color: var(--text); font-size: 1.1rem;">0.00</strong> hours
+          </p>
+        </div>
+      </div>
+
+      <!-- Plain Text Note Directly Under Result -->
+      <p style="margin: 12px 0 0; font-size: 0.85rem; color: var(--muted); line-height: 1.5; text-align: center;">
+        This calculator uses wall-clock time in your browser's time zone. A range that crosses a daylight saving change can gain or lose an hour in real elapsed time.
+      </p>
+    </div>
+  </section>
+
+  <!-- Educational & Reference Content Below the Tool -->
+  <div style="max-width: 780px; margin: 0 auto; padding: 48px 0 0;">
+
+    <!-- H2: How to calculate time duration -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">How to calculate time duration</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        To calculate time duration, convert both date-times to the same timeline (such as total milliseconds or minutes from a reference point), subtract the start time from the end time, and then split the remainder into days, hours, minutes, and seconds.
+      </p>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch; margin-top: 12px;">
+        For instance, take a start time of <strong style="color: var(--text);">09:00</strong> and an end time of <strong style="color: var(--text);">17:30</strong> on the same day:
+      </p>
+      <ul style="color: var(--muted); line-height: 1.7; padding-left: 20px; margin: 12px 0;">
+        <li>Convert 09:00 to minutes: (9 × 60) + 0 = 540 minutes</li>
+        <li>Convert 17:30 to minutes: (17 × 60) + 30 = 1050 minutes</li>
+        <li>Subtract start from end: 1050 − 540 = 510 minutes</li>
+        <li>Divide by 60: 510 ÷ 60 = 8 full hours with a remainder of 30 minutes</li>
+      </ul>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        The result is <strong style="color: var(--accent);">8 hours 30 minutes</strong> (or 8.50 decimal hours).
+      </p>
+    </section>
+
+    <!-- Diagram -->
+    <div class="infographic-wrapper">
+      <figure style="margin: 0; text-align: center;">
+        <img
+          src="/assets/time-duration-calculation-example.webp"
+          alt="Diagram breaking 8 hours 30 minutes into hours and minutes"
+          class="infographic-image"
+          width="800"
+          height="450"
+          loading="lazy"
+        />
+        <figcaption class="infographic-caption">09:00 to 17:30 is 8 hours 30 minutes.</figcaption>
+      </figure>
+    </div>
+
+    <!-- H2: Time duration examples -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Time duration examples</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Start date & time</th>
+              <th>End date & time</th>
+              <th>Duration breakdown</th>
+              <th>Total hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>25 October 2026, 09:00</td>
+              <td>25 October 2026, 17:30</td>
+              <td>8 hours 30 minutes</td>
+              <td>8.50 hours</td>
+            </tr>
+            <tr>
+              <td>25 October 2026, 22:00</td>
+              <td>26 October 2026, 06:00</td>
+              <td>8 hours</td>
+              <td>8.00 hours</td>
+            </tr>
+            <tr>
+              <td>25 October 2026, 09:00</td>
+              <td>27 November 2026, 09:00</td>
+              <td>33 days</td>
+              <td>792.00 hours</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- H2: Days vs hours — which answer do you need? -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Days vs hours — which answer do you need?</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Use the <a href="/days-between-dates-calculator/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Days Between Dates Calculator</a> for calendar days only, such as counting whole business days, legal filing windows, or vacation intervals. Use this calculator when the time of day matters—such as tracking shift work, flight durations, or precise billing intervals down to the minute and second.
+      </p>
+    </section>
+
+    <!-- Internal Links -->
+    <section>
+      <div class="info-callout">
+        <p>
+          Need whole calendar day math? Visit the <a href="/days-between-dates-calculator/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Days Between Dates Calculator</a>, or return to the <a href="/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">GMT to EST Converter</a> homepage.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- FAQ Section -->
+  <section style="max-width: 780px; margin: 0 auto; padding: 48px 0 24px;">
+    <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); text-align: center; margin-bottom: 20px;">Frequently Asked Questions</h2>
+    <div class="faq">
+      {meta.faqs.map(faq => (
+        <details style="padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <summary style="font-weight: 800; cursor: pointer;">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.65;">{faq.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Interactive JavaScript Engine -->
+  <script is:inline>
+    (function () {
+      var startDateInput = document.getElementById('tdc-start-date');
+      var startTimeInput = document.getElementById('tdc-start-time');
+      var endDateInput = document.getElementById('tdc-end-date');
+      var endTimeInput = document.getElementById('tdc-end-time');
+      var calcBtn = document.getElementById('tdc-calculate');
+      var errorEl = document.getElementById('tdc-error');
+      var resultsEl = document.getElementById('tdc-results');
+
+      var daysEl = document.getElementById('tdc-days');
+      var hoursEl = document.getElementById('tdc-hours');
+      var minutesEl = document.getElementById('tdc-minutes');
+      var secondsEl = document.getElementById('tdc-seconds');
+      var breakdownTextEl = document.getElementById('tdc-breakdown-text');
+      var decimalHoursEl = document.getElementById('tdc-decimal-hours');
+
+      function calculate() {
+        var sDate = startDateInput.value;
+        var sTime = startTimeInput.value || "00:00";
+        var eDate = endDateInput.value;
+        var eTime = endTimeInput.value || "00:00";
+
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+
+        if (!sDate || !eDate) {
+          resultsEl.style.display = 'none';
+          return;
+        }
+
+        // Construct Date objects in local time zone
+        var sParts = sDate.split('-');
+        var sTimeParts = sTime.split(':');
+        var eParts = eDate.split('-');
+        var eTimeParts = eTime.split(':');
+
+        var start = new Date(
+          parseInt(sParts[0], 10),
+          parseInt(sParts[1], 10) - 1,
+          parseInt(sParts[2], 10),
+          parseInt(sTimeParts[0], 10) || 0,
+          parseInt(sTimeParts[1], 10) || 0,
+          parseInt(sTimeParts[2], 10) || 0
+        );
+
+        var end = new Date(
+          parseInt(eParts[0], 10),
+          parseInt(eParts[1], 10) - 1,
+          parseInt(eParts[2], 10),
+          parseInt(eTimeParts[0], 10) || 0,
+          parseInt(eTimeParts[1], 10) || 0,
+          parseInt(eTimeParts[2], 10) || 0
+        );
+
+        if (end <= start) {
+          errorEl.textContent = 'End must be after start.';
+          errorEl.style.display = 'block';
+          resultsEl.style.display = 'none';
+          return;
+        }
+
+        var diffMs = end.getTime() - start.getTime();
+        var totalSeconds = Math.floor(diffMs / 1000);
+
+        var days = Math.floor(totalSeconds / 86400);
+        var remSecAfterDays = totalSeconds % 86400;
+
+        var hours = Math.floor(remSecAfterDays / 3600);
+        var remSecAfterHours = remSecAfterDays % 3600;
+
+        var minutes = Math.floor(remSecAfterHours / 60);
+        var seconds = remSecAfterHours % 60;
+
+        var totalDecimalHours = (diffMs / 3600000).toFixed(2);
+
+        // Format breakdown string: "X days, Y hours, Z minutes"
+        var parts = [];
+        if (days > 0) {
+          parts.push(days + (days === 1 ? ' day' : ' days'));
+        }
+        if (hours > 0 || (days > 0 && (minutes > 0 || seconds > 0))) {
+          parts.push(hours + (hours === 1 ? ' hour' : ' hours'));
+        } else if (days === 0 && minutes === 0 && seconds === 0) {
+          parts.push(hours + ' hours');
+        }
+        if (minutes > 0 || (days === 0 && hours === 0 && seconds === 0)) {
+          parts.push(minutes + (minutes === 1 ? ' minute' : ' minutes'));
+        }
+        if (seconds > 0) {
+          parts.push(seconds + (seconds === 1 ? ' second' : ' seconds'));
+        }
+
+        breakdownTextEl.textContent = parts.join(', ');
+        daysEl.textContent = days;
+        hoursEl.textContent = hours;
+        minutesEl.textContent = minutes;
+        secondsEl.textContent = seconds;
+        decimalHoursEl.textContent = totalDecimalHours;
+
+        resultsEl.style.display = 'block';
+      }
+
+      [startDateInput, startTimeInput, endDateInput, endTimeInput].forEach(function (el) {
+        el.addEventListener('input', calculate);
+        el.addEventListener('change', calculate);
+      });
+      calcBtn.addEventListener('click', calculate);
+
+      calculate();
+    })();
+  </script>
+
+  <style>
+    @media (max-width: 600px) {
+      .input-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .result-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    #tdc-calculate:hover {
+      filter: brightness(1.1);
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+    }
+  </style>
+</BaseLayout>

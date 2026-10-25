@@ -1,0 +1,423 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "full-screen-clock";
+const seoTitle = "Full Screen Clock | Current Time, Date & Time in GMT and EST";
+const pageDescription = "See the current time in full screen, with today's date and live GMT and EST time. Switch 12-hour and 24-hour display.";
+
+const pubDate = "2026-10-25T13:00:00+05:00";
+const updatedDate = "2026-10-25T13:00:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "full screen clock, online clock, big digital clock, current time full screen, gmt clock, eastern time clock, est clock, 24-hour clock",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What time is it right now?",
+      a: "The clock at the top of this page shows your local time live, with today's date underneath."
+    },
+    {
+      q: "What is the time in GMT?",
+      a: "The GMT (UTC) time is shown live below the main clock, alongside Eastern Time."
+    },
+    {
+      q: "Is Eastern Time the same as EST?",
+      a: "Not all year. Eastern Time is EST in winter and EDT in summer. This page labels it with the correct abbreviation for today's date."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={false}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Full Screen Clock",
+    "url": "https://gmttoestconverter.com/full-screen-clock/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  })} />
+
+  <!-- Hero Header -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Full Screen Clock</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 640px; margin: 12px auto 0;">
+      A large, distraction-free digital clock with local time, live GMT and Eastern Time.
+    </p>
+  </div>
+
+  <!-- Hero Image -->
+  <div class="infographic-wrapper" style="margin-top: 32px;">
+    <img
+      src="/assets/full-screen-clock-hero.webp"
+      alt="Large full-screen digital clock showing the current time and date"
+      class="infographic-image"
+      width="960"
+      height="540"
+      loading="eager"
+    />
+  </div>
+
+  <!-- Interactive Clock Component Area (Eligible for Fullscreen) -->
+  <section id="clock-container-wrapper" style="max-width: 900px; margin: 0 auto; padding-top: 32px;">
+    <div id="fs-clock-card" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(24px, 5vw, 48px); box-shadow: var(--shadow); text-align: center; position: relative;">
+      
+      <!-- Fallback message for JS-disabled browsers -->
+      <noscript>
+        <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 8px; padding: 12px; margin-bottom: 20px; color: #fca5a5;">
+          The live interactive digital clock requires JavaScript. Please enable JavaScript in your browser settings.
+        </div>
+      </noscript>
+
+      <!-- Main Live Time Display -->
+      <div id="fs-main-time" style="font-family: 'Space Grotesk', monospace, sans-serif; font-size: clamp(3rem, 12vw, 7.5rem); font-weight: 800; letter-spacing: -0.02em; color: #ffffff; line-height: 1; font-variant-numeric: tabular-nums;">
+        --:--:--
+      </div>
+
+      <!-- Main Live Date Display -->
+      <div id="fs-main-date" style="font-size: clamp(1.1rem, 2.8vw, 1.8rem); font-weight: 600; color: var(--accent-2); margin-top: 14px;">
+        Loading local date...
+      </div>
+
+      <!-- Secondary Dual Zones: GMT & Eastern Time -->
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px clamp(16px, 4vw, 40px); margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line);">
+        <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 20px; min-width: 180px;">
+          <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700;">GMT (UTC)</span>
+          <strong id="fs-gmt-time" style="font-size: 1.35rem; color: var(--text); font-variant-numeric: tabular-nums;">--:--:--</strong>
+        </div>
+        <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 20px; min-width: 180px;">
+          <span id="fs-et-label" style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700;">Eastern Time (ET)</span>
+          <strong id="fs-et-time" style="font-size: 1.35rem; color: var(--accent); font-variant-numeric: tabular-nums;">--:--:--</strong>
+        </div>
+      </div>
+
+      <!-- Controls Row -->
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-top: 28px;">
+        <button
+          type="button"
+          id="toggle-hours-btn"
+          aria-label="Toggle 12 or 24 hour display"
+          style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; transition: background 0.2s;"
+        >
+          24-Hour Mode
+        </button>
+
+        <button
+          type="button"
+          id="toggle-seconds-btn"
+          aria-label="Toggle show or hide seconds"
+          style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; transition: background 0.2s;"
+        >
+          Hide Seconds
+        </button>
+
+        <button
+          type="button"
+          id="fullscreen-btn"
+          aria-label="Enter full screen mode"
+          style="padding: 10px 22px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 800; cursor: pointer; transition: background 0.2s;"
+        >
+          Full screen
+        </button>
+      </div>
+
+      <!-- Exit Full Screen overlay button inside full screen mode -->
+      <button
+        type="button"
+        id="exit-fullscreen-btn"
+        style="display: none; position: absolute; top: 20px; right: 20px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: rgba(18, 69, 93, 0.85); color: #ffffff; font-weight: 700; font-size: 0.9rem; cursor: pointer; backdrop-filter: blur(8px); z-index: 9999;"
+      >
+        ✕ Exit full screen
+      </button>
+    </div>
+  </section>
+
+  <!-- Content Below the Tool (Server-Rendered) -->
+  <div style="max-width: 780px; margin: 0 auto; padding: 48px 0 0;">
+
+    <!-- H2: What time is it right now? -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">What time is it right now?</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        The clock above shows your device's local time. If it looks wrong, your device time zone or clock is usually the cause — check your device settings, not this page.
+      </p>
+    </section>
+
+    <!-- Diagram -->
+    <div class="infographic-wrapper">
+      <figure style="margin: 0; text-align: center;">
+        <img
+          src="/assets/full-screen-clock-time-zones.webp"
+          alt="Diagram comparing local time with GMT and Eastern Time"
+          class="infographic-image"
+          width="800"
+          height="450"
+          loading="lazy"
+        />
+        <figcaption class="infographic-caption">Local time, GMT and Eastern Time shown together.</figcaption>
+      </figure>
+    </div>
+
+    <!-- H2: Current time in GMT and Eastern Time -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Current time in GMT and Eastern Time</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Greenwich Mean Time (GMT), effectively identical in standard offsets to Coordinated Universal Time (UTC), serves as the planetary baseline for international civil timekeeping. Eastern Time represents the civil time standard used along the United States and Canadian eastern seaboard.
+      </p>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch; margin-top: 12px;">
+        Eastern Time is not fixed year-round. It is <strong>5 hours behind GMT (UTC−5)</strong> during standard time in the winter (Eastern Standard Time, EST) and <strong>4 hours behind GMT (UTC−4)</strong> during daylight saving time in the summer (Eastern Daylight Time, EDT). Our live indicator dynamically determines and labels whether EST or EDT is active today.
+      </p>
+    </section>
+
+    <!-- H2: How to use the full-screen clock -->
+    <section>
+      <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">How to use the full-screen clock</h2>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Follow these simple steps:
+      </p>
+      <ol style="color: var(--muted); line-height: 1.7; padding-left: 20px; margin: 12px 0;">
+        <li>Open this page on your computer, tablet, or smartphone.</li>
+        <li>Press the <strong>Full screen</strong> button to expand the clock area across your entire monitor.</li>
+        <li>Press the <strong>Esc</strong> key on your keyboard or tap <strong>Exit full screen</strong> at any time to return to normal view.</li>
+      </ol>
+      <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+        Suggested uses include running a prominent wall or smartboard clock in a school classroom, keeping precise time during a business conference presentation, or maintaining a dedicated ambient desk clock on a secondary display monitor.
+      </p>
+    </section>
+
+    <!-- Internal Links -->
+    <section>
+      <div class="info-callout">
+        <p>
+          Need to count days between specific dates? Check the <a href="/days-between-dates-calculator/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Days Between Dates Calculator</a>. To plan for upcoming daylight saving shifts, see <a href="/when-do-clocks-go-back-2026/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">When Do Clocks Go Back 2026</a>, or navigate back to the <a href="/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">GMT to EST Converter</a> homepage.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- FAQ Section -->
+  <section style="max-width: 780px; margin: 0 auto; padding: 48px 0 24px;">
+    <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); text-align: center; margin-bottom: 20px;">Frequently Asked Questions</h2>
+    <div class="faq">
+      {meta.faqs.map(faq => (
+        <details style="padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;">
+          <summary style="font-weight: 800; cursor: pointer;">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.65;">{faq.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Interactive JavaScript Engine -->
+  <script is:inline>
+    (function () {
+      var timeEl = document.getElementById('fs-main-time');
+      var dateEl = document.getElementById('fs-main-date');
+      var gmtEl = document.getElementById('fs-gmt-time');
+      var etEl = document.getElementById('fs-et-time');
+      var etLabelEl = document.getElementById('fs-et-label');
+
+      var toggleHoursBtn = document.getElementById('toggle-hours-btn');
+      var toggleSecondsBtn = document.getElementById('toggle-seconds-btn');
+      var fullscreenBtn = document.getElementById('fullscreen-btn');
+      var exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+      var clockCard = document.getElementById('fs-clock-card');
+
+      var is24Hour = false;
+      var showSeconds = true;
+
+      function updateClock() {
+        var now = new Date();
+
+        // 1. Local Time formatting
+        var hours = now.getHours();
+        var minutes = now.getMinutes();
+        var seconds = now.getSeconds();
+        var ampm = '';
+
+        if (!is24Hour) {
+          ampm = hours >= 12 ? ' PM' : ' AM';
+          hours = hours % 12;
+          if (hours === 0) hours = 12;
+        }
+
+        var hStr = hours < 10 && is24Hour ? '0' + hours : '' + hours;
+        var mStr = minutes < 10 ? '0' + minutes : '' + minutes;
+        var sStr = seconds < 10 ? '0' + seconds : '' + seconds;
+
+        var timeString = hStr + ':' + mStr;
+        if (showSeconds) {
+          timeString += ':' + sStr;
+        }
+        if (!is24Hour) {
+          timeString += ampm;
+        }
+
+        timeEl.textContent = timeString;
+
+        // 2. Full Date formatting (e.g. "Sunday, October 25, 2026")
+        var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString('en-US', dateOptions);
+
+        // 3. GMT (UTC) Time
+        var gmtHours = now.getUTCHours();
+        var gmtMinutes = now.getUTCMinutes();
+        var gmtSeconds = now.getUTCSeconds();
+        var gmtAmpm = '';
+
+        if (!is24Hour) {
+          gmtAmpm = gmtHours >= 12 ? ' PM' : ' AM';
+          gmtHours = gmtHours % 12;
+          if (gmtHours === 0) gmtHours = 12;
+        }
+
+        var ghStr = gmtHours < 10 && is24Hour ? '0' + gmtHours : '' + gmtHours;
+        var gmStr = gmtMinutes < 10 ? '0' + gmtMinutes : '' + gmtMinutes;
+        var gsStr = gmtSeconds < 10 ? '0' + gmtSeconds : '' + gmtSeconds;
+
+        var gmtString = ghStr + ':' + gmStr;
+        if (showSeconds) gmtString += ':' + gsStr;
+        if (!is24Hour) gmtString += gmtAmpm;
+        gmtEl.textContent = gmtString;
+
+        // 4. Eastern Time (US/Eastern) using Intl to accurately capture EDT vs EST
+        try {
+          var etParts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: !is24Hour,
+            timeZoneName: 'short'
+          }).formatToParts(now);
+
+          var eth = '', etm = '', ets = '', etDayPeriod = '', etTz = 'ET';
+          for (var i = 0; i < etParts.length; i++) {
+            if (etParts[i].type === 'hour') eth = etParts[i].value;
+            if (etParts[i].type === 'minute') etm = etParts[i].value;
+            if (etParts[i].type === 'second') ets = etParts[i].value;
+            if (etParts[i].type === 'dayPeriod') etDayPeriod = ' ' + etParts[i].value;
+            if (etParts[i].type === 'timeZoneName') etTz = etParts[i].value;
+          }
+
+          var etString = eth + ':' + etm;
+          if (showSeconds) etString += ':' + ets;
+          if (!is24Hour) etString += etDayPeriod;
+          etEl.textContent = etString;
+          etLabelEl.textContent = 'Eastern Time (' + etTz + ')';
+        } catch (e) {
+          etEl.textContent = '--:--';
+        }
+      }
+
+      // Toggle 12/24 hour
+      toggleHoursBtn.addEventListener('click', function () {
+        is24Hour = !is24Hour;
+        toggleHoursBtn.textContent = is24Hour ? '12-Hour Mode' : '24-Hour Mode';
+        updateClock();
+      });
+
+      // Toggle seconds
+      toggleSecondsBtn.addEventListener('click', function () {
+        showSeconds = !showSeconds;
+        toggleSecondsBtn.textContent = showSeconds ? 'Hide Seconds' : 'Show Seconds';
+        updateClock();
+      });
+
+      // Fullscreen handling on clock card
+      function enterFullscreen() {
+        if (clockCard.requestFullscreen) {
+          clockCard.requestFullscreen();
+        } else if (clockCard.webkitRequestFullscreen) {
+          clockCard.webkitRequestFullscreen();
+        } else if (clockCard.msRequestFullscreen) {
+          clockCard.msRequestFullscreen();
+        }
+      }
+
+      function exitFullscreen() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+
+      fullscreenBtn.addEventListener('click', enterFullscreen);
+      exitFullscreenBtn.addEventListener('click', exitFullscreen);
+
+      function handleFullscreenChange() {
+        var isFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        if (isFs) {
+          clockCard.classList.add('is-fullscreen');
+          exitFullscreenBtn.style.display = 'block';
+        } else {
+          clockCard.classList.remove('is-fullscreen');
+          exitFullscreenBtn.style.display = 'none';
+        }
+      }
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+      updateClock();
+      setInterval(updateClock, 1000);
+    })();
+  </script>
+
+  <style>
+    /* Fullscreen styling for standalone clock display */
+    #fs-clock-card.is-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: #06151f !important;
+      padding: 2rem !important;
+      box-sizing: border-box !important;
+    }
+
+    #fs-clock-card.is-fullscreen #fs-main-time {
+      font-size: clamp(4.5rem, 18vw, 14rem) !important;
+    }
+
+    #fs-clock-card.is-fullscreen #fs-main-date {
+      font-size: clamp(1.4rem, 4vw, 2.5rem) !important;
+    }
+
+    #toggle-hours-btn:hover,
+    #toggle-seconds-btn:hover {
+      background: var(--panel) !important;
+      border-color: var(--accent) !important;
+    }
+
+    #fullscreen-btn:hover {
+      filter: brightness(1.1);
+    }
+  </style>
+</BaseLayout>
