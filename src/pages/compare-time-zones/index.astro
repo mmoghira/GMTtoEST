@@ -1,0 +1,892 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "compare-time-zones";
+const seoTitle = "Compare Time Zones | Side-by-Side Time Zone Comparison";
+const pageDescription = "Compare time zones side by side. See the same moment in two or three cities, with the hour difference and DST status.";
+
+const pubDate = "2026-10-25T14:30:00+05:00";
+const updatedDate = "2026-10-25T15:15:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "compare time zones, time zone comparison, side by side time converter, meeting time converter, utc offset difference, daylight saving comparison",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "How do I compare two time zones?",
+      a: "Pick the first zone and a date and time, then pick the second zone. This tool shows the same instant in both zones, with the hour difference."
+    },
+    {
+      q: "Why is the time difference not always the same?",
+      a: "Because zones start and end daylight saving on different dates, so the gap between two zones can change by one hour for part of the year."
+    },
+    {
+      q: "What time is it in a different time zone right now?",
+      a: "Set the date and time to now in the first zone, or use the Full-Screen Clock page for live times, then compare with the zone you need."
+    }
+  ]
+};
+
+// Curated list of prominent cities and their IANA identifiers
+const CITIES = [
+  { name: "London", iana: "Europe/London", country: "United Kingdom" },
+  { name: "Berlin", iana: "Europe/Berlin", country: "Germany" },
+  { name: "New York", iana: "America/New_York", country: "United States" },
+  { name: "Chicago", iana: "America/Chicago", country: "United States" },
+  { name: "Los Angeles", iana: "America/Los_Angeles", country: "United States" },
+  { name: "Toronto", iana: "America/Toronto", country: "Canada" },
+  { name: "Mumbai", iana: "Asia/Kolkata", country: "India" },
+  { name: "Dubai", iana: "Asia/Dubai", country: "United Arab Emirates" },
+  { name: "Tokyo", iana: "Asia/Tokyo", country: "Japan" },
+  { name: "Sydney", iana: "Australia/Sydney", country: "Australia" }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- Schema: WebApplication Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Compare Time Zones",
+    "url": "https://gmttoestconverter.com/compare-time-zones/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  })}></script>
+
+  <!-- Schema: BreadcrumbList Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://gmttoestconverter.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Compare Time Zones",
+        "item": "https://gmttoestconverter.com/compare-time-zones/"
+      }
+    ]
+  })}></script>
+
+  <!-- Hero Banner -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Compare Time Zones</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 680px; margin: 12px auto 0;">
+      Compare the same instant across two or three time zones with live hour differences, local dates, and daylight saving status.
+    </p>
+  </div>
+
+  <div style="max-width: 860px; margin: 0 auto; padding-top: 24px;">
+
+    <!-- Interactive Time Zone Comparison Tool (Strictly Above The Fold) -->
+    <section id="compare-tool-card" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); box-shadow: var(--shadow); position: relative;">
+      
+      <!-- Inputs Fieldset -->
+      <form id="compare-form" onsubmit="return false;" style="margin: 0;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+          
+          <!-- Zone 1 Selection -->
+          <div>
+            <label for="zone1-select" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 6px;">
+              Zone 1 (Reference) *
+            </label>
+            <select
+              id="zone1-select"
+              style="width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 600; font-size: 1rem; cursor: pointer;"
+            >
+              {CITIES.map(c => (
+                <option value={c.iana} selected={c.name === "New York"}>
+                  {c.name} ({c.country})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <!-- Date in Zone 1 -->
+          <div>
+            <label for="date-input" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin-bottom: 6px;">
+              Date in Zone 1 *
+            </label>
+            <input
+              type="date"
+              id="date-input"
+              required
+              style="width: 100%; padding: 11px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 600; font-size: 1rem; box-sizing: border-box;"
+            />
+          </div>
+
+          <!-- Time in Zone 1 -->
+          <div>
+            <label for="time-input" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin-bottom: 6px;">
+              Time in Zone 1 *
+            </label>
+            <input
+              type="time"
+              id="time-input"
+              required
+              step="60"
+              style="width: 100%; padding: 11px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 600; font-size: 1rem; box-sizing: border-box;"
+            />
+          </div>
+
+          <!-- Zone 2 Selection -->
+          <div>
+            <label for="zone2-select" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-2); margin-bottom: 6px;">
+              Zone 2 (Comparison) *
+            </label>
+            <select
+              id="zone2-select"
+              style="width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 600; font-size: 1rem; cursor: pointer;"
+            >
+              {CITIES.map(c => (
+                <option value={c.iana} selected={c.name === "London"}>
+                  {c.name} ({c.country})
+                </option>
+              ))}
+            </select>
+            <div id="zone2-error" role="alert" style="display: none; color: #f87171; font-size: 0.82rem; font-weight: 700; margin-top: 6px;">
+              Choose a different zone to compare.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Optional Zone 3 Container (hidden by default) -->
+        <div id="zone3-wrapper" style="display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="zone3-select" style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #a855f7;">
+              Zone 3 (Optional)
+            </label>
+            <button
+              type="button"
+              id="remove-zone3-btn"
+              style="background: transparent; border: none; color: #f87171; font-size: 0.85rem; font-weight: 700; cursor: pointer; padding: 4px 8px;"
+            >
+              ✕ Remove Zone 3
+            </button>
+          </div>
+          <select
+            id="zone3-select"
+            style="width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 600; font-size: 1rem; cursor: pointer;"
+          >
+            {CITIES.map(c => (
+              <option value={c.iana} selected={c.name === "Tokyo"}>
+                {c.name} ({c.country})
+              </option>
+            ))}
+          </select>
+          <div id="zone3-error" role="alert" style="display: none; color: #f87171; font-size: 0.82rem; font-weight: 700; margin-top: 6px;">
+            Choose a different zone to compare.
+          </div>
+        </div>
+
+        <!-- Controls Bar: Add Zone 3 & Now Button -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px;">
+          <button
+            type="button"
+            id="add-zone3-btn"
+            style="background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; color: #d8b4fe; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;"
+          >
+            + Add a third zone
+          </button>
+
+          <button
+            type="button"
+            id="set-now-btn"
+            style="background: var(--bg); border: 1px solid var(--line); color: var(--text); padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;"
+          >
+            Set to Now in Zone 1
+          </button>
+        </div>
+      </form>
+
+      <!-- DST Ambiguity / Nonexistent Notification Alert -->
+      <div id="transition-alert-box" style="display: none; background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; border-radius: 10px; padding: 16px; margin-top: 20px; text-align: left;">
+        <strong id="transition-alert-title" style="color: #fbbf24; display: block; font-size: 0.95rem; margin-bottom: 4px;">
+          Daylight Saving Transition Notice
+        </strong>
+        <p id="transition-alert-desc" style="color: #fef3c7; margin: 0; font-size: 0.9rem; line-height: 1.5;">
+          Notice details here.
+        </p>
+        <div id="ambiguity-choices" style="display: none; margin-top: 10px; gap: 10px;">
+          <!-- Choice buttons dynamically inserted -->
+        </div>
+      </div>
+
+      <!-- Comparison Result Cards Grid -->
+      <div id="results-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 26px;" aria-live="polite">
+        
+        <!-- Zone 1 Card -->
+        <div id="card-zone1" style="background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 800;">Zone 1 (Reference)</span>
+          </div>
+          <h3 id="card1-city" style="font-size: 1.4rem; color: #ffffff; margin: 4px 0 2px;">New York</h3>
+          <span id="card1-iana" style="font-size: 0.8rem; color: var(--muted); font-family: monospace; display: block; margin-bottom: 12px;">America/New_York</span>
+          
+          <div style="padding-top: 10px; border-top: 1px solid var(--line);">
+            <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Local Time</div>
+            <strong id="card1-time" style="display: block; font-size: 1.8rem; color: #ffffff; font-variant-numeric: tabular-nums; line-height: 1.2;">--:--</strong>
+            <span id="card1-date" style="display: block; font-size: 0.95rem; color: var(--accent-2); font-weight: 600; margin-top: 2px;">--</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Offset</span>
+              <strong id="card1-offset" style="color: var(--warn); font-variant-numeric: tabular-nums;">--</strong>
+              <span id="card1-abbr" style="color: var(--muted); font-size: 0.75rem; display: block;"></span>
+            </div>
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">DST Status</span>
+              <strong id="card1-dst" style="color: var(--accent);">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone 2 Card -->
+        <div id="card-zone2" style="background: var(--bg); border: 2px solid var(--accent-2); border-radius: 12px; padding: 20px; text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-2); font-weight: 800;">Zone 2 (Comparison)</span>
+          </div>
+          <h3 id="card2-city" style="font-size: 1.4rem; color: #ffffff; margin: 4px 0 2px;">London</h3>
+          <span id="card2-iana" style="font-size: 0.8rem; color: var(--muted); font-family: monospace; display: block; margin-bottom: 12px;">Europe/London</span>
+          
+          <div style="padding-top: 10px; border-top: 1px solid var(--line);">
+            <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Local Time</div>
+            <strong id="card2-time" style="display: block; font-size: 1.8rem; color: #ffffff; font-variant-numeric: tabular-nums; line-height: 1.2;">--:--</strong>
+            <span id="card2-date" style="display: block; font-size: 0.95rem; color: var(--accent-2); font-weight: 600; margin-top: 2px;">--</span>
+          </div>
+
+          <div style="margin-top: 10px; padding: 8px 10px; background: rgba(54, 199, 181, 0.1); border-radius: 6px; border: 1px solid rgba(54, 199, 181, 0.2);">
+            <strong id="card2-diff" style="font-size: 0.9rem; color: var(--accent); display: block;">--</strong>
+            <span id="card2-daynote" style="font-size: 0.78rem; color: var(--muted); display: block;"></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Offset</span>
+              <strong id="card2-offset" style="color: var(--warn); font-variant-numeric: tabular-nums;">--</strong>
+              <span id="card2-abbr" style="color: var(--muted); font-size: 0.75rem; display: block;"></span>
+            </div>
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">DST Status</span>
+              <strong id="card2-dst" style="color: var(--accent);">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone 3 Card (conditionally displayed) -->
+        <div id="card-zone3" style="display: none; background: var(--bg); border: 2px solid #a855f7; border-radius: 12px; padding: 20px; text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #a855f7; font-weight: 800;">Zone 3 (Optional)</span>
+          </div>
+          <h3 id="card3-city" style="font-size: 1.4rem; color: #ffffff; margin: 4px 0 2px;">Tokyo</h3>
+          <span id="card3-iana" style="font-size: 0.8rem; color: var(--muted); font-family: monospace; display: block; margin-bottom: 12px;">Asia/Tokyo</span>
+          
+          <div style="padding-top: 10px; border-top: 1px solid var(--line);">
+            <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Local Time</div>
+            <strong id="card3-time" style="display: block; font-size: 1.8rem; color: #ffffff; font-variant-numeric: tabular-nums; line-height: 1.2;">--:--</strong>
+            <span id="card3-date" style="display: block; font-size: 0.95rem; color: var(--accent-2); font-weight: 600; margin-top: 2px;">--</span>
+          </div>
+
+          <div style="margin-top: 10px; padding: 8px 10px; background: rgba(168, 85, 247, 0.1); border-radius: 6px; border: 1px solid rgba(168, 85, 247, 0.2);">
+            <strong id="card3-diff" style="font-size: 0.9rem; color: #d8b4fe; display: block;">--</strong>
+            <span id="card3-daynote" style="font-size: 0.78rem; color: var(--muted); display: block;"></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Offset</span>
+              <strong id="card3-offset" style="color: var(--warn); font-variant-numeric: tabular-nums;">--</strong>
+              <span id="card3-abbr" style="color: var(--muted); font-size: 0.75rem; display: block;"></span>
+            </div>
+            <div>
+              <span style="color: var(--muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">DST Status</span>
+              <strong id="card3-dst" style="color: var(--accent);">--</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Editorial Hero Image (Below tool to ensure instant tool access) -->
+    <div class="infographic-wrapper" style="margin-top: 36px;">
+      <figure style="margin: 0; text-align: center;">
+        <img
+          src="/assets/compare-time-zones-hero.webp"
+          alt="Side-by-side clocks comparing the same moment in three different time zones"
+          class="infographic-image"
+          width="960"
+          height="540"
+          loading="lazy"
+        />
+        <figcaption class="infographic-caption">Synchronize conference calls, international webinars, and remote handoffs across global cities.</figcaption>
+      </figure>
+    </div>
+
+    <!-- Content Sections in Exact Required Order -->
+    <div style="padding-top: 24px;">
+
+      <!-- H2: How to compare time zones -->
+      <section>
+        <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">How to compare time zones</h2>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+          Comparing time zones accurately requires synchronizing around a <strong>single universal physical instant</strong> rather than treating clock digits as static numbers. Follow these simple steps:
+        </p>
+        <ol style="color: var(--muted); line-height: 1.7; padding-left: 20px; margin: 14px 0;">
+          <li><strong>Select the first time zone (Zone 1):</strong> This serves as your base anchor reference point.</li>
+          <li><strong>Choose the date and time in that zone:</strong> If you are planning an upcoming international meeting or flight departure, enter the scheduled local wall-clock date and time in Zone 1.</li>
+          <li><strong>Select the second time zone (Zone 2):</strong> Pick the city or jurisdiction where your remote counterpart resides.</li>
+          <li><strong>Optionally add a third zone:</strong> Click <em>+ Add a third zone</em> if you need to coordinate among distributed teams across three continents simultaneously.</li>
+          <li><strong>Compare the displayed local times, dates, UTC offsets, and time differences:</strong> View the exact converted local hour, whether the conversion crosses midnight into the next day, and each region's daylight saving status.</li>
+        </ol>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+          Remember that the hour difference between two cities is not permanently fixed throughout the calendar year. Because nations start and end daylight saving on differing weeks, their relative gap can expand or shrink by an hour during seasonal transition periods.
+        </p>
+      </section>
+
+      <!-- Explanatory Diagram 2 -->
+      <div class="infographic-wrapper" style="margin-top: 36px;">
+        <figure style="margin: 0; text-align: center;">
+          <img
+            src="/assets/time-zone-comparison-example.webp"
+            alt="Diagram showing the same moment converted across London, New York and Tokyo"
+            class="infographic-image"
+            width="800"
+            height="450"
+            loading="lazy"
+          />
+          <figcaption class="infographic-caption">One instant, shown in three zones — the difference depends on the date.</figcaption>
+        </figure>
+      </div>
+
+      <!-- H2: Why the difference changes: the gap week -->
+      <section style="margin-top: 36px;">
+        <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Why the difference changes: the gap week</h2>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+          A widespread trap for business scheduling is assuming that the time difference between two major financial capitals remains constant all year long. In reality, mismatched daylight saving transition dates create temporary "gap weeks."
+        </p>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch; margin-top: 12px;">
+          Consider the autumn 2026 calendar transition:
+        </p>
+        <ul style="color: var(--muted); line-height: 1.7; padding-left: 20px; margin: 14px 0;">
+          <li>The United Kingdom and much of Europe ended daylight saving time on <strong>Sunday, 25 October 2026</strong>, shifting back from BST (UTC+1) to GMT (UTC+0).</li>
+          <li>The United States does not end daylight saving time until <strong>Sunday, 1 November 2026</strong>, remaining on Eastern Daylight Time (EDT, UTC−4) for an extra week.</li>
+          <li>During this intervening seven-day gap week, the time difference between London and New York temporarily shrank from its usual <strong>5 hours down to only 4 hours</strong>.</li>
+        </ul>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+          Once American clocks "fell back" on November 1, standard 5-hour alignment resumed. Similar offset shifts take place during spring forward windows in March. Whenever one jurisdiction advances or delays its clocks ahead of another, their relative offset temporarily changes.
+        </p>
+      </section>
+
+      <!-- H2: Compare time zones vs a world clock -->
+      <section style="margin-top: 36px;">
+        <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;">Compare time zones vs a world clock</h2>
+        <p style="color: var(--muted); line-height: 1.7; max-width: 72ch;">
+          While both tools assist with global timekeeping, they serve fundamentally different tasks:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0;">
+          <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1.15rem; color: var(--accent-2); margin-top: 0; margin-bottom: 8px;">A World Clock</h3>
+            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin: 0;">
+              Displays the <em>current, real-time hour</em> ticking right now across a roster of world cities. It is ideal for checking whether someone is awake before making an immediate phone call. To see your current local time enlarged alongside live GMT and Eastern Time, check our <a href="/full-screen-clock/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">Full-Screen Clock</a>.
+            </p>
+          </div>
+          <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1.15rem; color: var(--accent); margin-top: 0; margin-bottom: 8px;">A Time Zone Comparison Tool</h3>
+            <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin: 0;">
+              Enables you to input an <em>arbitrary future or past date and time</em> (such as a 3:00 PM presentation next month) and resolves that specific instant across multiple time zones, correctly evaluating seasonal daylight saving shifts and date rollovers.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contextual Internal Links Card -->
+      <section style="margin-top: 36px;">
+        <div class="info-callout" style="background: var(--panel); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
+          <h3 style="font-size: 1.15rem; color: #ffffff; margin-top: 0; margin-bottom: 8px;">Explore Related Time Tools</h3>
+          <p style="color: var(--muted); line-height: 1.6; margin: 0;">
+            Not sure which zone your computer is using? Detect your device's zone on <a href="/what-is-my-time-zone/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">What Is My Time Zone</a>. To learn when seasonal daylight saving adjustments take effect, read our verified guide on <a href="/when-do-clocks-go-back-2026/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">When Do Clocks Go Back 2026</a>, or convert between GMT and North American zones on the <a href="/" style="color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;">GMT to EST Converter</a> homepage.
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Frequently Asked Questions -->
+  <section style="max-width: 860px; margin: 0 auto; padding: 48px 0 24px;">
+    <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); text-align: center; margin-bottom: 20px;">Frequently Asked Questions</h2>
+    <div class="faq">
+      {meta.faqs.map(faq => (
+        <details style="padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px;">
+          <summary style="font-weight: 800; cursor: pointer; color: var(--text);">{faq.q}</summary>
+          <p style="margin: 12px 0 0; color: var(--muted); line-height: 1.65;">{faq.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Interactive JavaScript Engine -->
+  <script is:inline>
+    (function () {
+      // Elements
+      var zone1Select = document.getElementById('zone1-select');
+      var zone2Select = document.getElementById('zone2-select');
+      var zone3Select = document.getElementById('zone3-select');
+      var dateInput = document.getElementById('date-input');
+      var timeInput = document.getElementById('time-input');
+      var addZone3Btn = document.getElementById('add-zone3-btn');
+      var removeZone3Btn = document.getElementById('remove-zone3-btn');
+      var setNowBtn = document.getElementById('set-now-btn');
+      var zone3Wrapper = document.getElementById('zone3-wrapper');
+      var cardZone3 = document.getElementById('card-zone3');
+
+      var zone2Error = document.getElementById('zone2-error');
+      var zone3Error = document.getElementById('zone3-error');
+      var transitionAlertBox = document.getElementById('transition-alert-box');
+      var transitionAlertTitle = document.getElementById('transition-alert-title');
+      var transitionAlertDesc = document.getElementById('transition-alert-desc');
+      var ambiguityChoices = document.getElementById('ambiguity-choices');
+
+      // State
+      var isZone3Active = false;
+      var chosenAmbiguityIndex = 0; // 0 for earlier, 1 for later
+
+      // Friendly names lookup for select options
+      var CITY_NAMES = {
+        'Europe/London': 'London',
+        'Europe/Berlin': 'Berlin',
+        'America/New_York': 'New York',
+        'America/Chicago': 'Chicago',
+        'America/Los_Angeles': 'Los Angeles',
+        'America/Toronto': 'Toronto',
+        'Asia/Kolkata': 'Mumbai',
+        'Asia/Dubai': 'Dubai',
+        'Asia/Tokyo': 'Tokyo',
+        'Australia/Sydney': 'Sydney'
+      };
+
+      // Helper: parse parts from Intl.DateTimeFormat in a given timeZone
+      function getTzParts(ms, timeZone) {
+        var d = new Date(ms);
+        var formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timeZone,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hour12: false
+        });
+        var parts = formatter.formatToParts(d);
+        var y = 0, m = 0, dy = 0, h = 0, mi = 0, s = 0;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          if (p.type === 'year') y = parseInt(p.value, 10);
+          if (p.type === 'month') m = parseInt(p.value, 10);
+          if (p.type === 'day') dy = parseInt(p.value, 10);
+          if (p.type === 'hour') h = parseInt(p.value, 10) % 24;
+          if (p.type === 'minute') mi = parseInt(p.value, 10);
+          if (p.type === 'second') s = parseInt(p.value, 10);
+        }
+        return { y: y, m: m, dy: dy, h: h, mi: mi, s: s };
+      }
+
+      // Convert local wall-clock (year, month, day, hour, minute) in timeZone to UTC instants
+      function resolveWallClockToInstants(year, month, day, hour, minute, timeZone) {
+        var guessUtcMs = Date.UTC(year, month - 1, day, hour, minute, 0);
+
+        // Test sample points to find candidate offsets
+        var testPoints = [
+          guessUtcMs - 86400000,
+          guessUtcMs - 43200000,
+          guessUtcMs,
+          guessUtcMs + 43200000,
+          guessUtcMs + 86400000
+        ];
+
+        var candidateOffsets = [];
+        for (var i = 0; i < testPoints.length; i++) {
+          var pt = testPoints[i];
+          var p = getTzParts(pt, timeZone);
+          var wallMsAtPt = Date.UTC(p.y, p.m - 1, p.dy, p.h, p.mi, p.s);
+          var offMin = Math.round((wallMsAtPt - pt) / 60000);
+          if (candidateOffsets.indexOf(offMin) === -1) {
+            candidateOffsets.push(offMin);
+          }
+        }
+
+        var validInstants = [];
+        for (var j = 0; j < candidateOffsets.length; j++) {
+          var off = candidateOffsets[j];
+          var candidateMs = guessUtcMs - off * 60000;
+          var chk = getTzParts(candidateMs, timeZone);
+          if (chk.y === year && chk.m === month && chk.dy === day && chk.h === hour && chk.mi === minute) {
+            if (validInstants.indexOf(candidateMs) === -1) {
+              validInstants.push(candidateMs);
+            }
+          }
+        }
+
+        validInstants.sort(function (a, b) { return a - b; });
+        return validInstants;
+      }
+
+      // Format offset in minutes to signed ISO string
+      function formatOffset(offsetMinutes) {
+        var sign = offsetMinutes >= 0 ? '+' : '−';
+        var abs = Math.abs(offsetMinutes);
+        var hours = Math.floor(abs / 60);
+        var mins = abs % 60;
+        var hStr = hours < 10 ? '0' + hours : '' + hours;
+        var mStr = mins < 10 ? '0' + mins : '' + mins;
+        return 'UTC' + sign + hStr + ':' + mStr;
+      }
+
+      // Determine DST status for a specific instant in a zone
+      function getDstStatus(instantMs, timeZone) {
+        try {
+          var d = new Date(instantMs);
+          var year = d.getUTCFullYear();
+          
+          var pNow = getTzParts(instantMs, timeZone);
+          var wallNow = Date.UTC(pNow.y, pNow.m - 1, pNow.dy, pNow.h, pNow.mi, pNow.s);
+          var curOff = Math.round((wallNow - instantMs) / 60000);
+
+          var janPt = Date.UTC(year, 0, 15, 12, 0, 0);
+          var pJan = getTzParts(janPt, timeZone);
+          var janOff = Math.round((Date.UTC(pJan.y, pJan.m - 1, pJan.dy, pJan.h, pJan.mi, pJan.s) - janPt) / 60000);
+
+          var julPt = Date.UTC(year, 6, 15, 12, 0, 0);
+          var pJul = getTzParts(julPt, timeZone);
+          var julOff = Math.round((Date.UTC(pJul.y, pJul.m - 1, pJul.dy, pJul.h, pJul.mi, pJul.s) - julPt) / 60000);
+
+          if (janOff === julOff) {
+            return 'Not in effect';
+          }
+
+          var maxOff = Math.max(janOff, julOff);
+          return curOff === maxOff ? 'In effect' : 'Not in effect';
+        } catch (e) {
+          return 'Status unavailable';
+        }
+      }
+
+      // Get short localized timezone abbreviation e.g. EDT, GMT, JST
+      function getTimeZoneAbbr(instantMs, timeZone) {
+        try {
+          var parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: timeZone,
+            timeZoneName: 'short'
+          }).formatToParts(new Date(instantMs));
+          for (var i = 0; i < parts.length; i++) {
+            if (parts[i].type === 'timeZoneName') return parts[i].value;
+          }
+          return '';
+        } catch (e) {
+          return '';
+        }
+      }
+
+      // Calculate difference description between target zone and Zone 1
+      function describeDifference(zone1Offset, targetOffset, zone1Name) {
+        var diffMinutes = targetOffset - zone1Offset;
+        if (diffMinutes === 0) {
+          return 'Same local time as ' + zone1Name;
+        }
+
+        var isAhead = diffMinutes > 0;
+        var absMin = Math.abs(diffMinutes);
+        var hrs = Math.floor(absMin / 60);
+        var mins = absMin % 60;
+
+        var text = '';
+        if (hrs > 0 && mins > 0) {
+          text = hrs + ' hr' + (hrs !== 1 ? 's' : '') + ' ' + mins + ' min';
+        } else if (hrs > 0) {
+          text = hrs + ' hour' + (hrs !== 1 ? 's' : '');
+        } else {
+          text = mins + ' minutes';
+        }
+
+        return text + ' ' + (isAhead ? 'ahead of ' : 'behind ') + zone1Name;
+      }
+
+      // Populate card details
+      function populateCard(cardPrefix, instantMs, timeZone, zone1Offset, zone1City) {
+        var d = new Date(instantMs);
+        
+        // City & IANA
+        var cityEl = document.getElementById(cardPrefix + '-city');
+        var ianaEl = document.getElementById(cardPrefix + '-iana');
+        if (cityEl) cityEl.textContent = CITY_NAMES[timeZone] || timeZone;
+        if (ianaEl) ianaEl.textContent = timeZone;
+
+        // Formatted Time (e.g. 2:30 PM)
+        var timeEl = document.getElementById(cardPrefix + '-time');
+        if (timeEl) {
+          timeEl.textContent = new Intl.DateTimeFormat('en-US', {
+            timeZone: timeZone,
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }).format(d);
+        }
+
+        // Formatted Date (e.g. Monday, October 26, 2026)
+        var dateEl = document.getElementById(cardPrefix + '-date');
+        if (dateEl) {
+          dateEl.textContent = new Intl.DateTimeFormat('en-US', {
+            timeZone: timeZone,
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }).format(d);
+        }
+
+        // Offset & Abbr
+        var p = getTzParts(instantMs, timeZone);
+        var wallMs = Date.UTC(p.y, p.m - 1, p.dy, p.h, p.mi, p.s);
+        var offMin = Math.round((wallMs - instantMs) / 60000);
+        
+        var offsetEl = document.getElementById(cardPrefix + '-offset');
+        if (offsetEl) offsetEl.textContent = formatOffset(offMin);
+
+        var abbrEl = document.getElementById(cardPrefix + '-abbr');
+        var abbr = getTimeZoneAbbr(instantMs, timeZone);
+        if (abbrEl) abbrEl.textContent = abbr ? '(' + abbr + ')' : '';
+
+        // DST Status
+        var dstEl = document.getElementById(cardPrefix + '-dst');
+        var dstStatus = getDstStatus(instantMs, timeZone);
+        if (dstEl) {
+          dstEl.textContent = dstStatus;
+          dstEl.style.color = dstStatus === 'In effect' ? 'var(--accent)' : 'var(--text)';
+        }
+
+        // Difference note (for Zone 2 & Zone 3)
+        var diffEl = document.getElementById(cardPrefix + '-diff');
+        if (diffEl && zone1Offset !== undefined && zone1City) {
+          diffEl.textContent = describeDifference(zone1Offset, offMin, zone1City);
+        }
+
+        // Day Note (Yesterday / Tomorrow check against Zone 1 date)
+        var dayNoteEl = document.getElementById(cardPrefix + '-daynote');
+        if (dayNoteEl && cardPrefix !== 'card1') {
+          var z1Parts = getTzParts(instantMs, zone1Select.value);
+          var z1DayIndex = z1Parts.y * 372 + z1Parts.m * 31 + z1Parts.dy;
+          var tzDayIndex = p.y * 372 + p.m * 31 + p.dy;
+          
+          if (tzDayIndex > z1DayIndex) {
+            dayNoteEl.textContent = 'Next day in ' + (CITY_NAMES[timeZone] || 'selected city');
+          } else if (tzDayIndex < z1DayIndex) {
+            dayNoteEl.textContent = 'Previous day in ' + (CITY_NAMES[timeZone] || 'selected city');
+          } else {
+            dayNoteEl.textContent = 'Same day as ' + zone1City;
+          }
+        }
+
+        return offMin;
+      }
+
+      // Initialize inputs to current local date and time in Zone 1
+      function setInputsToNowInZone1() {
+        var now = new Date();
+        var z1 = zone1Select.value;
+        var p = getTzParts(now.getTime(), z1);
+
+        var mStr = p.m < 10 ? '0' + p.m : '' + p.m;
+        var dStr = p.dy < 10 ? '0' + p.dy : '' + p.dy;
+        dateInput.value = p.y + '-' + mStr + '-' + dStr;
+
+        var hStr = p.h < 10 ? '0' + p.h : '' + p.h;
+        var minStr = p.mi < 10 ? '0' + p.mi : '' + p.mi;
+        timeInput.value = hStr + ':' + minStr;
+
+        recalculate();
+      }
+
+      // Recalculate full comparison
+      function recalculate() {
+        var z1 = zone1Select.value;
+        var z2 = zone2Select.value;
+        var z3 = zone3Select.value;
+
+        // 1. Duplicate Zone Validation
+        var hasError = false;
+        if (z2 === z1) {
+          zone2Error.style.display = 'block';
+          hasError = true;
+        } else {
+          zone2Error.style.display = 'none';
+        }
+
+        if (isZone3Active) {
+          if (z3 === z1 || z3 === z2) {
+            zone3Error.style.display = 'block';
+            hasError = true;
+          } else {
+            zone3Error.style.display = 'none';
+          }
+        }
+
+        if (hasError) {
+          return;
+        }
+
+        // 2. Parse Date and Time inputs
+        var dateVal = dateInput.value;
+        var timeVal = timeInput.value;
+        if (!dateVal || !timeVal) {
+          return;
+        }
+
+        var dParts = dateVal.split('-');
+        var tParts = timeVal.split(':');
+        if (dParts.length !== 3 || tParts.length < 2) {
+          return;
+        }
+
+        var year = parseInt(dParts[0], 10);
+        var month = parseInt(dParts[1], 10);
+        var day = parseInt(dParts[2], 10);
+        var hour = parseInt(tParts[0], 10);
+        var minute = parseInt(tParts[1], 10);
+
+        // 3. Resolve wall-clock time in Zone 1 to UTC instants
+        var instants = resolveWallClockToInstants(year, month, day, hour, minute, z1);
+
+        // Handle Nonexistent Time (Spring Forward)
+        if (instants.length === 0) {
+          transitionAlertBox.style.display = 'block';
+          transitionAlertTitle.textContent = 'Nonexistent Local Time (Spring Forward)';
+          transitionAlertDesc.textContent = 'The selected time (' + timeVal + ') does not exist in ' + (CITY_NAMES[z1] || z1) + ' on ' + dateVal + ' because clocks jumped forward for Daylight Saving Time. Please choose a valid local time.';
+          ambiguityChoices.style.display = 'none';
+          return;
+        }
+
+        // Handle Ambiguous Time (Fall Back)
+        var selectedInstantMs = instants[0];
+        if (instants.length > 1) {
+          transitionAlertBox.style.display = 'block';
+          transitionAlertTitle.textContent = 'Ambiguous Local Time (Fall Back)';
+          transitionAlertDesc.textContent = 'Clocks are set backward on this date, so ' + timeVal + ' occurs twice in ' + (CITY_NAMES[z1] || z1) + '. Please select which occurrence you want to compare:';
+          ambiguityChoices.style.display = 'flex';
+          ambiguityChoices.innerHTML = '';
+
+          for (var i = 0; i < instants.length; i++) {
+            (function (idx, ms) {
+              var btn = document.createElement('button');
+              btn.type = 'button';
+              var off = formatOffset(getTzParts(ms, z1).h !== undefined ? Math.round((Date.UTC(getTzParts(ms, z1).y, getTzParts(ms, z1).m - 1, getTzParts(ms, z1).dy, getTzParts(ms, z1).h, getTzParts(ms, z1).mi, getTzParts(ms, z1).s) - ms) / 60000) : 0);
+              var abbr = getTimeZoneAbbr(ms, z1);
+              btn.textContent = (idx === 0 ? 'Earlier occurrence' : 'Later occurrence') + ' (' + off + (abbr ? ' ' + abbr : '') + ')';
+              btn.style.padding = '8px 14px';
+              btn.style.borderRadius = '6px';
+              btn.style.cursor = 'pointer';
+              btn.style.fontWeight = '700';
+              btn.style.fontSize = '0.85rem';
+              if (idx === chosenAmbiguityIndex) {
+                btn.style.background = 'var(--accent)';
+                btn.style.color = '#0c354a';
+                btn.style.border = 'none';
+              } else {
+                btn.style.background = 'var(--bg)';
+                btn.style.color = 'var(--text)';
+                btn.style.border = '1px solid var(--line)';
+              }
+
+              btn.addEventListener('click', function () {
+                chosenAmbiguityIndex = idx;
+                recalculate();
+              });
+
+              ambiguityChoices.appendChild(btn);
+            })(i, instants[i]);
+          }
+
+          if (chosenAmbiguityIndex >= instants.length) {
+            chosenAmbiguityIndex = 0;
+          }
+          selectedInstantMs = instants[chosenAmbiguityIndex];
+        } else {
+          transitionAlertBox.style.display = 'none';
+          ambiguityChoices.style.display = 'none';
+          chosenAmbiguityIndex = 0;
+        }
+
+        // 4. Render All Result Cards
+        var z1City = CITY_NAMES[z1] || z1;
+        var z1Offset = populateCard('card1', selectedInstantMs, z1);
+        populateCard('card2', selectedInstantMs, z2, z1Offset, z1City);
+
+        if (isZone3Active) {
+          cardZone3.style.display = 'block';
+          populateCard('card3', selectedInstantMs, z3, z1Offset, z1City);
+        } else {
+          cardZone3.style.display = 'none';
+        }
+      }
+
+      // Event Listeners
+      zone1Select.addEventListener('change', recalculate);
+      zone2Select.addEventListener('change', recalculate);
+      zone3Select.addEventListener('change', recalculate);
+      dateInput.addEventListener('change', recalculate);
+      timeInput.addEventListener('change', recalculate);
+
+      addZone3Btn.addEventListener('click', function () {
+        isZone3Active = true;
+        zone3Wrapper.style.display = 'block';
+        addZone3Btn.style.display = 'none';
+        recalculate();
+      });
+
+      removeZone3Btn.addEventListener('click', function () {
+        isZone3Active = false;
+        zone3Wrapper.style.display = 'none';
+        zone3Error.style.display = 'none';
+        addZone3Btn.style.display = 'inline-block';
+        recalculate();
+      });
+
+      setNowBtn.addEventListener('click', function () {
+        setInputsToNowInZone1();
+      });
+
+      // Initial page startup
+      setInputsToNowInZone1();
+    })();
+  </script>
+</BaseLayout>

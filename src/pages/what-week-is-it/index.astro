@@ -1,0 +1,529 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "what-week-is-it";
+const seoTitle = "What Week Is It? Week Number Calculator & Calendar";
+const pageDescription = "Find the week number for any date, including the ISO week, start and end dates, and how many weeks are left in the year.";
+
+const pubDate = "2026-10-25T15:00:00+05:00";
+const updatedDate = "2026-10-25T15:30:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "what week is it, week number calculator, iso week number, what week of the year is it, week 39 2026, semana 39 2026, current week number, calendar week",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What week is it today?",
+      a: "The tool at the top of this page shows the current ISO week number for today, with its Monday to Sunday dates."
+    },
+    {
+      q: "What week was 22 September 2026?",
+      a: "ISO week 39 of 2026, from Monday 21 September to Sunday 27 September 2026."
+    },
+    {
+      q: "Why does another site give a different week number?",
+      a: "It may be using US week counting, which starts weeks on Sunday and counts week 1 differently from the ISO system used here."
+    }
+  ]
+};
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- Schema: WebApplication Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "What Week Is It?",
+    "url": "https://gmttoestconverter.com/what-week-is-it/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  })}></script>
+
+  <!-- Hero Header -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">What Week Is It?</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 680px; margin: 12px auto 0;">
+      Find the ISO week number for any date, view the exact Monday-to-Sunday span, and see how many days remain in the week.
+    </p>
+  </div>
+
+  <div style="max-width: 820px; margin: 0 auto; padding-top: 24px;">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         INTERACTIVE ISO WEEK CALCULATOR (PROMINENT ABOVE THE FOLD)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="week-calculator-card" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); box-shadow: var(--shadow); position: relative;">
+      
+      <!-- Quick Preset Example / Today Pills -->
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">
+          Quick Selection:
+        </span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button
+            type="button"
+            id="today-btn"
+            style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+          >
+            📅 Use today's date
+          </button>
+          <button
+            type="button"
+            id="example-btn"
+            style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(54, 199, 181, 0.4); background: rgba(54, 199, 181, 0.12); color: var(--accent); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+          >
+            ⭐ Example: 22 September 2026
+          </button>
+        </div>
+      </div>
+
+      <!-- Date Input Form Row -->
+      <form id="week-calc-form" onsubmit="return false;" style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: flex-end;" class="calc-grid">
+        <div style="flex: 1;">
+          <label for="week-date-input" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px;">
+            Select a date
+          </label>
+          <input
+            type="date"
+            id="week-date-input"
+            name="date"
+            value="2026-09-22"
+            aria-describedby="date-help"
+            style="width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1.15rem; font-weight: 700; font-family: inherit; transition: border-color 0.2s;"
+          />
+        </div>
+        <div>
+          <button
+            type="button"
+            id="calc-btn"
+            style="padding: 14px 24px; border-radius: 10px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 1rem; cursor: pointer; white-space: nowrap; height: 53px; transition: filter 0.2s; display: inline-flex; align-items: center; justify-content: center;"
+          >
+            Find week number
+          </button>
+        </div>
+      </form>
+
+      <!-- Input Clarification & Error Warning -->
+      <div id="date-help" style="font-size: 0.82rem; color: var(--muted); margin-top: 8px;">
+        Choose any past, present, or future calendar date. Calculations are performed instantly in your browser.
+      </div>
+
+      <div
+        id="calc-error-msg"
+        role="alert"
+        style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.9rem; font-weight: 600;"
+      >
+        Please select a valid date.
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════════
+           RESULTS DISPLAY (STRICT ORDER: 1. ISO WEEK, 2. START, 3. END, 4. DAYS REMAINING)
+           ═════════════════════════════════════════════════════════════════════ -->
+      <div id="result-container" style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 24px;">
+        
+        <!-- Primary Highlight Card: ISO Week Number and ISO Year -->
+        <div style="background: linear-gradient(135deg, rgba(54, 199, 181, 0.12) 0%, rgba(12, 53, 74, 0.4) 100%); border: 2px solid rgba(54, 199, 181, 0.35); border-radius: 12px; padding: 20px 24px; text-align: center; margin-bottom: 20px;">
+          <span style="display: inline-block; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 6px;">
+            1. ISO Week Number &amp; ISO Year
+          </span>
+          <div id="res-week-title" style="font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 900; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; line-height: 1.2;">
+            Week 39 of 2026
+          </div>
+          <p id="res-week-sub" style="font-size: 0.9rem; color: #bdd2dc; margin: 6px 0 0;">
+            Follows the international ISO 8601 standard (weeks begin on Monday).
+          </p>
+        </div>
+
+        <!-- Secondary Details Grid: Start Date, End Date, Days Remaining -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px;">
+          
+          <!-- Result Item 2: Monday Start Date -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #38bdf8; margin-bottom: 6px;">
+              2. Week Starts (Monday)
+            </div>
+            <div id="res-monday" style="font-size: 1.15rem; font-weight: 800; color: var(--text); font-family: 'Space Grotesk', system-ui, sans-serif;">
+              Monday, 21 September 2026
+            </div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
+              Official start of this ISO week
+            </div>
+          </div>
+
+          <!-- Result Item 3: Sunday End Date -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #f87171; margin-bottom: 6px;">
+              3. Week Ends (Sunday)
+            </div>
+            <div id="res-sunday" style="font-size: 1.15rem; font-weight: 800; color: var(--text); font-family: 'Space Grotesk', system-ui, sans-serif;">
+              Sunday, 27 September 2026
+            </div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
+              Official close of this ISO week
+            </div>
+          </div>
+
+          <!-- Result Item 4: Days Remaining in Week -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #fbbf24; margin-bottom: 6px;">
+              4. Days Left in This Week
+            </div>
+            <div id="res-days-left" style="font-size: 1.15rem; font-weight: 800; color: #fbbf24; font-family: 'Space Grotesk', system-ui, sans-serif;">
+              5 days remaining
+            </div>
+            <div id="res-days-left-detail" style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
+              Wednesday through Sunday (excluding selected date)
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Hero Calendar Illustration -->
+    <div style="margin: 36px 0 24px; text-align: center;">
+      <img
+        src="/assets/what-week-is-it-hero.webp"
+        alt="Calendar highlighting one full week from Monday to Sunday with its week number"
+        width="960"
+        height="540"
+        loading="eager"
+        decoding="async"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+      />
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONTENT BELOW THE TOOL (STRICT ORDER)
+         1. H2: How ISO week numbers work
+         2. H2: ISO weeks vs US weeks
+         3. H2: Week 39 in 2026 as an example
+         4. H2: Frequently Asked Questions
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <article class="article-content" style="margin-top: 36px;">
+
+      <!-- Section 1 -->
+      <h2>How ISO week numbers work</h2>
+      <p>
+        The international standard for date and time representation, <strong>ISO 8601</strong>, defines a clear, unambiguous system for numbering calendar weeks across the world. Under this standard:
+      </p>
+      <ul>
+        <li><strong>Weeks strictly start on Monday</strong> (day 1) and conclude on <strong>Sunday</strong> (day 7).</li>
+        <li><strong>ISO Week 1 is defined as the week containing the first Thursday of the calendar year</strong>. Equivalently, Week 1 is the week that contains January 4.</li>
+        <li><strong>Most ISO years contain 52 weeks</strong>, but years that begin on a Thursday (or leap years that begin on a Wednesday or Thursday) contain <strong>53 weeks</strong>. For example, 2020 and 2026 are 53-week ISO years.</li>
+        <li><strong>The ISO week-year can differ from the Gregorian calendar year</strong>. Because a week always belongs to the calendar year in which its majority of days (and specifically its Thursday) falls, dates in late December can belong to Week 1 of the subsequent year, while dates in early January can belong to Week 52 or 53 of the prior year.</li>
+      </ul>
+      <p>
+        For instance, <strong>January 1, 2021</strong> was a Friday. Because the Thursday of that week fell on December 31, 2020, that Friday belonged to <strong>ISO Week 53 of 2020</strong>. Conversely, <strong>December 30, 2024</strong> was a Monday whose Thursday fell on January 2, 2025; therefore, it belonged to <strong>ISO Week 1 of 2025</strong>. Dividing the calendar day of the year by seven fails to account for these critical boundary conditions, which is why our calculator relies on strict ISO 8601 calendar arithmetic.
+      </p>
+
+      <!-- Section 2 -->
+      <h2>ISO weeks vs US weeks</h2>
+      <p>
+        If you have noticed different week numbers for the same calendar date on different calendars or software applications, you are likely encountering the difference between <strong>ISO 8601</strong> and common <strong>US calendar conventions</strong>:
+      </p>
+      <ul>
+        <li><strong>Starting Day:</strong> ISO 8601 mandates that every week begins on Monday. In traditional United States calendars, weeks typically begin on Sunday.</li>
+        <li><strong>Definition of Week 1:</strong> The ISO standard requires Week 1 to contain at least four days of the new year (anchored by the first Thursday). In common US systems, Week 1 is frequently defined as the week containing January 1, regardless of how many days fall in the new year. Some US systems even record a "partial week 1" containing only one to three days.</li>
+        <li><strong>Weekly Numbering Divergence:</strong> Because of these differing start days and threshold rules, the same calendar date can be assigned Week 39 in the ISO system and Week 40 in a Sunday-based US system.</li>
+      </ul>
+      <p>
+        There is no single universal US week-numbering standard across private businesses, but global logistics, manufacturing, finance, and enterprise software (such as SAP, Salesforce, and supply-chain scheduling) adhere strictly to the <strong>ISO 8601 standard</strong>. Our calculator reports genuine ISO week numbers so your business operations and international timelines remain perfectly synchronized. If you need to measure the duration between milestone dates across quarters, you can also use our <a href="/days-between-dates-calculator/">Days Between Dates Calculator</a>.
+      </p>
+
+      <!-- Section 3 -->
+      <h2>Week 39 in 2026 as an example</h2>
+      <p>
+        To illustrate how the ISO week calculation functions in practice, consider <strong>Tuesday, 22 September 2026</strong>:
+      </p>
+      <ul>
+        <li><strong>ISO Week Number &amp; Year:</strong> ISO Week 39 of 2026.</li>
+        <li><strong>Week Start Date:</strong> Monday, 21 September 2026.</li>
+        <li><strong>Week End Date:</strong> Sunday, 27 September 2026.</li>
+        <li><strong>Determining Thursday:</strong> Thursday, 24 September 2026 (the 39th Thursday of 2026).</li>
+        <li><strong>Days Remaining in This Week:</strong> <strong>5 days</strong> (Wednesday 23, Thursday 24, Friday 25, Saturday 26, and Sunday 27 September).</li>
+      </ul>
+      <p>
+        Our calculator computes days remaining as the calendar days following the chosen date through Sunday. The selected date itself is not counted as remaining, ensuring an unambiguous duration. If you choose a Sunday, the calculator reports 0 days remaining after today.
+      </p>
+      <p>
+        In international and multilingual contexts, travelers and business managers often search for week timelines using phrases like <em>semana 39 2026</em> or calendar week 39. In all ISO-compliant schedules worldwide, Week 39 of 2026 represents the identical seven-day period from September 21 through September 27, 2026. If you are coordinating cross-border meetings across international time zones during this period, you can check global hours with our <a href="/">GMT to EST Converter</a> or track active precision time with the <a href="/full-screen-clock/">Full-Screen Clock</a>.
+      </p>
+
+      <!-- Educational Diagram: Week 39 of 2026 -->
+      <figure style="margin: 32px 0 36px; text-align: center;">
+        <img
+          src="/assets/iso-week-39-2026.webp"
+          alt="Calendar for week 39 of 2026 from Monday 21 September to Sunday 27 September"
+          width="800"
+          height="450"
+          loading="lazy"
+          decoding="async"
+          style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+        />
+        <figcaption style="font-size: 0.88rem; color: var(--muted); margin-top: 10px; font-style: italic;">
+          Week 39 of 2026: Monday 21 September to Sunday 27 September.
+        </figcaption>
+      </figure>
+
+      <!-- Section 4 -->
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+        {meta.faqs.map((faq) => (
+          <details style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;">
+            <summary style="font-weight: 800; font-size: 1.05rem; cursor: pointer; color: var(--text);">
+              {faq.q}
+            </summary>
+            <p style="margin: 12px 0 0; color: #bdd2dc; font-size: 0.95rem; line-height: 1.6;">
+              {faq.a}
+            </p>
+          </details>
+        ))}
+      </div>
+
+    </article>
+
+  </div>
+
+  <!-- Client-Side Vanilla JavaScript: ISO 8601 Calculator -->
+  <script is:inline>
+    (function initWeekCalculator() {
+      const dateInput = document.getElementById("week-date-input");
+      const calcBtn = document.getElementById("calc-btn");
+      const todayBtn = document.getElementById("today-btn");
+      const exampleBtn = document.getElementById("example-btn");
+      const errorMsg = document.getElementById("calc-error-msg");
+
+      const resTitle = document.getElementById("res-week-title");
+      const resSub = document.getElementById("res-week-sub");
+      const resMonday = document.getElementById("res-monday");
+      const resSunday = document.getElementById("res-sunday");
+      const resDaysLeft = document.getElementById("res-days-left");
+      const resDaysLeftDetail = document.getElementById("res-days-left-detail");
+
+      const MONTH_NAMES = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const DAY_NAMES = [
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+      ];
+
+      // Format date in client's local timezone: YYYY-MM-DD
+      function getLocalDateString(d = new Date()) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      // Format UTC date object to display string: "Monday, 21 September 2026"
+      function formatDateDisplay(d) {
+        const dayName = DAY_NAMES[d.getUTCDay()];
+        const dayNum = d.getUTCDate();
+        const monthName = MONTH_NAMES[d.getUTCMonth()];
+        const yearNum = d.getUTCFullYear();
+        return `${dayName}, ${dayNum} ${monthName} ${yearNum}`;
+      }
+
+      // Robust Pure JavaScript ISO 8601 Week Calculator
+      function calculateIsoWeek(dateStr) {
+        if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+        const parts = dateStr.split("-").map(Number);
+        const y = parts[0];
+        const m = parts[1];
+        const d = parts[2];
+
+        if (isNaN(y) || isNaN(m) || isNaN(d) || m < 1 || m > 12 || d < 1 || d > 31) return null;
+
+        // Perform calendar-day arithmetic in UTC to avoid daylight-saving shifts
+        const targetDate = new Date(Date.UTC(y, m - 1, d));
+        if (isNaN(targetDate.getTime())) return null;
+
+        // Ensure date components were not rolled over by Date constructor (e.g. Feb 31)
+        if (
+          targetDate.getUTCFullYear() !== y ||
+          targetDate.getUTCMonth() !== m - 1 ||
+          targetDate.getUTCDate() !== d
+        ) {
+          return null;
+        }
+
+        const dayOfWeek = targetDate.getUTCDay(); // 0 is Sunday, 1 is Monday ... 6 is Saturday
+        const isoDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) - 7 (Sun)
+
+        // Thursday in the same ISO week anchors the ISO week-year
+        const thursday = new Date(targetDate);
+        thursday.setUTCDate(targetDate.getUTCDate() + (4 - isoDay));
+        const isoYear = thursday.getUTCFullYear();
+
+        // The first Thursday of the ISO year (Jan 4 is always in ISO Week 1)
+        const jan4 = new Date(Date.UTC(isoYear, 0, 4));
+        const jan4IsoDay = jan4.getUTCDay() === 0 ? 7 : jan4.getUTCDay();
+        const firstThursday = new Date(jan4);
+        firstThursday.setUTCDate(jan4.getUTCDate() + (4 - jan4IsoDay));
+
+        const diffDays = Math.round((thursday.getTime() - firstThursday.getTime()) / 86400000);
+        const weekNumber = 1 + Math.round(diffDays / 7);
+
+        // Monday start date of this ISO week
+        const monday = new Date(targetDate);
+        monday.setUTCDate(targetDate.getUTCDate() - (isoDay - 1));
+
+        // Sunday end date of this ISO week
+        const sunday = new Date(targetDate);
+        sunday.setUTCDate(targetDate.getUTCDate() + (7 - isoDay));
+
+        // Days remaining after the selected date through Sunday (0 to 6)
+        const daysLeft = 7 - isoDay;
+
+        return {
+          weekNumber,
+          isoYear,
+          monday,
+          sunday,
+          isoDay,
+          daysLeft,
+          targetDate
+        };
+      }
+
+      function updateUI() {
+        const dateVal = dateInput.value ? dateInput.value.trim() : "";
+        const data = calculateIsoWeek(dateVal);
+
+        if (!data) {
+          // Display validation error and clear stale results
+          errorMsg.style.display = "block";
+          resTitle.textContent = "--";
+          resSub.textContent = "Please select a valid date.";
+          resMonday.textContent = "--";
+          resSunday.textContent = "--";
+          resDaysLeft.textContent = "--";
+          resDaysLeftDetail.textContent = "--";
+          return;
+        }
+
+        // Hide validation error
+        errorMsg.style.display = "none";
+
+        // 1. ISO Week Number & ISO Year
+        resTitle.textContent = `Week ${data.weekNumber} of ${data.isoYear}`;
+        resSub.textContent = `ISO 8601 calendar week for ${formatDateDisplay(data.targetDate)}`;
+
+        // 2. Monday start date
+        resMonday.textContent = formatDateDisplay(data.monday);
+
+        // 3. Sunday end date
+        resSunday.textContent = formatDateDisplay(data.sunday);
+
+        // 4. Days remaining in this week (after selected date through Sunday)
+        if (data.daysLeft === 0) {
+          resDaysLeft.textContent = "0 days left after today";
+          resDaysLeftDetail.textContent = "Sunday is the final day of the ISO week.";
+        } else if (data.daysLeft === 1) {
+          resDaysLeft.textContent = "1 day remaining";
+          resDaysLeftDetail.textContent = "Sunday (1 calendar day remaining after today).";
+        } else {
+          resDaysLeft.textContent = `${data.daysLeft} days remaining`;
+          const nextDayName = DAY_NAMES[(data.isoDay + 1) % 7];
+          resDaysLeftDetail.textContent = `${nextDayName} through Sunday (${data.daysLeft} calendar days remaining after today).`;
+        }
+      }
+
+      // Event listeners for responsive, immediate recalculation
+      dateInput.addEventListener("input", updateUI);
+      dateInput.addEventListener("change", updateUI);
+      calcBtn.addEventListener("click", updateUI);
+
+      // Example pill: loads verified 22 September 2026
+      exampleBtn.addEventListener("click", function() {
+        dateInput.value = "2026-09-22";
+        updateUI();
+        dateInput.focus();
+      });
+
+      // Today pill: loads visitor's local date
+      todayBtn.addEventListener("click", function() {
+        dateInput.value = getLocalDateString(new Date());
+        updateUI();
+        dateInput.focus();
+      });
+
+      // Preferred Initialization: default to visitor's local date today
+      try {
+        const todayStr = getLocalDateString(new Date());
+        dateInput.value = todayStr;
+      } catch (e) {
+        // Fallback to initial HTML value
+      }
+      updateUI();
+    })();
+  </script>
+
+  <style>
+    @media (max-width: 640px) {
+      .calc-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .calc-grid button {
+        width: 100%;
+        margin-top: 4px;
+      }
+    }
+    .article-content {
+      line-height: 1.75;
+      color: #bdd2dc;
+    }
+    .article-content h2 {
+      color: #ffffff;
+      font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+      margin: 36px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+    .article-content p {
+      margin-bottom: 16px;
+    }
+    .article-content ul {
+      margin: 0 0 20px 24px;
+      padding: 0;
+    }
+    .article-content li {
+      margin-bottom: 8px;
+    }
+    .article-content a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-content a:hover {
+      color: #ffffff;
+    }
+  </style>
+</BaseLayout>
