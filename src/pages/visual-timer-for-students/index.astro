@@ -1,0 +1,778 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "visual-timer-for-students";
+const seoTitle = "Visual Timer for Students | Free Classroom Timer Online";
+const pageDescription = "A free visual timer for students and classrooms. Set minutes, watch the time shrink, and use it full screen.";
+
+const pubDate = "2026-10-25T15:00:00+05:00";
+const updatedDate = "2026-10-25T15:30:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "visual timer for students, classroom timer, online timer for teachers, visual countdown timer, shrinking timer bar, classroom screen timer",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "Is this visual timer free?",
+      a: "Yes, this timer is free to use online, with no account or sign-in."
+    },
+    {
+      q: "Can I use it full screen in a classroom?",
+      a: "Yes, press the Full-screen button to show the timer large on a classroom screen, and press Esc or the exit control to leave full screen."
+    },
+    {
+      q: "Does the timer make a sound when it finishes?",
+      a: "Only if you turn sound on and your device allows it. The \"Time's up\" display shows even when sound is off."
+    }
+  ]
+};
+
+const PRESET_DURATIONS = [5, 10, 15, 25, 30, 45, 60];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- Schema: WebApplication Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Visual Timer for Students",
+    "url": "https://gmttoestconverter.com/visual-timer-for-students/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  })}></script>
+
+  <!-- Hero Banner -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Visual Timer for Students</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 680px; margin: 12px auto 0;">
+      A clean, distraction-free visual countdown timer for classrooms, independent reading, tests, and student focus sessions.
+    </p>
+  </div>
+
+  <div style="max-width: 860px; margin: 0 auto; padding-top: 24px;">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         INTERACTIVE VISUAL TIMER (PROMINENT ABOVE THE FOLD)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="visual-timer-card" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); box-shadow: var(--shadow); position: relative;">
+      
+      <!-- Top Bar: Preset Minutes Selector -->
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
+          <label id="presets-label" style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">
+            Choose Duration:
+          </label>
+          <div id="timer-state-badge" aria-live="polite" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; background: rgba(54, 199, 181, 0.15); color: var(--accent); border: 1px solid rgba(54, 199, 181, 0.3);">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></span>
+            <span id="badge-text">READY</span>
+          </div>
+        </div>
+
+        <!-- Preset Buttons Row -->
+        <div role="group" aria-labelledby="presets-label" style="display: flex; flex-wrap: wrap; gap: 8px;" id="preset-buttons-container">
+          {PRESET_DURATIONS.map((mins) => (
+            <button
+              type="button"
+              class={`preset-btn ${mins === 15 ? 'active' : ''}`}
+              data-minutes={mins}
+              aria-pressed={mins === 15 ? 'true' : 'false'}
+              style={`padding: 8px 14px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid var(--line); ${
+                mins === 15 
+                  ? 'background: var(--accent); color: #0c354a; border-color: var(--accent);' 
+                  : 'background: var(--bg); color: var(--text);'
+              }`}
+            >
+              {mins}m
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Custom Minutes Input Row -->
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line);">
+        <label for="custom-minutes-input" style="font-size: 0.9rem; font-weight: 700; color: var(--muted); white-space: nowrap;">
+          Custom minutes:
+        </label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input
+            type="number"
+            id="custom-minutes-input"
+            name="custom-minutes"
+            min="1"
+            max="180"
+            step="1"
+            placeholder="e.g. 20"
+            aria-describedby="custom-error"
+            style="width: 100px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1rem; font-weight: 700;"
+          />
+          <button
+            type="button"
+            id="apply-custom-btn"
+            style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.08); color: var(--text); font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s;"
+          >
+            Set Custom
+          </button>
+        </div>
+
+        <!-- Optional Sound Toggle -->
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+          <label for="sound-toggle" style="font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <input
+              type="checkbox"
+              id="sound-toggle"
+              style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"
+            />
+            Sound at completion
+          </label>
+        </div>
+      </div>
+
+      <!-- Inline Validation Error -->
+      <div
+        id="custom-error"
+        role="alert"
+        style="display: none; margin-bottom: 16px; padding: 10px 14px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.88rem; font-weight: 600;"
+      >
+        Please enter a whole number of minutes between 1 and 180.
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════════
+           MAIN COUNTDOWN DISPLAY AREA (DESIGNED FOR CLASSROOM VISIBILITY)
+           ═════════════════════════════════════════════════════════════════════ -->
+      <div id="timer-display-area" style="text-align: center; margin: 16px 0 28px;">
+        
+        <!-- Large Digits -->
+        <div
+          id="time-display"
+          role="timer"
+          aria-live="off"
+          style="font-family: 'Space Grotesk', monospace; font-size: clamp(3.8rem, 11vw, 6.5rem); font-weight: 900; color: #ffffff; letter-spacing: 2px; line-height: 1.1;"
+        >
+          15:00
+        </div>
+
+        <!-- Completion Alert Banner (Visible when completed) -->
+        <div
+          id="completion-banner"
+          role="alert"
+          style="display: none; margin: 12px auto 0; max-width: 380px; padding: 10px 20px; border-radius: 8px; background: #ef4444; color: #ffffff; font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 900; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);"
+        >
+          Time's up
+        </div>
+
+        <!-- Proportional Remaining Subtext -->
+        <div id="percent-display" style="font-size: 0.95rem; font-weight: 700; color: #38bdf8; margin-top: 10px;">
+          100% remaining (15 minutes total)
+        </div>
+
+        <!-- Shrinking Progress Bar Track & Bar -->
+        <div
+          id="progress-track"
+          style="margin: 20px auto 0; width: 100%; max-width: 720px; height: 32px; background: #06151f; border-radius: 16px; border: 2px solid var(--line); overflow: hidden; position: relative; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);"
+        >
+          <div
+            id="progress-fill"
+            style="width: 100%; height: 100%; background: linear-gradient(90deg, #36c7b5 0%, #38bdf8 70%, #60a5fa 100%); border-radius: 14px; transition: width 0.1s linear;"
+          ></div>
+        </div>
+
+      </div>
+
+      <!-- Action Controls: Start, Pause, Reset, Full-screen -->
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px;" class="controls-row">
+        <button
+          type="button"
+          id="start-btn"
+          style="flex: 1 1 120px; max-width: 160px; padding: 14px 24px; border-radius: 10px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: transform 0.1s, filter 0.2s;"
+        >
+          ▶ Start
+        </button>
+        <button
+          type="button"
+          id="pause-btn"
+          disabled
+          style="flex: 1 1 120px; max-width: 160px; padding: 14px 24px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); font-weight: 800; font-size: 1.1rem; cursor: not-allowed; transition: all 0.2s;"
+        >
+          ⏸ Pause
+        </button>
+        <button
+          type="button"
+          id="reset-btn"
+          style="flex: 1 1 120px; max-width: 160px; padding: 14px 24px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;"
+        >
+          ↺ Reset
+        </button>
+        <button
+          type="button"
+          id="fullscreen-btn"
+          style="flex: 1 1 140px; max-width: 180px; padding: 14px 20px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: all 0.2s;"
+        >
+          ⛶ Full-screen
+        </button>
+      </div>
+
+      <!-- Floating Exit Fullscreen Button (Appears only in fullscreen mode) -->
+      <button
+        type="button"
+        id="exit-fullscreen-btn"
+        style="display: none; position: absolute; top: 24px; right: 24px; z-index: 100; padding: 10px 18px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.6); color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(8px);"
+      >
+        ✕ Exit full-screen
+      </button>
+
+    </section>
+
+    <!-- Hero Image Banner -->
+    <div style="margin: 36px 0 24px; text-align: center;">
+      <img
+        src="/assets/visual-timer-for-students-hero.webp"
+        alt="Classroom visual timer with a shrinking coloured bar showing time remaining"
+        width="960"
+        height="540"
+        loading="eager"
+        decoding="async"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+      />
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONTENT BELOW THE TOOL (STRICT ORDER)
+         1. H2: How to use the visual timer in class
+         2. H2: Why a visual timer helps students
+         3. H2: Timer for teachers and parents
+         4. H2: Frequently Asked Questions
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <article class="article-content" style="margin-top: 36px;">
+
+      <!-- Section 1 -->
+      <h2>How to use the visual timer in class</h2>
+      <p>
+        Operating this visual classroom timer is simple, immediate, and requires no registration or setup. Follow these steps to conduct timed activities smoothly:
+      </p>
+      <ol style="margin: 0 0 20px 24px; padding: 0;">
+        <li style="margin-bottom: 8px;"><strong>Choose a preset duration or enter custom minutes:</strong> Click any preset button (such as 5, 10, 15, 25, 30, 45, or 60 minutes), or type a whole number of minutes into the custom input field.</li>
+        <li style="margin-bottom: 8px;"><strong>Press Start:</strong> Click <strong>Start</strong> to begin the countdown. The digits and the progress bar will immediately synchronize.</li>
+        <li style="margin-bottom: 8px;"><strong>Watch the bar shrink as time passes:</strong> The high-contrast colored bar continuously recedes from right to left in exact proportion to the remaining duration.</li>
+        <li style="margin-bottom: 8px;"><strong>Press Pause when needed:</strong> If you need to pause for student questions, fire drills, or classroom announcements, click <strong>Pause</strong> to freeze the countdown.</li>
+        <li style="margin-bottom: 8px;"><strong>Press Start to resume:</strong> Clicking <strong>Start</strong> resumes the countdown seamlessly from the exact paused millisecond.</li>
+        <li style="margin-bottom: 8px;"><strong>Press Reset to restore the selected duration:</strong> Clicking <strong>Reset</strong> halts the timer, clears the completion state, and restores the full bar and initial time.</li>
+        <li style="margin-bottom: 8px;"><strong>Use Full-screen on classroom displays:</strong> Click <strong>Full-screen</strong> to expand the timer across your projector or interactive whiteboard so students in the back row can see it effortlessly.</li>
+      </ol>
+      <p>
+        Suggested classroom uses include:
+      </p>
+      <ul>
+        <li><strong>Timed reading blocks:</strong> Giving independent readers a clear view of how much quiet reading time remains.</li>
+        <li><strong>Group work and breakout rotations:</strong> Helping student teams pace discussions and collaborative tasks.</li>
+        <li><strong>Classroom quizzes and assessments:</strong> Providing a calm, neutral indicator of remaining exam time without audible clock ticking.</li>
+        <li><strong>Focus sessions and task transitions:</strong> Providing predictable time boundaries for tidying up, changing subjects, or settling into seats.</li>
+      </ul>
+
+      <!-- Section 2 -->
+      <h2>Why a visual timer helps students</h2>
+      <p>
+        Time is an abstract concept. For younger students, early learners, or students who have not yet mastered reading analog clock hands or performing mental subtraction from digital digits, numbers alone often fail to communicate urgency or duration effectively.
+      </p>
+      <p>
+        A visual timer bridges this cognitive gap by translating an invisible measurement into an intuitive physical dimension:
+      </p>
+      <ul>
+        <li><strong>Instant visual comprehension:</strong> Students do not need to calculate how many minutes exist between 10:18 and 10:30. A bar that is half full intuitively represents that half the scheduled time has passed.</li>
+        <li><strong>Reduced time anxiety:</strong> Wondering when a lesson or test will conclude can create restlessness. Seeing the bar shrink steadily provides reassurance and transparency.</li>
+        <li><strong>Self-pacing practice:</strong> Watching the bar steadily decrease encourages students to gauge their work pace during writing prompts, lab exercises, and creative projects.</li>
+      </ul>
+      <p>
+        While visual timers provide helpful pacing cues, individual student focus varies based on environment, topic engagement, and developmental stage. The tool serves as an organizational aid rather than a guaranteed instructional outcome. If you are comparing time across different parts of the day or working with international schedules, explore our <a href="/">GMT to EST Converter</a> or practice tracking continuous seconds with our <a href="/full-screen-clock/">Full-Screen Clock</a>.
+      </p>
+
+      <!-- Section 3 -->
+      <h2>Timer for teachers and parents</h2>
+      <p>
+        Whether you are managing a 30-student elementary classroom, conducting an after-school tutoring group, or establishing homework routines at the kitchen table, this tool works responsively across desktop computers, classroom smartboards, laptops, iPads, tablets, and smartphones.
+      </p>
+      <p>
+        Teachers can select any preset duration, pause during interruptions, reset for subsequent class periods, and activate full-screen mode with one click. Parents can set custom intervals for chores, music practice, or screen-time limits.
+      </p>
+      <div style="background: rgba(56, 189, 248, 0.08); border-left: 4px solid var(--accent); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0;">
+        <h3 style="margin: 0 0 6px; font-size: 1.05rem; color: #ffffff;">Privacy and Data Transparency</h3>
+        <p style="margin: 0; font-size: 0.92rem; color: #bdd2dc; line-height: 1.6;">
+          The visual countdown timer operates entirely on the client side in your web browser. The timer does not collect, track, or store any student names, user logins, student work, or classroom input. As with the rest of our website, general anonymous web analytics and standard server access logs operate at the site level to monitor server performance, but no personal student data is ever requested or processed by the timer utility.
+        </p>
+      </div>
+      <p>
+        For planning multi-day curriculum units or counting down days until school holidays and semester breaks, check out our <a href="/days-between-dates-calculator/">Days Between Dates Calculator</a>.
+      </p>
+
+      <!-- Educational Diagram: Visual Progression -->
+      <figure style="margin: 32px 0 36px; text-align: center;">
+        <img
+          src="/assets/visual-timer-how-it-works.webp"
+          alt="Diagram showing a timer bar shrinking as time passes"
+          width="800"
+          height="450"
+          loading="lazy"
+          decoding="async"
+          style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+        />
+        <figcaption style="font-size: 0.88rem; color: var(--muted); margin-top: 10px; font-style: italic;">
+          As time passes, the bar shrinks — students can see time left at a glance.
+        </figcaption>
+      </figure>
+
+      <!-- Section 4 -->
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+        {meta.faqs.map((faq) => (
+          <details style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;">
+            <summary style="font-weight: 800; font-size: 1.05rem; cursor: pointer; color: var(--text);">
+              {faq.q}
+            </summary>
+            <p style="margin: 12px 0 0; color: #bdd2dc; font-size: 0.95rem; line-height: 1.6;">
+              {faq.a}
+            </p>
+          </details>
+        ))}
+      </div>
+
+    </article>
+
+  </div>
+
+  <!-- Client-Side Vanilla JavaScript: Visual Timer Engine -->
+  <script is:inline>
+    (function initVisualTimer() {
+      // DOM Elements
+      const timerCard = document.getElementById("visual-timer-card");
+      const timeDisplay = document.getElementById("time-display");
+      const percentDisplay = document.getElementById("percent-display");
+      const progressFill = document.getElementById("progress-fill");
+      const completionBanner = document.getElementById("completion-banner");
+      const badgeText = document.getElementById("badge-text");
+      const timerBadge = document.getElementById("timer-state-badge");
+
+      const presetButtonsContainer = document.getElementById("preset-buttons-container");
+      const presetButtons = document.querySelectorAll(".preset-btn");
+      const customInput = document.getElementById("custom-minutes-input");
+      const applyCustomBtn = document.getElementById("apply-custom-btn");
+      const customError = document.getElementById("custom-error");
+      const soundToggle = document.getElementById("sound-toggle");
+
+      const startBtn = document.getElementById("start-btn");
+      const pauseBtn = document.getElementById("pause-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const fullscreenBtn = document.getElementById("fullscreen-btn");
+      const exitFullscreenBtn = document.getElementById("exit-fullscreen-btn");
+
+      // Timer State Variables
+      let totalDurationMs = 15 * 60 * 1000; // default 15 minutes
+      let remainingMs = totalDurationMs;
+      let timerState = "IDLE"; // "IDLE" | "RUNNING" | "PAUSED" | "COMPLETED"
+      let targetEndTime = 0;
+      let intervalId = null;
+
+      // Audio Context for Optional Non-intrusive Completion Chime
+      function playCompletionChime() {
+        if (!soundToggle || !soundToggle.checked) return;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          if (ctx.state === "suspended") {
+            ctx.resume();
+          }
+          const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 gentle major chime
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.16);
+            gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.16);
+            gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + idx * 0.16 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.16 + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.16);
+            osc.stop(ctx.currentTime + idx * 0.16 + 0.5);
+          });
+        } catch (e) {
+          // Graceful fallback: audio restrictions do not disrupt visual countdown
+        }
+      }
+
+      function formatTime(ms) {
+        const totalSecs = Math.max(0, Math.ceil(ms / 1000));
+        const hours = Math.floor(totalSecs / 3600);
+        const mins = Math.floor((totalSecs % 3600) / 60);
+        const secs = totalSecs % 60;
+
+        const paddedMins = String(mins).padStart(2, "0");
+        const paddedSecs = String(secs).padStart(2, "0");
+
+        if (hours > 0) {
+          return `${hours}:${paddedMins}:${paddedSecs}`;
+        }
+        return `${paddedMins}:${paddedSecs}`;
+      }
+
+      function updateUI() {
+        // Format display digits
+        timeDisplay.textContent = formatTime(remainingMs);
+
+        // Proportional Bar calculation
+        const percent = totalDurationMs > 0 ? Math.max(0, Math.min(100, (remainingMs / totalDurationMs) * 100)) : 0;
+        progressFill.style.width = percent + "%";
+
+        const totalMins = Math.round(totalDurationMs / 60000);
+        percentDisplay.textContent = `${Math.round(percent)}% remaining (${totalMins} minutes total)`;
+
+        // Visual bar color change based on remaining fraction
+        if (percent > 40) {
+          progressFill.style.background = "linear-gradient(90deg, #36c7b5 0%, #38bdf8 70%, #60a5fa 100%)";
+        } else if (percent > 15) {
+          progressFill.style.background = "linear-gradient(90deg, #38bdf8 0%, #fbbf24 100%)";
+        } else {
+          progressFill.style.background = "linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)";
+        }
+
+        // Control buttons and badges based on state
+        if (timerState === "RUNNING") {
+          startBtn.disabled = true;
+          startBtn.style.opacity = "0.5";
+          startBtn.style.cursor = "not-allowed";
+
+          pauseBtn.disabled = false;
+          pauseBtn.style.opacity = "1";
+          pauseBtn.style.cursor = "pointer";
+          pauseBtn.style.color = "var(--text)";
+          pauseBtn.style.borderColor = "var(--line)";
+
+          badgeText.textContent = "RUNNING";
+          timerBadge.style.color = "var(--accent)";
+          timerBadge.style.borderColor = "rgba(54, 199, 181, 0.3)";
+          timerBadge.style.background = "rgba(54, 199, 181, 0.15)";
+          completionBanner.style.display = "none";
+        } else if (timerState === "PAUSED") {
+          startBtn.disabled = false;
+          startBtn.style.opacity = "1";
+          startBtn.style.cursor = "pointer";
+
+          pauseBtn.disabled = true;
+          pauseBtn.style.opacity = "0.5";
+          pauseBtn.style.cursor = "not-allowed";
+
+          badgeText.textContent = "PAUSED";
+          timerBadge.style.color = "#fbbf24";
+          timerBadge.style.borderColor = "rgba(251, 191, 36, 0.3)";
+          timerBadge.style.background = "rgba(251, 191, 36, 0.15)";
+        } else if (timerState === "COMPLETED") {
+          startBtn.disabled = true;
+          startBtn.style.opacity = "0.5";
+          startBtn.style.cursor = "not-allowed";
+
+          pauseBtn.disabled = true;
+          pauseBtn.style.opacity = "0.5";
+          pauseBtn.style.cursor = "not-allowed";
+
+          badgeText.textContent = "TIME'S UP";
+          timerBadge.style.color = "#f87171";
+          timerBadge.style.borderColor = "rgba(239, 68, 68, 0.3)";
+          timerBadge.style.background = "rgba(239, 68, 68, 0.15)";
+          completionBanner.style.display = "block";
+        } else {
+          // IDLE
+          startBtn.disabled = false;
+          startBtn.style.opacity = "1";
+          startBtn.style.cursor = "pointer";
+
+          pauseBtn.disabled = true;
+          pauseBtn.style.opacity = "0.5";
+          pauseBtn.style.cursor = "not-allowed";
+
+          badgeText.textContent = "READY";
+          timerBadge.style.color = "var(--accent)";
+          timerBadge.style.borderColor = "rgba(54, 199, 181, 0.3)";
+          timerBadge.style.background = "rgba(54, 199, 181, 0.15)";
+          completionBanner.style.display = "none";
+        }
+      }
+
+      function tick() {
+        if (timerState !== "RUNNING") return;
+        const now = performance.now();
+        remainingMs = Math.max(0, targetEndTime - now);
+
+        if (remainingMs <= 0) {
+          remainingMs = 0;
+          timerState = "COMPLETED";
+          clearInterval(intervalId);
+          intervalId = null;
+          updateUI();
+          playCompletionChime();
+          return;
+        }
+
+        updateUI();
+      }
+
+      function startTimer() {
+        if (timerState === "RUNNING") return; // prevent duplicate timers
+        if (timerState === "COMPLETED") return; // require reset first
+
+        timerState = "RUNNING";
+        targetEndTime = performance.now() + remainingMs;
+        clearInterval(intervalId);
+        intervalId = setInterval(tick, 100);
+        updateUI();
+      }
+
+      function pauseTimer() {
+        if (timerState !== "RUNNING") return;
+        timerState = "PAUSED";
+        clearInterval(intervalId);
+        intervalId = null;
+        remainingMs = Math.max(0, targetEndTime - performance.now());
+        updateUI();
+      }
+
+      function resetTimer() {
+        clearInterval(intervalId);
+        intervalId = null;
+        timerState = "IDLE";
+        remainingMs = totalDurationMs;
+        completionBanner.style.display = "none";
+        updateUI();
+      }
+
+      function setDuration(mins) {
+        if (timerState === "RUNNING") {
+          pauseTimer();
+        }
+        totalDurationMs = mins * 60 * 1000;
+        remainingMs = totalDurationMs;
+        timerState = "IDLE";
+        customError.style.display = "none";
+        updateUI();
+      }
+
+      // Event Listeners for Controls
+      startBtn.addEventListener("click", startTimer);
+      pauseBtn.addEventListener("click", pauseTimer);
+      resetBtn.addEventListener("click", resetTimer);
+
+      // Preset Buttons Handling
+      presetButtons.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const mins = parseInt(this.getAttribute("data-minutes"), 10);
+          if (isNaN(mins) || mins <= 0) return;
+
+          presetButtons.forEach((b) => {
+            b.classList.remove("active");
+            b.setAttribute("aria-pressed", "false");
+            b.style.background = "var(--bg)";
+            b.style.color = "var(--text)";
+            b.style.borderColor = "var(--line)";
+          });
+
+          this.classList.add("active");
+          this.setAttribute("aria-pressed", "true");
+          this.style.background = "var(--accent)";
+          this.style.color = "#0c354a";
+          this.style.borderColor = "var(--accent)";
+
+          customInput.value = "";
+          setDuration(mins);
+        });
+      });
+
+      // Custom Minutes Input Handling
+      function applyCustomDuration() {
+        const valStr = customInput.value ? customInput.value.trim() : "";
+        const val = Number(valStr);
+
+        // Validation: Positive whole numbers only between 1 and 180
+        if (!valStr || !Number.isInteger(val) || val < 1 || val > 180) {
+          customError.style.display = "block";
+          return;
+        }
+
+        customError.style.display = "none";
+        presetButtons.forEach((b) => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+          b.style.background = "var(--bg)";
+          b.style.color = "var(--text)";
+          b.style.borderColor = "var(--line)";
+        });
+
+        setDuration(val);
+      }
+
+      applyCustomBtn.addEventListener("click", applyCustomDuration);
+      customInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          applyCustomDuration();
+        }
+      });
+
+      // Tab Visibility Handling to prevent background drift
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible" && timerState === "RUNNING") {
+          tick();
+        }
+      });
+
+      // Full-screen Classroom Display Handling
+      function enterFullscreen() {
+        if (!timerCard) return;
+        try {
+          if (timerCard.requestFullscreen) {
+            timerCard.requestFullscreen().catch(() => {});
+          } else if (timerCard.webkitRequestFullscreen) {
+            timerCard.webkitRequestFullscreen();
+          } else if (timerCard.msRequestFullscreen) {
+            timerCard.msRequestFullscreen();
+          }
+        } catch (e) {
+          // Graceful fallback
+        }
+      }
+
+      function exitFullscreen() {
+        try {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        } catch (e) {
+          // Graceful fallback
+        }
+      }
+
+      fullscreenBtn.addEventListener("click", enterFullscreen);
+      exitFullscreenBtn.addEventListener("click", exitFullscreen);
+
+      function handleFullscreenChange() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        if (isFs) {
+          timerCard.classList.add("is-fullscreen");
+          exitFullscreenBtn.style.display = "block";
+          fullscreenBtn.textContent = "✕ Exit";
+        } else {
+          timerCard.classList.remove("is-fullscreen");
+          exitFullscreenBtn.style.display = "none";
+          fullscreenBtn.textContent = "⛶ Full-screen";
+        }
+      }
+
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
+      document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.addEventListener("msfullscreenchange", handleFullscreenChange);
+
+      // Initial UI Sync (Idle with 15m)
+      updateUI();
+    })();
+  </script>
+
+  <style>
+    /* Fullscreen classroom styling */
+    #visual-timer-card.is-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: #06151f !important;
+      padding: clamp(1.5rem, 4vw, 3rem) !important;
+      box-sizing: border-box !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 99999 !important;
+    }
+
+    #visual-timer-card.is-fullscreen #timer-display-area {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    #visual-timer-card.is-fullscreen #time-display {
+      font-size: clamp(5rem, 18vw, 13rem) !important;
+    }
+
+    #visual-timer-card.is-fullscreen #progress-track {
+      height: clamp(36px, 6vw, 56px) !important;
+      max-width: 900px !important;
+    }
+
+    #visual-timer-card.is-fullscreen #percent-display {
+      font-size: clamp(1.1rem, 2.5vw, 1.8rem) !important;
+    }
+
+    .article-content {
+      line-height: 1.75;
+      color: #bdd2dc;
+    }
+
+    .article-content h2 {
+      color: #ffffff;
+      font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+      margin: 36px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+
+    .article-content p {
+      margin-bottom: 16px;
+    }
+
+    .article-content ul {
+      margin: 0 0 20px 24px;
+      padding: 0;
+    }
+
+    .article-content li {
+      margin-bottom: 8px;
+    }
+
+    .article-content a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .article-content a:hover {
+      color: #ffffff;
+    }
+  </style>
+</BaseLayout>

@@ -1,0 +1,872 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "unix-time-converter";
+const seoTitle = "Unix Time Converter | Epoch Time to Date & Time";
+const pageDescription = "Convert Unix epoch time to a readable date and time, and convert a date back to epoch seconds, in UTC and local time.";
+
+const pubDate = "2026-10-25T15:00:00+05:00";
+const updatedDate = "2026-10-25T15:30:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  keywords: "unix time converter, epoch time converter, unix timestamp to date, convert epoch to utc, epoch to est, date to unix timestamp",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What is epoch time?",
+      a: "Epoch time, or Unix time, is the number of seconds since 00:00:00 UTC on 1 January 1970."
+    },
+    {
+      q: "How do I convert epoch time to a date?",
+      a: "Enter the epoch seconds in the tool above. It shows the same instant in UTC, in your local time, and in Eastern Time."
+    },
+    {
+      q: "Is epoch time the same in every time zone?",
+      a: "Yes. The epoch value is one instant worldwide. Only the readable date and time change when you switch time zones."
+    },
+    {
+      q: "Is a GPS timestamp the same as Unix time?",
+      a: "Not necessarily. GPS time handles leap seconds differently from UTC, so check whether your device outputs GPS time or UTC before converting."
+    }
+  ]
+};
+
+const VERIFIED_EXAMPLES = [
+  {
+    seconds: "1767225600",
+    utc: "1 January 2026, 00:00:00 UTC",
+    et: "31 December 2025, 19:00:00 EST",
+    note: "New Year 2026 (Winter / EST)"
+  },
+  {
+    seconds: "1792918800",
+    utc: "25 October 2026, 09:00:00 UTC",
+    et: "25 October 2026, 05:00:00 EDT",
+    note: "Autumn 2026 (Daylight / EDT)"
+  }
+];
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- Schema: WebApplication Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unix Time Converter",
+    "url": "https://gmttoestconverter.com/unix-time-converter/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  })}></script>
+
+  <!-- Hero Header -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Unix Time Converter</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 680px; margin: 12px auto 0;">
+      Convert Unix epoch timestamps to human-readable UTC, local, and Eastern Time, or convert any date and time back into epoch seconds.
+    </p>
+  </div>
+
+  <div style="max-width: 840px; margin: 0 auto; padding-top: 24px;">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         INTERACTIVE TWO-WAY CONVERTER (PROMINENT ABOVE THE FOLD)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section id="unix-converter-card" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); box-shadow: var(--shadow); position: relative;">
+      
+      <!-- Two-Way Mode Switcher Tabs -->
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 24px;">
+        <button
+          type="button"
+          id="tab-epoch-to-date"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-epoch-to-date"
+          style="flex: 1; padding: 12px 16px; border-radius: 8px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;"
+        >
+          Epoch Timestamp → Date &amp; Time
+        </button>
+        <button
+          type="button"
+          id="tab-date-to-epoch"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-date-to-epoch"
+          style="flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;"
+        >
+          Date &amp; Time → Epoch Timestamp
+        </button>
+      </div>
+
+      <!-- ───────────────────────────────────────────────────────────────────
+           PANEL A: EPOCH TIMESTAMP TO DATE & TIME
+           ─────────────────────────────────────────────────────────────────── -->
+      <div id="panel-epoch-to-date" role="tabpanel" aria-labelledby="tab-epoch-to-date">
+        
+        <!-- Quick Preset Pills -->
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">
+            Verified Examples:
+          </span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            {VERIFIED_EXAMPLES.map((ex) => (
+              <button
+                type="button"
+                class="example-pill-btn"
+                data-ts={ex.seconds}
+                style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+              >
+                ⚡ {ex.seconds} ({ex.note})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Input Row -->
+        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: flex-end;" class="epoch-input-grid">
+          
+          <!-- Epoch Timestamp Input -->
+          <div>
+            <label for="epoch-input" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px;">
+              Epoch timestamp
+            </label>
+            <input
+              type="text"
+              id="epoch-input"
+              name="epoch-input"
+              value="1767225600"
+              placeholder="e.g. 1767225600"
+              aria-describedby="epoch-error"
+              style="width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1.15rem; font-weight: 700; font-family: 'Space Grotesk', monospace;"
+            />
+          </div>
+
+          <!-- Unit Selector (Seconds vs Milliseconds) -->
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px;">
+              Timestamp unit
+            </label>
+            <div style="display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; height: 53px;">
+              <button
+                type="button"
+                id="unit-seconds-btn"
+                aria-pressed="true"
+                style="padding: 0 16px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;"
+              >
+                Seconds
+              </button>
+              <button
+                type="button"
+                id="unit-millis-btn"
+                aria-pressed="false"
+                style="padding: 0 16px; border: none; background: var(--bg); color: var(--text); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;"
+              >
+                Milliseconds
+              </button>
+            </div>
+          </div>
+
+          <!-- Use Current Time Button -->
+          <div>
+            <button
+              type="button"
+              id="current-time-btn"
+              style="padding: 14px 20px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: 800; font-size: 0.95rem; cursor: pointer; white-space: nowrap; height: 53px; transition: all 0.2s;"
+            >
+              🕒 Use current time
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Validation Message -->
+        <div
+          id="epoch-error"
+          role="alert"
+          style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.9rem; font-weight: 600;"
+        >
+          Enter a valid epoch timestamp.
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             RESULTS DISPLAY (STRICT ORDER: 1. UTC, 2. LOCAL, 3. EASTERN TIME)
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="epoch-results-container" style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-direction: column; gap: 14px;">
+          
+          <!-- Result 1: UTC Date and Time -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-left: 4px solid #38bdf8; border-radius: 10px; padding: 18px 20px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #38bdf8; margin-bottom: 6px;">
+              1. UTC Date and Time
+            </div>
+            <div id="res-utc" style="font-size: 1.25rem; font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', monospace;">
+              1 January 2026, 00:00:00 UTC
+            </div>
+            <div style="font-size: 0.82rem; color: var(--muted); margin-top: 4px;">
+              Coordinated Universal Time (Zero Offset)
+            </div>
+          </div>
+
+          <!-- Result 2: Visitor's Local Date and Time -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 18px 20px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px;">
+              2. Visitor's Local Date and Time
+            </div>
+            <div id="res-local" style="font-size: 1.25rem; font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', monospace;">
+              Loading local time...
+            </div>
+            <div id="res-local-tz-note" style="font-size: 0.82rem; color: var(--muted); margin-top: 4px;">
+              Rendered in your browser's configured time zone
+            </div>
+          </div>
+
+          <!-- Result 3: Eastern Time -->
+          <div style="background: var(--bg); border: 1px solid var(--line); border-left: 4px solid #fbbf24; border-radius: 10px; padding: 18px 20px;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #fbbf24; margin-bottom: 6px;">
+              3. Eastern Time (America/New_York)
+            </div>
+            <div id="res-et" style="font-size: 1.25rem; font-weight: 800; color: #fbbf24; font-family: 'Space Grotesk', monospace;">
+              31 December 2025, 19:00:00 EST
+            </div>
+            <div id="res-et-note" style="font-size: 0.82rem; color: var(--muted); margin-top: 4px;">
+              Dynamically formatted with instant-specific EST (UTC-5) or EDT (UTC-4)
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ───────────────────────────────────────────────────────────────────
+           PANEL B: DATE & TIME TO EPOCH TIMESTAMP
+           ─────────────────────────────────────────────────────────────────── -->
+      <div id="panel-date-to-epoch" role="tabpanel" aria-labelledby="tab-date-to-epoch" style="display: none;">
+        
+        <p style="font-size: 0.9rem; color: #bdd2dc; margin-bottom: 18px;">
+          Select a local calendar date and time. Values are interpreted in your browser's local time zone and converted into Unix epoch format.
+        </p>
+
+        <!-- Date & Time Input Row -->
+        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: flex-end;" class="epoch-input-grid">
+          
+          <!-- Local DateTime Input -->
+          <div>
+            <label for="reverse-datetime-input" style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px;">
+              Select Local Date &amp; Time
+            </label>
+            <input
+              type="datetime-local"
+              id="reverse-datetime-input"
+              step="1"
+              aria-describedby="reverse-error"
+              style="width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 1.05rem; font-weight: 700; font-family: inherit;"
+            />
+          </div>
+
+          <!-- Output Unit Toggle -->
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px;">
+              Output unit
+            </label>
+            <div style="display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; height: 53px;">
+              <button
+                type="button"
+                id="rev-unit-seconds-btn"
+                aria-pressed="true"
+                style="padding: 0 16px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;"
+              >
+                Seconds
+              </button>
+              <button
+                type="button"
+                id="rev-unit-millis-btn"
+                aria-pressed="false"
+                style="padding: 0 16px; border: none; background: var(--bg); color: var(--text); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;"
+              >
+                Milliseconds
+              </button>
+            </div>
+          </div>
+
+          <!-- Convert Button -->
+          <div>
+            <button
+              type="button"
+              id="convert-reverse-btn"
+              style="padding: 14px 22px; border-radius: 10px; border: none; background: var(--accent); color: #0c354a; font-weight: 800; font-size: 1rem; cursor: pointer; white-space: nowrap; height: 53px; transition: all 0.2s;"
+            >
+              Convert to Epoch
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Reverse Error Message -->
+        <div
+          id="reverse-error"
+          role="alert"
+          style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.9rem; font-weight: 600;"
+        >
+          Please enter a complete date and time.
+        </div>
+
+        <!-- Reverse Output Display Card -->
+        <div style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 24px;">
+          <div style="background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+            <div>
+              <span id="rev-res-label" style="display: block; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px;">
+                Unix Timestamp (Seconds):
+              </span>
+              <div id="rev-res-value" style="font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; color: #ffffff; font-family: 'Space Grotesk', monospace;">
+                --
+              </div>
+            </div>
+            <div>
+              <button
+                type="button"
+                id="copy-epoch-btn"
+                style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.08); color: var(--text); font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;"
+              >
+                📋 Copy timestamp
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--muted); margin-top: 10px;">
+            Note: Date &amp; time entries are interpreted strictly in your local timezone. Ambiguous or skipped moments during daylight saving transitions resolve following standard browser JavaScript rules.
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Hero Diagram Banner -->
+    <div style="margin: 36px 0 24px; text-align: center;">
+      <img
+        src="/assets/unix-time-converter-hero.webp"
+        alt="Unix epoch timestamp converting to a readable date and time in UTC and local time"
+        width="960"
+        height="540"
+        loading="eager"
+        decoding="async"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+      />
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONTENT BELOW THE TOOL (STRICT ORDER)
+         1. H2: What is Unix time?
+         2. H2: Epoch time, UTC, and local time
+         3. H2: What about GPS timestamps?
+         4. H2: Frequently Asked Questions
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <article class="article-content" style="margin-top: 36px;">
+
+      <!-- Section 1 -->
+      <h2>What is Unix time?</h2>
+      <p>
+        <strong>Unix time</strong> (also frequently referred to as <strong>epoch time</strong>, <strong>POSIX time</strong>, or a <strong>Unix timestamp</strong>) is a universal system for describing points in time. It measures the total number of seconds that have elapsed since the reference instant of <strong>00:00:00 UTC on Thursday, 1 January 1970</strong>. This fixed historical starting point is universally known as the <em>Unix epoch</em>.
+      </p>
+      <p>
+        Key characteristics of the Unix epoch standard include:
+      </p>
+      <ul>
+        <li><strong>Continuous Integer Counting:</strong> In the standard Unix convention, every day is treated as containing exactly 86,400 seconds. Leap seconds are not represented as separate seconds; instead, the timestamp repeats or slews the final second of the day.</li>
+        <li><strong>Seconds vs. Milliseconds:</strong> Traditional operating systems, databases, and APIs (such as Linux, POSIX C libraries, and Python's <code>time.time()</code>) represent timestamps in <strong>seconds</strong> (typically 10 digits for modern dates). However, modern web environments—most notably JavaScript's <code>Date.now()</code> and MongoDB ObjectIDs—store timestamps in <strong>milliseconds</strong> (typically 13 digits for modern dates).</li>
+        <li><strong>Negative Timestamps:</strong> Moments occurring prior to 1 January 1970 are represented by negative integer values. For example, <code>-86400</code> corresponds to 31 December 1969 at 00:00:00 UTC.</li>
+      </ul>
+      <p>
+        Because different APIs and programming languages alternate between seconds and milliseconds, our converter provides a dedicated unit toggle so you never accidentally misinterpret a millisecond timestamp as seconds or vice versa.
+      </p>
+
+      <!-- Section 2 -->
+      <h2>Epoch time, UTC, and local time</h2>
+      <p>
+        A fundamental advantage of Unix time is that a single numeric value represents <strong>one identical, simultaneous instant everywhere in the universe</strong>. Whether an event occurs in London, Tokyo, or New York, the Unix timestamp recorded by synchronized systems is exactly the same.
+      </p>
+      <p>
+        What changes across regions is purely the local calendar date and wall-clock representation:
+      </p>
+      <ul>
+        <li><strong>UTC (Coordinated Universal Time):</strong> Serves as the global civil time standard without daylight saving adjustments. For example, timestamp <code>1767225600</code> corresponds to <code>1 January 2026, 00:00:00 UTC</code>.</li>
+        <li><strong>Visitor's Local Time:</strong> Your browser automatically maps the UTC instant to your physical device's configured time zone, displaying your exact local date, hour, and regional offset.</li>
+        <li><strong>Eastern Time (America/New_York):</strong> New York and the US East Coast oscillate seasonally between Eastern Standard Time (<strong>EST</strong>, UTC−5) in the winter and Eastern Daylight Time (<strong>EDT</strong>, UTC−4) in the summer. For timestamp <code>1767225600</code>, Eastern Time is <code>31 December 2025, 19:00:00 EST</code>—falling on the preceding calendar day! For timestamp <code>1792918800</code>, Eastern Time evaluates to <code>25 October 2026, 05:00:00 EDT</code>.</li>
+      </ul>
+      <p>
+        Our converter dynamically calculates the correct historical or future abbreviation (EST vs. EDT) for the chosen moment using official IANA timezone rules. If you need to compare this instant across multiple global offices, you can explore our <a href="/compare-time-zones/">Compare Time Zones</a> tool or check current offsets with our <a href="/">GMT to EST Converter</a>. For calculating spans between timestamps, try our <a href="/time-duration-calculator/">Time Duration Calculator</a>.
+      </p>
+
+      <!-- Educational Timeline Diagram -->
+      <figure style="margin: 32px 0 36px; text-align: center;">
+        <img
+          src="/assets/epoch-time-explained.webp"
+          alt="Timeline from 1 January 1970 to a modern epoch timestamp"
+          width="800"
+          height="450"
+          loading="lazy"
+          decoding="async"
+          style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+        />
+        <figcaption style="font-size: 0.88rem; color: var(--muted); margin-top: 10px; font-style: italic;">
+          Epoch time counts seconds from 1 January 1970.
+        </figcaption>
+      </figure>
+
+      <!-- Section 3 -->
+      <h2>What about GPS timestamps?</h2>
+      <p>
+        A frequent point of confusion in aerospace, marine navigation, and IoT telematics is whether a GPS timestamp is interchangeable with a Unix epoch timestamp.
+      </p>
+      <p>
+        The answer is that <strong>GPS time does not handle leap seconds in the same way as UTC</strong>:
+      </p>
+      <ul>
+        <li><strong>Different Epoch Origin:</strong> GPS time began at <code>00:00:00 UTC on Sunday, 6 January 1980</code>.</li>
+        <li><strong>No Leap Second Adjustments:</strong> While UTC introduces leap seconds periodically to stay aligned with the Earth's slowing rotation, the atomic clock constellation running the Global Positioning System (GPS) never inserts leap seconds.</li>
+        <li><strong>Cumulative Drift:</strong> Because UTC has accumulated multiple leap seconds since 1980 while GPS time has not, raw GPS time is ahead of UTC by an exact integer number of leap seconds (and differs by a fixed offset from the 1970 Unix epoch).</li>
+      </ul>
+      <p>
+        Therefore, you should always check whether your hardware receiver, telemetry payload, or database provides raw GPS time or if its firmware has already normalized the data into standard UTC or Unix epoch seconds. This converter accepts standard Unix epoch timestamps in seconds or milliseconds.
+      </p>
+
+      <!-- Section 4 -->
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px;">
+        {meta.faqs.map((faq) => (
+          <details style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;">
+            <summary style="font-weight: 800; font-size: 1.05rem; cursor: pointer; color: var(--text);">
+              {faq.q}
+            </summary>
+            <p style="margin: 12px 0 0; color: #bdd2dc; font-size: 0.95rem; line-height: 1.6;">
+              {faq.a}
+            </p>
+          </details>
+        ))}
+      </div>
+
+    </article>
+
+  </div>
+
+  <!-- Client-Side Vanilla JavaScript: Two-Way Converter Engine -->
+  <script is:inline>
+    (function initUnixConverter() {
+      // Tab Elements
+      const tabEpochToDate = document.getElementById("tab-epoch-to-date");
+      const tabDateToEpoch = document.getElementById("tab-date-to-epoch");
+      const panelEpochToDate = document.getElementById("panel-epoch-to-date");
+      const panelDateToEpoch = document.getElementById("panel-date-to-epoch");
+
+      // Mode A Elements
+      const epochInput = document.getElementById("epoch-input");
+      const unitSecsBtn = document.getElementById("unit-seconds-btn");
+      const unitMillisBtn = document.getElementById("unit-millis-btn");
+      const currentTimeBtn = document.getElementById("current-time-btn");
+      const epochError = document.getElementById("epoch-error");
+      const resUtc = document.getElementById("res-utc");
+      const resLocal = document.getElementById("res-local");
+      const resLocalTzNote = document.getElementById("res-local-tz-note");
+      const resEt = document.getElementById("res-et");
+      const resEtNote = document.getElementById("res-et-note");
+      const examplePills = document.querySelectorAll(".example-pill-btn");
+
+      // Mode B Elements
+      const revDtInput = document.getElementById("reverse-datetime-input");
+      const revUnitSecsBtn = document.getElementById("rev-unit-seconds-btn");
+      const revUnitMillisBtn = document.getElementById("rev-unit-millis-btn");
+      const convertRevBtn = document.getElementById("convert-reverse-btn");
+      const revError = document.getElementById("reverse-error");
+      const revResValue = document.getElementById("rev-res-value");
+      const revResLabel = document.getElementById("rev-res-label");
+      const copyEpochBtn = document.getElementById("copy-epoch-btn");
+
+      // State variables
+      let epochUnit = "seconds"; // "seconds" | "milliseconds"
+      let revEpochUnit = "seconds"; // "seconds" | "milliseconds"
+
+      const MONTH_NAMES = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
+      // Format UTC date explicitly: "1 January 2026, 00:00:00 UTC"
+      function formatUtc(d) {
+        const day = d.getUTCDate();
+        const month = MONTH_NAMES[d.getUTCMonth()];
+        const year = d.getUTCFullYear();
+        const hh = String(d.getUTCHours()).padStart(2, "0");
+        const mm = String(d.getUTCMinutes()).padStart(2, "0");
+        const ss = String(d.getUTCSeconds()).padStart(2, "0");
+        return `${day} ${month} ${year}, ${hh}:${mm}:${ss} UTC`;
+      }
+
+      // Format Visitor's Local Date & Time
+      function formatLocal(d) {
+        try {
+          const localFmt = new Intl.DateTimeFormat("en-US", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+            timeZoneName: "short"
+          });
+          const parts = localFmt.formatToParts(d);
+          const get = (t) => parts.find((p) => p.type === t)?.value || "";
+          const day = get("day");
+          const month = get("month");
+          const year = get("year");
+          const hour = get("hour");
+          const minute = get("minute");
+          const second = get("second");
+          const tz = get("timeZoneName");
+          return `${day} ${month} ${year}, ${hour}:${minute}:${second}${tz ? " " + tz : ""}`;
+        } catch (e) {
+          return d.toString();
+        }
+      }
+
+      // Format Eastern Time with dynamic EST/EDT abbreviation
+      function formatEastern(d) {
+        try {
+          const etFmt = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/New_York",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+            timeZoneName: "short"
+          });
+          const parts = etFmt.formatToParts(d);
+          const get = (t) => parts.find((p) => p.type === t)?.value || "";
+          const day = get("day");
+          const month = get("month");
+          const year = get("year");
+          const hour = get("hour");
+          const minute = get("minute");
+          const second = get("second");
+          const tz = get("timeZoneName");
+          return {
+            formatted: `${day} ${month} ${year}, ${hour}:${minute}:${second} ${tz || "ET"}`,
+            tzName: tz || "ET"
+          };
+        } catch (e) {
+          return {
+            formatted: d.toISOString(),
+            tzName: "ET"
+          };
+        }
+      }
+
+      // ── MODE A: CALCULATE EPOCH TO DATE ─────────────────────────────────
+      function updateEpochConversion() {
+        const valStr = epochInput.value ? epochInput.value.trim() : "";
+
+        // Validate: non-empty, integer numeric format (allowing negative numbers for pre-1970)
+        if (!valStr || !/^-?\d+$/.test(valStr)) {
+          showEpochError();
+          return;
+        }
+
+        const rawNum = Number(valStr);
+        if (!Number.isFinite(rawNum)) {
+          showEpochError();
+          return;
+        }
+
+        let ms = 0;
+        if (epochUnit === "seconds") {
+          ms = rawNum * 1000;
+        } else {
+          ms = rawNum;
+        }
+
+        // Check supported JavaScript Date range: +/- 8.64e15 ms
+        if (Math.abs(ms) > 8.64e15) {
+          showEpochError();
+          return;
+        }
+
+        const d = new Date(ms);
+        if (isNaN(d.getTime())) {
+          showEpochError();
+          return;
+        }
+
+        // Valid timestamp
+        epochError.style.display = "none";
+
+        // 1. UTC Date and Time
+        resUtc.textContent = formatUtc(d);
+
+        // 2. Visitor's Local Date and Time
+        resLocal.textContent = formatLocal(d);
+        try {
+          const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local Time";
+          resLocalTzNote.textContent = `Configured browser time zone: ${localTz}`;
+        } catch (e) {
+          resLocalTzNote.textContent = "Rendered in your browser's local time zone";
+        }
+
+        // 3. Eastern Time
+        const etResult = formatEastern(d);
+        resEt.textContent = etResult.formatted;
+        resEtNote.textContent = `Dynamically determined Eastern Time zone abbreviation: ${etResult.tzName}`;
+      }
+
+      function showEpochError() {
+        epochError.style.display = "block";
+        resUtc.textContent = "--";
+        resLocal.textContent = "--";
+        resEt.textContent = "--";
+        resEtNote.textContent = "--";
+        resLocalTzNote.textContent = "--";
+      }
+
+      // Unit switchers for Mode A
+      unitSecsBtn.addEventListener("click", function () {
+        if (epochUnit === "seconds") return;
+        epochUnit = "seconds";
+        unitSecsBtn.style.background = "var(--accent)";
+        unitSecsBtn.style.color = "#0c354a";
+        unitSecsBtn.setAttribute("aria-pressed", "true");
+
+        unitMillisBtn.style.background = "var(--bg)";
+        unitMillisBtn.style.color = "var(--text)";
+        unitMillisBtn.setAttribute("aria-pressed", "false");
+
+        // If switching from ms with a 13-digit number, convert to seconds
+        const val = epochInput.value.trim();
+        if (/^\d{12,14}$/.test(val)) {
+          epochInput.value = Math.floor(Number(val) / 1000).toString();
+        }
+        updateEpochConversion();
+      });
+
+      unitMillisBtn.addEventListener("click", function () {
+        if (epochUnit === "milliseconds") return;
+        epochUnit = "milliseconds";
+        unitMillisBtn.style.background = "var(--accent)";
+        unitMillisBtn.style.color = "#0c354a";
+        unitMillisBtn.setAttribute("aria-pressed", "true");
+
+        unitSecsBtn.style.background = "var(--bg)";
+        unitSecsBtn.style.color = "var(--text)";
+        unitSecsBtn.setAttribute("aria-pressed", "false");
+
+        // If switching from seconds with a 9-11 digit number, convert to ms
+        const val = epochInput.value.trim();
+        if (/^\d{9,11}$/.test(val)) {
+          epochInput.value = (Number(val) * 1000).toString();
+        }
+        updateEpochConversion();
+      });
+
+      // Use Current Time button
+      currentTimeBtn.addEventListener("click", function () {
+        const nowMs = Date.now();
+        if (epochUnit === "seconds") {
+          epochInput.value = Math.floor(nowMs / 1000).toString();
+        } else {
+          epochInput.value = nowMs.toString();
+        }
+        updateEpochConversion();
+        epochInput.focus();
+      });
+
+      // Example pills
+      examplePills.forEach((pill) => {
+        pill.addEventListener("click", function () {
+          const ts = this.getAttribute("data-ts");
+          // Switch to seconds mode for verified examples
+          if (epochUnit !== "seconds") {
+            unitSecsBtn.click();
+          }
+          epochInput.value = ts;
+          updateEpochConversion();
+          epochInput.focus();
+        });
+      });
+
+      epochInput.addEventListener("input", updateEpochConversion);
+
+      // ── MODE B: CALCULATE DATE TO EPOCH ─────────────────────────────────
+      function updateReverseConversion() {
+        const dtVal = revDtInput.value;
+        if (!dtVal) {
+          revError.style.display = "block";
+          revResValue.textContent = "--";
+          return;
+        }
+
+        // Native datetime-local string parsed as local time: YYYY-MM-DDTHH:mm:ss
+        const d = new Date(dtVal);
+        if (isNaN(d.getTime())) {
+          revError.style.display = "block";
+          revResValue.textContent = "--";
+          return;
+        }
+
+        revError.style.display = "none";
+        const ms = d.getTime();
+
+        if (revEpochUnit === "seconds") {
+          const secs = Math.floor(ms / 1000);
+          revResValue.textContent = secs.toString();
+          revResLabel.textContent = "Unix Timestamp (Seconds):";
+        } else {
+          revResValue.textContent = ms.toString();
+          revResLabel.textContent = "Unix Timestamp (Milliseconds):";
+        }
+      }
+
+      revUnitSecsBtn.addEventListener("click", function () {
+        revEpochUnit = "seconds";
+        revUnitSecsBtn.style.background = "var(--accent)";
+        revUnitSecsBtn.style.color = "#0c354a";
+        revUnitSecsBtn.setAttribute("aria-pressed", "true");
+
+        revUnitMillisBtn.style.background = "var(--bg)";
+        revUnitMillisBtn.style.color = "var(--text)";
+        revUnitMillisBtn.setAttribute("aria-pressed", "false");
+
+        updateReverseConversion();
+      });
+
+      revUnitMillisBtn.addEventListener("click", function () {
+        revEpochUnit = "milliseconds";
+        revUnitMillisBtn.style.background = "var(--accent)";
+        revUnitMillisBtn.style.color = "#0c354a";
+        revUnitMillisBtn.setAttribute("aria-pressed", "true");
+
+        revUnitSecsBtn.style.background = "var(--bg)";
+        revUnitSecsBtn.style.color = "var(--text)";
+        revUnitSecsBtn.setAttribute("aria-pressed", "false");
+
+        updateReverseConversion();
+      });
+
+      revDtInput.addEventListener("input", updateReverseConversion);
+      revDtInput.addEventListener("change", updateReverseConversion);
+      convertRevBtn.addEventListener("click", updateReverseConversion);
+
+      // Copy Epoch Button
+      copyEpochBtn.addEventListener("click", function () {
+        const text = revResValue.textContent;
+        if (!text || text === "--") return;
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = copyEpochBtn.textContent;
+          copyEpochBtn.textContent = "✓ Copied!";
+          setTimeout(() => {
+            copyEpochBtn.textContent = originalText;
+          }, 2000);
+        }).catch(() => {});
+      });
+
+      // ── TAB SWITCHING LOGIC ──────────────────────────────────────────────
+      tabEpochToDate.addEventListener("click", function () {
+        tabEpochToDate.style.background = "var(--accent)";
+        tabEpochToDate.style.color = "#0c354a";
+        tabEpochToDate.setAttribute("aria-selected", "true");
+
+        tabDateToEpoch.style.background = "var(--bg)";
+        tabDateToEpoch.style.color = "var(--text)";
+        tabDateToEpoch.setAttribute("aria-selected", "false");
+
+        panelEpochToDate.style.display = "block";
+        panelDateToEpoch.style.display = "none";
+      });
+
+      tabDateToEpoch.addEventListener("click", function () {
+        tabDateToEpoch.style.background = "var(--accent)";
+        tabDateToEpoch.style.color = "#0c354a";
+        tabDateToEpoch.setAttribute("aria-selected", "true");
+
+        tabEpochToDate.style.background = "var(--bg)";
+        tabEpochToDate.style.color = "var(--text)";
+        tabEpochToDate.setAttribute("aria-selected", "false");
+
+        panelEpochToDate.style.display = "none";
+        panelDateToEpoch.style.display = "block";
+
+        // Set default reverse datetime if empty
+        if (!revDtInput.value) {
+          const now = new Date();
+          const pad = (n) => String(n).padStart(2, "0");
+          const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+          revDtInput.value = localIso;
+          updateReverseConversion();
+        }
+      });
+
+      // Initialize on load with verified default example: 1767225600
+      updateEpochConversion();
+    })();
+  </script>
+
+  <style>
+    @media (max-width: 680px) {
+      .epoch-input-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .epoch-input-grid button {
+        width: 100%;
+      }
+    }
+    .article-content {
+      line-height: 1.75;
+      color: #bdd2dc;
+    }
+    .article-content h2 {
+      color: #ffffff;
+      font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+      margin: 36px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+    .article-content p {
+      margin-bottom: 16px;
+    }
+    .article-content ul {
+      margin: 0 0 20px 24px;
+      padding: 0;
+    }
+    .article-content li {
+      margin-bottom: 8px;
+    }
+    .article-content a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .article-content a:hover {
+      color: #ffffff;
+    }
+  </style>
+</BaseLayout>
