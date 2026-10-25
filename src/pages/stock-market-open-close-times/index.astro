@@ -1,0 +1,773 @@
+---
+import BaseLayout from "theme/layouts/BaseLayout.astro";
+import {
+  MARKET_HOLIDAYS_2026,
+  EARLY_CLOSES_2026,
+  MARKET_HOLIDAYS_2027,
+  EARLY_CLOSES_2027,
+  HOLIDAY_MAP,
+  EARLY_CLOSE_MAP,
+  getEasternTimeParts,
+  evaluateMarketStatus,
+  formatLongDate,
+  format12HourTime
+} from "src/data/stockMarketHours";
+
+const lang = "en";
+const dir = "ltr";
+const slug = "stock-market-open-close-times";
+const seoTitle = "Stock Market Hours | When Does the Stock Market Open & Close";
+const pageDescription =
+  "See US stock market hours: NYSE and Nasdaq open 9:30 a.m. to 4 p.m. ET, plus pre-market, after-hours, early closes and holidays.";
+
+const pubDate = "2026-10-25T16:00:00+05:00";
+const updatedDate = "2026-10-25T16:15:00+05:00";
+
+const meta = {
+  seoTitle,
+  exactTitle: true,
+  description: pageDescription,
+  exactDescription: true,
+  keywords:
+    "stock market hours, is the stock market open now, when does the stock market open, stock market open and close times, nyse hours, nasdaq hours, pre-market hours, after-hours trading, stock market holidays 2026, stock market holidays 2027",
+  pubDate,
+  updatedDate,
+  author: "Time Intelligence Team",
+  faqs: [
+    {
+      q: "What time does the stock market open?",
+      a: "The NYSE and Nasdaq regular session opens at 9:30 a.m. Eastern Time, Monday to Friday, except on market holidays."
+    },
+    {
+      q: "What time does the stock market close?",
+      a: "The regular session closes at 4:00 p.m. Eastern Time, or at 1:00 p.m. Eastern Time on early-close days."
+    },
+    {
+      q: "Is the stock market open on Columbus Day or Veterans Day?",
+      a: "Yes, for NYSE and Nasdaq regular trading. The bond market is closed on those days, which is a common source of confusion."
+    },
+    {
+      q: "Is the stock market closed on Good Friday?",
+      a: "Yes. Good Friday is a NYSE and Nasdaq holiday — Friday 3 April 2026 and Friday 26 March 2027."
+    }
+  ]
+};
+
+// Initial server-side Eastern Time evaluation for fallback / SSR
+const now = new Date();
+const initialEt = getEasternTimeParts(now);
+const initialEval = evaluateMarketStatus(
+  initialEt.dateStr,
+  initialEt.hour,
+  initialEt.minute,
+  initialEt.second,
+  initialEt.dayOfWeek
+);
+const initialDateFormatted = formatLongDate(
+  initialEt.year,
+  initialEt.month,
+  initialEt.day,
+  initialEt.dayOfWeek
+);
+const initialTimeFormatted = format12HourTime(
+  initialEt.hour,
+  initialEt.minute,
+  initialEt.second
+);
+---
+
+<BaseLayout
+  lang={lang}
+  dir={dir}
+  title={seoTitle}
+  description={pageDescription}
+  slug={slug}
+  meta={meta}
+  enableFaqSchema={true}
+  allowAds={true}
+>
+  <!-- Schema: WebApplication Structured Data -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Stock Market Hours",
+    "url": "https://gmttoestconverter.com/stock-market-open-close-times/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": pageDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "browserRequirements": "Requires JavaScript for live Eastern clock updates"
+  })}></script>
+
+  <!-- Hero Header -->
+  <div class="hero-banner">
+    <h1 class="hero-banner-title">Stock Market Hours</h1>
+    <p style="color: #bdd2dc; font-size: clamp(1rem, 2.2vw, 1.25rem); max-width: 720px; margin: 12px auto 0; line-height: 1.5;">
+      Check live US stock market trading status for NYSE and Nasdaq, explore full 2026–2027 holiday schedules, and verify pre-market and after-hours windows in Eastern Time.
+    </p>
+  </div>
+
+  <div style="max-width: 860px; margin: 0 auto; padding-top: 24px;">
+
+    <!-- =======================================================================
+         SECTION 3: INTERACTIVE STOCK MARKET CHECKER (ABOVE THE FOLD)
+         ======================================================================= -->
+    <section id="stock-market-checker" style="background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: clamp(20px, 4vw, 36px); box-shadow: var(--shadow); position: relative;">
+      
+      <!-- Checker Heading -->
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 16px;">
+        <h2 style="font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 800; color: #ffffff; margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif;">
+          Is the stock market open now?
+        </h2>
+        <span id="market-mode-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(54, 199, 181, 0.15); border: 1px solid rgba(54, 199, 181, 0.4); color: #36c7b5; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #36c7b5; display: inline-block;"></span>
+          Live Eastern Clock
+        </span>
+      </div>
+
+      <!-- Live Clock & Status Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 24px;">
+        
+        <!-- Box 1: Current Eastern Time & Date -->
+        <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 20px;">
+          <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px;">
+            Current Eastern Time (ET)
+          </div>
+          <!-- Time Display (Large) -->
+          <div id="et-clock-display" style="font-size: clamp(1.8rem, 4vw, 2.3rem); font-weight: 900; color: #ffffff; font-family: 'Space Grotesk', monospace; line-height: 1.1;">
+            {initialTimeFormatted}
+          </div>
+          <!-- Date Display -->
+          <div id="et-date-display" style="font-size: 0.95rem; font-weight: 700; color: #cbd5e1; margin-top: 8px;">
+            {initialDateFormatted}
+          </div>
+          <div id="et-tz-note" style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
+            Timezone: America/New_York ({initialEt.tzName})
+          </div>
+        </div>
+
+        <!-- Box 2: Market Status -->
+        <div style="background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 20px;" aria-live="polite" id="market-status-box">
+          <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #38bdf8; margin-bottom: 6px;">
+            Market Status
+          </div>
+          <!-- Status Label -->
+          <div id="market-status-label" style="font-size: clamp(1.5rem, 3.5vw, 1.95rem); font-weight: 900; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; line-height: 1.2;">
+            {initialEval.status}
+          </div>
+          <!-- Concise Explanation -->
+          <p id="market-explanation" style="font-size: 0.9rem; color: #cbd5e1; margin: 8px 0 0; line-height: 1.45;">
+            {initialEval.explanation}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Transition Banner -->
+      <div style="background: rgba(14, 26, 48, 0.7); border: 1px solid #1e3a63; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.2rem;" aria-hidden="true">⏱️</span>
+        <div style="font-size: 0.92rem; color: #e2e8f0;">
+          <strong style="color: #38bdf8;">Next Transition:</strong> <span id="market-transition-text">{initialEval.nextTransition}</span>
+        </div>
+      </div>
+
+      <!-- Selected Date Context Notification (hidden by default) -->
+      <div id="selected-date-banner" style="display: none; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.88rem; color: #bae6fd;">
+        <strong>Calendar Evaluation Mode:</strong> <span id="selected-date-note">This result applies the current Eastern clock time to the selected calendar date.</span>
+      </div>
+
+      <!-- Date Picker Row: Check another date -->
+      <div style="background: rgba(11, 23, 42, 0.85); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+        <div style="flex: 1; min-width: 240px;">
+          <label for="market-date-picker" style="display: block; font-size: 0.88rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px;">
+            Check another date
+          </label>
+          <input
+            type="date"
+            id="market-date-picker"
+            aria-describedby="market-picker-desc"
+            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font-size: 1rem; font-family: inherit;"
+          />
+          <span id="market-picker-desc" class="sr-only">Select any date to evaluate its market schedule against current Eastern Time</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button
+            type="button"
+            id="reset-today-btn"
+            style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+            aria-label="Reset date picker to current Eastern date and live clock"
+          >
+            Reset to current date
+          </button>
+        </div>
+      </div>
+
+      <!-- Extended-hours broker disclaimer (Section 3.7) -->
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.85rem; color: #94a3b8; line-height: 1.5;">
+        <p style="margin: 0;">
+          Extended-hours access varies by broker. Not every broker offers the full pre-market or after-hours window.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- Required plain-text disclaimer directly under the checker (Section 3.8) -->
+    <div style="margin: 16px 0 36px; padding: 12px 16px; background: rgba(15, 23, 42, 0.6); border-left: 4px solid #64748b; border-radius: 4px; font-size: 0.88rem; color: #94a3b8; line-height: 1.5;">
+      This checker covers NYSE and Nasdaq regular equity sessions and the holidays listed above. Bond markets, other exchanges, and individual brokers can differ. This page is not financial advice.
+    </div>
+
+    <!-- Hero Image (Section 8) -->
+    <div style="margin: 28px 0 40px; text-align: center;">
+      <img
+        src="/assets/stock-market-hours-hero.webp"
+        alt="Clock and calendar showing stock market hours from 9:30 a.m. to 4 p.m. Eastern Time"
+        width="960"
+        height="540"
+        loading="eager"
+        decoding="async"
+        style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+      />
+    </div>
+
+    <!-- =======================================================================
+         MAIN ARTICLE CONTENT (EXACT H2 ORDER FROM SECTION 5)
+         ======================================================================= -->
+    <article class="article-content" style="color: #e2e8f0; line-height: 1.7; font-size: 1.05rem;">
+
+      <!-- SECTION 5.1: H2: What time does the stock market open and close? -->
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; margin-bottom: 16px;">
+          What time does the stock market open and close?
+        </h2>
+        <p style="font-size: 1.12rem; line-height: 1.6; color: #f1f5f9; margin-bottom: 16px;">
+          The NYSE and Nasdaq regular stock market session runs from 9:30 a.m. to 4:00 p.m. Eastern Time, Monday to Friday, except on market holidays and specified early-close days.
+        </p>
+        <p style="margin-bottom: 20px;">
+          Because the United States spans multiple geographic time zones, investors across the country trade during the exact same market window, but observe different local clock hours. These are equivalent representations of the same trading session, not separate sessions:
+        </p>
+
+        <!-- Time Zone Equivalence Table -->
+        <div style="overflow-x: auto; margin-bottom: 20px; border-radius: 10px; border: 1px solid var(--line);">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--panel);">
+            <thead>
+              <tr style="background: rgba(14, 26, 48, 0.95); border-bottom: 2px solid var(--line);">
+                <th style="padding: 14px 18px; font-weight: 800; color: #ffffff; font-size: 0.95rem;">Time zone</th>
+                <th style="padding: 14px 18px; font-weight: 800; color: #ffffff; font-size: 0.95rem;">Regular session</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--line);">
+                <td style="padding: 14px 18px; font-weight: 700; color: #38bdf8;">Eastern Time (ET)</td>
+                <td style="padding: 14px 18px; font-weight: 800; color: #ffffff;">9:30 a.m.–4:00 p.m.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--line);">
+                <td style="padding: 14px 18px; font-weight: 700; color: #38bdf8;">Central Time (CT)</td>
+                <td style="padding: 14px 18px; font-weight: 700; color: #cbd5e1;">8:30 a.m.–3:00 p.m.</td>
+              </tr>
+              <tr>
+                <td style="padding: 14px 18px; font-weight: 700; color: #38bdf8;">Pacific Time (PT)</td>
+                <td style="padding: 14px 18px; font-weight: 700; color: #cbd5e1;">6:30 a.m.–1:00 p.m.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-bottom: 16px;">
+          Local clock times reflect the corresponding US time zones and seasonal daylight-saving changes. When the US switches between Standard Time and Daylight Saving Time, the market's clock remains synchronized with Eastern Time (<code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-family: monospace;">America/New_York</code>). If you coordinate trading or meetings across zones, you can use our <a href="/compare-time-zones/" style="color: var(--accent); text-decoration: underline; font-weight: 700;">Compare Time Zones page</a> to view Eastern, Central, and Pacific hours side by side.
+        </p>
+        <p style="font-size: 0.95rem; color: #94a3b8;">
+          Note: These hours govern major US equity exchanges (the New York Stock Exchange and the Nasdaq Stock Market). They do not represent every stock exchange worldwide or non-equity derivatives markets.
+        </p>
+      </section>
+
+      <!-- SECTION 5.2: H2: Pre-market and after-hours trading -->
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; margin-bottom: 16px;">
+          Pre-market and after-hours trading
+        </h2>
+        <p style="margin-bottom: 16px;">
+          In addition to the core 9:30 a.m. to 4:00 p.m. ET equity window, US exchanges and electronic communication networks (ECNs) offer extended-hours trading. Under the rules configured on this page, the two extended sessions run as follows:
+        </p>
+
+        <ul style="margin: 0 0 20px 24px; padding: 0; line-height: 1.8;">
+          <li><strong style="color: #38bdf8;">Pre-market:</strong> 4:00 a.m.–9:30 a.m. ET Monday through Friday.</li>
+          <li><strong style="color: #fbbf24;">After-hours:</strong> 4:00 p.m.–8:00 p.m. ET Monday through Friday.</li>
+        </ul>
+
+        <!-- Trading Sessions Diagram Image (Section 8) -->
+        <figure style="margin: 28px 0; text-align: center;">
+          <img
+            src="/assets/stock-market-sessions.webp"
+            alt="Timeline showing pre-market, regular session and after-hours trading"
+            width="800"
+            height="450"
+            loading="lazy"
+            decoding="async"
+            style="width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow);"
+          />
+          <figcaption style="margin-top: 10px; font-size: 0.9rem; color: #94a3b8; font-style: italic;">
+            Pre-market, regular session, and after-hours — the regular session is 9:30 a.m. to 4:00 p.m. ET.
+          </figcaption>
+        </figure>
+
+        <p style="margin-bottom: 16px;">
+          While trading outside regular session hours allows participants to react to corporate earnings releases, geopolitical developments, or macroeconomic data, extended-hours trading carries specific mechanical risks:
+        </p>
+
+        <ul style="margin: 0 0 20px 24px; padding: 0; line-height: 1.8;">
+          <li><strong>Extended-hours access varies by broker:</strong> Not every broker supports the full 4:00 a.m. pre-market start or the entire evening session until 8:00 p.m. ET. Many retail brokerages permit trading only from 7:00 a.m. or 8:00 a.m. ET.</li>
+          <li><strong>Lower trading liquidity:</strong> Fewer buyers and sellers participate compared to the regular session, which can make executing large or limit orders more difficult.</li>
+          <li><strong>Wider bid-ask spreads:</strong> Reduced volume often creates greater price gaps between what buyers are bidding and what sellers are asking.</li>
+          <li><strong>Heightened price volatility:</strong> Prices can move sharply on minimal trade volume when fewer market participants are active.</li>
+          <li><strong>Order type restrictions:</strong> Many brokers only accept limit orders during extended hours, and quotes displayed by one trading venue may not reflect quotes from other ECNs.</li>
+        </ul>
+
+        <p style="font-size: 0.95rem; color: #94a3b8; margin-top: 16px;">
+          This tool does not recommend trading in extended-hours sessions, guarantee that limit orders will execute, or imply that extended-hours participation is suitable for all investors.
+        </p>
+      </section>
+
+      <!-- SECTION 5.3: H2: Is the stock market closed today? -->
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; margin-bottom: 16px;">
+          Is the stock market closed today?
+        </h2>
+        <p style="margin-bottom: 16px;">
+          To determine whether US equity markets are closed at this exact moment, use the status indicators computed by the tool above:
+        </p>
+
+        <ul style="margin: 0 0 20px 24px; padding: 0; line-height: 1.8;">
+          <li><strong>Weekend:</strong> The regular market is closed on Saturdays and Sundays. The status reads <code style="color: #f87171;">Closed (weekend)</code>.</li>
+          <li><strong>Listed market holiday:</strong> The regular market is closed for the full day on the ten designated exchange holidays. The status reads <code style="color: #f87171;">Closed (market holiday)</code>.</li>
+          <li><strong>Listed early-close date:</strong> The regular session ends early at 1:00 p.m. ET. Between 1:00 p.m. and 4:00 p.m., the status displays <code style="color: #fbbf24;">Closed (early close)</code>.</li>
+          <li><strong>Ordinary eligible weekday:</strong> Regular trading runs from 9:30 a.m. to 4:00 p.m. ET, displaying <code style="color: #34d399;">Open (regular session)</code> during that window.</li>
+          <li><strong>Outside defined trading sessions:</strong> Outside the pre-market, regular, and after-hours windows (e.g. overnight between 8:00 p.m. and 4:00 a.m. ET), the status displays <code style="color: #94a3b8;">Closed (outside trading hours)</code>.</li>
+          <li><strong>Unlisted possible early close:</strong> Check the NYSE calendar rather than assuming the ordinary full-day schedule has been verified.</li>
+        </ul>
+
+        <p style="margin-bottom: 16px;">
+          Market participants frequently confuse bank and government closures with equity exchange schedules. Two common calendar distinctions must be kept in mind:
+        </p>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-top: 0; margin-bottom: 8px;">
+            Columbus Day and Veterans Day
+          </h3>
+          <p style="margin: 0; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6;">
+            NYSE and Nasdaq regular trading is <strong>open</strong> on Columbus Day and Veterans Day under the normal 9:30 a.m. to 4:00 p.m. ET schedule. In contrast, the US bond market (SIFMA recommendation) and federal banks are closed. Do not confuse bond market closures with equity market closures.
+          </p>
+        </div>
+
+        <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-top: 0; margin-bottom: 8px;">
+            Good Friday
+          </h3>
+          <p style="margin: 0; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6;">
+            NYSE and Nasdaq are <strong>closed</strong> on Good Friday. However, Good Friday is not an official US federal holiday for most federal-office purposes. Exchange holidays and federal-office holidays follow distinct legal frameworks.
+          </p>
+        </div>
+
+        <p style="margin-bottom: 16px;">
+          To explore federal observances, legal dates, and weekend rollover rules, consult our <a href="/us-federal-holidays-2027/" style="color: var(--accent); text-decoration: underline; font-weight: 700;">US Federal Holidays 2027 page</a>, keeping in mind that federal holidays and exchange holidays represent two completely separate calendars. To convert market opening bells to any international time zone, visit the <a href="/" style="color: var(--accent); text-decoration: underline; font-weight: 700;">GMT to EST Converter homepage</a>.
+        </p>
+      </section>
+
+      <!-- SECTION 5.4: H2: Stock market holidays 2026 and 2027 -->
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; margin-bottom: 16px;">
+          Stock market holidays 2026 and 2027
+        </h2>
+        <p style="margin-bottom: 20px;">
+          The tables below display the authoritative NYSE and Nasdaq holiday schedules encoded into this checker. Each table distinguishes between full-day closures and scheduled 1:00 p.m. ET early closes.
+        </p>
+
+        <!-- 2026 Holiday Table -->
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin-bottom: 12px;">
+          2026 Stock Market Holidays &amp; Early Closes
+        </h3>
+        <div style="overflow-x: auto; margin-bottom: 28px; border-radius: 10px; border: 1px solid var(--line);">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--panel);">
+            <thead>
+              <tr style="background: rgba(14, 26, 48, 0.95); border-bottom: 2px solid var(--line);">
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Date</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Day</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Holiday / Reason</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Session Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MARKET_HOLIDAYS_2026.map((h) => (
+                <tr style="border-bottom: 1px solid var(--line);">
+                  <td style="padding: 12px 16px; font-weight: 700; color: #cbd5e1;">{h.date}</td>
+                  <td style="padding: 12px 16px; color: #94a3b8;">{h.day}</td>
+                  <td style="padding: 12px 16px; font-weight: 700; color: #ffffff;">{h.name}</td>
+                  <td style="padding: 12px 16px; color: #f87171; font-weight: 700;">Closed (Full Day)</td>
+                </tr>
+              ))}
+              {EARLY_CLOSES_2026.map((ec) => (
+                <tr style="border-bottom: 1px solid var(--line); background: rgba(251, 191, 36, 0.05);">
+                  <td style="padding: 12px 16px; font-weight: 700; color: #cbd5e1;">{ec.date}</td>
+                  <td style="padding: 12px 16px; color: #94a3b8;">{ec.day}</td>
+                  <td style="padding: 12px 16px; font-weight: 700; color: #fbbf24;">{ec.reason}</td>
+                  <td style="padding: 12px 16px; color: #fbbf24; font-weight: 700;">Early Close (1:00 p.m. ET)</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 2027 Holiday Table -->
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin-bottom: 12px;">
+          2027 Stock Market Holidays &amp; Early Closes
+        </h3>
+        <div style="overflow-x: auto; margin-bottom: 20px; border-radius: 10px; border: 1px solid var(--line);">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--panel);">
+            <thead>
+              <tr style="background: rgba(14, 26, 48, 0.95); border-bottom: 2px solid var(--line);">
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Date</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Day</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Holiday / Reason</th>
+                <th style="padding: 12px 16px; font-weight: 800; color: #ffffff; font-size: 0.9rem;">Session Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MARKET_HOLIDAYS_2027.map((h) => (
+                <tr style="border-bottom: 1px solid var(--line);">
+                  <td style="padding: 12px 16px; font-weight: 700; color: #cbd5e1;">{h.date}</td>
+                  <td style="padding: 12px 16px; color: #94a3b8;">{h.day}</td>
+                  <td style="padding: 12px 16px; font-weight: 700; color: #ffffff;">{h.name}</td>
+                  <td style="padding: 12px 16px; color: #f87171; font-weight: 700;">Closed (Full Day)</td>
+                </tr>
+              ))}
+              {EARLY_CLOSES_2027.map((ec) => (
+                <tr style="border-bottom: 1px solid var(--line); background: rgba(251, 191, 36, 0.05);">
+                  <td style="padding: 12px 16px; font-weight: 700; color: #cbd5e1;">{ec.date}</td>
+                  <td style="padding: 12px 16px; color: #94a3b8;">{ec.day}</td>
+                  <td style="padding: 12px 16px; font-weight: 700; color: #fbbf24;">{ec.reason}</td>
+                  <td style="padding: 12px 16px; color: #fbbf24; font-weight: 700;">Early Close (1:00 p.m. ET)</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Note regarding dates & unlisted early closes -->
+        <p style="font-size: 0.95rem; color: #94a3b8; line-height: 1.6; margin-top: 16px;">
+          Note: This page's checker strictly uses the dates listed here. For 2027, November 26 (Day after Thanksgiving) is the only listed early close under current guidelines. Visitors should check the official NYSE calendar when they need confirmation of an unlisted early close or future exchange-calendar amendment.
+        </p>
+      </section>
+
+      <!-- SECTION 5.5: H2: Frequently Asked Questions (Section 6) -->
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; color: #ffffff; font-family: 'Space Grotesk', system-ui, sans-serif; margin-bottom: 20px;">
+          Frequently Asked Questions
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          {meta.faqs.map((faq) => (
+            <details style="background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; transition: border-color 0.2s;">
+              <summary style="font-size: 1.08rem; font-weight: 800; color: #ffffff; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                <span>{faq.q}</span>
+                <span style="color: var(--accent); font-size: 1.2rem; font-weight: bold; margin-left: 12px;">+</span>
+              </summary>
+              <p style="margin: 12px 0 0; color: #cbd5e1; font-size: 0.98rem; line-height: 1.6;">
+                {faq.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+    </article>
+
+  </div>
+
+  <!-- Client-side Interactive JavaScript -->
+  <script is:inline define:vars={{
+    clientHolidays: HOLIDAY_MAP,
+    clientEarlyCloses: EARLY_CLOSE_MAP
+  }}>
+    (function initStockMarketChecker() {
+      const clockDisplay = document.getElementById("et-clock-display");
+      const dateDisplay = document.getElementById("et-date-display");
+      const tzNote = document.getElementById("et-tz-note");
+      const statusLabel = document.getElementById("market-status-label");
+      const statusBox = document.getElementById("market-status-box");
+      const explanationText = document.getElementById("market-explanation");
+      const transitionText = document.getElementById("market-transition-text");
+      const datePicker = document.getElementById("market-date-picker");
+      const resetBtn = document.getElementById("reset-today-btn");
+      const modeBadge = document.getElementById("market-mode-badge");
+      const selectedBanner = document.getElementById("selected-date-banner");
+      const selectedNote = document.getElementById("selected-date-note");
+
+      let manualDateStr = null;
+
+      const MONTHS = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const DAYS = [
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+      ];
+
+      // Format Eastern Time parts using America/New_York
+      function getClientEasternParts(dateObj) {
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/New_York",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          weekday: "short"
+        });
+        const parts = formatter.formatToParts(dateObj);
+        const map = {};
+        for (const p of parts) {
+          map[p.type] = p.value;
+        }
+
+        const year = parseInt(map.year, 10);
+        const month = parseInt(map.month, 10);
+        const day = parseInt(map.day, 10);
+        let hour = parseInt(map.hour, 10);
+        if (hour === 24) hour = 0;
+        const minute = parseInt(map.minute, 10);
+        const second = parseInt(map.second, 10);
+
+        const weekdayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+        const dayOfWeek = weekdayMap[map.weekday] ?? 0;
+        const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const totalMinutes = hour * 60 + minute;
+
+        // TZ name
+        let tzName = "ET";
+        try {
+          const tzFormatter = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/New_York",
+            timeZoneName: "short"
+          });
+          const tzParts = tzFormatter.formatToParts(dateObj);
+          tzName = tzParts.find((p) => p.type === "timeZoneName")?.value || "ET";
+        } catch (e) {}
+
+        return { year, month, day, hour, minute, second, dayOfWeek, dateStr, totalMinutes, tzName };
+      }
+
+      function format12H(h, m, s) {
+        const h12 = h % 12 === 0 ? 12 : h % 12;
+        const ampm = h < 12 ? "AM" : "PM";
+        return `${String(h12).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")} ${ampm}`;
+      }
+
+      function formatLong(y, m, d, dow) {
+        return `${DAYS[dow]}, ${MONTHS[m - 1]} ${d}, ${y}`;
+      }
+
+      // Evaluates market schedule given dateStr, hour, min, sec, dayOfWeek
+      function evaluateClientStatus(dateStr, hour, minute, second, dayOfWeek) {
+        // 1. Holiday Check
+        const holiday = clientHolidays[dateStr];
+        if (holiday) {
+          return {
+            status: "Closed (market holiday)",
+            explanation: `Today is ${holiday.name}, an official NYSE and Nasdaq market holiday. Regular, pre-market, and after-hours trading are closed for the full day.`,
+            nextTransition: "The regular session will reopen on the next standard trading day at 9:30 a.m. ET."
+          };
+        }
+
+        // 2. Weekend Check
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          const dayName = dayOfWeek === 0 ? "Sunday" : "Saturday";
+          return {
+            status: "Closed (weekend)",
+            explanation: `The US stock market is closed on weekends (${dayName}). Regular equity trading resumes on Monday at 9:30 a.m. ET (subject to market holidays).`,
+            nextTransition: "Pre-market opens at 4:00 a.m. ET and regular trading opens at 9:30 a.m. ET on Monday."
+          };
+        }
+
+        // 3. Early Close Check
+        const earlyClose = clientEarlyCloses[dateStr];
+        const isEarly = !!earlyClose;
+        const totalMinutes = hour * 60 + minute;
+
+        // 00:00 - 03:59
+        if (totalMinutes < 240) {
+          return {
+            status: "Closed (outside trading hours)",
+            explanation: isEarly
+              ? `Outside all defined trading windows. Regular trading will close early today at 1:00 p.m. ET for ${earlyClose.reason}.`
+              : "Outside all defined trading windows. Pre-market trading opens at 4:00 a.m. ET.",
+            nextTransition: isEarly
+              ? "Pre-market opens at 4:00 a.m. ET (note early regular close at 1:00 p.m. ET today)."
+              : "Pre-market opens at 4:00 a.m. ET (regular session opens at 9:30 a.m. ET)."
+          };
+        }
+
+        // 04:00 - 09:29: Pre-market
+        if (totalMinutes < 570) {
+          return {
+            status: "Pre-market",
+            explanation: isEarly
+              ? `Pre-market trading is active (4:00 a.m. to 9:30 a.m. ET). Note: Regular session will close early at 1:00 p.m. ET today for ${earlyClose.reason}.`
+              : "Pre-market trading is active (4:00 a.m. to 9:30 a.m. ET). Extended-hours access and order execution vary by broker.",
+            nextTransition: isEarly
+              ? "Regular session opens at 9:30 a.m. ET (closes early at 1:00 p.m. ET today)."
+              : "Regular session opens at 9:30 a.m. ET."
+          };
+        }
+
+        // 09:30 - Close
+        const regCloseMin = isEarly ? 780 : 960;
+        if (totalMinutes < regCloseMin) {
+          return {
+            status: "Open (regular session)",
+            explanation: isEarly
+              ? `Regular equity trading is currently open on NYSE and Nasdaq. Today is an early-close session (${earlyClose.reason}), closing at 1:00 p.m. ET.`
+              : "Regular equity trading is currently open on NYSE and Nasdaq (standard hours 9:30 a.m. to 4:00 p.m. ET).",
+            nextTransition: isEarly
+              ? "Regular session closes early at 1:00 p.m. ET today."
+              : "Regular session closes at 4:00 p.m. ET."
+          };
+        }
+
+        // 13:00 - 15:59 on early close date
+        if (isEarly && totalMinutes < 960) {
+          return {
+            status: "Closed (early close)",
+            explanation: `The regular equity session closed early at 1:00 p.m. ET for ${earlyClose.reason}.`,
+            nextTransition: "After-hours session begins at 4:00 p.m. ET under supplied rules."
+          };
+        }
+
+        // 16:00 - 19:59: After-hours
+        if (totalMinutes < 1200) {
+          return {
+            status: "After-hours",
+            explanation:
+              "After-hours trading session is active (4:00 p.m. to 8:00 p.m. ET). Extended-hours liquidity and spreads vary significantly by broker.",
+            nextTransition: "After-hours session closes at 8:00 p.m. ET."
+          };
+        }
+
+        // 20:00 - 23:59
+        return {
+          status: "Closed (outside trading hours)",
+          explanation:
+            "Outside all defined trading windows. Extended-hours trading closed at 8:00 p.m. ET.",
+          nextTransition: "Pre-market opens at 4:00 a.m. ET on the next eligible trading day."
+        };
+      }
+
+      function updateChecker() {
+        const now = new Date();
+        const et = getClientEasternParts(now);
+
+        // Update live clock displays
+        if (clockDisplay) clockDisplay.textContent = format12H(et.hour, et.minute, et.second);
+        if (tzNote) tzNote.textContent = `Timezone: America/New_York (${et.tzName})`;
+
+        let evalResult;
+
+        if (manualDateStr) {
+          // Parse manual date safely
+          const parts = manualDateStr.split("-").map(Number);
+          const y = parts[0];
+          const m = parts[1];
+          const d = parts[2];
+          // Determine UTC day of week at noon to avoid DST edge-cases
+          const manualDateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+          const dow = manualDateObj.getUTCDay();
+
+          evalResult = evaluateClientStatus(manualDateStr, et.hour, et.minute, et.second, dow);
+
+          if (dateDisplay) {
+            dateDisplay.textContent = `${formatLong(y, m, d, dow)} (Selected Date)`;
+          }
+
+          if (modeBadge) {
+            modeBadge.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; display: inline-block;"></span> Date Evaluation`;
+            modeBadge.style.color = "#38bdf8";
+            modeBadge.style.borderColor = "rgba(56, 189, 248, 0.4)";
+            modeBadge.style.background = "rgba(56, 189, 248, 0.15)";
+          }
+
+          if (selectedBanner && selectedNote) {
+            selectedBanner.style.display = "block";
+            selectedNote.textContent = `Evaluated schedule for ${formatLong(y, m, d, dow)} using current Eastern clock time (${format12H(et.hour, et.minute, et.second)}). This is a calendar evaluation, not a live status.`;
+          }
+        } else {
+          // Live evaluation mode
+          evalResult = evaluateClientStatus(et.dateStr, et.hour, et.minute, et.second, et.dayOfWeek);
+
+          if (dateDisplay) {
+            dateDisplay.textContent = formatLong(et.year, et.month, et.day, et.dayOfWeek);
+          }
+
+          if (modeBadge) {
+            modeBadge.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #36c7b5; display: inline-block;"></span> Live Eastern Clock`;
+            modeBadge.style.color = "#36c7b5";
+            modeBadge.style.borderColor = "rgba(54, 199, 181, 0.4)";
+            modeBadge.style.background = "rgba(54, 199, 181, 0.15)";
+          }
+
+          if (selectedBanner) {
+            selectedBanner.style.display = "none";
+          }
+        }
+
+        // Update status text and explanation
+        if (statusLabel) {
+          statusLabel.textContent = evalResult.status;
+
+          // Color accents
+          if (evalResult.status === "Open (regular session)") {
+            statusLabel.style.color = "#34d399";
+          } else if (evalResult.status === "Pre-market") {
+            statusLabel.style.color = "#38bdf8";
+          } else if (evalResult.status === "After-hours") {
+            statusLabel.style.color = "#fbbf24";
+          } else if (evalResult.status.startsWith("Closed")) {
+            statusLabel.style.color = "#f87171";
+          } else {
+            statusLabel.style.color = "#ffffff";
+          }
+        }
+
+        if (explanationText) explanationText.textContent = evalResult.explanation;
+        if (transitionText) transitionText.textContent = evalResult.nextTransition;
+      }
+
+      // Event Listeners
+      if (datePicker) {
+        datePicker.addEventListener("change", function (e) {
+          const val = e.target.value;
+          if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            manualDateStr = val;
+            updateChecker();
+          }
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener("click", function () {
+          manualDateStr = null;
+          if (datePicker) datePicker.value = "";
+          updateChecker();
+        });
+      }
+
+      // Initialize immediate evaluation and start live interval
+      updateChecker();
+      setInterval(updateChecker, 1000);
+    })();
+  </script>
+</BaseLayout>
