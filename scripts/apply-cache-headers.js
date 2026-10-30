@@ -141,6 +141,7 @@ const preRedirects = generatePreFilesystemRedirects();
 const securityHeadersSource = "^/(.*)$";
 const managedSources = new Set([
   securityHeadersSource,
+  "^/ads\\.txt$",
   "^/assets/(.*)$",
   "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
   "^/(.*\\.(?:html|xml|txt|json))$",
@@ -159,6 +160,14 @@ const securityRoutes = [
 ];
 
 const cacheRoutes = [
+  {
+    src: "^/ads\\.txt$",
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "public, max-age=86400",
+    },
+    continue: true,
+  },
   {
     src: "^/assets/(.*)$",
     headers: {
