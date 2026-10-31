@@ -52,17 +52,23 @@ for (const filePath of allGermanHtmlFiles) {
   // 1. Language attribute
   assert(html.includes('lang="de"'), `HTML lang attribute is not "de" on ${fullUrl}`);
 
+  // 4. Meta robots & Canonical check
+  const isBoilerplate = /de\/(about-us|author|contact-us|disclaimer|privacy-policy|terms-of-service|sitemap|tools|world-clock|meeting-planner|event-time-converter|time-difference-calculator|business-hours-overlap|holiday-calendar|travel-planner|developer-tools)\//.test(fullUrl);
+
   // 2. Canonical
   const canonicalMatch = html.match(/<link rel="canonical" href="([^"]*)"/i);
   assert(canonicalMatch, `Missing canonical link on ${fullUrl}`);
-  assert.strictEqual(canonicalMatch[1], fullUrl, `Canonical link does not match self URL on ${fullUrl}`);
+  if (isBoilerplate) {
+    const cleanSlug = relPath.replace(/\/$/, "");
+    assert.strictEqual(canonicalMatch[1], `https://gmttoestconverter.com/${cleanSlug}/`, `Canonical link should point to English on boilerplate page ${fullUrl}`);
+  } else {
+    assert.strictEqual(canonicalMatch[1], fullUrl, `Canonical link does not match self URL on ${fullUrl}`);
+  }
 
   // 3. Exactly 1 H1
   const h1Matches = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map(m => text(m[1]));
   assert.strictEqual(h1Matches.length, 1, `Expected exactly 1 H1 on ${fullUrl}, found ${h1Matches.length}: ${h1Matches.join(", ")}`);
 
-  // 4. Meta robots
-  const isBoilerplate = /de\/(about-us|author|contact-us|disclaimer|privacy-policy|terms-of-service|sitemap|tools|world-clock|meeting-planner|event-time-converter|time-difference-calculator|business-hours-overlap|holiday-calendar|travel-planner|developer-tools)\//.test(fullUrl);
   const robotsMatch = html.match(/<meta name="robots" content="([^"]*)"/i);
   assert(robotsMatch, `Missing robots meta tag on ${fullUrl}`);
   if (isBoilerplate) {
