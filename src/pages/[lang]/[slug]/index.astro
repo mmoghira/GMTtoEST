@@ -4,8 +4,9 @@ import HomePage from "theme/components/HomePage.astro";
 import { getLang, getPageMeta, getTranslation, languages, pages } from "theme/i18n/config";
 
 export function getStaticPaths() {
+  const excludedSlugs = new Set(["gmt-to-mest", "mest-to-est"]);
   return languages.filter(lang => lang.code !== "en").flatMap((lang) =>
-    pages.filter((page) => page.slug).map((page) => ({
+    pages.filter((page) => page.slug && !excludedSlugs.has(page.slug)).map((page) => ({
       params: { lang: lang.code, slug: page.slug },
       props: { page }
     }))
@@ -14,13 +15,6 @@ export function getStaticPaths() {
 
 const lang = getLang(Astro.params.lang || "en");
 const { page } = Astro.props;
-
-if (page.slug === "gmt-to-mest") {
-  return Astro.redirect(`/${lang.code}/gmt-to-cest/`, 301);
-}
-if (page.slug === "mest-to-est") {
-  return Astro.redirect(`/${lang.code}/cest-to-est/`, 301);
-}
 const t = getTranslation(lang.code);
 const meta = getPageMeta(lang.code, page.labelKey, page.context);
 const title = meta.title;
