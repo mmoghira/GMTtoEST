@@ -790,13 +790,6 @@ const schema = {
       var isGaDebug = /[\?&](debug|debug_mode|gtm_debug)=/.test(window.location.search) || (function(){ try { return localStorage.getItem('debug_ga') === 'true'; } catch(e){ return false; } })();
       gtag('config', 'G-ZY6RBZFSY3', isGaDebug ? { debug_mode: true } : {});
     </script>
-    <script type="text/javascript">
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "z1kzh7ruzk");
-    </script>
     <script is:inline>
       // Anti-CLS Guardian: Prevent AdSense dynamic anchor ads, shopping annotations & late-injected DOM from shifting document flow
       (function() {
@@ -1111,9 +1104,14 @@ const schema = {
         }
 
         if ('MutationObserver' in window) {
+          var debouncedTimer = null;
           var mutObserver = new MutationObserver(function() {
-            cleanMidParagraphShoppingPills();
-            setupStickyShoppingBars();
+            if (debouncedTimer) return;
+            debouncedTimer = requestAnimationFrame(function() {
+              debouncedTimer = null;
+              cleanMidParagraphShoppingPills();
+              setupStickyShoppingBars();
+            });
           });
           mutObserver.observe(document.body, { childList: true, subtree: true });
         }
@@ -1123,10 +1121,46 @@ const schema = {
     <script defer src="/assets/app.js?v=2.2"></script>
 
     <script is:inline define:vars={{ shouldLoadAds }}>
-      (function() {
+      (function initThirdPartyLoader() {
+        var thirdPartyLoaded = false;
         var adsLoaded = false;
         var ssxLoaded = false;
         var gtagLoaded = false;
+        var clarityLoaded = false;
+        var vercelLoaded = false;
+
+        function loadGtag() {
+          if (gtagLoaded) return;
+          gtagLoaded = true;
+          window.__gtagLoaded = true;
+          var g = document.createElement('script');
+          g.src = "https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3";
+          g.async = true;
+          document.head.appendChild(g);
+        }
+        window.loadGtag = loadGtag;
+
+        function loadClarity() {
+          if (clarityLoaded) return;
+          clarityLoaded = true;
+          window.__clarityLoaded = true;
+          (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window, document, "clarity", "script", "z1kzh7ruzk");
+        }
+
+        function loadVercelInsights() {
+          if (vercelLoaded) return;
+          vercelLoaded = true;
+          window.__vercelLoaded = true;
+          window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+          var vi = document.createElement('script');
+          vi.src = "/_vercel/insights/script.js";
+          vi.defer = true;
+          document.head.appendChild(vi);
+        }
 
         function loadAdSense() {
           if (!shouldLoadAds || adsLoaded) return;
@@ -1150,66 +1184,37 @@ const schema = {
           document.head.appendChild(s);
         }
 
-        function loadGtag() {
-          if (gtagLoaded) return;
-          gtagLoaded = true;
-          window.__gtagLoaded = true;
-          var g = document.createElement('script');
-          g.src = "https://www.googletagmanager.com/gtag/js?id=G-ZY6RBZFSY3";
-          g.async = true;
-          document.head.appendChild(g);
-        }
-        window.loadGtag = loadGtag;
+        function loadAllThirdParty() {
+          if (thirdPartyLoaded) return;
+          thirdPartyLoaded = true;
 
-        try {
-          if (localStorage.getItem('gmt_consent') === 'granted') {
-            loadGtag();
-          }
-        } catch (e) {}
-
-        // Lazy-load AdSense when an ad slot is near the viewport
-        if (shouldLoadAds && 'IntersectionObserver' in window) {
-          var adSlots = document.querySelectorAll('.ad-slot-container, ins.adsbygoogle, .ad-annotation-reserve, [data-ad-slot], [data-ad-client]');
-          if (adSlots.length > 0) {
-            var adObserver = new IntersectionObserver(function(entries) {
-              for (var i = 0; i < entries.length; i++) {
-                if (entries[i].isIntersecting) {
-                  loadAdSense();
-                  adObserver.disconnect();
-                  break;
-                }
-              }
-            }, { rootMargin: '300px 0px' });
-            adSlots.forEach(function(slot) { adObserver.observe(slot); });
-          }
-        }
-
-        // Fast user-interaction trigger (scroll / touch)
-        var interactEvents = ['scroll', 'touchstart', 'pointerdown'];
-        function onInteract() {
           interactEvents.forEach(function(evt) {
-            window.removeEventListener(evt, onInteract, { passive: true });
+            window.removeEventListener(evt, loadAllThirdParty, { passive: true });
           });
-          loadAdSense();
-        }
-        interactEvents.forEach(function(evt) {
-          window.addEventListener(evt, onInteract, { passive: true, once: true });
-        });
 
-        // Deferred third-party loaders after window 'load'
-        function scheduleDeferred() {
           loadGtag();
+          loadClarity();
+          loadVercelInsights();
           loadAdSense();
           loadSeoSignalX();
         }
 
+        // Fast user-interaction trigger (scroll / touch / key / click)
+        var interactEvents = ['scroll', 'touchstart', 'pointerdown', 'keydown'];
+        interactEvents.forEach(function(evt) {
+          window.addEventListener(evt, loadAllThirdParty, { passive: true, once: true });
+        });
+
+        // Deferred third-party loaders strictly after idle & FCP/LCP complete
         if ('requestIdleCallback' in window) {
           window.addEventListener('load', function() {
-            requestIdleCallback(scheduleDeferred, { timeout: 3500 });
+            requestIdleCallback(function() {
+              setTimeout(loadAllThirdParty, 2500);
+            }, { timeout: 6000 });
           });
         } else {
           window.addEventListener('load', function() {
-            setTimeout(scheduleDeferred, 2500);
+            setTimeout(loadAllThirdParty, 4000);
           });
         }
       })();

@@ -142,9 +142,11 @@ const securityHeadersSource = "^/(.*)$";
 const managedSources = new Set([
   securityHeadersSource,
   "^/ads\\.txt$",
+  "^/_astro/(.*)$",
   "^/assets/(.*)$",
-  "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
-  "^/(.*\\.(?:html|xml|txt|json))$",
+  "^/fonts/(.*)$",
+  "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))(?:\\?.*)?$",
+  "^/(.*\\.(?:html|xml|txt|json))(?:\\?.*)?$",
 ]);
 
 const securityRoutes = [
@@ -169,6 +171,13 @@ const cacheRoutes = [
     continue: true,
   },
   {
+    src: "^/_astro/(.*)$",
+    headers: {
+      "cache-control": "public, max-age=31536000, immutable",
+    },
+    continue: true,
+  },
+  {
     src: "^/assets/(.*)$",
     headers: {
       "cache-control": "public, max-age=31536000, immutable",
@@ -176,14 +185,21 @@ const cacheRoutes = [
     continue: true,
   },
   {
-    src: "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))$",
+    src: "^/fonts/(.*)$",
     headers: {
       "cache-control": "public, max-age=31536000, immutable",
     },
     continue: true,
   },
   {
-    src: "^/(.*\\.(?:html|xml|txt|json))$",
+    src: "^/(.*\\.(?:avif|webp|png|jpg|jpeg|gif|svg|ico|css|js|woff2?))(?:\\?.*)?$",
+    headers: {
+      "cache-control": "public, max-age=31536000, immutable",
+    },
+    continue: true,
+  },
+  {
+    src: "^/(.*\\.(?:html|xml|txt|json))(?:\\?.*)?$",
     headers: {
       "cache-control": "public, max-age=0, must-revalidate",
     },

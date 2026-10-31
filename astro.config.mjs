@@ -32,10 +32,10 @@ export default defineConfig({
   },
   adapter: vercel({
     webAnalytics: {
-      enabled: true,
+      enabled: false,
     },
     speedInsights: {
-      enabled: true,
+      enabled: false,
     },
   }),
   integrations: [
