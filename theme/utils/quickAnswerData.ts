@@ -188,6 +188,7 @@ export interface QuickAnswerPayload {
   zoneAName: string;
   zoneBName: string;
   zoneBHeader: string;
+  faqHeading?: string;
   offsetA: number;
   offsetAFormatted: string;
   definitionSentence: string;
@@ -554,6 +555,7 @@ export function getQuickAnswerPayload(
         zoneAName: "Greenwich Mean Time",
         zoneBName: "Eastern Daylight Time",
         zoneBHeader: "EDT (EASTERN DAYLIGHT TIME)",
+        faqHeading: "Frequently Asked Questions: GMT to Eastern Time",
         offsetA: 0,
         offsetAFormatted: "UTC+0",
         definitionSentence: "GMT is 4 hours ahead of Eastern Daylight Time (EDT, UTC-4). When it is 12:00 PM in London (GMT, UTC+0), it is 8:00 AM in New York (EDT). Greenwich Mean Time remains constant year-round, while North America’s Eastern zone shifts one hour forward during summer daylight saving time.",
@@ -574,7 +576,7 @@ export function getQuickAnswerPayload(
         faqs: [
           {
             q: "What is the time difference between GMT and Eastern Time?",
-            a: "GMT is 4 hours ahead of Eastern Daylight Time (EDT, UTC-4) until 1 Nov 2026, and 5 hours ahead of Eastern Standard Time (EST, UTC-5) during winter standard time. GMT is UTC+0 all year."
+            a: `GMT is 4 hours ahead of Eastern Daylight Time (EDT, UTC-4) until ${dstInfo.formattedDate}, and 5 hours ahead of Eastern Standard Time (EST, UTC-5) during winter standard time. GMT is UTC+0 all year.`
           },
           {
             q: "Is GMT ahead of or behind Eastern Time?",
@@ -594,6 +596,7 @@ export function getQuickAnswerPayload(
       zoneAName: "Greenwich Mean Time",
       zoneBName: "Eastern Standard Time",
       zoneBHeader: "EST (EASTERN STANDARD TIME)",
+      faqHeading: "Frequently Asked Questions: GMT to Eastern Time",
       offsetA: 0,
       offsetAFormatted: "UTC+0",
       definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM in London (GMT, UTC+0), it is 7:00 AM in New York (EST). Greenwich Mean Time remains constant year-round, while North America’s Eastern zone observes standard time during winter months before advancing one hour in spring.",
@@ -613,16 +616,16 @@ export function getQuickAnswerPayload(
       tableCaption: `Eastern Time is EST (UTC-5), 5 hours behind GMT, until ${dstInfo.formattedDate} when daylight saving begins.`,
       faqs: [
         {
-          q: "What is the time difference between GMT and EST?",
-          a: "EST is 5 hours behind GMT (UTC+0). In summer, when Eastern Time shifts to EDT (UTC-4), the difference becomes 4 hours."
+          q: "What is the time difference between GMT and Eastern Time?",
+          a: `GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5) until ${dstInfo.formattedDate}, when clocks advance to Eastern Daylight Time (EDT, UTC-4), making GMT 4 hours ahead. GMT is UTC+0 all year.`
         },
         {
-          q: "Is GMT ahead of or behind EST?",
-          a: "GMT is ahead of EST. Specifically, GMT is 5 hours ahead of Eastern Standard Time."
+          q: "Is GMT ahead of or behind Eastern Time?",
+          a: "GMT is ahead of Eastern Time by 5 hours during standard time (EST) and by 4 hours during daylight saving time (EDT)."
         },
         {
-          q: "Does the GMT to EST difference change during daylight saving time?",
-          a: "Yes. Because Eastern Time shifts between EST (UTC-5) in winter and EDT (UTC-4) in summer while GMT remains UTC+0 all year, the difference changes between 5 and 4 hours."
+          q: "Does the GMT to Eastern difference change during daylight saving time?",
+          a: "Yes. Eastern Time shifts between EST (UTC-5) in winter and EDT (UTC-4) in summer, while GMT (UTC+0) never changes. The difference is 5 hours in winter and 4 hours in summer."
         }
       ]
     };
