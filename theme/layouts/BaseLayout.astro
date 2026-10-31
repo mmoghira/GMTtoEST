@@ -51,10 +51,6 @@ function truncateSeoText(value: string, maxLength: number) {
   return `${clean.trim()}…`;
 }
 
-const canonicalPathResolved = canonicalPath || pageUrl(lang, slug);
-const canonical = toAbsoluteUrl(canonicalPathResolved);
-const homePathResolved = homePath || pageUrl(lang, "");
-const homeUrl = toAbsoluteUrl(homePathResolved);
 const globalStaticSlugs = [
   "terms-of-service",
   "contact-us",
@@ -81,6 +77,32 @@ const utilitySlugs = [
 const isNonEnglishBoilerplateOrUtility = lang !== "en" && (globalStaticSlugs.includes(slug) || slug.startsWith("author") || utilitySlugs.includes(slug));
 const defaultRobots = isNonEnglishBoilerplateOrUtility ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 const robotsContent = robots || meta?.robots || defaultRobots;
+
+let canonicalPathResolved = canonicalPath;
+if (!canonicalPathResolved) {
+  if (lang !== "en" && (globalStaticSlugs.includes(slug) || slug.startsWith("author"))) {
+    // 1. Translated legal / boilerplate / author pages -> canonical-to-English
+    canonicalPathResolved = `/${slug}/`;
+  } else if (lang === "id" && slug === "business-hours-overlap") {
+    // 2. Same-language collapse: Google chose /id/world-clock/
+    canonicalPathResolved = "/id/world-clock/";
+  } else if (lang === "id" && utilitySlugs.includes(slug) && slug !== "world-clock") {
+    // Other duplicate utility tools in id consolidate to Google's preferred /id/world-clock/
+    canonicalPathResolved = "/id/world-clock/";
+  } else if (lang !== "en" && utilitySlugs.includes(slug)) {
+    // Utility tools in other non-English languages point to canonical English tool
+    canonicalPathResolved = `/${slug}/`;
+  } else if (lang !== "en" && !isKeptLanguage(lang) && slug && slug !== "") {
+    // 3. Thin translated converter pages in demoted languages -> canonical-to-English
+    canonicalPathResolved = `/${slug}/`;
+  } else {
+    // Maintained kept languages (es, de, fr, pt, it), English, and localized root homepages
+    canonicalPathResolved = pageUrl(lang, slug);
+  }
+}
+const canonical = toAbsoluteUrl(canonicalPathResolved);
+const homePathResolved = homePath || pageUrl(lang, "");
+const homeUrl = toAbsoluteUrl(homePathResolved);
 const isEs = lang === "es";
 const isDe = lang === "de";
 const isFr = lang === "fr";
