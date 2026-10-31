@@ -21,7 +21,7 @@ const context = {
 
 const canonical = `${siteUrl}/cet-to-est/`;
 
-// 24-hour conversion table data (CET → EST = CET - 6 hours)
+// 24-hour conversion table data (CET → EDT = CET - 5 hours, CET → EST = CET - 6 hours)
 function formatHour12(hour: number) {
   const normalized = ((hour % 24) + 24) % 24;
   const period = normalized < 12 ? "AM" : "PM";
@@ -35,8 +35,16 @@ const conversionRows = Array.from({ length: 24 }, (_, hour) => {
   const prevDay = estHour < 0;
   const period = estNormalized < 12 ? "AM" : "PM";
   const displayHour = estNormalized % 12 || 12;
+
+  const edtHour = hour - 5;
+  const edtNormalized = ((edtHour % 24) + 24) % 24;
+  const edtPrevDay = edtHour < 0;
+  const edtPeriod = edtNormalized < 12 ? "AM" : "PM";
+  const edtDisplayHour = edtNormalized % 12 || 12;
+
   return {
     cet: formatHour12(hour),
+    edt: `${edtDisplayHour}:00 ${edtPeriod}${edtPrevDay ? " (-1 day)" : ""}`,
     est: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
     dayNote: prevDay ? "Previous day" : "Same day"
   };
@@ -161,7 +169,7 @@ const meta = {
       <circle cx="12" cy="12" r="10"></circle>
       <polyline points="12 6 12 12 16 14"></polyline>
     </svg>
-    <span>6-Hour Time Difference</span>
+    <span>5-Hour Daylight / 6-Hour Standard Difference</span>
   </div>
   <div class="feature-item">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-icon" aria-hidden="true">
@@ -194,10 +202,10 @@ const meta = {
 <section class="acdt-intro content-section" aria-labelledby="cet-est-intro-heading">
   <h2 id="cet-est-intro-heading" class="sr-only">About Central European Time to Eastern Standard Time Conversion</h2>
   <p>
-    Welcome to our dedicated <strong>CET to EST Time Zone Converter</strong>. Converting time between Central European Time (CET, UTC+1) and Eastern Standard Time (EST, UTC-5) involves bridging a <strong>6-hour time gap across the Atlantic Ocean</strong>. CET is standard winter time across more than 30 European nations, including major industrial hubs like Paris, Berlin, Rome, Madrid, Amsterdam, Brussels, Frankfurt, and Zurich. Meanwhile, EST governs the eastern seaboard of North America during standard winter months, including New York City, Washington D.C., Toronto, Boston, and Miami.
+    Welcome to our dedicated <strong>CET to EST Time Zone Converter</strong>. Converting time between Central European Time (CET, UTC+1) and Eastern Time involves bridging either a <strong>5-hour daylight offset</strong> or a <strong>6-hour standard offset across the Atlantic Ocean</strong>. Central Europe transitioned to CET (UTC+1) on 25 Oct 2026, while the US remains on Eastern Daylight Time (EDT, UTC-4, 5 hours behind CET) until 1 Nov 2026, after which Eastern Standard Time (EST, UTC-5, 6 hours behind CET) takes effect. CET is standard winter time across more than 30 European nations, including Paris, Berlin, Rome, Madrid, Amsterdam, Brussels, Frankfurt, and Zurich. EST/EDT governs major North American hubs like New York City, Washington D.C., Toronto, Boston, and Miami.
   </p>
   <p>
-    Managing communication across a 6-hour difference requires strategic coordination. When professionals in Paris or Frankfurt return from lunch around 1:00 PM CET, colleagues on the US East Coast are just starting their morning routines at 7:00 AM EST. The primary operational window for live calls, virtual conferences, and real-time trade support falls between 3:00 PM and 6:00 PM CET, which maps directly to 9:00 AM through 12:00 PM EST.
+    Managing communication across a 5- to 6-hour difference requires strategic coordination. When professionals in Paris or Frankfurt return from lunch around 1:00 PM CET, colleagues on the US East Coast are starting their morning at 8:00 AM EDT (or 7:00 AM EST). The primary operational window for live calls and virtual conferences falls between 3:00 PM and 6:00 PM CET, mapping directly to 10:00 AM – 1:00 PM EDT (or 9:00 AM – 12:00 PM EST).
   </p>
   <p>
     Our online converter handles the math automatically, eliminating manual counting mistakes and accounting for date-line changes when late-night events in Europe correspond to afternoon hours in America. Whether you are a corporate executive coordinating European subsidiary operations, an international logistics manager, or a software engineer deploying cloud infrastructure, this tool provides instant accuracy.
@@ -234,8 +242,8 @@ const meta = {
 
         <!-- Offset Arrow -->
         <g transform="translate(300, 110)">
-          <rect x="-50" y="-18" width="100" height="36" rx="18" fill="#1b536e" stroke="#2f6278" stroke-width="1.5" />
-          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#36c7b5" text-anchor="middle">-6 HOURS</text>
+          <rect x="-65" y="-18" width="130" height="36" rx="18" fill="#1b536e" stroke="#2f6278" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="12" fill="#36c7b5" text-anchor="middle">-5h (EDT) / -6h (EST)</text>
         </g>
 
         <!-- New York Node -->
@@ -244,8 +252,8 @@ const meta = {
           <line x1="0" y1="0" x2="-16" y2="16" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
           <line x1="0" y1="0" x2="0" y2="-24" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
           <circle cx="0" cy="0" r="4" fill="#8fd7ff" />
-          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">New York (EST)</text>
-          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="11" fill="#8fd7ff" text-anchor="middle">UTC-5 Offset</text>
+          <text x="0" y="58" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="13" fill="#f4fbff" text-anchor="middle">New York (Eastern)</text>
+          <text x="0" y="74" font-family="'Manrope', sans-serif" font-size="10" fill="#8fd7ff" text-anchor="middle">UTC-4 (EDT) / UTC-5 (EST)</text>
         </g>
       </svg>
     </div>
@@ -292,12 +300,12 @@ const meta = {
 <section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
   <div class="method-intro">
     <p class="eyebrow">Time Difference Mechanics</p>
-    <h2 id="time-diff-heading">Analyzing the 6-Hour Gap: CET vs EST</h2>
+    <h2 id="time-diff-heading">Analyzing the Offset: CET vs Eastern Time</h2>
     <p>
-      The standard offset between Central European Time (CET, UTC+1) and Eastern Standard Time (EST, UTC-5) is <strong>6 hours</strong>. Because CET is located in Central Europe at UTC+1, while EST sits on the North American East Coast at UTC-5, EST is 6 hours behind CET when both standard time definitions apply.
+      The offset between Central European Time (CET, UTC+1) and North American Eastern Time is <strong>5 hours during Eastern Daylight Time (EDT, UTC-4 until 1 Nov 2026)</strong> and <strong>6 hours during Eastern Standard Time (EST, UTC-5 from 1 Nov 2026)</strong>. Because Central Europe moved to CET on 25 Oct 2026 while the US remains on EDT until 1 Nov 2026, Eastern Time is currently 5 hours behind CET.
     </p>
     <p>
-      When it is 12:00 PM (Noon) in Paris or Berlin, local time in New York or Miami is 6:00 AM on the same day. When it is 6:00 PM CET in Europe, it is 12:00 PM (Noon) EST in Eastern North America.
+      When it is 12:00 PM (Noon) CET in Paris or Berlin, local Eastern time is 7:00 AM EDT (until 1 Nov 2026) or 6:00 AM EST (from 1 Nov 2026). When it is 6:00 PM CET in Europe, it is 1:00 PM EDT (until 1 Nov 2026) or 12:00 PM EST (from 1 Nov 2026).
     </p>
   </div>
 
@@ -312,14 +320,14 @@ const meta = {
       </g>
       <g transform="translate(300, 90)">
         <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
-        <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
-        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-6 HOURS</text>
+        <rect x="-60" y="-30" width="120" height="24" rx="12" fill="#1b536e" />
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">-5 OR -6 HOURS</text>
       </g>
       <g transform="translate(480, 90)">
         <circle cx="0" cy="0" r="50" fill="#12455d" stroke="#8fd7ff" stroke-width="3" />
         <line x1="0" y1="0" x2="-20" y2="20" stroke="#f4fbff" stroke-width="3" stroke-linecap="round" />
         <line x1="0" y1="0" x2="0" y2="-30" stroke="#8fd7ff" stroke-width="3" stroke-linecap="round" />
-        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">EST (UTC-5)</text>
+        <text x="0" y="70" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#f4fbff" text-anchor="middle">Eastern (EDT/EST)</text>
       </g>
     </svg>
   </div>
@@ -327,7 +335,7 @@ const meta = {
   <div class="method-grid">
     <article class="method-card">
       <h3>UTC Offsets Explained</h3>
-      <p>CET operates at UTC+1, while EST operates at UTC-5. Calculating the offset separation: (+1) - (-5) = 6 hours difference.</p>
+      <p>CET operates at UTC+1. Eastern Time operates at UTC-4 during EDT (until 1 Nov 2026), yielding a 5-hour offset, and UTC-5 during EST (from 1 Nov 2026), yielding a 6-hour offset.</p>
     </article>
     <article class="method-card">
       <h3>Spring & Autumn Shift Dynamics</h3>
@@ -378,12 +386,18 @@ const meta = {
       <table aria-label="CET to EST conversion table">
         <caption class="sr-only">24-hour hour-by-hour CET to EST conversion chart</caption>
         <thead>
-          <tr><th>CET Time (UTC+1)</th><th>EST Equivalent (UTC-5)</th><th>Day Offset</th></tr>
+          <tr>
+            <th>CET Time (UTC+1)</th>
+            <th>Eastern Daylight Time (EDT, UTC-4 until 1 Nov 2026)</th>
+            <th>Eastern Standard Time (EST, UTC-5 from 1 Nov 2026)</th>
+            <th>Day Offset</th>
+          </tr>
         </thead>
         <tbody>
           {conversionRows.map((row) => (
             <tr>
               <td>{row.cet}</td>
+              <td><strong>{row.edt}</strong></td>
               <td>{row.est}</td>
               <td>{row.dayNote}</td>
             </tr>
@@ -391,7 +405,7 @@ const meta = {
         </tbody>
       </table>
     </div>
-    <p class="chart-note">Note: Hours between 12:00 AM CET and 5:59 AM CET correspond to the previous calendar day in Eastern Standard Time (-1 day).</p>
+    <p class="chart-note">Note: Hours between 12:00 AM CET and 4:59 AM/5:59 AM CET correspond to the previous calendar day in Eastern Time (-1 day).</p>
   </div>
 </section>
 

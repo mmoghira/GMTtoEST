@@ -9,8 +9,8 @@ const slug = "gmt-to-cst";
 const t = getTranslation(lang);
 
 const pageTitle = "GMT to CST Converter";
-const seoTitle = "GMT to CST Converter: Live Clocks & 6-Hour Difference";
-const pageDescription = "Convert GMT to CST instantly with live Chicago clocks and DST-aware calculations. View the 6-hour difference and 24-hour chart. Calculate your time now.";
+const seoTitle = "GMT to CST Converter: Live Clocks & 5- to 6-Hour Difference";
+const pageDescription = "Convert GMT to CST/CDT instantly with live Chicago clocks and DST-aware calculations. Central is 5 hours behind GMT in daylight time (until 1 Nov 2026) and 6 hours in standard time.";
 
 const context = {
   from: "GMT",
@@ -21,7 +21,7 @@ const context = {
 
 const canonical = `${siteUrl}/gmt-to-cst/`;
 
-// 24-hour conversion table data (GMT → CST = GMT - 6 hours)
+// 24-hour conversion table data (GMT → CDT = GMT - 5 hours, GMT → CST = GMT - 6 hours)
 function formatHour12(hour: number) {
   const normalized = ((hour % 24) + 24) % 24;
   const period = normalized < 12 ? "AM" : "PM";
@@ -32,13 +32,21 @@ function formatHour12(hour: number) {
 const conversionRows = Array.from({ length: 24 }, (_, hour) => {
   const cstHour = hour - 6;
   const cstNormalized = ((cstHour % 24) + 24) % 24;
-  const prevDay = cstHour < 0;
-  const period = cstNormalized < 12 ? "AM" : "PM";
-  const displayHour = cstNormalized % 12 || 12;
+  const cstPrevDay = cstHour < 0;
+  const cstPeriod = cstNormalized < 12 ? "AM" : "PM";
+  const cstDisplayHour = cstNormalized % 12 || 12;
+
+  const cdtHour = hour - 5;
+  const cdtNormalized = ((cdtHour % 24) + 24) % 24;
+  const cdtPrevDay = cdtHour < 0;
+  const cdtPeriod = cdtNormalized < 12 ? "AM" : "PM";
+  const cdtDisplayHour = cdtNormalized % 12 || 12;
+
   return {
     gmt: formatHour12(hour),
-    cst: `${displayHour}:00 ${period}${prevDay ? " (-1 day)" : ""}`,
-    dayNote: prevDay ? "Previous day" : "Same day"
+    cdt: `${cdtDisplayHour}:00 ${cdtPeriod}${cdtPrevDay ? " (-1 day)" : ""}`,
+    cst: `${cstDisplayHour}:00 ${cstPeriod}${cstPrevDay ? " (-1 day)" : ""}`,
+    dayNote: cstPrevDay ? "Previous day" : "Same day"
   };
 });
 
@@ -137,8 +145,8 @@ const meta = {
   howToDescription: "Simple steps to convert Greenwich Mean Time (GMT) to Central Standard Time (CST).",
   howToSteps: [
     { name: "Enter GMT Time", text: "Select your desired hour and date in Greenwich Mean Time." },
-    { name: "Check the Offset", text: "Note the 6-hour difference (CST is 6 hours behind GMT during winter standard time)." },
-    { name: "View Converted CST", text: "Read the converted Central Standard Time along with any calendar date shift." },
+    { name: "Check the Offset", text: "Note the seasonal offset: Central Time is 5 hours behind GMT during daylight saving (CDT, UTC-5 until 1 Nov 2026) and 6 hours behind during winter standard time (CST, UTC-6 from 1 Nov 2026)." },
+    { name: "View Converted Central Time", text: "Read the converted Central Time (CDT or CST) along with any calendar date shift." },
     { name: "Share or Schedule", text: "Use the copy button or meeting planner to coordinate across transatlantic teams." }
   ]
 };
@@ -195,7 +203,7 @@ const meta = {
     loading="eager"
     style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
   />
-  <figcaption style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--muted); font-style: italic;">Central Standard Time (CST, UTC-6) is 6 hours behind Greenwich Mean Time (GMT, UTC+0).</figcaption>
+  <figcaption style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--muted); font-style: italic;">Central Time is 5 hours behind GMT in daylight saving (CDT, UTC-5 until 1 Nov 2026) and 6 hours behind in standard time (CST, UTC-6 from 1 Nov 2026). GMT is UTC+0 all year.</figcaption>
 </figure>
 
 
@@ -206,7 +214,7 @@ const meta = {
       <circle cx="12" cy="12" r="10"></circle>
       <polyline points="12 6 12 12 16 14"></polyline>
     </svg>
-    <span>6-Hour Subtraction Math</span>
+    <span>5-Hour Daylight / 6-Hour Standard Offset</span>
   </div>
   <div class="feature-item">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feature-icon" aria-hidden="true">
@@ -240,10 +248,10 @@ const meta = {
 <section class="acdt-intro content-section" aria-labelledby="intro-heading">
   <h2 id="intro-heading" class="sr-only">About GMT to CST Conversion</h2>
   <p>
-    Welcome to our official <strong>GMT to CST Converter</strong>. Coordinating communication between London and the heartland of North American commerce in Chicago, Dallas, and Houston requires managing a <strong>6-hour time difference</strong>. Greenwich Mean Time (GMT) operates as the universal zero baseline at Coordinated Universal Time +0 (UTC+0), whereas Central Standard Time (CST) operates at UTC-6. As a result, Central Standard Time is exactly 6 hours behind Greenwich Mean Time.
+    Welcome to our official <strong>GMT to CST Converter</strong>. Coordinating communication between London and the heartland of North American commerce in Chicago, Dallas, and Houston requires managing a <strong>5-hour daylight offset (CDT, UTC-5 until 1 Nov 2026) or 6-hour standard offset (CST, UTC-6 from 1 Nov 2026)</strong>. Greenwich Mean Time (GMT) operates as the universal zero baseline at UTC+0 all year, whereas Central Time shifts between CDT (UTC-5) and CST (UTC-6).
   </p>
   <p>
-    The 6-hour offset creates a productive 3-to-4 hour overlap window during standard business days. When professionals in London or Dublin return from lunch at 3:00 PM GMT, business teams across Chicago, Dallas, Minneapolis, and Mexico City are starting their workday at 9:00 AM CST.
+    This seasonal offset creates a productive 3-to-4 hour overlap window during transatlantic business days. When professionals in London or Dublin return from lunch at 3:00 PM GMT, business teams across Chicago, Dallas, and Houston are starting their workday at 10:00 AM CDT (until 1 Nov 2026) or 9:00 AM CST (from 1 Nov 2026).
   </p>
   <p>
     Our online utility calculates precise conversion results using native browser localization APIs backed by official IANA database keys (`UTC` and `America/Chicago`). Whether you manage energy trading desks in Houston, futures trading at CME Group in Chicago, or corporate logistics across Texas and the Midwest, this guide provides real-time dual clocks, interactive 24-hour schedules, meeting planners, and detailed regional context.
@@ -342,15 +350,15 @@ const meta = {
 <section class="method-section" id="time-difference" aria-labelledby="time-diff-heading">
   <div class="method-intro">
     <p class="eyebrow">Mathematical Mechanics</p>
-    <h2 id="time-diff-heading">Understanding the 6-Hour GMT to CST Offset</h2>
+    <h2 id="time-diff-heading">Understanding the GMT to Central Time Offset</h2>
     <p>
-      Converting Greenwich Mean Time to Central Standard Time involves subtracting 6 hours during winter standard time:
+      Converting Greenwich Mean Time to US Central Time depends on Daylight Saving Time: subtract 5 hours during Central Daylight Time (CDT, until 1 Nov 2026), and subtract 6 hours during Central Standard Time (CST, from 1 Nov 2026):
     </p>
     <p style="text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: bold; color: var(--accent); background: var(--panel); padding: 1rem; border-radius: 8px; border: 1px solid var(--line);">
-      CST Time = GMT Time − 6 Hours
+      Central Time = GMT − 5 Hours (CDT) / GMT − 6 Hours (CST)
     </p>
     <p>
-      When subtracting 6 hours from early morning GMT times (00:00 to 05:59 GMT), the resulting time falls into the previous calendar evening in CST.
+      When subtracting 5 or 6 hours from early morning GMT times (00:00 to 04:59/05:59 GMT), the resulting time falls into the previous calendar evening in Central Time.
     </p>
   </div>
 
@@ -369,14 +377,14 @@ const meta = {
       <g transform="translate(300, 90)">
         <text x="0" y="8" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="28" fill="#36c7b5" text-anchor="middle">→</text>
         <rect x="-45" y="-30" width="90" height="24" rx="12" fill="#1b536e" />
-        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">SUBTRACT 6 HRS</text>
+        <text x="0" y="-14" font-family="'Manrope', sans-serif" font-size="11" font-weight="800" fill="#36c7b5" text-anchor="middle">SUBTRACT 5 OR 6 HRS</text>
       </g>
 
       <g transform="translate(480, 90)">
         <circle cx="0" cy="0" r="55" fill="#12455d" stroke="#2f6278" stroke-width="3" />
         <line x1="0" y1="0" x2="-25" y2="25" stroke="#bdd2dc" stroke-width="3" stroke-linecap="round" />
         <line x1="0" y1="0" x2="0" y2="-36" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" />
-        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">CST (UTC-6)</text>
+        <text x="0" y="75" font-family="'Space Grotesk', sans-serif" font-weight="bold" font-size="14" fill="#bdd2dc" text-anchor="middle">Central (CDT/CST)</text>
       </g>
     </svg>
   </div>
@@ -384,7 +392,7 @@ const meta = {
   <div class="method-grid">
     <article class="method-card">
       <h3>1. Direct Math Rule</h3>
-      <p>Subtract 6 hours from any GMT hour. If the result drops below zero, add 24 to find the CST hour and step back one calendar day.</p>
+      <p>Subtract 5 hours for Central Daylight Time (CDT, UTC-5 until 1 Nov 2026) or 6 hours for Central Standard Time (CST, UTC-6 from 1 Nov 2026). If the result drops below zero, add 24 to find the Central hour and step back one calendar day.</p>
     </article>
     <article class="method-card">
       <h3>2. Midday Overlap Window</h3>
@@ -456,7 +464,8 @@ const meta = {
         <thead>
           <tr>
             <th scope="col">Greenwich Mean Time (GMT)</th>
-            <th scope="col">Central Standard Time (CST)</th>
+            <th scope="col">Central Daylight Time (CDT, UTC-5 until 1 Nov 2026)</th>
+            <th scope="col">Central Standard Time (CST, UTC-6 from 1 Nov 2026)</th>
             <th scope="col">Calendar Day Shift</th>
           </tr>
         </thead>
@@ -464,6 +473,7 @@ const meta = {
           {conversionRows.map((row) => (
             <tr>
               <td><strong>{row.gmt}</strong></td>
+              <td><strong>{row.cdt}</strong></td>
               <td>{row.cst}</td>
               <td><span class={row.dayNote === "Previous day" ? "chart-note warning" : "chart-note"}>{row.dayNote}</span></td>
             </tr>
@@ -740,7 +750,7 @@ const meta = {
 <section class="content-section">
   <h2>Conclusion</h2>
   <p>
-    Converting Greenwich Mean Time (GMT) to Central Standard Time (CST) is simple when subtracting the <strong>6-hour offset difference</strong>. With CST running 6 hours behind GMT during winter standard time, our interactive converter, dual clocks, and conversion tables make scheduling between Europe and North America's Central zone seamless. Bookmark this page for daily conversions.
+    Converting Greenwich Mean Time (GMT) to Central Time is straightforward when accounting for the seasonal offset: Central Daylight Time (CDT, UTC-5) is <strong>5 hours behind GMT</strong> until 1 Nov 2026, after which Central Standard Time (CST, UTC-6) is <strong>6 hours behind GMT</strong>. With our interactive converter, live dual clocks, and conversion tables, scheduling between Europe and North America's Central zone is seamless. Bookmark this page for daily conversions.
   </p>
 </section>
 
