@@ -15,9 +15,17 @@ const { context, sourceZone } = Astro.props;
 const source = context?.from || sourceZone || "GMT";
 const target = context?.to || "EST";
 const payload = getQuickAnswerPayload(source, target);
+const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" || target === "EDT" || target === "ET");
 ---
 
-<aside class="quick-answer-card" aria-label={`Quick Answer: ${payload.zoneA} to ${payload.zoneB} Conversion`}>
+<aside
+  class="quick-answer-card google-anno-skip adsbygoogle-noablate"
+  data-google-query-id="none"
+  data-ad-status="unfilled"
+  data-source={source}
+  data-target={target}
+  aria-label={`Quick Answer: ${payload.zoneA} to ${payload.zoneB} Conversion`}
+>
   <div class="quick-answer-badge">
     <span class="quick-answer-badge-icon" aria-hidden="true">⚡</span>
     <span>Quick Answer</span>
@@ -27,27 +35,27 @@ const payload = getQuickAnswerPayload(source, target);
     {payload.definitionSentence}
   </p>
 
-  <p class="quick-answer-live">
+  <p class="quick-answer-live" id={isGmtToEst ? "qa-live-line" : undefined}>
     <span class="live-pulse" aria-hidden="true"></span>
     {payload.liveLineHtml ? (
-      <span set:html={payload.liveLineHtml} />
+      <span id={isGmtToEst ? "qa-live-text" : undefined} set:html={payload.liveLineHtml} />
     ) : (
-      <span>Right now it is <strong>{payload.sourceLiveTime} {payload.zoneA}</strong> = <strong>{payload.targetLiveTime} {payload.zoneB}</strong>.</span>
+      <span id={isGmtToEst ? "qa-live-text" : undefined}>Right now: <strong>{payload.sourceLiveTime} {payload.zoneA}</strong> = <strong>{payload.targetLiveTime} {payload.zoneB}</strong></span>
     )}
   </p>
 
-  <div class="quick-answer-table-wrapper">
-    <table class="quick-answer-table">
+  <div class="quick-answer-table-wrapper google-anno-skip adsbygoogle-noablate">
+    <table class="quick-answer-table google-anno-skip adsbygoogle-noablate">
       <caption class="quick-answer-caption">
         {payload.tableCaption}
       </caption>
       <thead>
         <tr>
           <th scope="col">{payload.zoneA} Time</th>
-          <th scope="col">{payload.zoneBHeader}</th>
+          <th scope="col" id={isGmtToEst ? "qa-target-header" : undefined}>{payload.zoneBHeader}</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id={isGmtToEst ? "qa-table-body" : undefined}>
         {payload.tableConversions.map((row) => (
           <tr>
             <td><strong>{row.sourceTime}</strong></td>
@@ -59,6 +67,68 @@ const payload = getQuickAnswerPayload(source, target);
   </div>
 </aside>
 
+{isGmtToEst && (
+  <script is:inline>
+    (function initQuickAnswerLiveClock() {
+      function updateQaLiveClock() {
+        var textEl = document.getElementById('qa-live-text');
+        if (!textEl) return;
+        var now = new Date();
+        var gmtStr = new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'UTC'
+        }).format(now);
+
+        var estParts = new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: 'short',
+          hour12: true,
+          timeZone: 'America/New_York'
+        }).formatToParts(now);
+
+        var estTime = estParts
+          .filter(function(p) { return p.type !== 'timeZoneName'; })
+          .map(function(p) { return p.value; })
+          .join('')
+          .trim();
+        var estZoneObj = estParts.find(function(p) { return p.type === 'timeZoneName'; });
+        var estZoneName = estZoneObj ? estZoneObj.value.trim() : '';
+        var zoneLabel = (estZoneName === 'EDT' || estZoneName === 'EST') 
+          ? estZoneName 
+          : (new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'numeric' }).format(now) >= 3 && new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'numeric' }).format(now) <= 11 ? 'EDT' : 'EST');
+
+        textEl.innerHTML = 'Right now: <strong>' + gmtStr + ' GMT</strong> = <strong>' + estTime + ' ' + zoneLabel + '</strong>';
+      }
+
+      updateQaLiveClock();
+      setInterval(updateQaLiveClock, 60000);
+
+      function evictAdsFromQuickAnswer() {
+        var card = document.querySelector('.quick-answer-card');
+        if (!card) return;
+        var ads = card.querySelectorAll('ins.adsbygoogle, .google-anno, .google-anno-container, [id*="google-anno"], [class*="google-anno"], iframe[id*="aswift"], iframe[src*="google"], [data-ad-slot], [data-ad-client]');
+        for (var i = 0; i < ads.length; i++) {
+          var ad = ads[i];
+          if (card.contains(ad)) {
+            card.parentNode.insertBefore(ad, card.nextSibling);
+          }
+        }
+      }
+      evictAdsFromQuickAnswer();
+      if (window.MutationObserver) {
+        var card = document.querySelector('.quick-answer-card');
+        if (card) {
+          var observer = new MutationObserver(evictAdsFromQuickAnswer);
+          observer.observe(card, { childList: true, subtree: true });
+        }
+      }
+    })();
+  </script>
+)}
+
 <style>
   .quick-answer-card {
     background: var(--panel, #0f172a);
@@ -68,6 +138,13 @@ const payload = getQuickAnswerPayload(source, target);
     margin: 0 auto 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     color: var(--text, #f8fafc);
+  }
+
+  .quick-answer-card ins.adsbygoogle,
+  .quick-answer-card .google-anno-container,
+  .quick-answer-card [class*="google-anno"],
+  .quick-answer-card [id*="google-anno"] {
+    display: none !important;
   }
 
   .quick-answer-badge {
@@ -92,10 +169,10 @@ const payload = getQuickAnswerPayload(source, target);
   }
 
   .quick-answer-definition {
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1.5;
-    margin: 0 0 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
     color: var(--text, #f8fafc);
   }
 
@@ -176,7 +253,7 @@ const payload = getQuickAnswerPayload(source, target);
     }
 
     .quick-answer-definition {
-      font-size: 1rem;
+      font-size: 0.98rem;
     }
 
     .quick-answer-table th,

@@ -102,6 +102,57 @@ export function isDaylightInZone(date: Date, iana: string): boolean {
   return offNow > offJan;
 }
 
+export function getNextUsEasternDstTransition(referenceDate: Date = new Date()) {
+  const year = referenceDate.getUTCFullYear();
+
+  function getSecondSundayInMarch(y: number) {
+    const d = new Date(Date.UTC(y, 2, 1, 7, 0, 0));
+    const dayOfWeek = d.getUTCDay();
+    const firstSundayDate = dayOfWeek === 0 ? 1 : 1 + (7 - dayOfWeek);
+    const secondSundayDate = firstSundayDate + 7;
+    return new Date(Date.UTC(y, 2, secondSundayDate, 7, 0, 0));
+  }
+
+  function getFirstSundayInNovember(y: number) {
+    const d = new Date(Date.UTC(y, 10, 1, 6, 0, 0));
+    const dayOfWeek = d.getUTCDay();
+    const firstSundayDate = dayOfWeek === 0 ? 1 : 1 + (7 - dayOfWeek);
+    return new Date(Date.UTC(y, 10, firstSundayDate, 6, 0, 0));
+  }
+
+  const marchTransition = getSecondSundayInMarch(year);
+  const novTransition = getFirstSundayInNovember(year);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function formatDate(d: Date) {
+    return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  }
+
+  if (referenceDate < marchTransition) {
+    return {
+      isDaylight: false,
+      nextTransitionDate: marchTransition,
+      formattedDate: formatDate(marchTransition),
+      action: "daylight saving begins"
+    };
+  } else if (referenceDate < novTransition) {
+    return {
+      isDaylight: true,
+      nextTransitionDate: novTransition,
+      formattedDate: formatDate(novTransition),
+      action: "standard time begins"
+    };
+  } else {
+    const nextMarch = getSecondSundayInMarch(year + 1);
+    return {
+      isDaylight: false,
+      nextTransitionDate: nextMarch,
+      formattedDate: formatDate(nextMarch),
+      action: "daylight saving begins"
+    };
+  }
+}
+
 export function formatHoursDifference(delta: number): string {
   const abs = Math.abs(delta);
   const h = Math.floor(abs);
@@ -494,21 +545,23 @@ export function getQuickAnswerPayload(
       estLiveTime = "--:--";
     }
 
+    const dstInfo = getNextUsEasternDstTransition(now);
+
     if (isEasternDaylight) {
       return {
         zoneA: "GMT",
         zoneB: "EDT",
         zoneAName: "Greenwich Mean Time",
         zoneBName: "Eastern Daylight Time",
-        zoneBHeader: "EDT (Eastern Daylight Time)",
+        zoneBHeader: "EDT (EASTERN DAYLIGHT TIME)",
         offsetA: 0,
         offsetAFormatted: "UTC+0",
-        definitionSentence: "GMT (Greenwich Mean Time, UTC+0) is 4 hours ahead of EDT (Eastern Daylight Time, UTC-4) until 1 Nov 2026, then 5 hours ahead of EST (Eastern Standard Time, UTC-5).",
+        definitionSentence: "GMT is 4 hours ahead of Eastern Daylight Time (EDT, UTC-4). When it is 12:00 PM in London (GMT, UTC+0), it is 8:00 AM in New York (EDT). Greenwich Mean Time remains constant year-round, while North America’s Eastern zone shifts one hour forward during summer daylight saving time.",
         sourceLiveTime,
         estLiveTime,
         targetLiveTime: estLiveTime,
-        liveTimeSentence: `Right now it is ${sourceLiveTime} GMT = ${estLiveTime} EDT.`,
-        liveLineHtml: `Right now it is <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EDT</strong>.`,
+        liveTimeSentence: `Right now: ${sourceLiveTime} GMT = ${estLiveTime} EDT`,
+        liveLineHtml: `Right now: <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EDT</strong>`,
         tableConversions: [
           { sourceTime: "12:00 AM GMT", targetTime: "8:00 PM EDT (previous day)", estTime: "8:00 PM EDT (previous day)" },
           { sourceTime: "6:00 AM GMT", targetTime: "2:00 AM EDT", estTime: "2:00 AM EDT" },
@@ -517,7 +570,7 @@ export function getQuickAnswerPayload(
           { sourceTime: "5:00 PM GMT", targetTime: "1:00 PM EDT", estTime: "1:00 PM EDT" },
           { sourceTime: "9:00 PM GMT", targetTime: "5:00 PM EDT", estTime: "5:00 PM EDT" }
         ],
-        tableCaption: "Eastern Time is EDT (UTC-4) until 1 Nov 2026 (4 hours behind GMT), then falls back to EST (UTC-5) (5 hours behind GMT). GMT is UTC+0 all year.",
+        tableCaption: `Eastern Time is EDT (UTC-4), 4 hours behind GMT, until ${dstInfo.formattedDate} when standard time begins.`,
         faqs: [
           {
             q: "What is the time difference between GMT and Eastern Time?",
@@ -540,15 +593,15 @@ export function getQuickAnswerPayload(
       zoneB: "EST",
       zoneAName: "Greenwich Mean Time",
       zoneBName: "Eastern Standard Time",
-      zoneBHeader: "EST (Eastern Standard Time)",
+      zoneBHeader: "EST (EASTERN STANDARD TIME)",
       offsetA: 0,
       offsetAFormatted: "UTC+0",
-      definitionSentence: "GMT (Greenwich Mean Time, UTC+0) is 5 hours ahead of EST (Eastern Standard Time, UTC-5).",
+      definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM in London (GMT, UTC+0), it is 7:00 AM in New York (EST). Greenwich Mean Time remains constant year-round, while North America’s Eastern zone observes standard time during winter months before advancing one hour in spring.",
       sourceLiveTime,
       estLiveTime,
       targetLiveTime: estLiveTime,
-      liveTimeSentence: `Right now it is ${sourceLiveTime} GMT = ${estLiveTime} EST.`,
-      liveLineHtml: `Right now it is <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EST</strong>.`,
+      liveTimeSentence: `Right now: ${sourceLiveTime} GMT = ${estLiveTime} EST`,
+      liveLineHtml: `Right now: <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EST</strong>`,
       tableConversions: [
         { sourceTime: "12:00 AM GMT", targetTime: "7:00 PM EST (previous day)", estTime: "7:00 PM EST (previous day)" },
         { sourceTime: "6:00 AM GMT", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
@@ -557,7 +610,7 @@ export function getQuickAnswerPayload(
         { sourceTime: "5:00 PM GMT", targetTime: "12:00 PM EST", estTime: "12:00 PM EST" },
         { sourceTime: "9:00 PM GMT", targetTime: "4:00 PM EST", estTime: "4:00 PM EST" }
       ],
-      tableCaption: "Eastern Time is EST (UTC-5) in winter and EDT (UTC-4) in summer, shifting between 5 and 4 hours behind GMT. GMT is UTC+0 all year.",
+      tableCaption: `Eastern Time is EST (UTC-5), 5 hours behind GMT, until ${dstInfo.formattedDate} when daylight saving begins.`,
       faqs: [
         {
           q: "What is the time difference between GMT and EST?",
