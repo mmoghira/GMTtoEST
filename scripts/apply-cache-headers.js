@@ -156,6 +156,7 @@ const securityRoutes = [
       "x-content-type-options": "nosniff",
       "x-frame-options": "SAMEORIGIN",
       "referrer-policy": "strict-origin-when-cross-origin",
+      "cache-control": "public, max-age=0, must-revalidate",
     },
     continue: true,
   },
