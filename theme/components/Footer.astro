@@ -1,13 +1,42 @@
 ---
-import { pageUrl, keptLanguages, getConverterDisplayName } from "theme/i18n/config";
+import { pageUrl, keptLanguages, getConverterDisplayName, pages } from "theme/i18n/config";
 
 interface Props {
   lang: string;
   slug?: string;
   t?: any;
+  availableLangs?: string[];
 }
 
-const { lang = "en", slug = "", t = {} } = Astro.props;
+const { lang = "en", slug = "", t = {}, availableLangs } = Astro.props;
+
+function getLangHref(targetLang: string) {
+  if (targetLang === "en") {
+    return slug ? (slug === "home" ? "/" : `/${slug}/`) : "/";
+  }
+  
+  if (!slug || slug === "home") {
+    return `/${targetLang}/`;
+  }
+
+  if (availableLangs && availableLangs.length > 0) {
+    if (availableLangs.includes(targetLang)) {
+      return pageUrl(targetLang, slug);
+    }
+    return `/${targetLang}/`;
+  }
+
+  const universalSlugs = new Set([
+    "gmt-to-est", "est-to-gmt", "gmt-vs-est", "time-zone-guide",
+    "about-us", "contact-us", "privacy-policy", "terms-of-service", "sitemap"
+  ]);
+
+  if (universalSlugs.has(slug) || pages.some((p: any) => p.slug === slug)) {
+    return pageUrl(targetLang, slug);
+  }
+
+  return `/${targetLang}/`;
+}
 
 const isEs = lang === "es";
 const isDe = lang === "de";
@@ -32,10 +61,10 @@ const topConverters = [
 
 // Top 4 Guides
 const topGuides = [
-  { href: pageUrl(lang, "est-vs-edt"), label: isDe ? "EST vs. EDT Vergleich" : isEs ? "EST vs EDT Explicado" : isFr ? "Différence EST vs EDT" : isIt ? "Differenza EST vs EDT" : isPt ? "Diferença EST vs EDT" : "EST vs EDT Difference" },
-  { href: pageUrl(lang, "gmt-vs-utc"), label: isDe ? "GMT vs. UTC Leitfaden" : isEs ? "GMT vs UTC Explicado" : isFr ? "Différence GMT vs UTC" : isIt ? "Differenza GMT vs UTC" : isPt ? "Diferença GMT vs UTC" : "GMT vs UTC Difference" },
-  { href: pageUrl(lang, "canada-time-zones"), label: isDe ? "Zeitzonen Kanadas" : isEs ? "Zonas horarias de Canadá" : isFr ? "Fuseaux horaires du Canada" : isIt ? "Fusi orari del Canada" : isPt ? "Fusos horários do Canadá" : "Canada Time Zones" },
-  { href: pageUrl(lang, "daylight-saving-time-explained"), label: isDe ? "Sommerzeit erklärt" : isEs ? "Horario de verano explicado" : isFr ? "Heure d'été expliquée" : isIt ? "Ora legale spiegata" : isPt ? "Horário de verão explicado" : "DST Explained" }
+  { href: "/est-vs-edt/", label: isDe ? "EST vs. EDT Vergleich" : isEs ? "EST vs EDT Explicado" : isFr ? "Différence EST vs EDT" : isIt ? "Differenza EST vs EDT" : isPt ? "Diferença EST vs EDT" : "EST vs EDT Difference" },
+  { href: "/gmt-vs-utc/", label: isDe ? "GMT vs. UTC Leitfaden" : isEs ? "GMT vs UTC Explicado" : isFr ? "Différence GMT vs UTC" : isIt ? "Differenza GMT vs UTC" : isPt ? "Diferença GMT vs UTC" : "GMT vs UTC Difference" },
+  { href: "/canada-time-zones/", label: isDe ? "Zeitzonen Kanadas" : isEs ? "Zonas horarias de Canadá" : isFr ? "Fuseaux horaires du Canada" : isIt ? "Fusi orari del Canada" : isPt ? "Fusos horários do Canadá" : "Canada Time Zones" },
+  { href: "/daylight-saving-time-explained/", label: isDe ? "Sommerzeit erklärt" : isEs ? "Horario de verano explicado" : isFr ? "Heure d'été expliquée" : isIt ? "Ora legale spiegata" : isPt ? "Horário de verão explicado" : "DST Explained" }
 ];
 
 // Folded Tools link
@@ -145,7 +174,7 @@ const companyLinks = [
       <div class="footer-lang-grid">
         {keptLanguages.map((item) => (
           <a
-            href={pageUrl(item.code, slug)}
+            href={getLangHref(item.code)}
             hreflang={item.code}
             class={`footer-lang-item ${item.code === lang ? 'active' : ''}`}
             title={item.name}

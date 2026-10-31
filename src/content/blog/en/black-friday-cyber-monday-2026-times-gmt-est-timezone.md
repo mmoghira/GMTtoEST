@@ -390,7 +390,7 @@ Most major US retailers launch online deals at midnight Eastern Time on November
 A midnight EST reference launch (12:00 AM EST on November 27) equals **5:00 AM GMT** on November 27, 2026.
 
 **How many hours is GMT ahead of EST?**
-GMT is 5 hours ahead of EST. During daylight saving time (spring/summer), Eastern Time switches to [EDT (UTC−4)](/blog/what-is-edt/), making the difference only 4 hours — but Black Friday falls during EST.
+GMT is 5 hours ahead of EST. During daylight saving time (spring/summer), Eastern Time switches to [EDT (UTC−4)](/what-is-edt/), making the difference only 4 hours — but Black Friday falls during EST.
 
 **When is Cyber Monday 2026?**
 Monday, November 30, 2026 — three days after Black Friday.

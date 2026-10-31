@@ -187,7 +187,7 @@ A handy mnemonic: take the Atlantic Time offset and add 30 minutes. Atlantic Sta
 
 Yes. Newfoundland observes Daylight Saving Time (DST) alongside most Canadian provinces and the United States, following the standard North American schedule.
 
-As explained in our guide to [Standard Time vs Daylight Saving Time](/blog/standard-time-vs-daylight-saving-time/), the seasonal transition alters the offset by exactly one hour:
+As explained in our guide to [Standard Time vs Daylight Saving Time](/standard-time-vs-daylight-saving-time/), the seasonal transition alters the offset by exactly one hour:
 
 - **Baseline Standard Time (NST):** UTC−3:30
 - **Summer Daylight Time (NDT):** UTC−2:30

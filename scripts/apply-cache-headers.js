@@ -48,7 +48,7 @@ const englishOnlyBlogPosts = [
 const englishOnlyConverters = [
   "akst-to-est", "sast-to-est", "gmt-to-hdt", "gmt-to-hkt", "gmt-to-hst",
   "gmt-to-jst", "gmt-to-mst", "gmt-to-nst", "gmt-to-nzdt", "gmt-to-pkt", "gmt-to-wat",
-  "ist-to-gmt", "est-to-ist"
+  "ist-to-gmt", "est-to-ist", "est-to-cst", "est-to-pst"
 ];
 
 const englishOnlyGuides = [
@@ -100,38 +100,44 @@ function generatePreFilesystemRedirects() {
   routes.push({ src: "^/contact/?$", headers: { Location: "/contact-us/" }, status: 301 });
   routes.push({ src: "^/what-is-gmt/?$", headers: { Location: "/blog/what-is-gmt/" }, status: 301 });
 
+  // 1b. GSC Dead English URL -> 410 Gone (no duplicate of /usa-time-zones/)
+  routes.push({ src: "^/us-time-zones/?$", dest: "/404.html", status: 410 });
+
   // 2. MEST redirects
   routes.push({ src: "^/gmt-to-mest/?$", headers: { Location: "/gmt-to-cest/" }, status: 301 });
   routes.push({ src: "^/mest-to-est/?$", headers: { Location: "/cest-to-est/" }, status: 301 });
   routes.push({ src: `^/(${langPattern})/gmt-to-mest/?$`, headers: { Location: "/$1/gmt-to-cest/" }, status: 301 });
   routes.push({ src: `^/(${langPattern})/mest-to-est/?$`, headers: { Location: "/$1/cest-to-est/" }, status: 301 });
 
-  // 3. Japan time alias
+  // 3. Japan time alias (1-hop 301 to /jst-to-est/)
   routes.push({ src: "^/japan-time-to-est/?$", headers: { Location: "/jst-to-est/" }, status: 301 });
   routes.push({ src: `^/(${langPattern})/japan-time-to-est/?$`, headers: { Location: "/$1/jst-to-est/" }, status: 301 });
 
-  // 4. Missing language blog root
-  routes.push({ src: "^/(?:es|hi|pt|ja|tr|ur|vi|th|id|pl|fr)/blog/?$", headers: { Location: "/blog/" }, status: 301 });
+  // 4. Missing language blog root -> 410 Gone
+  routes.push({ src: "^/(?:es|hi|pt|ja|tr|ur|vi|th|id|pl|fr)/blog/?$", dest: "/404.html", status: 410 });
 
-  // 5. English-only blog posts accessed with language prefix
+  // 5. English-only blog posts accessed with language prefix -> 410 Gone
   const blogPattern = englishOnlyBlogPosts.join("|");
-  routes.push({ src: `^/(?:${langPattern})/blog/(${blogPattern})/?$`, headers: { Location: "/blog/$1/" }, status: 301 });
-  routes.push({ src: `^/(?:es|hi|ar|pt|ru|ja|de|fr|tr|ur|bn|vi|th|id|fa|pl|nl)/blog/(nba-finals-time-gmt-2026)/?$`, headers: { Location: "/blog/$1/" }, status: 301 });
-  routes.push({ src: `^/(?:es|zh|hi|pt|ja|fr|ko|it|tr|ur|vi|th|id|pl)/blog/(understanding-gmt-est)/?$`, headers: { Location: "/blog/$1/" }, status: 301 });
+  routes.push({ src: `^/(?:${langPattern})/blog/(?:${blogPattern})/?$`, dest: "/404.html", status: 410 });
+  routes.push({ src: `^/(?:es|hi|ar|pt|ru|ja|de|fr|tr|ur|bn|vi|th|id|fa|pl|nl)/blog/(?:nba-finals-time-gmt-2026)/?$`, dest: "/404.html", status: 410 });
+  routes.push({ src: `^/(?:es|zh|hi|pt|ja|fr|ko|it|tr|ur|vi|th|id|pl)/blog/(?:understanding-gmt-est)/?$`, dest: "/404.html", status: 410 });
+  routes.push({ src: `^/(?:${langPattern})/.+/blog(?:/.*)?$`, dest: "/404.html", status: 410 });
 
-  // 6. English-only converters accessed with language prefix
+  // 6. English-only converters accessed with language prefix -> 410 Gone
   const convPattern = englishOnlyConverters.join("|");
-  routes.push({ src: `^/(?:${langPattern})/(${convPattern})/?$`, headers: { Location: "/$1/" }, status: 301 });
+  routes.push({ src: `^/(?:${langPattern})/(?:${convPattern})/?$`, dest: "/404.html", status: 410 });
 
   // 7. English-only guides & cities accessed with language prefix
   const guidePattern = englishOnlyGuides.join("|");
   routes.push({ src: `^/(?:${langPattern})/(${guidePattern})/?$`, headers: { Location: "/$1/" }, status: 301 });
 
-  // 8. Invalid / unactivated converters
+  // 8. Invalid / unactivated converters in languages -> 410 Gone
+  routes.push({ src: `^/(?:${langPattern})/gmt-to-(?:(?!${validZones})[a-z0-9]+)/?$`, dest: "/404.html", status: 410 });
+  routes.push({ src: `^/(?:${langPattern})/(?:(?!${validZonesEst})[a-z0-9]+)-to-est/?$`, dest: "/404.html", status: 410 });
+
+  // English invalid / unactivated converters -> /
   routes.push({ src: `^/gmt-to-(?:(?!${validZones})[a-z0-9]+)/?$`, headers: { Location: "/" }, status: 301 });
   routes.push({ src: `^/(?:(?!${validZonesEst})[a-z0-9]+)-to-est/?$`, headers: { Location: "/" }, status: 301 });
-  routes.push({ src: `^/(?:${langPattern})/gmt-to-(?:(?!${validZones})[a-z0-9]+)/?$`, headers: { Location: "/" }, status: 301 });
-  routes.push({ src: `^/(?:${langPattern})/(?:(?!${validZonesEst})[a-z0-9]+)-to-est/?$`, headers: { Location: "/" }, status: 301 });
 
   return routes;
 }
@@ -247,22 +253,31 @@ const withHeaders = [
   ...withRedirects.slice(headerInsertIndex),
 ];
 
-// Post-filesystem fallbacks (after filesystem check, before 404.html)
-const notFoundIndex = withHeaders.findIndex((route) => route.dest === "/404.html");
-const fallbackInsertIndex = notFoundIndex !== -1 ? notFoundIndex : withHeaders.length;
+// Post-filesystem fallbacks (after filesystem check, before the final 404 catch-all)
+const fsIndexInHeaders = withHeaders.findIndex((route) => route.handle === "filesystem");
+let fallbackInsertIndex;
+if (fsIndexInHeaders !== -1) {
+  const catchAllAfterFs = withHeaders.findIndex(
+    (route, idx) => idx > fsIndexInHeaders && (route.src === "^/.*$" || route.dest === "/404.html")
+  );
+  fallbackInsertIndex = catchAllAfterFs !== -1 ? catchAllAfterFs : fsIndexInHeaders + 1;
+} else {
+  const notFoundIndex = withHeaders.findIndex((route) => route.src === "^/.*$" && route.dest === "/404.html");
+  fallbackInsertIndex = notFoundIndex !== -1 ? notFoundIndex : withHeaders.length;
+}
 
 const postFilesystemFallbacks = [
-  // Any unmatched language blog request -> /blog/
+  // Any unmatched language blog request -> 410 Gone
   {
     src: `^/(?:${langPattern})/blog(?:/.*)?$`,
-    headers: { Location: "/blog/" },
-    status: 301,
+    dest: "/404.html",
+    status: 410,
   },
-  // Any unmatched language converter request -> /
+  // Any unmatched language converter request -> 410 Gone
   {
-    src: `^/(?:${langPattern})/(?:gmt-to-[^/]+|[^/]+-to-est)/?$`,
-    headers: { Location: "/" },
-    status: 301,
+    src: `^/(?:${langPattern})/(?:gmt-to-[^/]+|[^/]+-to-est|[^/]+-to-[^/]+)/?$`,
+    dest: "/404.html",
+    status: 410,
   },
 ];
 
