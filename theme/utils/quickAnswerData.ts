@@ -998,7 +998,7 @@ export function getQuickAnswerPayload(
       actualZoneA = "MST";
       actualSourceIana = "America/Denver";
       customFaqHeading = "Frequently Asked Questions: MST to EST";
-      definitionSentence = "MST (Mountain Standard Time, UTC−6) is 2 hours behind EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, then EDT (UTC-4).";
+      definitionSentence = "MST (Mountain Standard Time, UTC-7) is 2 hours behind EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, then EDT (UTC-4).";
     } else if (sourceCode === "PDT" || sourceCode === "PST") {
       actualZoneA = "PST";
       actualZoneAName = "Pacific Standard Time";
