@@ -197,6 +197,8 @@ export interface QuickAnswerPayload {
   targetLiveTime: string;
   liveTimeSentence: string;
   liveLineHtml?: string;
+  sourceIana?: string;
+  targetIana?: string;
   tableConversions: Array<{ sourceTime: string; targetTime: string; estTime?: string }>;
   tableCaption: string;
   faqs: Array<{ q: string; a: string }>;
@@ -599,12 +601,14 @@ export function getQuickAnswerPayload(
       faqHeading: "Frequently Asked Questions: GMT to Eastern Time",
       offsetA: 0,
       offsetAFormatted: "UTC+0",
-      definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM in London (GMT, UTC+0), it is 7:00 AM in New York (EST). Greenwich Mean Time remains constant year-round, while North America’s Eastern zone observes standard time during winter months before advancing one hour in spring.",
+      definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM in London (GMT, UTC+0), it is 7:00 AM in New York (EST). Greenwich Mean Time remains constant year-round, while North America's Eastern zone shifts one hour forward during summer daylight saving time.",
       sourceLiveTime,
       estLiveTime,
       targetLiveTime: estLiveTime,
       liveTimeSentence: `Right now: ${sourceLiveTime} GMT = ${estLiveTime} EST`,
       liveLineHtml: `Right now: <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EST</strong>`,
+      sourceIana: "UTC",
+      targetIana: "America/New_York",
       tableConversions: [
         { sourceTime: "12:00 AM GMT", targetTime: "7:00 PM EST (previous day)", estTime: "7:00 PM EST (previous day)" },
         { sourceTime: "6:00 AM GMT", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
@@ -613,11 +617,11 @@ export function getQuickAnswerPayload(
         { sourceTime: "5:00 PM GMT", targetTime: "12:00 PM EST", estTime: "12:00 PM EST" },
         { sourceTime: "9:00 PM GMT", targetTime: "4:00 PM EST", estTime: "4:00 PM EST" }
       ],
-      tableCaption: `Eastern Time is EST (UTC-5), 5 hours behind GMT, until ${dstInfo.formattedDate} when daylight saving begins.`,
+      tableCaption: "Eastern Time is EST (UTC-5), 5 hours behind GMT, until 14 Mar 2027 when daylight saving time begins.",
       faqs: [
         {
           q: "What is the time difference between GMT and Eastern Time?",
-          a: `GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5) until ${dstInfo.formattedDate}, when clocks advance to Eastern Daylight Time (EDT, UTC-4), making GMT 4 hours ahead. GMT is UTC+0 all year.`
+          a: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5) until 14 Mar 2027, and 4 hours ahead of Eastern Daylight Time (EDT, UTC-4) during summer daylight saving time. GMT is UTC+0 all year."
         },
         {
           q: "Is GMT ahead of or behind Eastern Time?",
@@ -699,40 +703,43 @@ export function getQuickAnswerPayload(
     }
 
     return {
-      zoneA: "CDT",
+      zoneA: "CST",
       zoneB: "EST",
-      zoneAName: "Central Daylight Time",
+      zoneAName: "Central Standard Time",
       zoneBName: "Eastern Standard Time",
       zoneBHeader: "EST (Eastern Standard Time)",
-      offsetA: -5,
-      offsetAFormatted: "UTC-5",
-      definitionSentence: "CDT (Central Daylight Time, UTC-5) is 1 hour behind EDT (UTC-4) in daylight saving time (until 1 Nov 2026). While CDT shares UTC-5 with winter EST, Central Time operates on CST (UTC-6) in standard time.",
+      faqHeading: "Frequently Asked Questions: CST to EST",
+      offsetA: -6,
+      offsetAFormatted: "UTC-6",
+      definitionSentence: "CST (Central Standard Time, UTC-6) is 1 hour behind EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, when clocks spring forward to CDT (UTC-5) and EDT (UTC-4).",
       sourceLiveTime,
       estLiveTime,
       targetLiveTime: estLiveTime,
-      liveTimeSentence: `Right now it is ${sourceLiveTime} CDT = ${estLiveTime} EST.`,
-      liveLineHtml: `Right now it is <strong>${sourceLiveTime} CDT</strong> = <strong>${estLiveTime} EST</strong>.`,
+      liveTimeSentence: `Right now: ${sourceLiveTime} CST = ${estLiveTime} EST`,
+      liveLineHtml: `Right now: <strong>${sourceLiveTime} CST</strong> = <strong>${estLiveTime} EST</strong>`,
+      sourceIana: "America/Chicago",
+      targetIana: "America/New_York",
       tableConversions: [
-        { sourceTime: "12:00 AM CDT", targetTime: "12:00 AM EST (same numeric offset)", estTime: "12:00 AM EST" },
-        { sourceTime: "6:00 AM CDT", targetTime: "6:00 AM EST (same numeric offset)", estTime: "6:00 AM EST" },
-        { sourceTime: "9:00 AM CDT", targetTime: "9:00 AM EST (same numeric offset)", estTime: "9:00 AM EST" },
-        { sourceTime: "12:00 PM CDT", targetTime: "12:00 PM EST (same numeric offset)", estTime: "12:00 PM EST" },
-        { sourceTime: "6:00 PM CDT", targetTime: "6:00 PM EST (same numeric offset)", estTime: "6:00 PM EST" },
-        { sourceTime: "9:00 PM CDT", targetTime: "9:00 PM EST (same numeric offset)", estTime: "9:00 PM EST" }
+        { sourceTime: "12:00 AM CST", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
+        { sourceTime: "6:00 AM CST", targetTime: "7:00 AM EST", estTime: "7:00 AM EST" },
+        { sourceTime: "9:00 AM CST", targetTime: "10:00 AM EST", estTime: "10:00 AM EST" },
+        { sourceTime: "12:00 PM CST", targetTime: "1:00 PM EST", estTime: "1:00 PM EST" },
+        { sourceTime: "6:00 PM CST", targetTime: "7:00 PM EST", estTime: "7:00 PM EST" },
+        { sourceTime: "9:00 PM CST", targetTime: "10:00 PM EST", estTime: "10:00 PM EST" }
       ],
-      tableCaption: "CDT (UTC-5) shares the UTC-5 offset with winter EST, but Central Time observes CST (UTC-6) during standard winter time.",
+      tableCaption: "Central Standard Time (CST, UTC-6 until 14 Mar 2027) is 1 hour behind Eastern Standard Time (EST, UTC-5 until 14 Mar 2027).",
       faqs: [
         {
-          q: "What is the time difference between CDT and EST?",
-          a: "CDT and EST share the same numeric offset (UTC-5), but CDT is observed in summer while EST is observed in winter. Central Time is CST (UTC-6) during winter."
+          q: "What is the time difference between CST and EST?",
+          a: "Central Standard Time (CST, UTC-6) is 1 hour behind Eastern Standard Time (EST, UTC-5) until 14 Mar 2027, when clocks spring forward to CDT (UTC-5) and EDT (UTC-4)."
         },
         {
-          q: "Is CDT ahead of or behind EST?",
-          a: "CDT and EST share the same UTC-5 offset, but CDT operates in summer and EST operates in winter."
+          q: "Is CST ahead of or behind EST?",
+          a: "CST is behind EST. Specifically, CST is 1 hour behind Eastern Standard Time."
         },
         {
           q: "Does Central Time stay 1 hour behind Eastern Time?",
-          a: "Yes. Both regions transition together on the same dates: CDT to EDT (summer) and CST to EST (winter), keeping Eastern Time 1 hour ahead year-round."
+          a: "Yes. Both regions transition together on the same dates: CST to EST (winter) and CDT to EDT (summer), keeping Eastern Time 1 hour ahead year-round."
         }
       ]
     };
@@ -811,14 +818,17 @@ export function getQuickAnswerPayload(
       zoneAName: "Central Standard Time",
       zoneBName: "Eastern Standard Time",
       zoneBHeader: "EST (Eastern Standard Time)",
+      faqHeading: "Frequently Asked Questions: CST to EST",
       offsetA: -6,
       offsetAFormatted: "UTC-6",
-      definitionSentence: "CST (Central Standard Time, UTC-6) is 1 hour behind EST (Eastern Standard Time, UTC-5). Eastern Time is consistently 1 hour ahead of Central Time year-round.",
+      definitionSentence: "Central Time is CST (UTC-6) and Eastern Time is EST (UTC-5) until 14 Mar 2027, then CDT (UTC-5) and EDT (UTC-4). Eastern Time is consistently 1 hour ahead of Central Time year-round.",
       sourceLiveTime,
       estLiveTime,
       targetLiveTime: estLiveTime,
-      liveTimeSentence: `Right now it is ${sourceLiveTime} CST = ${estLiveTime} EST.`,
-      liveLineHtml: `Right now it is <strong>${sourceLiveTime} CST</strong> = <strong>${estLiveTime} EST</strong>.`,
+      liveTimeSentence: `Right now: ${sourceLiveTime} CST = ${estLiveTime} EST`,
+      liveLineHtml: `Right now: <strong>${sourceLiveTime} CST</strong> = <strong>${estLiveTime} EST</strong>`,
+      sourceIana: "America/Chicago",
+      targetIana: "America/New_York",
       tableConversions: [
         { sourceTime: "12:00 AM CST", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
         { sourceTime: "6:00 AM CST", targetTime: "7:00 AM EST", estTime: "7:00 AM EST" },
@@ -827,11 +837,11 @@ export function getQuickAnswerPayload(
         { sourceTime: "6:00 PM CST", targetTime: "7:00 PM EST", estTime: "7:00 PM EST" },
         { sourceTime: "9:00 PM CST", targetTime: "10:00 PM EST", estTime: "10:00 PM EST" }
       ],
-      tableCaption: "Central Time is CST (UTC-6) and Eastern Time is EST (UTC-5) during standard winter time.",
+      tableCaption: "Central Time is CST (UTC-6) and Eastern Time is EST (UTC-5) until 14 Mar 2027, then CDT (UTC-5) and EDT (UTC-4).",
       faqs: [
         {
           q: "What is the time difference between CST and EST?",
-          a: "Central Standard Time (CST, UTC-6) is 1 hour behind Eastern Standard Time (EST, UTC-5)."
+          a: "Central Standard Time (CST, UTC-6) is 1 hour behind Eastern Standard Time (EST, UTC-5) until 14 Mar 2027, then CDT (UTC-5) and EDT (UTC-4)."
         },
         {
           q: "Is CST ahead of or behind EST?",
@@ -966,23 +976,55 @@ export function getQuickAnswerPayload(
   const diffFormatted = formatHoursDifference(delta);
   const offsetAFormatted = formatUtc(sourceOffset);
 
+  let actualZoneA = meta.abbr;
+  let actualZoneAName = meta.name;
+  let actualOffsetAFormatted = offsetAFormatted;
+  let actualSourceOffset = sourceOffset;
+  let actualSourceIana = meta.iana;
+  let customFaqHeading: string | undefined = undefined;
+
   // 1. Definition Sentence
   let definitionSentence = "";
   if (isEasternDaylight) {
     if (delta > 0) {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} ahead of EDT (Eastern Daylight Time, UTC-4) until 1 Nov 2026, then EST (UTC-5).`;
+      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} ahead of EDT (Eastern Daylight Time, UTC-4).`;
     } else if (delta < 0) {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} behind EDT (Eastern Daylight Time, UTC-4) until 1 Nov 2026, then EST (UTC-5).`;
+      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} behind EDT (Eastern Daylight Time, UTC-4).`;
     } else {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is at the same time as EDT (Eastern Daylight Time, UTC-4) until 1 Nov 2026, then EST (UTC-5).`;
+      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is at the same time as EDT (Eastern Daylight Time, UTC-4).`;
     }
   } else {
-    if (delta > 0) {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} ahead of EST (Eastern Standard Time, UTC−5).`;
-    } else if (delta < 0) {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} behind EST (Eastern Standard Time, UTC−5).`;
+    if (sourceCode === "MST") {
+      actualZoneA = "MST";
+      actualSourceIana = "America/Denver";
+      customFaqHeading = "Frequently Asked Questions: MST to EST";
+      definitionSentence = "MST (Mountain Standard Time, UTC−6) is 2 hours behind EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, then EDT (UTC-4).";
+    } else if (sourceCode === "PDT" || sourceCode === "PST") {
+      actualZoneA = "PST";
+      actualZoneAName = "Pacific Standard Time";
+      actualOffsetAFormatted = "UTC-8";
+      actualSourceOffset = -8;
+      actualSourceIana = "America/Los_Angeles";
+      customFaqHeading = "Frequently Asked Questions: PST to EST";
+      definitionSentence = "PST (Pacific Standard Time, UTC-8) is 3 hours behind EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, then EDT (UTC-4).";
+    } else if (sourceCode === "EDT") {
+      actualZoneA = "EDT";
+      actualSourceIana = "America/New_York";
+      customFaqHeading = "Frequently Asked Questions: EDT to EST";
+      definitionSentence = "EDT (Eastern Daylight Time, UTC−4) is 1 hour ahead of EST (Eastern Standard Time, UTC−5). Eastern Time is currently on EST and returns to EDT on 14 Mar 2027 when daylight saving time begins.";
+    } else if (sourceCode === "JST") {
+      actualZoneA = "JST";
+      actualSourceIana = "Asia/Tokyo";
+      customFaqHeading = "Frequently Asked Questions: JST to EST";
+      definitionSentence = "JST (Japan Standard Time, UTC+9) is 14 hours ahead of EST (Eastern Standard Time, UTC-5) until 14 Mar 2027, then EDT (UTC-4).";
     } else {
-      definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is at the same time as EST (Eastern Standard Time, UTC−5).`;
+      if (delta > 0) {
+        definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} ahead of EST (Eastern Standard Time, UTC−5).`;
+      } else if (delta < 0) {
+        definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is ${diffFormatted} behind EST (Eastern Standard Time, UTC−5).`;
+      } else {
+        definitionSentence = `${meta.abbr} (${meta.name}, ${offsetAFormatted}) is at the same time as EST (Eastern Standard Time, UTC−5).`;
+      }
     }
   }
 
@@ -994,7 +1036,7 @@ export function getQuickAnswerPayload(
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-      timeZone: meta.iana
+      timeZone: actualSourceIana
     }).format(now);
   } catch (e) {
     sourceLiveTime = "--:--";
@@ -1011,18 +1053,23 @@ export function getQuickAnswerPayload(
     estLiveTime = "--:--";
   }
 
-  const liveTimeSentence = `Right now it is ${sourceLiveTime} ${meta.abbr} = ${estLiveTime} ${targetAbbr}.`;
-  const liveLineHtml = `Right now it is <strong>${sourceLiveTime} ${meta.abbr}</strong> = <strong>${estLiveTime} ${targetAbbr}</strong>.`;
+  let liveTimeSentence = `Right now: ${sourceLiveTime} ${actualZoneA} = ${estLiveTime} ${targetAbbr}`;
+  let liveLineHtml = `Right now: <strong>${sourceLiveTime} ${actualZoneA}</strong> = <strong>${estLiveTime} ${targetAbbr}</strong>`;
+
+  if (sourceCode === "EDT" && !isEasternDaylight) {
+    liveTimeSentence = `Right now: ${estLiveTime} EST (EDT is not observed until 14 Mar 2027)`;
+    liveLineHtml = `Right now: <strong>${estLiveTime} EST</strong> (EDT is not observed until 14 Mar 2027)`;
+  }
 
   // 3. Compact Static Table: 12 AM, 6 AM, 9 AM, 12 PM, 6 PM, 9 PM
   const sampleHours = [0, 6, 9, 12, 18, 21];
-  const minutesDiff = Math.round((targetOffset - sourceOffset) * 60);
+  const minutesDiff = Math.round((targetOffset - actualSourceOffset) * 60);
 
   const tableConversions = sampleHours.map((h) => {
     // Source Time Format
     const sourcePeriod = h < 12 ? "AM" : "PM";
     const sourceDisplayHour = h % 12 || 12;
-    const sourceTime = `${sourceDisplayHour}:00 ${sourcePeriod} ${meta.abbr}`;
+    const sourceTime = `${sourceDisplayHour}:00 ${sourcePeriod} ${actualZoneA}`;
 
     // Target Calculation
     const totalEstMinutes = h * 60 + minutesDiff;
@@ -1047,37 +1094,37 @@ export function getQuickAnswerPayload(
   });
 
   const tableCaption = isEasternDaylight
-    ? `Eastern Time is EDT (UTC-4) until 1 Nov 2026, then falls back to EST (UTC-5).`
-    : `Standard time conversions. Eastern Time is EST (UTC-5) during winter and shifts to EDT (UTC-4) in summer.`;
+    ? `Eastern Time is EDT (UTC-4) during summer daylight saving time.`
+    : `Standard time conversions. Eastern Time is EST (UTC-5) until 14 Mar 2027, then shifts to EDT (UTC-4) when daylight saving begins.`;
 
   // 4. 3 Visible FAQs
-  const faq1Question = `What is the time difference between ${meta.abbr} and EST?`;
+  const faq1Question = `What is the time difference between ${actualZoneA} and EST?`;
   let faq1Answer = "";
-  if (meta.abbr === "EST") {
+  if (actualZoneA === "EST") {
     faq1Answer = "Eastern Standard Time (EST, UTC−5) is the same time zone, so there is no time difference.";
   } else if (delta > 0) {
-    faq1Answer = `The standard time difference between ${meta.name} (${meta.abbr}, ${offsetAFormatted}) and Eastern Standard Time (EST, UTC−5) is ${diffFormatted}. ${meta.abbr} is ${diffFormatted} ahead of EST.`;
+    faq1Answer = `The standard time difference between ${actualZoneAName} (${actualZoneA}, ${actualOffsetAFormatted}) and Eastern Standard Time (EST, UTC−5) is ${diffFormatted}. ${actualZoneA} is ${diffFormatted} ahead of EST.`;
   } else if (delta < 0) {
-    faq1Answer = `The standard time difference between ${meta.name} (${meta.abbr}, ${offsetAFormatted}) and Eastern Standard Time (EST, UTC−5) is ${diffFormatted}. EST is ${diffFormatted} ahead of ${meta.abbr} (${meta.abbr} is ${diffFormatted} behind EST).`;
+    faq1Answer = `The standard time difference between ${actualZoneAName} (${actualZoneA}, ${actualOffsetAFormatted}) and Eastern Standard Time (EST, UTC−5) is ${diffFormatted}. EST is ${diffFormatted} ahead of ${actualZoneA} (${actualZoneA} is ${diffFormatted} behind EST).`;
   } else {
-    faq1Answer = `Both ${meta.abbr} (${meta.name}, ${offsetAFormatted}) and Eastern Standard Time (EST, UTC−5) operate at the same standard offset of UTC−5 with zero time difference.`;
+    faq1Answer = `Both ${actualZoneA} (${actualZoneAName}, ${actualOffsetAFormatted}) and Eastern Standard Time (EST, UTC−5) operate at the same standard offset of UTC−5 with zero time difference.`;
   }
 
-  const faq2Question = `Is ${meta.abbr} ahead of or behind EST?`;
+  const faq2Question = `Is ${actualZoneA} ahead of or behind EST?`;
   let faq2Answer = "";
   if (delta > 0) {
-    faq2Answer = `${meta.abbr} is ahead of EST. Specifically, ${meta.abbr} is ${diffFormatted} ahead of Eastern Standard Time.`;
+    faq2Answer = `${actualZoneA} is ahead of EST. Specifically, ${actualZoneA} is ${diffFormatted} ahead of Eastern Standard Time.`;
   } else if (delta < 0) {
-    faq2Answer = `${meta.abbr} is behind EST. Specifically, ${meta.abbr} is ${diffFormatted} behind Eastern Standard Time.`;
+    faq2Answer = `${actualZoneA} is behind EST. Specifically, ${actualZoneA} is ${diffFormatted} behind Eastern Standard Time.`;
   } else {
-    faq2Answer = `${meta.abbr} is neither ahead nor behind EST; both share the same UTC offset of UTC−5 during standard time.`;
+    faq2Answer = `${actualZoneA} is neither ahead nor behind EST; both share the same UTC offset of UTC−5 during standard time.`;
   }
 
-  const faq3Question = `Does the ${meta.abbr} to EST difference change during daylight saving time?`;
+  const faq3Question = `Does the ${actualZoneA} to EST difference change during daylight saving time?`;
   let faq3Answer = "";
   switch (meta.dstCategory) {
     case "us_same":
-      faq3Answer = `No, the difference between ${meta.abbr} and Eastern Time remains ${diffFormatted} year-round because both regions observe Daylight Saving Time on the same schedule, transitioning between standard time and daylight saving time simultaneously.`;
+      faq3Answer = `No, the difference between ${actualZoneA} and Eastern Time remains ${diffFormatted} year-round because both regions observe Daylight Saving Time on the same schedule, transitioning between standard time and daylight saving time simultaneously.`;
       break;
     case "uk_eu":
       faq3Answer = `Yes, the difference changes by 1 hour for 1 to 3 weeks each spring and autumn because the United Kingdom and Europe transition into and out of daylight saving time on different dates than North America.`;
@@ -1086,11 +1133,11 @@ export function getQuickAnswerPayload(
       faq3Answer = `Yes, the time difference changes because the Southern Hemisphere observes Daylight Saving Time during the North American winter, causing clocks to move in opposite directions across seasons.`;
       break;
     case "canada_atlantic":
-      faq3Answer = `No, the time difference between ${meta.abbr} and Eastern Time remains consistent year-round because Atlantic Canada and Eastern Time switch to Daylight Saving Time on identical dates.`;
+      faq3Answer = `No, the time difference between ${actualZoneA} and Eastern Time remains consistent year-round because Atlantic Canada and Eastern Time switch to Daylight Saving Time on identical dates.`;
       break;
     case "no_dst":
     default:
-      faq3Answer = `Yes. Because Eastern Time shifts between EST (UTC−5) in winter and EDT (UTC-4) in summer while ${meta.abbr} does not observe Daylight Saving Time, the difference changes by 1 hour during Daylight Saving Time.`;
+      faq3Answer = `Yes. Because Eastern Time shifts between EST (UTC−5) in winter and EDT (UTC-4) in summer while ${actualZoneA} does not observe Daylight Saving Time, the difference changes by 1 hour during Daylight Saving Time.`;
       break;
   }
 
@@ -1101,19 +1148,22 @@ export function getQuickAnswerPayload(
   ];
 
   return {
-    zoneA: meta.abbr,
+    zoneA: actualZoneA,
     zoneB: targetAbbr,
-    zoneAName: meta.name,
+    zoneAName: actualZoneAName,
     zoneBName: targetName,
     zoneBHeader: targetHeader,
-    offsetA: sourceOffset,
-    offsetAFormatted,
+    faqHeading: customFaqHeading,
+    offsetA: actualSourceOffset,
+    offsetAFormatted: actualOffsetAFormatted,
     definitionSentence,
     sourceLiveTime,
     estLiveTime,
     targetLiveTime: estLiveTime,
     liveTimeSentence,
     liveLineHtml,
+    sourceIana: actualSourceIana,
+    targetIana: "America/New_York",
     tableConversions,
     tableCaption,
     faqs
