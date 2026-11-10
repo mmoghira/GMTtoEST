@@ -85,12 +85,27 @@ const englishOnlyGuides = [
 function generatePreFilesystemRedirects() {
   const routes = [];
 
-  // Canonical host
+  // Canonical host: Collapse www to apex directly in 1 hop with correct trailing slash normalization
+  // 1. Files with extensions (e.g. /favicon.ico, /assets/...) -> keep file path without trailing slash
+  routes.push({
+    src: "^/((?:[^/]+/)*[^/]+\\.[a-zA-Z0-9]+)$",
+    has: [{ type: "host", value: "www.gmttoestconverter.com" }],
+    headers: { Location: "https://gmttoestconverter.com/$1" },
+    status: 308
+  });
+  // 2. Subpaths without trailing slash (e.g. /time-zone-guide) -> append slash in the same single hop to prevent extra hop
+  routes.push({
+    src: "^/((?:[^/]+/)*[^/\\.]+)$",
+    has: [{ type: "host", value: "www.gmttoestconverter.com" }],
+    headers: { Location: "https://gmttoestconverter.com/$1/" },
+    status: 308
+  });
+  // 3. Root (/) or paths already ending with trailing slash (e.g. /time-zone-guide/)
   routes.push({
     src: "^/(.*)$",
     has: [{ type: "host", value: "www.gmttoestconverter.com" }],
     headers: { Location: "https://gmttoestconverter.com/$1" },
-    status: 301
+    status: 308
   });
 
   // 1. Root & legacy aliases
