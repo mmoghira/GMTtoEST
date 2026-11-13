@@ -26,8 +26,8 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
   data-target={target}
   data-zone-a={payload.zoneA}
   data-zone-b={payload.zoneB}
-  data-source-iana={payload.sourceIana || (source === "GMT" || source === "UTC" ? "UTC" : undefined)}
-  data-target-iana={payload.targetIana || "America/New_York"}
+  data-source-iana={payload.sourceIana || context?.fromZone || (source === "GMT" || source === "UTC" ? "UTC" : undefined)}
+  data-target-iana={payload.targetIana || context?.toZone || "America/New_York"}
   aria-label={`Quick Answer: ${payload.zoneA} to ${payload.zoneB} Conversion`}
 >
   <div class="quick-answer-badge">
@@ -100,20 +100,26 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
       }
 
       // 2. Source time
-      var sourceStr = '';
-      try {
-        sourceStr = new Intl.DateTimeFormat('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-          timeZone: sourceIana
-        }).format(now);
-      } catch (e) {
-        sourceStr = '--:--';
-      }
+      var sourceParts = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short',
+        hour12: true,
+        timeZone: sourceIana
+      }).formatToParts(now);
+      var sourceStr = sourceParts
+        .filter(function(p) { return p.type !== 'timeZoneName'; })
+        .map(function(p) { return p.value; })
+        .join('')
+        .trim();
+      var sourceZoneObj = sourceParts.find(function(p) { return p.type === 'timeZoneName'; });
+      var sourceZoneName = sourceZoneObj ? sourceZoneObj.value.trim() : '';
+      var sourceLabel = (sourceIana === 'America/New_York' && (sourceZoneName === 'EDT' || sourceZoneName === 'EST'))
+        ? sourceZoneName
+        : zoneA;
 
-      // 3. Target (Eastern) time
-      var estParts = new Intl.DateTimeFormat('en-US', {
+      // 3. Target time
+      var targetParts = new Intl.DateTimeFormat('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         timeZoneName: 'short',
@@ -121,18 +127,18 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
         timeZone: targetIana
       }).formatToParts(now);
 
-      var estTime = estParts
+      var targetTime = targetParts
         .filter(function(p) { return p.type !== 'timeZoneName'; })
         .map(function(p) { return p.value; })
         .join('')
         .trim();
-      var estZoneObj = estParts.find(function(p) { return p.type === 'timeZoneName'; });
-      var estZoneName = estZoneObj ? estZoneObj.value.trim() : '';
-      var zoneLabel = (estZoneName === 'EDT' || estZoneName === 'EST') 
-        ? estZoneName 
+      var targetZoneObj = targetParts.find(function(p) { return p.type === 'timeZoneName'; });
+      var targetZoneName = targetZoneObj ? targetZoneObj.value.trim() : '';
+      var zoneLabel = (targetIana === 'America/New_York' && (targetZoneName === 'EDT' || targetZoneName === 'EST'))
+        ? targetZoneName 
         : zoneB;
 
-      textEl.innerHTML = 'Right now: <strong>' + sourceStr + ' ' + zoneA + '</strong> = <strong>' + estTime + ' ' + zoneLabel + '</strong>';
+      textEl.innerHTML = 'Right now: <strong>' + sourceStr + ' ' + sourceLabel + '</strong> = <strong>' + targetTime + ' ' + zoneLabel + '</strong>';
     }
 
     updateQaLiveClock();
