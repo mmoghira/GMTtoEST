@@ -21,7 +21,7 @@ const context = {
 
 const canonical = `${siteUrl}/edt-to-est/`;
 
-// 24-hour conversion table data (EDT to EST: 12:00 AM EDT -> 1:00 AM EST, 12:00 PM EDT -> 1:00 PM EST)
+// 24-hour conversion table data (EDT to EST: 12:00 AM EDT -> 11:00 PM EST (previous day), 12:00 PM EDT -> 11:00 AM EST)
 function formatHour12(hour: number) {
   const normalized = ((hour % 24) + 24) % 24;
   const period = normalized < 12 ? "AM" : "PM";
@@ -30,20 +30,17 @@ function formatHour12(hour: number) {
 }
 
 const conversionRows = Array.from({ length: 24 }, (_, hour) => {
-  const estHour = (hour + 1) % 24;
-  const isNextDay = hour === 23;
+  const estHour = (hour - 1 + 24) % 24;
   return {
     edt: formatHour12(hour),
     est: formatHour12(estHour),
     isExactTarget: hour === 12,
     isMidnightTarget: hour === 0,
     note: hour === 12
-      ? "Exact Search Match (Noon EDT = 1:00 PM EST)"
+      ? "Exact Search Match (Noon EDT = 11:00 AM EST)"
       : hour === 0
-      ? "Midnight EDT = 1:00 AM EST"
-      : isNextDay
-      ? "Next calendar day (+1 hr)"
-      : "Same calendar day (+1 hr)"
+      ? "Midnight EDT = 11:00 PM EST (previous day)"
+      : "Same calendar day (−1 hr)"
   };
 });
 
@@ -51,15 +48,15 @@ const conversionRows = Array.from({ length: 24 }, (_, hour) => {
 const faqs = [
   {
     q: "What is 12:00 PM EDT in EST?",
-    a: "12:00 PM EDT equals 1:00 PM EST. Eastern Daylight Time (EDT) operates at UTC−4, while Eastern Standard Time (EST) operates at UTC−5. Because EST is one hour behind EDT, converting 12:00 PM EDT results in 1:00 PM EST."
+    a: "12:00 PM EDT equals 11:00 AM EST. Eastern Daylight Time (EDT) operates at UTC−4, while Eastern Standard Time (EST) operates at UTC−5. Because EST is one hour behind EDT, converting 12:00 PM EDT results in 11:00 AM EST."
   },
   {
     q: "What is 12:00 AM EDT in EST?",
-    a: "12:00 AM EDT (Midnight) equals 1:00 AM EST. In standard 12-hour notation, 12:00 AM signifies midnight, which translates to 1:00 AM in Eastern Standard Time."
+    a: "12:00 AM EDT (Midnight) equals 11:00 PM EST on the previous calendar day. Because EST is one hour behind EDT, midnight in Eastern Daylight Time corresponds to 11:00 PM Eastern Standard Time."
   },
   {
     q: "Is 12:00 PM noon or midnight?",
-    a: "12:00 PM is noon (midday). Conversely, 12:00 AM is midnight (the beginning of the calendar day). When converting 12:00 EDT to EST, 12:00 PM EDT converts to 1:00 PM EST, and 12:00 AM EDT converts to 1:00 AM EST."
+    a: "12:00 PM is noon (midday). Conversely, 12:00 AM is midnight (the beginning of the calendar day). When converting 12:00 EDT to EST, 12:00 PM EDT converts to 11:00 AM EST, and 12:00 AM EDT converts to 11:00 PM EST (previous day)."
   },
   {
     q: "Is 12:00 EDT the same as 12:00 EST?",
@@ -79,7 +76,7 @@ const faqs = [
   },
   {
     q: "How do I manually convert EDT to EST?",
-    a: "To convert EDT to EST, apply the 1-hour difference: 12:00 PM EDT corresponds to 1:00 PM EST. Always verify whether the time refers to 12:00 PM (noon) or 12:00 AM (midnight)."
+    a: "To convert EDT to EST, apply the 1-hour difference: 12:00 PM EDT corresponds to 11:00 AM EST. Always verify whether the time refers to 12:00 PM (noon) or 12:00 AM (midnight)."
   }
 ];
 
@@ -99,7 +96,7 @@ const meta = {
   howToDescription: "Step-by-step guide to converting 12:00 Eastern Daylight Time (EDT) to Eastern Standard Time (EST).",
   howToSteps: [
     { name: "Clarify Noon vs Midnight", text: "Identify whether your 12:00 time is 12:00 PM (noon) or 12:00 AM (midnight)." },
-    { name: "Apply the 1-Hour Difference", text: "EDT (UTC-4) and EST (UTC-5) differ by 1 hour. 12:00 PM EDT corresponds to 1:00 PM EST, while 12:00 AM EDT corresponds to 1:00 AM EST." },
+    { name: "Apply the 1-Hour Difference", text: "EDT (UTC-4) and EST (UTC-5) differ by 1 hour. 12:00 PM EDT corresponds to 11:00 AM EST, while 12:00 AM EDT corresponds to 11:00 PM EST (previous day)." },
     { name: "Verify Seasonal Context", text: "Check whether your target region is actively observing Eastern Daylight Time (summer) or Eastern Standard Time (winter)." }
   ]
 };
@@ -153,13 +150,13 @@ const meta = {
       12:00 EDT to EST
     </h2>
     <p style="font-size: 1.35rem; font-weight: 800; color: var(--accent); margin: 0 0 10px;">
-      12:00 PM EDT = 1:00 PM EST
+      12:00 PM EDT = 11:00 AM EST
     </p>
     <p style="margin: 0 0 8px; font-size: 1.1rem; line-height: 1.6;">
-      <strong>12:00 PM EDT is 1:00 PM EST.</strong>
+      <strong>12:00 PM EDT is 11:00 AM EST.</strong>
     </p>
     <p style="margin: 0 0 12px; color: var(--muted); font-size: 1rem; line-height: 1.6;">
-      EDT is <strong>UTC−4</strong>, while EST is <strong>UTC−5</strong>, so EST is one hour behind EDT. Therefore <strong>12:00 PM EDT corresponds to 1:00 PM EST</strong>.
+      EDT is <strong>UTC−4</strong>, while EST is <strong>UTC−5</strong>, so EST is one hour behind EDT. Therefore <strong>12:00 PM EDT corresponds to 11:00 AM EST</strong>.
     </p>
 
     <!-- Important 12:00 Clarification -->
@@ -169,8 +166,8 @@ const meta = {
         In 12-hour time, <strong>12:00 PM means noon</strong>. <strong>12:00 AM means midnight</strong>.
       </p>
       <ul style="margin: 8px 0 0 20px; padding: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.6;">
-        <li><strong>12:00 PM EDT (Noon)</strong> = <strong>1:00 PM EST</strong></li>
-        <li><strong>12:00 AM EDT (Midnight)</strong> = <strong>1:00 AM EST</strong></li>
+        <li><strong>12:00 PM EDT (Noon)</strong> = <strong>11:00 AM EST</strong></li>
+        <li><strong>12:00 AM EDT (Midnight)</strong> = <strong>11:00 PM EST (previous day)</strong></li>
       </ul>
     </div>
   </div>
@@ -240,7 +237,7 @@ const meta = {
     </article>
     <article class="method-card">
       <h3>1-Hour Difference</h3>
-      <p>Clocks set to EDT run 1 hour ahead of EST. Consequently, 12:00 PM EDT corresponds directly to 1:00 PM EST.</p>
+      <p>Clocks set to EDT run 1 hour ahead of EST. Consequently, 12:00 PM EDT corresponds directly to 11:00 AM EST.</p>
     </article>
   </div>
 </section>
@@ -280,7 +277,7 @@ const meta = {
         </tbody>
       </table>
     </div>
-    <p class="chart-note">Notice: 12:00 PM EDT represents midday noon, converting to 1:00 PM EST. 12:00 AM EDT represents midnight, converting to 1:00 AM EST.</p>
+    <p class="chart-note">Notice: 12:00 PM EDT represents midday noon, converting to 11:00 AM EST. 12:00 AM EDT represents midnight, converting to 11:00 PM EST (previous day).</p>
   </div>
 </section>
 
@@ -361,7 +358,7 @@ const meta = {
 <section class="source-notes" id="conclusion" style="margin-top: 40px; border-top: 1px solid var(--line); padding-top: 20px;">
   <h2>Summary: 12:00 EDT to EST</h2>
   <p>
-    To convert <strong>12:00 EDT to EST</strong>, remember that <strong>12:00 PM EDT equals 1:00 PM EST</strong> (noon), and <strong>12:00 AM EDT equals 1:00 AM EST</strong> (midnight). Because Eastern Standard Time (UTC−5) is one hour behind Eastern Daylight Time (UTC−4), local clocks differ by exactly 1 hour.
+    To convert <strong>12:00 EDT to EST</strong>, remember that <strong>12:00 PM EDT equals 11:00 AM EST</strong> (noon), and <strong>12:00 AM EDT equals 11:00 PM EST (previous day)</strong> (midnight). Because Eastern Standard Time (UTC−5) is one hour behind Eastern Daylight Time (UTC−4), local clocks differ by exactly 1 hour.
   </p>
   <p>
     Use our interactive date-aware converter above to calculate specific calendar dates, or explore our <a href="/est-vs-edt/">EST vs EDT guide</a> to learn more about annual clock transition schedules.

@@ -1099,12 +1099,12 @@ export function getQuickAnswerPayload(
 
   if (sourceCode === "EDT") {
     tableConversions = [
-      { sourceTime: "12:00 AM EDT", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
-      { sourceTime: "6:00 AM EDT", targetTime: "7:00 AM EST", estTime: "7:00 AM EST" },
-      { sourceTime: "9:00 AM EDT", targetTime: "10:00 AM EST", estTime: "10:00 AM EST" },
-      { sourceTime: "12:00 PM EDT", targetTime: "1:00 PM EST", estTime: "1:00 PM EST" },
-      { sourceTime: "6:00 PM EDT", targetTime: "7:00 PM EST", estTime: "7:00 PM EST" },
-      { sourceTime: "9:00 PM EDT", targetTime: "10:00 PM EST", estTime: "10:00 PM EST" }
+      { sourceTime: "12:00 AM EDT", targetTime: "11:00 PM EST (previous day)", estTime: "11:00 PM EST (previous day)" },
+      { sourceTime: "6:00 AM EDT", targetTime: "5:00 AM EST", estTime: "5:00 AM EST" },
+      { sourceTime: "9:00 AM EDT", targetTime: "8:00 AM EST", estTime: "8:00 AM EST" },
+      { sourceTime: "12:00 PM EDT", targetTime: "11:00 AM EST", estTime: "11:00 AM EST" },
+      { sourceTime: "6:00 PM EDT", targetTime: "5:00 PM EST", estTime: "5:00 PM EST" },
+      { sourceTime: "9:00 PM EDT", targetTime: "8:00 PM EST", estTime: "8:00 PM EST" }
     ];
   }
 
