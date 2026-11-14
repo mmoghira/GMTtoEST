@@ -139,6 +139,46 @@ const converterTranslations = {
 <!-- PRIMARY CONVERTER & LIVE CLOCKS (Above the Fold) -->
 <div style="max-width: 900px; margin: 0 auto; padding: 0 16px 24px;">
   <Converter intent="dynamic" t={converterTranslations} context={context} />
+  <script is:inline>
+    (function () {
+      var gmtNote = "GMT is 5.5 hours behind IST. Neither zone observes daylight saving, so this difference stays the same all year.";
+      var istNote = "IST is 5.5 hours ahead of GMT. Neither zone observes daylight saving, so this difference stays the same all year.";
+      function getExpected() {
+        var active = document.querySelector('.converter .mode.active');
+        return (active && active.dataset.mode === 'est-gmt') ? istNote : gmtNote;
+      }
+      function enforce() {
+        var el = document.querySelector('.converter [data-role="difference"]');
+        if (el) {
+          var expected = getExpected();
+          if (el.textContent !== expected) {
+            el.textContent = expected;
+          }
+        }
+      }
+      enforce();
+      document.addEventListener("DOMContentLoaded", enforce);
+      window.addEventListener("load", enforce);
+      var el = document.querySelector('.converter [data-role="difference"]');
+      if (el) {
+        new MutationObserver(function () {
+          var expected = getExpected();
+          if (el.textContent !== expected) {
+            el.textContent = expected;
+          }
+        }).observe(el, { childList: true, characterData: true, subtree: true });
+      }
+      var form = document.querySelector('.converter');
+      if (form) {
+        form.addEventListener("click", function (e) {
+          if (e.target.closest('[data-role="swap"]') || e.target.closest('[data-role="mode"]')) {
+            setTimeout(enforce, 0);
+            setTimeout(enforce, 50);
+          }
+        });
+      }
+    })();
+  </script>
   
   <!-- LIVE CLOCKS -->
   <section class="clock-grid" aria-label="Live Clocks" style="margin-top: 24px;">
