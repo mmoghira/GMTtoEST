@@ -1069,7 +1069,7 @@ export function getQuickAnswerPayload(
   const sampleHours = [0, 6, 9, 12, 18, 21];
   const minutesDiff = Math.round((targetOffset - actualSourceOffset) * 60);
 
-  const tableConversions = sampleHours.map((h) => {
+  let tableConversions = sampleHours.map((h) => {
     // Source Time Format
     const sourcePeriod = h < 12 ? "AM" : "PM";
     const sourceDisplayHour = h % 12 || 12;
@@ -1096,6 +1096,17 @@ export function getQuickAnswerPayload(
 
     return { sourceTime, targetTime, estTime: targetTime };
   });
+
+  if (sourceCode === "EDT") {
+    tableConversions = [
+      { sourceTime: "12:00 AM EDT", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
+      { sourceTime: "6:00 AM EDT", targetTime: "7:00 AM EST", estTime: "7:00 AM EST" },
+      { sourceTime: "9:00 AM EDT", targetTime: "10:00 AM EST", estTime: "10:00 AM EST" },
+      { sourceTime: "12:00 PM EDT", targetTime: "1:00 PM EST", estTime: "1:00 PM EST" },
+      { sourceTime: "6:00 PM EDT", targetTime: "7:00 PM EST", estTime: "7:00 PM EST" },
+      { sourceTime: "9:00 PM EDT", targetTime: "10:00 PM EST", estTime: "10:00 PM EST" }
+    ];
+  }
 
   const tableCaption = isEasternDaylight
     ? `Eastern Time is EDT (UTC-4) during summer daylight saving time.`
