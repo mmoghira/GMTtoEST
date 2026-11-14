@@ -48,8 +48,8 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
     )}
   </p>
 
-  <div class="quick-answer-table-wrapper google-anno-skip adsbygoogle-noablate">
-    <table class="quick-answer-table google-anno-skip adsbygoogle-noablate">
+  <div class="quick-answer-table-wrapper">
+    <table class="quick-answer-table">
       <caption class="quick-answer-caption">
         {payload.tableCaption}
       </caption>
@@ -96,6 +96,24 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
           timeZone: 'America/New_York'
         }).format(now);
         textEl.innerHTML = 'Right now: <strong>' + estParts + ' EST</strong> (EDT is not observed until 14 Mar 2027)';
+        return;
+      }
+
+      // 1b. GMT/UTC to Eastern Time special case
+      if ((sourceCode === 'GMT' || sourceCode === 'UTC') && (targetCode === 'EST' || targetCode === 'EDT' || targetCode === 'ET')) {
+        var gmtParts = new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'UTC'
+        }).format(now);
+        var estParts = new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'America/New_York'
+        }).format(now);
+        textEl.innerHTML = 'Right now it is <strong>' + estParts + ' EST</strong> (<strong>' + gmtParts + ' GMT</strong>)';
         return;
       }
 
@@ -147,7 +165,7 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
     function evictAdsFromQuickAnswer() {
       var card = document.querySelector('.quick-answer-card');
       if (!card) return;
-      var ads = card.querySelectorAll('ins.adsbygoogle, .google-anno, .google-anno-container, [id*="google-anno"], [class*="google-anno"], iframe[id*="aswift"], iframe[src*="google"], [data-ad-slot], [data-ad-client]');
+      var ads = card.querySelectorAll('ins.adsbygoogle, .google-anno-container, [class*="google-anno-container"], [id*="google-anno"], iframe[id*="aswift"], iframe[src*="google"], [data-ad-slot], [data-ad-client]');
       for (var i = 0; i < ads.length; i++) {
         var ad = ads[i];
         if (card.contains(ad)) {
@@ -179,7 +197,7 @@ const isGmtToEst = (source === "GMT" || source === "UTC") && (target === "EST" |
 
   .quick-answer-card ins.adsbygoogle,
   .quick-answer-card .google-anno-container,
-  .quick-answer-card [class*="google-anno"],
+  .quick-answer-card [class*="google-anno-container"],
   .quick-answer-card [id*="google-anno"] {
     display: none !important;
   }

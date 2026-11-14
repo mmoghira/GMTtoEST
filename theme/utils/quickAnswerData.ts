@@ -605,23 +605,23 @@ export function getQuickAnswerPayload(
       faqHeading: "Frequently Asked Questions: GMT to Eastern Time",
       offsetA: 0,
       offsetAFormatted: "UTC+0",
-      definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5). When it is 12:00 PM in London (GMT, UTC+0), it is 7:00 AM in New York (EST). Greenwich Mean Time remains constant year-round, while North America's Eastern zone shifts one hour forward during summer daylight saving time.",
+      definitionSentence: "GMT is 5 hours ahead of Eastern Standard Time (EST, UTC-5) until 14 Mar 2027, and 4 hours ahead of Eastern Daylight Time (EDT, UTC-4) during summer daylight saving time.",
       sourceLiveTime,
       estLiveTime,
       targetLiveTime: estLiveTime,
-      liveTimeSentence: `Right now: ${sourceLiveTime} GMT = ${estLiveTime} EST`,
-      liveLineHtml: `Right now: <strong>${sourceLiveTime} GMT</strong> = <strong>${estLiveTime} EST</strong>`,
+      liveTimeSentence: `Right now it is ${estLiveTime} EST (${sourceLiveTime} GMT)`,
+      liveLineHtml: `Right now it is <strong>${estLiveTime} EST</strong> (<strong>${sourceLiveTime} GMT</strong>)`,
       sourceIana: "UTC",
       targetIana: "America/New_York",
       tableConversions: [
-        { sourceTime: "12:00 AM GMT", targetTime: "7:00 PM EST (previous day)", estTime: "7:00 PM EST (previous day)" },
-        { sourceTime: "6:00 AM GMT", targetTime: "1:00 AM EST", estTime: "1:00 AM EST" },
-        { sourceTime: "9:00 AM GMT", targetTime: "4:00 AM EST", estTime: "4:00 AM EST" },
-        { sourceTime: "12:00 PM GMT", targetTime: "7:00 AM EST", estTime: "7:00 AM EST" },
-        { sourceTime: "5:00 PM GMT", targetTime: "12:00 PM EST", estTime: "12:00 PM EST" },
-        { sourceTime: "9:00 PM GMT", targetTime: "4:00 PM EST", estTime: "4:00 PM EST" }
+        { sourceTime: "12 AM GMT", targetTime: "7 PM EST (previous day)", estTime: "7 PM EST (previous day)" },
+        { sourceTime: "6 AM GMT", targetTime: "1 AM EST", estTime: "1 AM EST" },
+        { sourceTime: "9 AM GMT", targetTime: "4 AM EST", estTime: "4 AM EST" },
+        { sourceTime: "12 PM GMT", targetTime: "7 AM EST", estTime: "7 AM EST" },
+        { sourceTime: "5 PM GMT", targetTime: "12 PM EST", estTime: "12 PM EST" },
+        { sourceTime: "9 PM GMT", targetTime: "4 PM EST", estTime: "4 PM EST" }
       ],
-      tableCaption: "Eastern Time is EST (UTC-5), 5 hours behind GMT, until 14 Mar 2027 when daylight saving time begins.",
+      tableCaption: "Eastern Time is EST (UTC-5) in winter and EDT (UTC-4) in summer, so the gap to GMT shifts between 5 and 4 hours.",
       faqs: [
         {
           q: "What is the time difference between GMT and Eastern Time?",
