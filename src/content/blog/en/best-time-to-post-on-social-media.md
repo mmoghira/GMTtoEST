@@ -42,6 +42,15 @@ sources:
   - title: "Best Time to Post on Snapchat for Maximum Story Views"
     publisher: "Linklay"
     url: "https://linklay.io/best-time-to-post-on-snapchat"
+  - title: "Best Times to Post on Social Media (directional vendor data: India 9–11am & 4–7pm IST, Nigeria 6–8pm, UAE 10am–3pm weekdays)"
+    publisher: "IQFluence"
+    url: "https://l.meta.ai/?u=https%3A%2F%2Fiqfluence.io%2Fpublic%2Fblog%2Fbest-times-to-post-on-social-media&h=AUCgbWDi_OvY_YuQ7H67n7VQUYshQGhSVkxzZjpGMpQdGqkavIg7QSvhKdtAl69tSl3Z5djm-xNmmui1VAGyzYSuA5GMnDMBhyFrMhNUuOP68z0BTW5_QQ"
+  - title: "Tier 1/2/3 CPM bands (Tier 1 $20–40+, Tier 2 $3–10, Tier 3 $0.10–$1)"
+    publisher: "Adheart"
+    url: "https://l.meta.ai/?u=https%3A%2F%2Fadheart.me%2Fen%2Fblog%2Fthe-most-complete-guide-to-tier-1-tier-2-and-tier-3-what-it-is-and-how-to-choose-the-right-geo-for-your-advertising-full-country-list%2F&h=AUCgbWDi_OvY_YuQ7H67n7VQUYshQGhSVkxzZjpGMpQdGqkavIg7QSvhKdtAl69tSl3Z5djm-xNmmui1VAGyzYSuA5GMnDMBhyFrMhNUuOP68z0BTW5_QQ"
+  - title: "Tier 1/2/3 country lists"
+    publisher: "Ad-Maven"
+    url: "https://l.meta.ai/?u=http%3A%2F%2Fad-maven.com%2Fblog-posts%2Fcountry-tiers-1-2-3-which-is-the-best-for-your-campaign&h=AUCgbWDi_OvY_YuQ7H67n7VQUYshQGhSVkxzZjpGMpQdGqkavIg7QSvhKdtAl69tSl3Z5djm-xNmmui1VAGyzYSuA5GMnDMBhyFrMhNUuOP68z0BTW5_QQ"
 faq:
   - q: "What is the best time to post on Monday?"
     a: "10am to 2pm local time; 2pm to 4pm local time for TikTok."
@@ -385,7 +394,7 @@ Understanding the relationship between Eastern Standard Time (EST) and Greenwich
 
 ### Master Global Conversion Table
 
-This master table translates the ten platform benchmark starting times across major global time zones. Calculations reflect standard winter offsets: EST (UTC-5), GMT (UTC+0), PST (UTC-8), CET (UTC+1), IST (UTC+5:30), and AEDT (UTC+11).
+This master table translates the nine platform benchmark starting times (Snapchat has no published benchmark time, so it has no row) across major global time zones. Calculations reflect standard winter offsets: EST (UTC-5), GMT (UTC+0), PST (UTC-8), CET (UTC+1), IST (UTC+5:30), and AEDT (UTC+11).
 
 | Platform & Benchmark Slot | GMT (UTC+0) | EST (UTC-5) | PST (UTC-8) | CET (UTC+1) | IST (UTC+5:30) | AEDT (UTC+11) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -420,6 +429,7 @@ In standard winter time, the gap between New York (EST) and London (GMT) is 5 ho
 - **Spring 2026:** US starts EDT on March 8, 2026; UK starts BST on March 29, 2026 (a 3-week gap where London-NY is 4 hours, not 5 hours).
 - **Autumn 2026:** UK ends BST on October 25, 2026; US ends EDT on November 1, 2026 (a 1-week gap where London-NY is 4 hours).
 - **Spring 2027:** US starts EDT on March 14, 2027; UK starts BST on March 28, 2027 (a 2-week gap where the offset is 4 hours instead of 5 hours).
+- **Australia (New South Wales, Victoria, South Australia, Tasmania, ACT):** daylight saving ends Sunday 4 April 2027.
 - **Autumn 2027:** UK ends BST on October 31, 2027; US ends EDT on November 7, 2027 (a 1-week gap where the offset is 4 hours).
 
 If your queue is anchored to GMT but your audience is in New York, posts publish one hour early during these periods. For full details, see [EST vs EDT](/blog/est-vs-edt/) and [what is daylight saving time](/blog/what-is-daylight-saving-time/).
