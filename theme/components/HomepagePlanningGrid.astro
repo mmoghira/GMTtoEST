@@ -1,0 +1,1351 @@
+---
+// theme/components/HomepagePlanningGrid.astro
+// Visual Planning Grid & Calendar Export for the Homepage Converter
+---
+
+<div class="planning-grid-card google-anno-skip" id="homepage-planning-grid" aria-label="Visual Time Zone Planning Grid and Calendar Export">
+  <!-- Grid Header: Title & Extra Location Selector -->
+  <div class="grid-card-head">
+    <div class="head-title-wrap">
+      <span class="step" aria-hidden="true">★</span>
+      <div>
+        <h3 class="grid-title">Visual Planning Grid &amp; Calendar Export</h3>
+        <p class="grid-subtitle">24-hour comparative schedule for the selected date. Click any hour to convert and export.</p>
+      </div>
+    </div>
+    <div class="head-controls">
+      <label for="extra-location-select" class="visually-hidden">Add Location Row</label>
+      <select id="extra-location-select" class="location-select" aria-label="Add extra location row">
+        <option value="" disabled selected>+ Add Location (Optional)</option>
+        <option value="Europe/London">🇬🇧 London (GMT/BST)</option>
+        <option value="America/Toronto">🇨🇦 Toronto (ET)</option>
+        <option value="America/New_York">🇺🇸 New York (ET)</option>
+        <option value="America/Los_Angeles">🇺🇸 Los Angeles (PT)</option>
+        <option value="Australia/Sydney">🇦🇺 Sydney (AEST/AEDT)</option>
+        <option value="Asia/Kolkata">🇮🇳 Mumbai (IST)</option>
+        <option value="Europe/Berlin">🇩🇪 Berlin (CET/CEST)</option>
+        <option value="Asia/Tokyo">🇯🇵 Tokyo (JST)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 7-Day Date Strip -->
+  <div class="date-strip-container" aria-label="7-Day Date Navigator">
+    <button type="button" class="date-nav-btn" id="btn-prev-day" aria-label="Previous day" title="Previous day">‹</button>
+    <div class="date-strip" id="date-strip" role="tablist" aria-label="Select Date">
+      <!-- 7 Date Pills injected dynamically -->
+    </div>
+    <button type="button" class="date-nav-btn" id="btn-next-day" aria-label="Next day" title="Next day">›</button>
+    <button type="button" class="date-today-btn" id="btn-jump-today" aria-label="Jump to today">Today</button>
+  </div>
+
+  <!-- Real-Time Status / Conversion Bar -->
+  <div class="grid-status-bar" id="grid-status-bar" aria-live="polite">
+    <span class="status-dot" aria-hidden="true"></span>
+    <span class="status-text" id="grid-status-text">Select an hour tile below to view cross-timezone conversions.</span>
+  </div>
+
+  <!-- Legend -->
+  <div class="grid-legend" aria-label="Hour Classification Legend">
+    <div class="legend-item">
+      <span class="legend-swatch swatch-biz"></span>
+      <span>Business (09:00&ndash;17:00)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch swatch-shoulder"></span>
+      <span>Shoulder (07:00&ndash;09:00, 17:00&ndash;21:00)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch swatch-night"></span>
+      <span>Night (21:00&ndash;07:00)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch swatch-selected"></span>
+      <span>Selected Hour</span>
+    </div>
+  </div>
+
+  <!-- 24-Hour Scrollable Grid Table -->
+  <div class="table-wrap grid-scroll-wrap" tabindex="0" role="region" aria-label="24-Hour Interactive Time Zone Grid">
+    <table class="planning-grid-table" id="planning-grid-table">
+      <thead>
+        <tr id="grid-header-row">
+          <th class="loc-col-head">Time Zone</th>
+          <!-- 24 UTC hour headers injected dynamically -->
+        </tr>
+      </thead>
+      <tbody id="grid-tbody">
+        <!-- Rows injected dynamically: GMT, Eastern, optional extra location -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Calendar Export Actions -->
+  <div class="calendar-export-panel" aria-label="Calendar Export and Sharing">
+    <div class="export-head">
+      <strong class="export-title">Export Scheduled Meeting</strong>
+      <span class="export-hint" id="export-summary-text">1-hour event with IANA DST-aware time zone metadata</span>
+    </div>
+    <div class="export-buttons-group">
+      <button type="button" id="btn-export-gcal" class="cal-btn btn-gcal" aria-label="Add to Google Calendar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Add to Google Calendar</span>
+      </button>
+
+      <button type="button" id="btn-export-ics" class="cal-btn btn-ics" aria-label="Download .ics Calendar File">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Download .ics (Outlook/Apple)</span>
+      </button>
+
+      <button type="button" id="btn-copy-link" class="cal-btn btn-link" aria-label="Copy event link to clipboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <span id="copy-btn-label">Copy event link</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .planning-grid-card {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    color: var(--text);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .grid-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .head-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .head-title-wrap .step {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #041018;
+    font-weight: 800;
+  }
+
+  .grid-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .grid-subtitle {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .location-select {
+    padding: 8px 12px;
+    background: rgba(4, 16, 24, 0.45);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .location-select:focus {
+    border-color: var(--accent);
+  }
+
+  /* Date Strip */
+  .date-strip-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  .date-strip {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+    padding: 2px 0;
+  }
+
+  .date-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .date-pill {
+    flex: 1;
+    min-width: 72px;
+    padding: 6px 4px;
+    background: rgba(4, 16, 24, 0.35);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.25;
+    transition: all 0.15s ease;
+  }
+
+  .date-pill:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(54, 199, 181, 0.1);
+  }
+
+  .date-pill.active {
+    background: var(--accent);
+    color: #041018;
+    border-color: var(--accent);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(54, 199, 181, 0.35);
+  }
+
+  .date-pill .pill-day {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+
+  .date-nav-btn {
+    width: 32px;
+    height: 38px;
+    background: rgba(4, 16, 24, 0.45);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .date-nav-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .date-today-btn {
+    padding: 6px 10px;
+    height: 38px;
+    background: rgba(4, 16, 24, 0.45);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent-2);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+
+  .date-today-btn:hover {
+    border-color: var(--accent-2);
+    background: rgba(143, 215, 255, 0.15);
+  }
+
+  /* Status Bar */
+  .grid-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(4, 16, 24, 0.5);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.86rem;
+    color: var(--text);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    flex-shrink: 0;
+  }
+
+  .status-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Legend */
+  .grid-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  .swatch-biz {
+    background: rgba(54, 199, 181, 0.28);
+    border: 1px solid rgba(54, 199, 181, 0.6);
+  }
+
+  .swatch-shoulder {
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+  }
+
+  .swatch-night {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .swatch-selected {
+    background: var(--accent);
+    border: 1px solid #fff;
+  }
+
+  /* Scrollable Grid Table */
+  .grid-scroll-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: rgba(4, 16, 24, 0.25);
+    margin-bottom: 16px;
+  }
+
+  .planning-grid-table {
+    width: max-content;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  .planning-grid-table th,
+  .planning-grid-table td {
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .loc-col-head,
+  .loc-cell {
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 6px 10px;
+    text-align: left;
+    box-sizing: border-box;
+  }
+
+  .planning-grid-table thead th.loc-col-head {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--panel);
+  }
+
+  .hour-head-col {
+    width: 44px;
+    min-width: 44px;
+    padding: 6px 2px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: rgba(4, 16, 24, 0.4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .loc-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 52px;
+  }
+
+  .loc-title {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.84rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .loc-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .btn-remove-row {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    margin-left: auto;
+  }
+
+  .btn-remove-row:hover {
+    background: rgba(239, 68, 68, 0.15);
+  }
+
+  /* Hour Tile Cell */
+  .hour-tile {
+    width: 44px;
+    min-width: 44px;
+    height: 52px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, filter 0.1s ease, border-color 0.1s ease;
+    box-sizing: border-box;
+  }
+
+  .hour-tile:hover {
+    filter: brightness(1.25);
+    transform: translateY(-1px);
+    z-index: 1;
+  }
+
+  .tile-time {
+    font-family: 'Space Grotesk', Manrope, sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    line-height: 1.1;
+  }
+
+  .tile-diff {
+    font-size: 0.62rem;
+    line-height: 1;
+    margin-top: 2px;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+
+  .tile-biz {
+    background: rgba(54, 199, 181, 0.22);
+    border: 1px solid rgba(54, 199, 181, 0.45);
+    color: #a7f3d0;
+  }
+
+  .tile-shoulder {
+    background: rgba(251, 191, 36, 0.16);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: #fde68a;
+  }
+
+  .tile-night {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+  }
+
+  .hour-tile.col-selected {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+    background: rgba(54, 199, 181, 0.45) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(54, 199, 181, 0.5);
+  }
+
+  .hour-head-col.col-selected {
+    background: rgba(54, 199, 181, 0.25);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Export Actions */
+  .calendar-export-panel {
+    background: rgba(4, 16, 24, 0.35);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .export-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .export-title {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .export-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .export-buttons-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    background: var(--panel);
+    color: var(--text);
+    transition: all 0.15s ease;
+  }
+
+  .cal-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .btn-gcal {
+    background: rgba(54, 199, 181, 0.12);
+    border-color: rgba(54, 199, 181, 0.35);
+    color: var(--accent);
+  }
+
+  .btn-gcal:hover {
+    background: rgba(54, 199, 181, 0.22);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .btn-ics {
+    background: rgba(143, 215, 255, 0.12);
+    border-color: rgba(143, 215, 255, 0.35);
+    color: var(--accent-2);
+  }
+
+  .btn-ics:hover {
+    background: rgba(143, 215, 255, 0.22);
+    border-color: var(--accent-2);
+    color: #ffffff;
+  }
+
+  .btn-link {
+    background: rgba(4, 16, 24, 0.4);
+    border-color: var(--line);
+  }
+
+  .btn-link:hover {
+    background: rgba(4, 16, 24, 0.6);
+  }
+
+  .btn-link.copied {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(54, 199, 181, 0.15);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 640px) {
+    .planning-grid-card {
+      padding: 12px 10px;
+    }
+    .grid-title {
+      font-size: 1.05rem;
+    }
+    .cal-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .loc-col-head,
+    .loc-cell {
+      width: 110px;
+      min-width: 110px;
+      max-width: 110px;
+      padding: 4px 6px;
+    }
+    .loc-title {
+      font-size: 0.78rem;
+    }
+    .loc-sub {
+      font-size: 0.65rem;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function initHomepagePlanningGrid() {
+    // City definitions for optional location row
+    const LOCATION_LIST = [
+      { name: "London", country: "UK", zone: "Europe/London", flag: "🇬🇧" },
+      { name: "Toronto", country: "Canada", zone: "America/Toronto", flag: "🇨🇦" },
+      { name: "New York", country: "US", zone: "America/New_York", flag: "🇺🇸" },
+      { name: "Los Angeles", country: "US", zone: "America/Los_Angeles", flag: "🇺🇸" },
+      { name: "Sydney", country: "Australia", zone: "Australia/Sydney", flag: "🇦🇺" },
+      { name: "Mumbai", country: "India", zone: "Asia/Kolkata", flag: "🇮🇳" },
+      { name: "Berlin", country: "Germany", zone: "Europe/Berlin", flag: "🇩🇪" },
+      { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", flag: "🇯🇵" }
+    ];
+
+    // State
+    let selectedDateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    let selectedUtcHour = 14; // Default 14:00 UTC (10:00 EDT / 09:00 EST)
+    let selectedMinute = 0;
+    let extraLocation = null; // null or city object
+    let is24hFormat = true;
+    let hoveredUtcHour = null;
+
+    // Cache DOM references
+    const form = document.querySelector('[data-component="converter"]');
+    const dtInput = form ? form.querySelector('[data-role="datetime"]') : null;
+    const formatToggle = form ? form.querySelector('[data-role="formatToggle"]') : null;
+    const nowBtn = form ? form.querySelector('[data-role="now"]') : null;
+    const swapBtn = form ? form.querySelector('[data-role="swap"]') : null;
+    const modeTabs = form ? form.querySelectorAll('[data-role="mode"]') : [];
+
+    const dateStripEl = document.getElementById("date-strip");
+    const prevDayBtn = document.getElementById("btn-prev-day");
+    const nextDayBtn = document.getElementById("btn-next-day");
+    const jumpTodayBtn = document.getElementById("btn-jump-today");
+    const statusTextEl = document.getElementById("grid-status-text");
+    const gridTableHeadRow = document.getElementById("grid-header-row");
+    const gridTbody = document.getElementById("grid-tbody");
+    const extraLocSelect = document.getElementById("extra-location-select");
+    const exportSummaryText = document.getElementById("export-summary-text");
+
+    const btnExportGcal = document.getElementById("btn-export-gcal");
+    const btnExportIcs = document.getElementById("btn-export-ics");
+    const btnCopyLink = document.getElementById("btn-copy-link");
+    const copyBtnLabel = document.getElementById("copy-btn-label");
+
+    // Helper: format date to parts in specific time zone
+    function getZonedParts(date, timeZone) {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+      const parts = {};
+      formatter.formatToParts(date).forEach(function(p) {
+        parts[p.type] = p.value;
+      });
+      return parts;
+    }
+
+    // Helper: get accurate short timezone abbreviation (EST, EDT, GMT, BST, etc.)
+    function getZoneAbbreviation(date, timeZone) {
+      if (timeZone === "America/New_York" || timeZone === "America/Toronto") {
+        const parts = getZonedParts(date, timeZone);
+        const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute);
+        const offsetMin = Math.round((localUtc - date.getTime()) / 60000);
+        return offsetMin === -240 ? "EDT" : "EST";
+      }
+      if (timeZone === "Europe/London") {
+        const parts = getZonedParts(date, timeZone);
+        const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute);
+        const offsetMin = Math.round((localUtc - date.getTime()) / 60000);
+        return offsetMin === 60 ? "BST" : "GMT";
+      }
+      if (timeZone === "Europe/Berlin") {
+        const parts = getZonedParts(date, timeZone);
+        const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute);
+        const offsetMin = Math.round((localUtc - date.getTime()) / 60000);
+        return offsetMin === 120 ? "CEST" : "CET";
+      }
+      if (timeZone === "Australia/Sydney") {
+        const parts = getZonedParts(date, timeZone);
+        const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute);
+        const offsetMin = Math.round((localUtc - date.getTime()) / 60000);
+        return offsetMin === 660 ? "AEDT" : "AEST";
+      }
+      if (timeZone === "America/Los_Angeles") {
+        const parts = getZonedParts(date, timeZone);
+        const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute);
+        const offsetMin = Math.round((localUtc - date.getTime()) / 60000);
+        return offsetMin === -420 ? "PDT" : "PST";
+      }
+      if (timeZone === "Asia/Tokyo") return "JST";
+      if (timeZone === "Asia/Kolkata") return "IST";
+      if (timeZone === "UTC" || timeZone === "Etc/UTC") return "GMT";
+
+      const formatter = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "short" });
+      const match = formatter.formatToParts(date).find(function(p) { return p.type === "timeZoneName"; });
+      return match ? match.value : "";
+    }
+
+    // Helper: calculate UTC offset in minutes for any date and zone
+    function getOffsetMinutes(date, timeZone) {
+      const parts = getZonedParts(date, timeZone);
+      const localUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+      return Math.round((localUtc - date.getTime()) / 60000);
+    }
+
+    // Helper: format offset string e.g. "UTC-5", "UTC+1"
+    function formatOffsetLabel(date, timeZone) {
+      const min = getOffsetMinutes(date, timeZone);
+      const sign = min >= 0 ? "+" : "-";
+      const absH = Math.floor(Math.abs(min) / 60);
+      const absM = Math.abs(min) % 60;
+      return absM ? `UTC${sign}${absH}:${String(absM).padStart(2, '0')}` : `UTC${sign}${absH}`;
+    }
+
+    // Helper: parse local ISO datetime in specified zone into UTC Date
+    function parseZonedDatetime(isoStr, timeZone) {
+      if (!isoStr) return new Date();
+      const parts = isoStr.split("T");
+      if (parts.length < 2) return new Date();
+      const dateParts = parts[0].split("-").map(Number);
+      const timeParts = parts[1].split(":").map(Number);
+      const guessUtc = Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1] || 0);
+      let adjusted = guessUtc - getOffsetMinutes(new Date(guessUtc), timeZone) * 60000;
+      for (let i = 0; i < 4; i++) {
+        adjusted = guessUtc - getOffsetMinutes(new Date(adjusted), timeZone) * 60000;
+      }
+      return new Date(adjusted);
+    }
+
+    // Format hour for tile display based on 24h toggle
+    function formatHourDisplay(hour) {
+      if (is24hFormat) {
+        return `${String(hour).padStart(2, "0")}:00`;
+      }
+      const period = hour < 12 ? "AM" : "PM";
+      const displayHour = hour % 12 || 12;
+      return `${displayHour} ${period}`;
+    }
+
+    // Determine business status
+    function getHourSlotClass(localHour) {
+      if (localHour >= 9 && localHour < 17) {
+        return "tile-biz";
+      } else if ((localHour >= 7 && localHour < 9) || (localHour >= 17 && localHour < 21)) {
+        return "tile-shoulder";
+      } else {
+        return "tile-night";
+      }
+    }
+
+    // Check active mode from converter form
+    function getActiveMode() {
+      if (!form) return "gmt-est";
+      const activeTab = form.querySelector('.mode.active');
+      return activeTab ? activeTab.dataset.mode : (form.dataset.startMode || "gmt-est");
+    }
+
+    // Sync state from the converter form inputs
+    function syncFromForm() {
+      if (formatToggle) {
+        is24hFormat = formatToggle.checked;
+      }
+
+      if (dtInput && dtInput.value) {
+        const mode = getActiveMode();
+        const inputZone = mode === "gmt-est" ? "UTC" : "America/New_York";
+        const utcDate = parseZonedDatetime(dtInput.value, inputZone);
+
+        selectedDateStr = dtInput.value.split("T")[0];
+        selectedUtcHour = utcDate.getUTCHours();
+        selectedMinute = utcDate.getUTCMinutes();
+      }
+
+      renderDateStrip();
+      renderGrid();
+      updateStatusAndExports();
+    }
+
+    // Update converter form input from planning grid click
+    function updateFormFromGrid(utcHour, dateStr) {
+      if (!dtInput) return;
+      const targetDateStr = dateStr || selectedDateStr;
+      selectedUtcHour = utcHour;
+
+      const mode = getActiveMode();
+      const minStr = String(selectedMinute || 0).padStart(2, "0");
+
+      if (mode === "gmt-est") {
+        // Form input represents GMT / UTC
+        const hourStr = String(utcHour).padStart(2, "0");
+        dtInput.value = `${targetDateStr}T${hourStr}:${minStr}`;
+      } else {
+        // Form input represents Eastern Time (America/New_York)
+        const utcInstant = new Date(`${targetDateStr}T${String(utcHour).padStart(2, "0")}:${minStr}:00Z`);
+        const ny = getZonedParts(utcInstant, "America/New_York");
+        dtInput.value = `${ny.year}-${ny.month}-${ny.day}T${ny.hour}:${ny.minute}`;
+      }
+
+      // Dispatch events so app.js updates converter outputs
+      dtInput.dispatchEvent(new Event("input", { bubbles: true }));
+      dtInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+      renderGrid();
+      updateStatusAndExports();
+    }
+
+    // Render 7-day date strip centered on selectedDateStr
+    function renderDateStrip() {
+      if (!dateStripEl) return;
+      dateStripEl.innerHTML = "";
+
+      const parts = selectedDateStr.split("-").map(Number);
+      const baseMid = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 12, 0, 0));
+
+      for (let offset = -3; offset <= 3; offset++) {
+        const dObj = new Date(baseMid.getTime() + offset * 86400000);
+        const iso = dObj.toISOString().split("T")[0];
+        const isCurrent = (offset === 0);
+
+        const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(dObj);
+        const monthDay = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(dObj);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `date-pill ${isCurrent ? 'active' : ''}`;
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-selected", isCurrent ? "true" : "false");
+        btn.setAttribute("data-date", iso);
+        btn.innerHTML = `<span class="pill-day">${weekday}</span><span class="pill-date">${monthDay}</span>`;
+
+        btn.addEventListener("click", function() {
+          selectedDateStr = iso;
+          updateFormFromGrid(selectedUtcHour, iso);
+          renderDateStrip();
+        });
+
+        dateStripEl.appendChild(btn);
+      }
+    }
+
+    // Render 24-hour comparative table
+    function renderGrid() {
+      if (!gridTableHeadRow || !gridTbody) return;
+
+      // 1. Header Row
+      gridTableHeadRow.innerHTML = '<th class="loc-col-head">Time Zone</th>';
+      for (let h = 0; h < 24; h++) {
+        const th = document.createElement("th");
+        th.className = `hour-head-col ${h === selectedUtcHour ? 'col-selected' : ''}`;
+        th.textContent = `${String(h).padStart(2, "0")}:00`;
+        gridTableHeadRow.appendChild(th);
+      }
+
+      // 2. Body Rows: GMT + Eastern + optional extra location
+      gridTbody.innerHTML = "";
+
+      const rowsConfig = [
+        { key: "gmt", name: "GMT (UTC)", zone: "UTC", flag: "🌐" },
+        { key: "eastern", name: "Eastern Time", zone: "America/New_York", flag: "🇺🇸" }
+      ];
+
+      if (extraLocation) {
+        rowsConfig.push({
+          key: "extra",
+          name: extraLocation.name,
+          zone: extraLocation.zone,
+          flag: extraLocation.flag,
+          isExtra: true
+        });
+      }
+
+      const activeHour = hoveredUtcHour !== null ? hoveredUtcHour : selectedUtcHour;
+
+      rowsConfig.forEach(function(rowConf) {
+        const tr = document.createElement("tr");
+
+        // Reference representative date for offset calculation
+        const refInstant = new Date(`${selectedDateStr}T${String(activeHour).padStart(2, "0")}:00:00Z`);
+        const abbr = getZoneAbbreviation(refInstant, rowConf.zone);
+        const offsetStr = formatOffsetLabel(refInstant, rowConf.zone);
+
+        // Location Column
+        const tdLoc = document.createElement("td");
+        tdLoc.className = "loc-cell";
+        let removeBtnHtml = "";
+        if (rowConf.isExtra) {
+          removeBtnHtml = '<button type="button" class="btn-remove-row" id="btn-remove-extra-row" title="Remove row">✕</button>';
+        }
+
+        tdLoc.innerHTML = `
+          <div class="loc-title">
+            <span>${rowConf.flag} ${rowConf.name}</span>
+            ${removeBtnHtml}
+          </div>
+          <div class="loc-sub">${abbr} (${offsetStr})</div>
+        `;
+        tr.appendChild(tdLoc);
+
+        // 24 Hour Tiles
+        for (let utcHour = 0; utcHour < 24; utcHour++) {
+          const td = document.createElement("td");
+          const utcInstant = new Date(`${selectedDateStr}T${String(utcHour).padStart(2, "0")}:00:00Z`);
+          const zonedParts = getZonedParts(utcInstant, rowConf.zone);
+          const localHour = parseInt(zonedParts.hour, 10);
+          const slotClass = getHourSlotClass(localHour);
+          const isSelected = (utcHour === selectedUtcHour);
+
+          // Day difference indicator
+          const localIsoDate = `${zonedParts.year}-${zonedParts.month}-${zonedParts.day}`;
+          let dayDiff = "";
+          if (localIsoDate < selectedDateStr) {
+            dayDiff = "-1d";
+          } else if (localIsoDate > selectedDateStr) {
+            dayDiff = "+1d";
+          }
+
+          const tile = document.createElement("div");
+          tile.className = `hour-tile ${slotClass} ${isSelected ? 'col-selected' : ''}`;
+          tile.setAttribute("role", "button");
+          tile.setAttribute("tabindex", "0");
+          tile.setAttribute("data-utc-hour", String(utcHour));
+          tile.setAttribute("data-zone", rowConf.zone);
+
+          const tileZonedAbbr = getZoneAbbreviation(utcInstant, rowConf.zone);
+          const timeLabel = formatHourDisplay(localHour);
+          tile.title = `${timeLabel} ${tileZonedAbbr} (${rowConf.name}) • ${String(utcHour).padStart(2, "0")}:00 GMT`;
+
+          tile.innerHTML = `
+            <span class="tile-time">${timeLabel}</span>
+            ${dayDiff ? `<span class="tile-diff">${dayDiff}</span>` : ''}
+          `;
+
+          // Interactions
+          tile.addEventListener("mouseenter", function() {
+            hoveredUtcHour = utcHour;
+            updateStatusText(utcHour);
+            highlightGridColumn(utcHour);
+          });
+
+          tile.addEventListener("mouseleave", function() {
+            hoveredUtcHour = null;
+            updateStatusText(selectedUtcHour);
+            highlightGridColumn(selectedUtcHour);
+          });
+
+          tile.addEventListener("click", function() {
+            updateFormFromGrid(utcHour, selectedDateStr);
+          });
+
+          tile.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              updateFormFromGrid(utcHour, selectedDateStr);
+            }
+          });
+
+          td.appendChild(tile);
+          tr.appendChild(td);
+        }
+
+        gridTbody.appendChild(tr);
+      });
+
+      // Bind remove extra location button
+      const removeBtn = document.getElementById("btn-remove-extra-row");
+      if (removeBtn) {
+        removeBtn.addEventListener("click", function(e) {
+          e.stopPropagation();
+          extraLocation = null;
+          if (extraLocSelect) extraLocSelect.value = "";
+          renderGrid();
+          updateStatusAndExports();
+        });
+      }
+    }
+
+    // Highlight column on hover / select without re-rendering entire table
+    function highlightGridColumn(targetUtcHour) {
+      const headers = gridTableHeadRow.querySelectorAll(".hour-head-col");
+      headers.forEach(function(th, idx) {
+        th.classList.toggle("col-selected", idx === targetUtcHour);
+      });
+      const tiles = gridTbody.querySelectorAll(".hour-tile");
+      tiles.forEach(function(t) {
+        const h = parseInt(t.getAttribute("data-utc-hour"), 10);
+        t.classList.toggle("col-selected", h === targetUtcHour);
+      });
+    }
+
+    // Format human-friendly time string (e.g. 10:00 AM EDT)
+    function formatZonedTimeString(date, timeZone, use24) {
+      const abbr = getZoneAbbreviation(date, timeZone);
+      if (use24) {
+        const p = getZonedParts(date, timeZone);
+        return `${p.hour}:${p.minute} ${abbr}`;
+      }
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }).format(date) + " " + abbr;
+    }
+
+    // Update real-time status display and calendar export URLs
+    function updateStatusText(utcHour) {
+      if (!statusTextEl) return;
+      const minStr = String(selectedMinute || 0).padStart(2, "0");
+      const utcInstant = new Date(`${selectedDateStr}T${String(utcHour).padStart(2, "0")}:${minStr}:00Z`);
+
+      const gmtStr = formatZonedTimeString(utcInstant, "UTC", is24hFormat);
+      const estStr = formatZonedTimeString(utcInstant, "America/New_York", is24hFormat);
+
+      let text = `Selected: ${gmtStr} = ${estStr}`;
+      if (extraLocation) {
+        const extraStr = formatZonedTimeString(utcInstant, extraLocation.zone, is24hFormat);
+        text += ` • ${extraLocation.name}: ${extraStr}`;
+      }
+
+      // Check overlap
+      const nyParts = getZonedParts(utcInstant, "America/New_York");
+      const nyHour = parseInt(nyParts.hour, 10);
+      if (utcHour >= 9 && utcHour < 17 && nyHour >= 9 && nyHour < 17) {
+        text += " (★ Core business overlap)";
+      }
+
+      statusTextEl.textContent = text;
+    }
+
+    // Update exports and export summary
+    function updateStatusAndExports() {
+      updateStatusText(selectedUtcHour);
+
+      const minStr = String(selectedMinute || 0).padStart(2, "0");
+      const utcInstant = new Date(`${selectedDateStr}T${String(selectedUtcHour).padStart(2, "0")}:${minStr}:00Z`);
+      const utcEndInstant = new Date(utcInstant.getTime() + 60 * 60000); // 1-hour length
+
+      const estFormatted = formatZonedTimeString(utcInstant, "America/New_York", is24hFormat);
+      const gmtFormatted = formatZonedTimeString(utcInstant, "UTC", is24hFormat);
+
+      const eventTitle = `GMT to EST — ${estFormatted}`;
+
+      if (exportSummaryText) {
+        exportSummaryText.textContent = `${selectedDateStr} @ ${estFormatted} (${gmtFormatted})`;
+      }
+
+      // 1. Google Calendar URL
+      if (btnExportGcal) {
+        const pad = (n) => String(n).padStart(2, "0");
+        const formatUtcGcal = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+
+        let details = `GMT to EST Converter Event\\n\\n• Eastern Time: ${estFormatted} (America/New_York)\\n• Greenwich Mean Time: ${gmtFormatted} (UTC)`;
+        if (extraLocation) {
+          const extraStr = formatZonedTimeString(utcInstant, extraLocation.zone, is24hFormat);
+          details += `\\n• ${extraLocation.name}: ${extraStr} (${extraLocation.zone})`;
+        }
+        details += `\\n\\nConversion Link: https://gmttoestconverter.com/?date=${selectedDateStr}&time=${String(selectedUtcHour).padStart(2, "0")}:${minStr}`;
+
+        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${formatUtcGcal(utcInstant)}/${formatUtcGcal(utcEndInstant)}&ctz=America/New_York&details=${encodeURIComponent(details)}`;
+
+        btnExportGcal.onclick = function() {
+          window.open(gcalUrl, "_blank", "noopener,noreferrer");
+        };
+      }
+
+      // 2. Download .ics (Outlook/Apple)
+      if (btnExportIcs) {
+        btnExportIcs.onclick = function() {
+          generateAndDownloadIcs(utcInstant, utcEndInstant, eventTitle, estFormatted, gmtFormatted);
+        };
+      }
+
+      // 3. Copy event link
+      if (btnCopyLink) {
+        btnCopyLink.onclick = function() {
+          const mode = getActiveMode();
+          const hourStr = String(selectedUtcHour).padStart(2, "0");
+          const shareUrl = `${window.location.origin}/?date=${selectedDateStr}&time=${hourStr}:${minStr}&mode=${mode}`;
+
+          navigator.clipboard.writeText(shareUrl).then(function() {
+            if (copyBtnLabel) {
+              const orig = copyBtnLabel.textContent;
+              copyBtnLabel.textContent = "✅ Link Copied!";
+              btnCopyLink.classList.add("copied");
+              setTimeout(function() {
+                copyBtnLabel.textContent = orig;
+                btnCopyLink.classList.remove("copied");
+              }, 2000);
+            }
+          });
+        };
+      }
+    }
+
+    // Generate compliant RFC 5545 .ics file with native IANA VTIMEZONE definitions
+    function generateAndDownloadIcs(startTime, endTime, title, estFormatted, gmtFormatted) {
+      function formatLocalIcs(d, timeZone) {
+        const p = getZonedParts(d, timeZone);
+        return `${p.year}${p.month}${p.day}T${p.hour}${p.minute}${p.second}`;
+      }
+
+      function formatUtcIcs(d) {
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+      }
+
+      const nowUtc = formatUtcIcs(new Date());
+      const startNy = formatLocalIcs(startTime, "America/New_York");
+      const endNy = formatLocalIcs(endTime, "America/New_York");
+      const uid = `gmttoest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}@gmttoestconverter.com`;
+      const minStr = String(selectedMinute || 0).padStart(2, "0");
+      const shareUrl = `https://gmttoestconverter.com/?date=${selectedDateStr}&time=${String(selectedUtcHour).padStart(2, "0")}:${minStr}`;
+
+      let description = `GMT to EST Meeting Synchronization\\n\\n- Eastern Time: ${estFormatted}\\n- Greenwich Mean Time: ${gmtFormatted}`;
+      if (extraLocation) {
+        const extraFormatted = formatZonedTimeString(startTime, extraLocation.zone, is24hFormat);
+        description += `\\n- ${extraLocation.name}: ${extraFormatted}`;
+      }
+      description += `\\n\\nView in Converter: ${shareUrl}`;
+
+      const icsLines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//GMTtoEST//Converter Planning Grid//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VTIMEZONE",
+        "TZID:America/New_York",
+        "X-LIC-LOCATION:America/New_York",
+        "BEGIN:DAYLIGHT",
+        "TZNAME:EDT",
+        "TZOFFSETFROM:-0500",
+        "TZOFFSETTO:-0400",
+        "DTSTART:19700308T020000",
+        "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU",
+        "END:DAYLIGHT",
+        "BEGIN:STANDARD",
+        "TZNAME:EST",
+        "TZOFFSETFROM:-0400",
+        "TZOFFSETTO:-0500",
+        "DTSTART:19701101T020000",
+        "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU",
+        "END:STANDARD",
+        "END:VTIMEZONE",
+        "BEGIN:VTIMEZONE",
+        "TZID:Europe/London",
+        "X-LIC-LOCATION:Europe/London",
+        "BEGIN:DAYLIGHT",
+        "TZNAME:BST",
+        "TZOFFSETFROM:+0000",
+        "TZOFFSETTO:+0100",
+        "DTSTART:19700329T010000",
+        "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
+        "END:DAYLIGHT",
+        "BEGIN:STANDARD",
+        "TZNAME:GMT",
+        "TZOFFSETFROM:+0100",
+        "TZOFFSETTO:+0000",
+        "DTSTART:19701025T020000",
+        "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
+        "END:STANDARD",
+        "END:VTIMEZONE",
+        "BEGIN:VEVENT",
+        `UID:${uid}`,
+        `DTSTAMP:${nowUtc}`,
+        `DTSTART;TZID=America/New_York:${startNy}`,
+        `DTEND;TZID=America/New_York:${endNy}`,
+        `SUMMARY:${title}`,
+        `DESCRIPTION:${description}`,
+        `URL:${shareUrl}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\r\n");
+
+      const blob = new Blob([icsLines], { type: "text/calendar;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `gmt_to_est_${selectedDateStr}_${String(selectedUtcHour).padStart(2, "0")}00UTC.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    // Attach listeners to date strip controls
+    if (prevDayBtn) {
+      prevDayBtn.addEventListener("click", function() {
+        const p = selectedDateStr.split("-").map(Number);
+        const prevDate = new Date(Date.UTC(p[0], p[1] - 1, p[2] - 1, 12, 0, 0));
+        selectedDateStr = prevDate.toISOString().split("T")[0];
+        updateFormFromGrid(selectedUtcHour, selectedDateStr);
+        renderDateStrip();
+      });
+    }
+
+    if (nextDayBtn) {
+      nextDayBtn.addEventListener("click", function() {
+        const p = selectedDateStr.split("-").map(Number);
+        const nextDate = new Date(Date.UTC(p[0], p[1] - 1, p[2] + 1, 12, 0, 0));
+        selectedDateStr = nextDate.toISOString().split("T")[0];
+        updateFormFromGrid(selectedUtcHour, selectedDateStr);
+        renderDateStrip();
+      });
+    }
+
+    if (jumpTodayBtn) {
+      jumpTodayBtn.addEventListener("click", function() {
+        selectedDateStr = new Date().toISOString().split("T")[0];
+        updateFormFromGrid(selectedUtcHour, selectedDateStr);
+        renderDateStrip();
+      });
+    }
+
+    // Extra location dropdown change
+    if (extraLocSelect) {
+      extraLocSelect.addEventListener("change", function() {
+        const zone = this.value;
+        const found = LOCATION_LIST.find(function(c) { return c.zone === zone; });
+        if (found) {
+          extraLocation = found;
+          renderGrid();
+          updateStatusAndExports();
+        }
+      });
+    }
+
+    // Listen to Converter form events for two-way synchronization
+    if (dtInput) {
+      dtInput.addEventListener("input", syncFromForm);
+      dtInput.addEventListener("change", syncFromForm);
+    }
+
+    if (nowBtn) {
+      nowBtn.addEventListener("click", function() {
+        setTimeout(syncFromForm, 20);
+      });
+    }
+
+    if (swapBtn) {
+      swapBtn.addEventListener("click", function() {
+        setTimeout(syncFromForm, 20);
+      });
+    }
+
+    modeTabs.forEach(function(tab) {
+      tab.addEventListener("click", function() {
+        setTimeout(syncFromForm, 20);
+      });
+    });
+
+    if (formatToggle) {
+      formatToggle.addEventListener("change", function() {
+        is24hFormat = formatToggle.checked;
+        renderGrid();
+        updateStatusAndExports();
+      });
+    }
+
+    // Handle URL query parameters (?date=YYYY-MM-DD&time=HH:mm&mode=gmt-est)
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramDate = urlParams.get("date");
+    const paramTime = urlParams.get("time");
+    const paramMode = urlParams.get("mode");
+
+    if (paramDate && paramTime && dtInput) {
+      if (paramMode && paramMode === "est-gmt" && form) {
+        const estTab = form.querySelector('.mode[data-mode="est-gmt"]');
+        if (estTab) estTab.click();
+      }
+      dtInput.value = `${paramDate}T${paramTime}`;
+      dtInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    // Initial sync
+    syncFromForm();
+    setTimeout(syncFromForm, 50);
+  })();
+</script>
